@@ -1,13 +1,20 @@
 import { createHash } from 'node:crypto';
 
-import {
-  isAvailabilityFailure,
-  type ProviderAdapter,
-  type ProviderCapability,
-  type ProviderFailureKind,
+import type {
+  ProviderAdapter,
+  ProviderCapability,
+  ProviderFailureKind,
 } from './index.js';
 
 export type BindingRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
+
+const availabilityFailures = new Set<ProviderFailureKind>([
+  'quota_exhausted',
+  'rate_limited',
+  'auth_unavailable',
+  'provider_unavailable',
+  'transport_failure',
+]);
 
 export interface ModelBinding {
   readonly id: string;
@@ -139,7 +146,7 @@ export class BindingRegistry {
 
     if (
       request.previousFailureKind !== undefined &&
-      !isAvailabilityFailure(request.previousFailureKind)
+      !availabilityFailures.has(request.previousFailureKind)
     ) {
       return {
         status: 'FALLBACK_FORBIDDEN',
