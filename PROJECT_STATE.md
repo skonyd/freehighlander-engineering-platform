@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-07 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-08 IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -63,6 +63,19 @@ token/context optimization != authority reduction
 cache/reuse != correctness evidence
 ```
 
+## FH-08 active work
+
+Issue **#36** is active on branch `feat/fh-08-provider-resilience`.
+
+Current implementation adds deterministic availability-only circuit breaking, quota/rate cooldown handling, provider health snapshots and resilience telemetry. Semantic or malformed model output never trips the availability circuit and never enables semantic fallback/model-shopping.
+
+Hard invariant:
+
+```text
+provider resilience != authority change
+semantic failure != availability failure
+```
+
 ## Promotion remains human/policy controlled
 
 ```text
@@ -84,4 +97,4 @@ FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, 
 
 ## Next action
 
-Start FH-08 provider health / quota / circuit-breaker telemetry while FH-01B2 remains blocked by Creator Marketplace #207.
+Complete FH-08 verification/merge, then advance automatically to FH-10 V3 architecture contract freeze while FH-01B2 remains blocked by Creator Marketplace #207.
