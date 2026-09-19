@@ -109,10 +109,7 @@ test('FH-01B1 cannot promote authority', () => {
 });
 
 test('task fingerprint is sha256(repository|task) and task IDs remain task-scoped', async () => {
-  assert.equal(
-    await taskFingerprint('owner/repo', 'task-1'),
-    await sha256Hex('owner/repo|task-1'),
-  );
+  assert.equal(await taskFingerprint('owner/repo', 'task-1'), await sha256Hex('owner/repo|task-1'));
   assert.notEqual(
     await taskFingerprint('owner/repo', 'task-1'),
     await taskFingerprint('owner/repo', 'task-2'),
@@ -120,22 +117,14 @@ test('task fingerprint is sha256(repository|task) and task IDs remain task-scope
 });
 
 test('PR marker accepts exactly one valid marker and fails closed on duplicates', () => {
-  assert.equal(
-    parsePrTaskId('before <!-- automation-task-id: abc-123 --> after'),
-    'abc-123',
-  );
+  assert.equal(parsePrTaskId('before <!-- automation-task-id: abc-123 --> after'), 'abc-123');
   assert.equal(parsePrTaskId('no marker'), null);
   assert.equal(
-    parsePrTaskId(
-      '<!-- automation-task-id: a --> and <!-- automation-task-id: b -->',
-    ),
+    parsePrTaskId('<!-- automation-task-id: a --> and <!-- automation-task-id: b -->'),
     null,
   );
   const pad = 'x'.repeat(45_000);
-  assert.equal(
-    parsePrTaskId(`${pad}<!-- automation-task-id: large-id -->${pad}`),
-    'large-id',
-  );
+  assert.equal(parsePrTaskId(`${pad}<!-- automation-task-id: large-id -->${pad}`), 'large-id');
 });
 
 test('risk routing preserves V2 critical/high/normal semantics', () => {
@@ -259,12 +248,7 @@ test('trusted candidate adjudication is stamped by wrapper and bound to full pre
   const controller = `${evaluatorArtifact()}CANDIDATE_DECISION: DS-001|REJECTED|false positive|evidence-1
 CANDIDATE_DECISION: DS-002|ACCEPTED|confirmed|evidence-2
 `;
-  const stamped = await stampCandidateAdjudication(
-    controller,
-    revision,
-    configHash,
-    pre,
-  );
+  const stamped = await stampCandidateAdjudication(controller, revision, configHash, pre);
 
   assert.equal(
     validateArtifactForStore('candidate-adjudication', stamped, {
@@ -307,12 +291,7 @@ test('candidate adjudication requires exact unique candidate decision set', asyn
   const controller = `${evaluatorArtifact()}CANDIDATE_DECISION: DS-001|REJECTED|x|e1
 CANDIDATE_DECISION: DS-001|ACCEPTED|y|e2
 `;
-  const stamped = await stampCandidateAdjudication(
-    controller,
-    revision,
-    configHash,
-    pre,
-  );
+  const stamped = await stampCandidateAdjudication(controller, revision, configHash, pre);
   const validation = await validateCandidateAdjudication({
     preReview: pre,
     preReviewFull: pre,
