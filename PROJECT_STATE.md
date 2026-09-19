@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-05 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-06 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -12,43 +12,58 @@
 - FH-03 SQLite telemetry read model
 - FH-04 read-only local observability dashboard
 - FH-05 independent Qwen/local shadow evaluation framework
+- FH-06 benchmark reconciliation and promotion-candidate reporting
 
-FH-05 provides:
+FH-06 can aggregate only adjudicated real samples into quality/economics reports:
 
-- OpenAI-compatible local provider adapter
-- local provider health + chat-completion calls
-- usage-token mapping
-- availability/failure classification
-- independent candidate/reference first opinions
-- same-authoritative-input hash binding
-- independence-key separation
-- finding reconciliation
-- CONFIRMED / FALSE_POSITIVE / MISSED_BY_CANDIDATE / UNRESOLVED labels
-- explicit P0/P1 and P2 miss accounting
-- initial specialist shadow-role registry
-- shadow/benchmark telemetry event types
+- agreement
+- precision
+- confirmed / false-positive / missed findings
+- P0/P1 and P2 misses
+- malformed candidate rate inputs
+- candidate/reference latency p50/p95
+- token totals
+- cost totals
+- projected cost-saving ratio
 
-## Authority remains unchanged
-
-Shadow evaluation is measurement only:
+Screening outputs are limited to:
 
 ```text
-shadowCanGrantAuthority() = false
-pair.authority = NONE
-reconciliation.promotionAuthority = NONE
+INSUFFICIENT_DATA
+BLOCKED
+PROMOTION_CANDIDATE
+HUMAN_POLICY_REQUIRED
 ```
 
-FH-01B1 remains:
+There is deliberately no PROMOTED state.
+
+## Promotion remains human/policy controlled
+
+```text
+promotionCanApplyAutomatically() = false
+authorityGranted = false
+```
+
+No role is considered ready for promotion merely because FH-06 exists. Real benchmark samples are still
+required: NORMAL >= 50 eligible samples and HIGH >= 100, with their respective quality floors.
+
+## V2 authority remains blocked
 
 ```text
 REFERENCE_STATUS = PROVISIONAL
 AUTHORITY         = DISABLED
 ```
 
-FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, merge and post-merge smoke.
+FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, merge and smoke.
 
 ## Next unblocked work
 
-FH-06 benchmark reconciliation and promotion-candidate reporting.
+FH-07 token/context optimization and its enabling contracts:
 
-FH-06 may say `PROMOTION_CANDIDATE`; it must never self-promote a role to authority.
+- context packet manifest
+- prompt/contract hashes
+- semantic reuse key
+- token budgeting
+- cache diagnostics
+
+These optimizations must not reduce the strong-reviewer/full-evidence authority invariant.
