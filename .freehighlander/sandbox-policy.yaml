@@ -1,0 +1,35 @@
+schema_version: 1
+
+default:
+  filesystem:
+    read:
+      - repository
+    write:
+      - repository_worktree
+    outside_repository: deny
+  command:
+    execute: deny_unless_role_allows
+    cwd_outside_repository: deny
+    timeout_required: true
+    env_allowlist_required: true
+  network:
+    outbound: deny_unless_role_allows
+  secrets:
+    access: deny_unless_role_allows
+  destructive_action:
+    require_human: true
+
+high_impact_examples:
+  - force_push
+  - hard_reset
+  - recursive_delete
+  - credential_mutation
+  - iam_mutation
+  - production_deploy
+  - production_data_mutation
+
+rules:
+  unknown_permission: DENY
+  prompt_may_expand_permissions: false
+  model_identity_may_expand_permissions: false
+  workflow_may_not_bypass_human_required: true

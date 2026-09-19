@@ -1,0 +1,12 @@
+# Human ownership/routing. This does not itself replace policy/human gates.
+* @skonyd
+
+# Especially sensitive areas
+/.freehighlander/ @skonyd
+/automation/ @skonyd
+/packages/policy/ @skonyd
+/packages/workflow/ @skonyd
+/packages/artifacts/ @skonyd
+/docs/governance/ @skonyd
+/docs/security/ @skonyd
+/.github/CODEOWNERS @skonyd

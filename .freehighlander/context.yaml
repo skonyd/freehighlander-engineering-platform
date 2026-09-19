@@ -1,0 +1,56 @@
+schema_version: 1
+default_profile: resume-minimal
+
+profiles:
+  resume-minimal:
+    purpose: reconstruct current project state with minimum context
+    read:
+      - AGENTS.md
+      - .freehighlander/state.yaml
+      - PROJECT_STATE.md
+      - docs/state/RESUME-PROTOCOL.md
+      - docs/state/TRIPLE-MODE.md
+    then:
+      - active_pull_request
+      - active_work_item_docs
+
+  planning:
+    purpose: product, architecture and delivery planning
+    extends: resume-minimal
+    read:
+      - docs/INDEX.md
+      - docs/ROADMAP.md
+      - docs/planning/PR-ROADMAP.md
+      - docs/planning/DISCUSSION-AGENDA.md
+      - docs/project/REQUIREMENTS.md
+      - docs/project/NON-FUNCTIONAL-REQUIREMENTS.md
+      - docs/project/RISK-REGISTER.md
+      - docs/decisions/README.md
+
+  implementation:
+    purpose: bounded code change
+    extends: resume-minimal
+    read:
+      - docs/automation/REPO-CONTRACT.md
+      - docs/planning/DEFINITION-OF-READY-DONE.md
+      - docs/testing/QUALITY-STRATEGY.md
+      - docs/security/SECURITY-BASELINE.md
+    dynamic:
+      - nearest_AGENTS_md
+      - path_specific_instructions
+      - active_requirement
+      - active_ADR
+      - active_work_item
+
+  review:
+    purpose: independent review
+    extends: resume-minimal
+    read:
+      - docs/governance/AUTHORITY-AND-DECISIONS.md
+      - docs/testing/QUALITY-STRATEGY.md
+      - docs/security/SECURITY-BASELINE.md
+    rules:
+      - reconstruct_from_remote
+      - use_exact_revision
+      - do_not_trust_producer_summary_as_evidence
+      - preserve_independence

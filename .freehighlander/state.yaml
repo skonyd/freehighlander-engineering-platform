@@ -1,0 +1,61 @@
+schema_version: 1
+project: freehighlander-engineering-platform
+repository: skonyd/freehighlander-engineering-platform
+updated_at: "2026-09-19T20:50:00+03:00"
+
+mode:
+  default_working_mode: triple
+  contract: docs/state/TRIPLE-MODE.md
+
+phase:
+  id: FH-00
+  name: planning-foundation
+  status: ready_for_human_review
+
+active_work:
+  repository: skonyd/freehighlander-engineering-platform
+  branch: docs/planning-foundation
+  pull_request: 1
+  objective: human review and merge of the completed FH-00 planning foundation
+  next_action: review PR 1; merge when satisfied; then clear Creator Marketplace PR 207 dependency before FH-01
+
+external_dependency:
+  repository: skonyd/creator-marketplace
+  pull_request: 207
+  expected_head: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
+  last_verified_state: open_mergeable_ci_green
+  known_pending:
+    - sonnet-candidate-adjudication
+    - astra-final-review
+    - human-decision
+    - merge
+    - post-merge-smoke
+
+accepted_direction:
+  product_mode: local-first-single-user
+  implementation_language: TypeScript
+  repository_shape: bounded-context-monorepo
+  package_namespace: "@freehighlander/*"
+  ui_boundary: control-plane-and-web-logically-separated
+  telemetry: append-only-events-plus-sqlite-current-state
+  query_state_store: SQLite
+  workflow_authoring_initial: repo-as-code
+  knowledge_graph_initial: relational-versioned-entities-and-relations
+  dashboard_v2_5: read-only
+  management_ui: V3
+  provider_architecture: adapter-capability-registry
+  fallback: availability-only
+  sandbox: default-deny
+  remote_secret_egress: deny
+  model_promotion: eval-plus-human-policy
+  plugin_interop: mcp-preferred-through-tool-adapter
+  run_budgeting: required
+
+resume:
+  read_first:
+    - AGENTS.md
+    - PROJECT_STATE.md
+    - docs/state/RESUME-PROTOCOL.md
+    - docs/state/TRIPLE-MODE.md
+  verify_remote_before_action: true
+  unpushed_work_is_not_canonical: true

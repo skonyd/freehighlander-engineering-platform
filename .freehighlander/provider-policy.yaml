@@ -1,0 +1,44 @@
+schema_version: 1
+
+routing:
+  authority_identity: logical_role
+  provider_identity_is_not_authority: true
+  capability_check_required: true
+
+fallback:
+  allowed_failure_classes:
+    - QUOTA
+    - RATE_LIMIT
+    - PROVIDER_UNAVAILABLE
+    - TRANSPORT
+    - TIMEOUT
+    - AUTH
+  forbidden_failure_classes:
+    - SEMANTIC_OUTPUT_INVALID
+    - MALFORMED_PROVIDER_RESPONSE
+  semantic_negative_results_never_trigger_fallback:
+    - FAIL
+    - BLOCKED
+    - INSUFFICIENT
+    - CONFIRMED_FINDING
+
+independence:
+  enforce_groups_when_policy_requires: true
+  fallback_must_not_collapse_required_independence: true
+
+credentials:
+  allowed_sources:
+    - environment
+    - os_credential_store
+    - secrets_broker
+  forbidden_sources:
+    - repository_file
+    - project_state
+    - model_prompt
+    - artifact_plaintext
+
+telemetry:
+  record_attempted_bindings: true
+  record_fallback_reason: true
+  record_usage: true
+  record_provider_request_id_when_available: true

@@ -1,76 +1,75 @@
-# Qwen Role Benchmark ve Promotion Politikası
+# Qwen / Local Model Role Benchmark ve Promotion Policy
 
-## Amaç
+## Goal
 
-Hangi rollerin kaliteyi anlamlı düşürmeden local/Qwen'e devredilebildiğini gerçek proje verisiyle ölçmek.
+Kaliteyi anlamlı düşürmeden hangi high-volume rollerin local/Qwen binding'e devredilebildiğini gerçek workload ile ölçmek.
 
-## Benchmark tasarımı
+## Independent shadow design
 
-İlk görüşler bağımsız üretilir:
+~~~text
+same authoritative input packet
+        ├── candidate local model
+        └── reference reviewer
+                 ↓
+          hidden first verdicts
+                 ↓
+          reconciliation label
+~~~
 
-```text
-            SAME INPUT
-        ┌──────┴──────┐
-        ↓             ↓
-      Qwen        Strong reviewer
-        │             │
-        └──────┬──────┘
-               ↓
-          reconciliation
-               ↓
-          benchmark label
-```
+Candidate model reference verdict'i ilk opinion öncesi görmez.
 
-Strong reviewer Qwen sonucunu ilk verdict öncesinde görmemelidir; anchoring azaltılır.
+## Per-role metrics
 
-## Rol başına metrikler
-
-- sample count
-- agreement rate
-- confirmed finding rate / precision
+Quality:
+- adjudicated sample count
+- agreement
+- precision / confirmed finding rate
 - false-positive rate
-- P0/P1 miss count
-- P2 miss count
-- latency avg/p50/p95
-- input/output tokens
-- retry rate
-- timeout rate
-- quota impact
-- paid-model token saving
+- P0/P1 miss
+- P2 miss
+- malformed/schema-invalid output
+- evidence quality
 
-## Başlangıç promotion eşiği
+Efficiency:
+- input/cached/output/reasoning tokens
+- latency p50/p95
+- retry/timeout/provider failure
+- paid-token/cost saving
+- artifact reuse/cache hit
+
+## Provisional promotion-candidate floors
 
 ### NORMAL
-
-- yaklaşık 50+ gerçek karar
-- agreement ≥ %95
+- >= 50 adjudicated real samples
+- agreement >= 95%
 - P0/P1 miss = 0
-- false-positive kabul edilebilir
-- anlamlı token/cost avantajı
+- meaningful efficiency benefit
 
 ### HIGH
-
-- yaklaşık 100+ gerçek karar
-- agreement ≥ %97
+- >= 100 adjudicated real samples
+- agreement >= 97%
 - P0/P1 miss = 0
-- tekrarlanan P2 miss çok düşük
+- regression/adversarial suite PASS
+
+These are screening floors, not statistical safety guarantees.
 
 ### CRITICAL / authority
+No promotion solely for economics. Human/policy + regression + independence validation required.
 
-Ekonomik gerekçeyle otomatik promotion yapılmaz. Bağımsızlık ve insan otoritesi korunur.
+## Serious misses
 
-## Promotion akışı
+P0/P1 or systematic P2 misses should become regression cases where safe.
 
-```text
+A model/version upgrade reruns relevant regression corpus before promotion.
+
+## Lifecycle
+
+~~~text
 SHADOW
-  ↓
-BENCHMARKED
-  ↓
-PROMOTION CANDIDATE
-  ↓
-HUMAN APPROVAL
-  ↓
-PRIMARY / ESCALATION POLICY
-```
+ → BENCHMARKED
+ → PROMOTION_CANDIDATE
+ → HUMAN/POLICY DECISION
+ → PRIMARY/ESCALATION POLICY
+~~~
 
-Sistem kendi kendine authority değiştirmez.
+System never self-promotes authority from benchmark score alone.

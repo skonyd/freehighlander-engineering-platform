@@ -1,0 +1,38 @@
+name: Bug / Regression
+description: Report a reproducible FreeHighlander defect
+title: "bug: "
+body:
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction / evidence
+    validations:
+      required: true
+  - type: textarea
+    id: revision
+    attributes:
+      label: Exact revision / environment
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+        - Unknown
+    validations:
+      required: true

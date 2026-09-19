@@ -1,0 +1,30 @@
+schema_version: 1
+
+internal_contract: ToolAdapter
+
+external_protocols:
+  preferred:
+    - mcp-2026-07-28
+
+trust_levels:
+  BUILT_IN:
+    require_human_install: false
+  REVIEWED_PINNED:
+    require_human_install: true
+    require_version_pin: true
+  EXTERNAL_UNTRUSTED:
+    require_human_install: true
+    default_enabled: false
+    secrets_access: deny
+    unrestricted_network: deny
+    unrestricted_filesystem: deny
+
+rules:
+  external_metadata_grants_authority: false
+  plugin_may_bypass_sandbox: false
+  plugin_may_bypass_data_egress_policy: false
+  external_skill_scripts_require_review: true
+
+catalog:
+  provider_cache_hints_may_be_used: true
+  cache_may_not_bypass_permission_revalidation: true

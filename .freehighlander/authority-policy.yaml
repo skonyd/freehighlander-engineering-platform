@@ -1,0 +1,42 @@
+schema_version: 1
+
+authority_classes:
+  - ADVISORY
+  - CANDIDATE
+  - WRITER
+  - ADJUDICATOR
+  - FINAL_REVIEWER
+  - HUMAN_APPROVER
+  - SYSTEM_POLICY
+
+rules:
+  model_identity_grants_authority: false
+  prompt_text_grants_authority: false
+  unknown_authority: DENY
+  unknown_tool_permission: DENY
+  role_self_escalation: DENY
+  risk_downgrade_by_model: DENY
+  human_bypass_by_model: DENY
+  workflow_override_of_system_policy: DENY
+
+separation:
+  producer_must_not_final_approve_own_output: true
+  adjudicator_must_not_adjudicate_own_candidate: true
+  required_independence_must_survive_fallback: true
+
+human:
+  authority_class: HUMAN_APPROVER
+  bind_to_exact_revision: true
+  bind_to_scope: true
+  bind_to_reviewed_evidence: true
+
+system_policy:
+  authority_class: SYSTEM_POLICY
+  deterministic: true
+  model_may_not_override: true
+
+role_package:
+  format: yaml
+  schema_version: v1
+  version_pinned_per_run: true
+  immutable_during_active_run: true

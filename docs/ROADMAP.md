@@ -1,143 +1,89 @@
 # Ana Yol Haritası
 
-## Phase 0 — Mevcut automation çekirdeğini kapat
+## Phase 0 — Creator Marketplace reference implementation'ı kapat
+- PR #207 final acceptance
+- Sonnet candidate adjudication
+- Astra final review
+- Human decision
+- merge + post-merge smoke
 
-- PR #207 final acceptance.
-- Sonnet candidate adjudication.
-- Astra final review.
-- HUMAN REQUIRED terminal durumu.
-- İnsan merge kararı.
-- Post-merge smoke.
+**Çıkış:** V2 automation reference implementation kabul edilir.
 
-**Çıkış kriteri:** mevcut V2 pipeline güvenilir reference implementation olarak kabul edilir.
+## Phase 1 — FreeHighlander Automation Bootstrap
+Bu repository artık ürün kodunu da taşıyacaktır.
 
----
+- TypeScript monorepo iskeleti
+- V2 automation davranışının repo-specific adaptation'ı
+- local worker/provider bridge'leri
+- artifact/provenance/gate/test harness
+- CI
+- telemetry hook noktaları
 
-## Phase 1 — V2.5 Telemetry Foundation
+**Çıkış:** FreeHighlander kendi geliştirmesini aynı automation ile yönetebilir.
 
-Amaç: rewrite başlamadan önce mevcut sistemin gerçek baseline'ını toplamak.
+## Phase 2 — V2.5 Telemetry Foundation
+- run_id
+- append-only event schema
+- gate/model/artifact/finding events
+- token/latency/retry/timeout/quota
+- JSONL
+- failure taxonomy
 
-- Ortak `run_id`.
-- Append-only event schema.
-- Gate start/end/pass/fail/skip/wait event'leri.
-- Model call event'leri.
-- Provider/model/role/effort metadata.
-- Token, latency, retry, timeout, quota failure.
-- Artifact/cache/stale/repair-round event'leri.
-- Human-required ve candidate event'leri.
+## Phase 3 — SQLite + Read-only Dashboard
+- SQLite query/current-state/metadata
+- Runs
+- timeline
+- model calls
+- tokens/latency
+- findings
+- artifacts/provenance
+- failures/quota
 
-İlk storage: JSONL. Sonraki adım: SQLite.
+## Phase 4 — Qwen Shadow Benchmark / Offloading
+- repo-analyst
+- test-candidate-reviewer
+- security-candidate-reviewer
+- architecture-consistency-reviewer
+- CVE/dependency triage
+- independent comparison
+- promotion reports
 
----
+## Phase 5 — Token / Context Optimization
+- Qwen evidence/index packets
+- safe cache
+- duplicate call suppression
+- strong-reviewer context shaping
+- required full-diff invariants preserved
 
-## Phase 2 — Read-only Dashboard
+## Phase 6 — V3 Architecture Freeze
+- logical roles
+- provider bindings
+- authority
+- workflow graph
+- event/state model
+- artifact lineage
+- sandbox/secrets
+- UI/API contract
 
-- Runs ekranı.
-- Gate timeline.
-- Model calls.
-- Artifacts/provenance.
-- Token ve latency görünümü.
-- Failure classification.
-- Repair rounds.
-- Candidate/finding durumu.
-- Qwen vs strong reviewer benchmark sonuçları.
+## Phase 7 — V3 Control Plane
+- provider adapters
+- role registry/packages
+- workflow DAG/state machine
+- debate/council
+- policy/human approval
+- artifact lineage
+- replay/recovery
+- management UI
 
-Dashboard authority değildir; yalnız observer'dır.
+## Phase 8 — V2/V3 Shadow Parity + Cutover
+- dual run
+- routing/gate/artifact/state/outcome parity
+- failure injection
+- crash recovery
+- V3 authority promotion
+- V2 legacy retirement
 
----
-
-## Phase 3 — Qwen Workload Offloading
-
-Önce düşük riskli / yüksek hacimli roller:
-
-- Context Triage.
-- Repository Analysis.
-- Deep Analysis.
-- Failure Analysis.
-- Pre-review.
-- Evidence Collection.
-- Bounded Implementation.
-- Documentation Consistency.
-
-Shadow benchmark ile yeni specialist roller:
-
-- Test Candidate Reviewer.
-- Security Candidate Reviewer.
-- Architecture Consistency Reviewer.
-- CVE / Dependency Triage.
-
-Promotion yalnız benchmark sonucu ile yapılır.
-
----
-
-## Phase 4 — Token / Context Optimization
-
-- Qwen context indexing.
-- Candidate/evidence packet üretimi.
-- Strong reviewer'a daha odaklı bağlam.
-- Full-diff invariant gerekli roller için korunur.
-- Cache ve incremental execution.
-- Gereksiz tekrar model çağrılarını önleme.
-
----
-
-## Phase 5 — V3 Architecture Contract
-
-Koddan önce kararlar:
-
-- Logical roles.
-- Provider bindings.
-- Fallback semantics.
-- Independence rules.
-- Authority model.
-- Workflow DAG.
-- Debate/council semantics.
-- Event model.
-- Persistence.
-- Artifact lineage.
-- Policy-as-code.
-- Human approvals.
-- Sandbox/secrets.
-- Replay/simulation.
-- UI/control-plane contract.
-
----
-
-## Phase 6 — V3 Engineering Control Plane
-
-- TypeScript core.
-- SQLite state/event store.
-- API.
-- SSE/live updates.
-- Provider abstraction.
-- Role registry.
-- Role/model router.
-- Workflow DAG engine.
-- Explicit state machine.
-- Existing Bash gates as adapters.
-
-V2 authority, V3 shadow ile başlanır.
-
----
-
-## Phase 7 — V3 parity + migration
-
-- Aynı task V2 ve V3'te shadow dual-run.
-- State transition parity.
-- Artifact/provenance parity.
-- Gate result parity.
-- Failure injection.
-- Crash recovery.
-- Replay tests.
-- V3 authority promotion.
-- Legacy Bash'ın kademeli retirement'ı.
-
----
-
-## Phase 8 — SDLC Modules
-
-Önerilen sıra:
-
+## Phase 9 — SDLC Modules
 1. Planning
 2. Development
 3. Testing
@@ -145,5 +91,30 @@ V2 authority, V3 shadow ile başlanır.
 5. Release
 6. Operations
 7. Incident
+8. Project Knowledge Graph / engineering lineage
 
-Her modül aynı workflow/role/model/event çekirdeğini kullanır.
+## Phase 10 — Full lifecycle
+```text
+IDEA
+ ↓
+REQUIREMENT
+ ↓
+ARCHITECTURE / ADR
+ ↓
+TASK
+ ↓
+CODE
+ ↓
+TEST
+ ↓
+SECURITY
+ ↓
+RELEASE
+ ↓
+PRODUCTION
+ ↓
+OBSERVABILITY
+ ↓
+INCIDENT
+ └────────────→ REQUIREMENT / TEST / TASK
+```

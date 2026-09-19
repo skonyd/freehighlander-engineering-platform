@@ -1,46 +1,63 @@
 # FreeHighlander Engineering Platform
 
-> Çalışma adı. Amaç: bir yazılım fikrinin ilk tanımından production gözlemine ve incident sonrası öğrenmeye kadar tüm SDLC sürecini; insan otoritesini koruyan, değiştirilebilir LLM rolleri ve deterministik kapılarla yönetmek.
+> Fikir aşamasından production operasyonuna kadar yazılım yaşam döngüsünü; değiştirilebilir LLM rolleri, deterministik kapılar, insan otoritesi ve tam mühendislik izlenebilirliği ile yöneten AI destekli engineering platformu.
 
-## Mevcut durum
+## Durum
 
-Bu repo **kodlama reposu değil, ürün/mimari planlama reposudur**. İlk gerçek implementation çekirdeği şu anda `skonyd/creator-marketplace` içindeki automation çalışmasında doğrulanıyor.
+Bu repository **FreeHighlander'ın ana ürün repository'sidir** ve hem ürün kodunu hem de planning/architecture/governance kontratlarını taşır.
 
-Güncel geçiş planı:
+Şu anda FH-00 planning foundation tamamlanmış ve review aşamasındadır. Ürün implementation'ı FH-01 ile başlayacaktır.
 
-1. PR #207 final acceptance + merge + post-merge smoke.
-2. Mevcut V2 pipeline'a telemetry/metrics ekleme.
-3. Read-only dashboard.
-4. Qwen specialist rollerini shadow benchmark ile ölçme.
-5. Kalite düşmeden devredilebilen rolleri Qwen primary'ye taşıma.
-6. Token/context optimizasyonu.
-7. V3 role/model/router + workflow engine tasarımı.
-8. Shell orchestration'dan TypeScript control plane'e kademeli geçiş.
-9. Planning, Development, Testing, Security, Release, Operations ve Incident modüllerini aynı çekirdek üzerinde geliştirme.
+Bootstrap/reference implementation:
+- `skonyd/creator-marketplace`
+- PR #207: multi-model automation çekirdeği
+- FH-01, #207 final acceptance + merge + post-merge smoke sonrasında başlar.
 
-## Temel prensipler
+## Delivery order
 
-- `LLM output is data, never authority.`
-- Producer ile final approver aynı otorite değildir.
-- Deterministik kapılar model görüşünden üstündür.
-- CRITICAL/denylist durumunda insan otoritesi korunur.
-- Model değişebilir; logical role sabit kalır.
-- Fallback yalnız availability/quota/provider failure gibi durumlarda çalışır; semantic FAIL üzerine model shopping yapılmaz.
-- Workflow esnek olabilir; authority invariant'ları zayıflatılamaz.
-- Yeni roller core source code değiştirmeden eklenebilmelidir.
-- Telemetry önce, rewrite sonra.
+1. Creator Marketplace #207 final acceptance + merge + smoke
+2. FH-01 TypeScript monorepo + automation bootstrap
+3. FH-02 telemetry/event schema
+4. FH-03 SQLite state/index
+5. FH-04 read-only dashboard
+6. FH-05/06 Qwen/local shadow benchmark
+7. FH-07/08 token/context + provider optimization
+8. FH-10..20 V3 logical role/model/workflow control plane
+9. FH-30..37 Planning → Development → Testing → Security → Release → Operations → Incident + lineage
 
-## Dokümanlar
+## Resume / another machine
 
-- [Vizyon](docs/VISION.md)
-- [Ana Yol Haritası](docs/ROADMAP.md)
-- [V2.5 Planı](docs/v2.5/PLAN.md)
-- [Metrics & Dashboard](docs/v2.5/METRICS-DASHBOARD.md)
-- [Qwen Role Benchmark](docs/v2.5/QWEN-BENCHMARK.md)
-- [V3 Architecture Contract](docs/v3/ARCHITECTURE-CONTRACT.md)
-- [Role / Model Router](docs/v3/ROLE-MODEL-ROUTER.md)
-- [Workflow Engine](docs/v3/WORKFLOW-ENGINE.md)
-- [Platform Modules](docs/modules/MODULES.md)
-- [Backlog](BACKLOG.md)
-- [ADR-0001](docs/decisions/ADR-0001-platform-direction.md)
-- [ADR-0002](docs/decisions/ADR-0002-v2-authority-v3-shadow.md)
+For a fresh clone/model:
+
+> Repo'yu aç. AGENTS.md ve PROJECT_STATE.md'yi oku. 3'lü modda kaldığımız yerden devam et.
+
+Canonical current-state files:
+- `AGENTS.md`
+- `.freehighlander/state.yaml`
+- `PROJECT_STATE.md`
+- `docs/state/RESUME-PROTOCOL.md`
+
+## Documentation
+
+Start from [docs/INDEX.md](docs/INDEX.md).
+
+Important:
+- [Roadmap](docs/ROADMAP.md)
+- [PR Roadmap](docs/planning/PR-ROADMAP.md)
+- [FH-00 Final Audit](docs/planning/FH-00-FINAL-AUDIT.md)
+- [FH-01 Implementation Plan](docs/planning/FH-01-IMPLEMENTATION-PLAN.md)
+- [ADR Index](docs/decisions/README.md)
+- [Portable AI Engineering Repo Blueprint](docs/templates/PORTABLE-AI-ENGINEERING-REPO.md)
+
+## Non-negotiable principles
+
+- **LLM output is data, never authority.**
+- Model identity does not grant authority.
+- Producer cannot independently final-approve its own output.
+- Unknown/unverifiable gate fails closed.
+- Exact revision/evidence binding is required for authoritative artifacts.
+- Fallback is for availability/budget-before-call routing, not semantic result shopping.
+- CRITICAL/high-impact policy may require human approval.
+- Workflow configurability cannot weaken system-policy invariants.
+- Secrets/data egress are default-deny by policy.
+- Telemetry/evals precede model-routing optimization.

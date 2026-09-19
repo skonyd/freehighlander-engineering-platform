@@ -1,0 +1,64 @@
+schema_version: 1
+
+principles:
+  - load_minimum_context
+  - keep_static_prefix_stable
+  - measure_before_optimizing
+  - prefer_local_or_lower_cost_for_advisory_work
+  - never_trade_authority_for_cost
+  - cache_when_reuse_is_real
+  - compact_only_when_history_is_stale
+
+budgets:
+  resume:
+    target_input_tokens: 12000
+    hard_warn_tokens: 20000
+  planning:
+    target_input_tokens: 30000
+    hard_warn_tokens: 60000
+  implementation:
+    target_input_tokens: 40000
+    hard_warn_tokens: 80000
+  review:
+    target_input_tokens: 50000
+    hard_warn_tokens: 100000
+
+output:
+  default_verbosity: low
+  request_long_output_only_when_artifact_requires_it: true
+
+reasoning:
+  default_policy: adaptive
+  guidance:
+    routine: low
+    normal_engineering: medium
+    high_risk_or_ambiguous: high
+  rule: increase_only_when_evals_or_risk_justify_it
+
+prompt_layout:
+  order:
+    - stable_system_and_role_contract
+    - stable_tool_definitions
+    - stable_repository_contract
+    - task_specific_evidence
+    - volatile_user_request
+  rule: volatile_content_must_not_precede_reusable_static_prefix_without_reason
+
+tool_context:
+  tool_search_threshold_hint: 20
+  collapse_bulk_tool_calls_when_safe: true
+  trim_stale_tool_results: true
+  preserve_authoritative_evidence: true
+
+telemetry_required:
+  - input_tokens
+  - cached_input_tokens
+  - cache_write_tokens
+  - output_tokens
+  - reasoning_effort
+  - latency_ms
+  - retries
+  - model
+  - logical_role
+  - cache_key_or_prefix_version
+  - context_profile
