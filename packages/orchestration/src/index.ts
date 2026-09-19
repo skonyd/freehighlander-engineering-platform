@@ -13,6 +13,14 @@ export {
   type SemanticReuseKeyInput,
 } from './context-packet.js';
 
+export {
+  buildStablePrompt,
+  type PromptAssembly,
+  type PromptCacheHint,
+  type PromptSection,
+  type StablePromptInput,
+} from './prompt-layout.js';
+
 export type RunStatus =
   'PENDING' | 'RUNNING' | 'WAITING' | 'PASSED' | 'FAILED' | 'BLOCKED' | 'HUMAN_REQUIRED';
 

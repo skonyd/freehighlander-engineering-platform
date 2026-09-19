@@ -47,7 +47,7 @@ feat/fh-07-token-context-optimization
 
 Execution plan: `docs/planning/FH-07-IMPLEMENTATION.md`.
 
-Current slice, FH-07A, introduces deterministic context packet manifests, prompt/contract fingerprints and semantic reuse identity. These are optimization contracts only.
+FH-07A/B/C foundations are implemented and CI-verified. FH-07D now adds deterministic stable-prefix assembly plus executable token-policy/context-profile loading and validation. These remain optimization contracts only.
 
 Hard invariant:
 
@@ -79,4 +79,4 @@ FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, 
 
 ## Next action
 
-Complete FH-07A, then implement token-budget preflight and cache/reuse diagnostics telemetry without changing authoritative routing.
+Verify FH-07D, then define the first real bounded model-execution integration point. The current control-plane remains a foundation skeleton, so no fake authority-bearing runtime integration is introduced.

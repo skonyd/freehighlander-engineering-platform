@@ -5,6 +5,7 @@ import {
   buildContextPacket,
   buildContractFingerprint,
   buildSemanticReuseKey,
+  buildStablePrompt,
   tokenOptimizationCanChangeAuthority,
   trimStaleContextItems,
   validateBoundedExecution,
@@ -123,4 +124,49 @@ test('contract fingerprint and semantic reuse key bind all correctness inputs', 
   assert.notEqual(first, buildSemanticReuseKey({ ...base, exactRevision: 'def' }));
   assert.notEqual(first, buildSemanticReuseKey({ ...base, relevantInputHash: 'other' }));
   assert.notEqual(first, buildSemanticReuseKey({ ...base, effort: 'high' }));
+});
+
+test('stable prompt prefix is independent of task evidence and volatile request', () => {
+  const base = {
+    prefixVersion: 'implementation:v1',
+    systemAndRoleContract: 'You are the implementation role.',
+    toolDefinitions: 'read/write tools',
+    repositoryContract: 'authority is unchanged',
+    taskSpecificEvidence: 'diff A',
+    volatileUserRequest: 'implement A',
+  };
+
+  const first = buildStablePrompt(base);
+  const second = buildStablePrompt({
+    ...base,
+    taskSpecificEvidence: 'diff B',
+    volatileUserRequest: 'implement B',
+  });
+
+  assert.equal(first.stablePrefixHash, second.stablePrefixHash);
+  assert.notEqual(first.dynamicHash, second.dynamicHash);
+  assert.notEqual(first.input, second.input);
+  assert.deepEqual(
+    first.stableSections.map((section) => section.id),
+    [
+      'stable_system_and_role_contract',
+      'stable_tool_definitions',
+      'stable_repository_contract',
+    ],
+  );
+  assert.equal(first.cacheHint.prefixVersion, 'implementation:v1');
+  assert.equal(first.cacheHint.cacheHitAssumed, false);
+});
+
+test('stable prompt contract fails closed when required static inputs are empty', () => {
+  assert.throws(
+    () =>
+      buildStablePrompt({
+        prefixVersion: 'v1',
+        systemAndRoleContract: ' ',
+        repositoryContract: 'repo',
+        volatileUserRequest: 'task',
+      }),
+    /systemAndRoleContract is required/,
+  );
 });

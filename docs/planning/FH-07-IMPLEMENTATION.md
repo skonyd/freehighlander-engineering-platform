@@ -12,7 +12,7 @@ FH-07 is an optimization layer. It may explain, budget, cache or reuse semantica
 
 ## Delivery slices
 
-### FH-07A — deterministic context packet + semantic identity
+### FH-07A — deterministic context packet + semantic identity — IMPLEMENTED
 
 - deterministic context packet manifest
 - per-item SHA-256 content hash
@@ -28,7 +28,7 @@ Acceptance:
 - duplicate context IDs fail closed
 - required gate evidence survives stale trimming
 
-### FH-07B — token budget preflight
+### FH-07B — token budget preflight — IMPLEMENTED
 
 - load/represent target + warning limits
 - use provider `countInputTokens()` when available
@@ -36,7 +36,7 @@ Acceptance:
 - WARN / EXHAUSTED diagnostics only; no evidence truncation
 - estimated-vs-actual token metadata
 
-### FH-07C — cache/reuse diagnostics telemetry
+### FH-07C — cache/reuse diagnostics telemetry — FOUNDATION IMPLEMENTED
 
 - cache key/prefix version metadata
 - cache hit / artifact reuse diagnostic events
@@ -44,12 +44,12 @@ Acceptance:
 - repeat-call waste diagnostics
 - no prompt/completion body logging by default
 
-### FH-07D — stable prompt prefix contract
+### FH-07D — stable prompt prefix contract — IMPLEMENTED
 
 - stable-prefix versioning
 - dynamic evidence after the stable prefix
 - provider-neutral cache hints
-- no assumption that a cache hit occurred
+- no assumption that a cache hit occurred\n- executable token-policy/context-profile loader and doctor validation
 
 ### FH-07E — integration / verification
 
