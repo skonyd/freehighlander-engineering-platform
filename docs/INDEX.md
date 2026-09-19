@@ -23,6 +23,7 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Resume Protocol](state/RESUME-PROTOCOL.md)
 - [Triple Mode](state/TRIPLE-MODE.md)
 - [Context Profiles](state/CONTEXT-PROFILES.md)
+- [Token Efficiency](state/TOKEN-EFFICIENCY.md)
 - [Environment Bootstrap](state/ENVIRONMENT-BOOTSTRAP.md)
 - [State Schema](state/STATE-SCHEMA.md)
 - [Checkpoint Template](state/CHECKPOINT-TEMPLATE.md)
@@ -50,8 +51,12 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Control Plane UX](ui/CONTROL-PLANE-UX.md)
 - [Environments & Delivery](operations/ENVIRONMENTS-AND-DELIVERY.md)
 
-## 7. Research
+## 7. Reusable templates
+- [Portable AI Engineering Repository Blueprint](templates/PORTABLE-AI-ENGINEERING-REPO.md)
+
+## 8. Research
 - [Agent Repository Continuity](research/AGENT-REPOSITORY-CONTINUITY.md)
+- [Token Efficiency 2026](research/TOKEN-EFFICIENCY-2026.md)
 
 ## Doküman statüleri
 DRAFT → PROPOSED → ACCEPTED → SUPERSEDED. Kritik kararlar ADR ile kalıcılaştırılır.
