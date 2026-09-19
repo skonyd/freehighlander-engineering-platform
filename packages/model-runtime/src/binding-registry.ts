@@ -16,6 +16,7 @@ export interface ProviderRegistration {
 
 export interface ModelBindingDefinition {
   readonly id: string;
+  readonly version: string;
   readonly providerId: string;
   readonly model: string;
   readonly effort?: string;
@@ -35,6 +36,7 @@ export interface BindingPlanRequest {
 
 export interface ResolvedBinding {
   readonly bindingId: string;
+  readonly bindingVersion: string;
   readonly providerId: string;
   readonly model: string;
   readonly effort?: string;
@@ -155,6 +157,7 @@ export function resolveBindingPlan(
 
     return {
       bindingId: binding.id,
+      bindingVersion: binding.version,
       providerId: binding.providerId,
       model: binding.model,
       ...(binding.effort ? { effort: binding.effort } : {}),
@@ -231,6 +234,9 @@ const availabilityFailures = new Set<ProviderFailureKind>([
 function validateBinding(binding: ModelBindingDefinition): ModelBindingDefinition {
   requireId(binding.id, 'binding id');
   requireId(binding.providerId, 'provider id');
+  if (!/^\d+\.\d+\.\d+$/.test(binding.version)) {
+    throw new Error(`binding ${binding.id} version must be semantic x.y.z`);
+  }
   requireId(binding.model, 'model');
   requireId(binding.independenceGroup, 'independenceGroup');
   if (binding.allowedRiskTiers.length === 0) {
