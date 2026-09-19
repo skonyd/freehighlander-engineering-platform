@@ -1,46 +1,53 @@
 # FreeHighlander Engineering Platform
 
-> Çalışma adı. Amaç: bir yazılım fikrinin ilk tanımından production gözlemine ve incident sonrası öğrenmeye kadar tüm SDLC sürecini; insan otoritesini koruyan, değiştirilebilir LLM rolleri ve deterministik kapılarla yönetmek.
+> Fikir aşamasından production operasyonuna kadar yazılım yaşam döngüsünü; değiştirilebilir LLM rolleri, deterministik kapılar, insan otoritesi ve tam mühendislik izlenebilirliği ile yöneten AI destekli engineering platformu.
 
-## Mevcut durum
+## Durum
 
-Bu repo **kodlama reposu değil, ürün/mimari planlama reposudur**. İlk gerçek implementation çekirdeği şu anda `skonyd/creator-marketplace` içindeki automation çalışmasında doğrulanıyor.
+Bu repository şu anda **planning / architecture / governance repository** olarak kullanılır. Ürün kodu başlamadan önce hedefler, kararlar, PR sırası, quality/security kuralları ve mevcut Creator Marketplace automation çekirdeğinin buraya nasıl taşınacağı burada tanımlanır.
 
-Güncel geçiş planı:
+Mevcut bootstrap/reference implementation:
+- `skonyd/creator-marketplace`
+- PR #207: multi-model automation çekirdeği
+- #207 tamamlandıktan sonra bu repo için V2.5 telemetry + dashboard + Qwen benchmark fazı başlar.
 
-1. PR #207 final acceptance + merge + post-merge smoke.
-2. Mevcut V2 pipeline'a telemetry/metrics ekleme.
-3. Read-only dashboard.
-4. Qwen specialist rollerini shadow benchmark ile ölçme.
-5. Kalite düşmeden devredilebilen rolleri Qwen primary'ye taşıma.
-6. Token/context optimizasyonu.
-7. V3 role/model/router + workflow engine tasarımı.
-8. Shell orchestration'dan TypeScript control plane'e kademeli geçiş.
-9. Planning, Development, Testing, Security, Release, Operations ve Incident modüllerini aynı çekirdek üzerinde geliştirme.
+## İlk teslim sırası
 
-## Temel prensipler
+1. #207 final acceptance + merge + post-merge smoke.
+2. Bu repo için automation bootstrap.
+3. Telemetry/event schema.
+4. Read-only dashboard.
+5. Qwen specialist shadow benchmark.
+6. Ölçüme göre rol offloading.
+7. Token/context optimizasyonu.
+8. V3 logical role/model router.
+9. Workflow DAG + state machine.
+10. TypeScript control plane.
+11. Planning → Development → Testing → Security → Release → Operations → Incident modülleri.
 
-- `LLM output is data, never authority.`
-- Producer ile final approver aynı otorite değildir.
-- Deterministik kapılar model görüşünden üstündür.
-- CRITICAL/denylist durumunda insan otoritesi korunur.
-- Model değişebilir; logical role sabit kalır.
-- Fallback yalnız availability/quota/provider failure gibi durumlarda çalışır; semantic FAIL üzerine model shopping yapılmaz.
-- Workflow esnek olabilir; authority invariant'ları zayıflatılamaz.
-- Yeni roller core source code değiştirmeden eklenebilmelidir.
-- Telemetry önce, rewrite sonra.
+## Dokümantasyon
 
-## Dokümanlar
-
-- [Vizyon](docs/VISION.md)
-- [Ana Yol Haritası](docs/ROADMAP.md)
-- [V2.5 Planı](docs/v2.5/PLAN.md)
-- [Metrics & Dashboard](docs/v2.5/METRICS-DASHBOARD.md)
-- [Qwen Role Benchmark](docs/v2.5/QWEN-BENCHMARK.md)
-- [V3 Architecture Contract](docs/v3/ARCHITECTURE-CONTRACT.md)
-- [Role / Model Router](docs/v3/ROLE-MODEL-ROUTER.md)
-- [Workflow Engine](docs/v3/WORKFLOW-ENGINE.md)
-- [Platform Modules](docs/modules/MODULES.md)
+- [Documentation Index](docs/INDEX.md)
+- [Vision](docs/VISION.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Project Charter](docs/project/CHARTER.md)
+- [Scope & Non-goals](docs/project/SCOPE-AND-NONGOALS.md)
+- [Requirements](docs/project/REQUIREMENTS.md)
+- [Non-functional Requirements](docs/project/NON-FUNCTIONAL-REQUIREMENTS.md)
+- [PR Roadmap](docs/planning/PR-ROADMAP.md)
+- [Discussion Agenda](docs/planning/DISCUSSION-AGENDA.md)
+- [Automation Adoption](docs/automation/AUTOMATION-ADOPTION.md)
+- [Architecture Contract](docs/v3/ARCHITECTURE-CONTRACT.md)
 - [Backlog](BACKLOG.md)
-- [ADR-0001](docs/decisions/ADR-0001-platform-direction.md)
-- [ADR-0002](docs/decisions/ADR-0002-v2-authority-v3-shadow.md)
+
+## Değişmez prensipler
+
+- **LLM output is data, never authority.**
+- Model değişebilir; logical role/contract sabit kalır.
+- Producer kendi çıktısının final approver'ı olamaz.
+- Deterministik kapılar model yorumuyla bypass edilemez.
+- Fallback yalnız availability/quota/provider sınıfındaki hatalar içindir; semantic FAIL üzerine model shopping yapılmaz.
+- CRITICAL/denylist akışlarda insan otoritesi korunur.
+- Workflow esnek olabilir; authority invariant'ları workflow tarafından zayıflatılamaz.
+- Yeni roller core orchestrator source code'u değiştirmeden eklenebilmelidir.
+- Telemetry ve baseline ölçümü rewrite'tan önce gelir.

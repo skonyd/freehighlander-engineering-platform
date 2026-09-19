@@ -1,96 +1,55 @@
 # Backlog
 
-## P0 — #207 sonrası hemen
+Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır. FH kimlikleri planlanan çalışma paketlerini ifade eder; gerçek GitHub PR numarası değildir.
 
-- [ ] #207 final acceptance ve merge
-- [ ] post-merge smoke
-- [ ] event schema v1
-- [ ] run_id standardı
-- [ ] gate/model/artifact telemetry
-- [ ] model token/latency accounting
-- [ ] failure taxonomy
-- [ ] events.jsonl
-- [ ] read-only run dashboard
-- [ ] Qwen benchmark labels
+## Foundation
+- [ ] FH-00 Planning foundation ve doküman sözleşmesi
+- [ ] FH-01 Creator Marketplace V2 automation bootstrap/adaptation
+- [ ] FH-02 Telemetry event schema + emitter
+- [ ] FH-03 SQLite run/event/artifact metadata store
+- [ ] FH-04 Read-only metrics dashboard
 
-## P0 — V2.5 Qwen offloading
+## Qwen / model economics
+- [ ] FH-05 Qwen specialist shadow roles
+- [ ] FH-06 Benchmark reconciliation + role promotion reports
+- [ ] FH-07 Token/context optimization
+- [ ] FH-08 Provider health / quota / circuit-breaker telemetry
 
-- [ ] repo-analyst
-- [ ] test-candidate-reviewer (shadow)
-- [ ] security-candidate-reviewer (shadow)
-- [ ] architecture-consistency-reviewer (shadow)
-- [ ] cve-dependency-triage (shadow)
-- [ ] independent comparison protocol
-- [ ] finding confirmed/rejected/unresolved labels
-- [ ] role promotion policy
-- [ ] paid-model token saving metrics
+## V3 control plane
+- [ ] FH-10 V3 architecture contract freeze
+- [ ] FH-11 Provider adapter contract + binding registry
+- [ ] FH-12 Role registry + role packages
+- [ ] FH-13 Workflow DAG + explicit state machine
+- [ ] FH-14 Debate/council + disagreement escalation
+- [ ] FH-15 Human approval + policy-as-code
+- [ ] FH-16 Artifact lineage + prompt/contract/workflow hashes
+- [ ] FH-17 Replay/simulation + crash recovery
+- [ ] FH-18 UI control plane: workflow/role/model management
+- [ ] FH-19 V2/V3 shadow dual-run + parity
+- [ ] FH-20 V3 authority cutover + legacy shell retirement plan
 
-## P0 — V3 architecture
+## Platform modules
+- [ ] FH-30 Planning module MVP
+- [ ] FH-31 Development module
+- [ ] FH-32 Testing module
+- [ ] FH-33 Security module
+- [ ] FH-34 Release module
+- [ ] FH-35 Operations / observability module
+- [ ] FH-36 Incident / postmortem module
+- [ ] FH-37 Project knowledge graph / engineering lineage
 
-- [ ] architecture contract
-- [ ] logical role registry
-- [ ] provider adapter contract
-- [ ] model binding registry
-- [ ] availability-only fallback
-- [ ] quota groups
-- [ ] independence groups
-- [ ] workflow DAG
-- [ ] debate primitive
-- [ ] bounded loop
-- [ ] sub-workflow
-- [ ] policy/authority invariants
-- [ ] artifact lineage
-- [ ] contract/prompt/workflow hashes
-- [ ] human approval object
-- [ ] event store
-- [ ] SQLite schema
-- [ ] replay/simulation
-
-## P1 — Reliability / observability
-
-- [ ] atomic repair state
-- [ ] crash recovery
-- [ ] provider health + circuit breaker
-- [ ] monotonic deadlines
-- [ ] searchable artifact explorer
-- [ ] historical metrics
-- [ ] benchmark scorecards
-- [ ] notification layer
-- [ ] diff-aware incremental execution
-- [ ] scheduler / safe parallelism
-- [ ] immutable audit log
-
-## P1 — UI control plane
-
-- [ ] workflow designer
-- [ ] role manager
-- [ ] model/provider manager
-- [ ] fallback editor
-- [ ] debate/council editor
-- [ ] condition builder
-- [ ] template library
-- [ ] dry-run/simulator
-- [ ] workflow Draft → Validate → Simulate → Publish
-- [ ] Basic / Advanced UI modes
-
-## P1 — Security platform primitives
-
-- [ ] tool permission model
-- [ ] execution sandbox
-- [ ] secrets broker
-- [ ] network/tool allowlists
-- [ ] evidence requirements per role
-
-## P2 — Platform expansion
-
-- [ ] project knowledge graph
-- [ ] Planning module
-- [ ] Development module
-- [ ] Testing module
-- [ ] Security module
-- [ ] Release module
-- [ ] Operations module
-- [ ] Incident module
-- [ ] multi-repo support
-- [ ] model quality drift monitoring
-- [ ] reusable role library / role packages
+## Reliability / governance
+- [ ] Atomic state + artifact publication
+- [ ] Durable state sync
+- [ ] Execution sandbox
+- [ ] Secrets broker
+- [ ] Immutable audit trail
+- [ ] Multi-repo support
+- [ ] Schema migrations / backup / restore
+- [ ] Feature flags
+- [ ] Provider capability registry
+- [ ] Cost/budget manager
+- [ ] Model quality drift monitoring
+- [ ] Notification layer
+- [ ] Searchable run/artifact explorer
+- [ ] Role/package versioning
