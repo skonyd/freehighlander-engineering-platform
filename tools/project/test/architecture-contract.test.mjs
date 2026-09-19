@@ -56,9 +56,15 @@ test('architecture freeze rejects missing accepted ADRs and unbounded loops', as
 test('architecture freeze rejects weakened sandbox or automatic authority promotion', async () => {
   const permissiveNetwork = structuredClone(await loadArchitectureContract(root));
   permissiveNetwork.security.network_default = 'ALLOW';
-  assert.throws(() => assertArchitectureContract(permissiveNetwork), /network default must be DENY/);
+  assert.throws(
+    () => assertArchitectureContract(permissiveNetwork),
+    /network default must be DENY/,
+  );
 
   const autoPromotion = structuredClone(await loadArchitectureContract(root));
   autoPromotion.evaluation.automatic_authority_promotion = true;
-  assert.throws(() => assertArchitectureContract(autoPromotion), /automatic authority promotion must be false/);
+  assert.throws(
+    () => assertArchitectureContract(autoPromotion),
+    /automatic authority promotion must be false/,
+  );
 });
