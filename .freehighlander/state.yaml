@@ -1,48 +1,41 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-19T21:37:00+03:00"
+updated_at: "2026-09-19T22:50:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-00
-  name: planning-foundation
-  status: complete_waiting_for_fh01_dependency
+  id: FH-01A
+  name: platform-bootstrap
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-01a-platform-bootstrap
   pull_request: null
-  objective: wait at coding boundary until the accepted V2 reference is available
-  next_action: finish Creator Marketplace PR 207; merge and smoke; then start canonical FH-01 issue 12
-
-fh00:
-  planning_pr: 1
-  merge_sha: 02b9e2af56c00852daecbe8e15da633113c3c41a
-  final_audit: docs/planning/FH-00-FINAL-AUDIT.md
-  implementation_plan: docs/planning/FH-01-IMPLEMENTATION-PLAN.md
-  coding_entry_gate: docs/planning/CODING-ENTRY-GATE.md
+  issue: 15
+  objective: bootstrap executable TypeScript platform foundations without unfinished V2 authority
+  next_action: run CI/verification for FH-01A and merge when green
 
 external_dependency:
   repository: skonyd/creator-marketplace
   pull_request: 207
   expected_head: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
   last_verified_state: open_mergeable_ci_green_acceptance_incomplete
-  known_pending:
-    - sonnet-candidate-adjudication
-    - astra-final-review
-    - human-decision
-    - merge
-    - post-merge-smoke
 
-fh01:
-  canonical_issue: 12
+fh01a:
+  issue: 15
+  status: in_progress
+  coding_started: true
+
+fh01b:
+  issue: 16
   status: blocked
   blocker: creator-marketplace-pr-207-not-fully-accepted
-  coding_started: false
+  authority_port_started: false
 
 accepted_direction:
   product_mode: local-first-single-user
@@ -63,12 +56,3 @@ accepted_direction:
   model_promotion: eval-plus-human-policy
   plugin_interop: mcp-preferred-through-tool-adapter
   run_budgeting: required
-
-resume:
-  read_first:
-    - AGENTS.md
-    - PROJECT_STATE.md
-    - docs/state/RESUME-PROTOCOL.md
-    - docs/state/TRIPLE-MODE.md
-  verify_remote_before_action: true
-  unpushed_work_is_not_canonical: true

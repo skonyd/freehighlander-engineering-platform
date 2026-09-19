@@ -1,0 +1,34 @@
+{
+  "name": "freehighlander-engineering-platform",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.21.0 <25"
+  },
+  "packageManager": "npm@11.19.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "format": "prettier --check package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
+    "format:write": "prettier --write package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "check:architecture": "node tools/project/check-architecture.mjs",
+    "project:bootstrap": "node tools/project/bootstrap.mjs",
+    "project:doctor": "node tools/project/doctor.mjs",
+    "project:resume": "node tools/project/resume.mjs",
+    "project:checkpoint": "node tools/project/checkpoint.mjs",
+    "verify": "npm run format && npm run typecheck && npm run build && npm run test && npm run check:architecture && npm run project:doctor"
+  },
+  "dependencies": {
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "prettier": "3.9.8",
+    "typescript": "7.0.2"
+  }
+}
