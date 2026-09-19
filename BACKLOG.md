@@ -24,7 +24,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 
 ## Qwen / model economics
 - [x] FH-05 Qwen specialist shadow roles — issue #29 / PR #30
-- [ ] FH-06 Benchmark reconciliation + role promotion reports — issue #31
+- [x] FH-06 Benchmark reconciliation + role promotion reports — issue #31 / PR #32
 - [ ] FH-07 Token/context optimization
 - [ ] FH-08 Provider health / quota / circuit-breaker telemetry
 
@@ -35,7 +35,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [ ] FH-13 Workflow DAG + explicit state machine
 - [ ] FH-14 Debate/council + disagreement escalation
 - [ ] FH-15 Human approval + policy-as-code
-- [ ] FH-16 Artifact lineage + prompt/contract/workflow hashes
+- [ ] FH-16 Artifact lineage + hashes
 - [ ] FH-17 Replay/simulation + crash recovery
 - [ ] FH-18 UI control plane
 - [ ] FH-19 V2/V3 shadow dual-run + parity
