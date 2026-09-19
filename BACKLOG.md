@@ -5,7 +5,9 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 ## Foundation
 - [x] FH-00 Planning foundation ve doküman sözleşmesi
 - [x] FH-01A Platform bootstrap — issue #15 / PR #17
-- [ ] FH-01B Accepted V2 compatibility/authority port — issue #16, blocked by Creator Marketplace #207
+- [ ] FH-01B umbrella — issue #16
+  - [ ] FH-01B1 Provisional V2 compatibility, authority disabled — issue #18
+  - [ ] FH-01B2 Accepted V2 reconciliation + authority promotion — issue #19, blocked by Creator Marketplace #207
 - [ ] FH-02 Telemetry event emitter / durable event history
 - [ ] FH-03 SQLite run/event/artifact metadata store
 - [ ] FH-04 Read-only metrics dashboard

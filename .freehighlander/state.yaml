@@ -1,37 +1,43 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-19T23:05:00+03:00"
+updated_at: "2026-09-19T23:20:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-01A
-  name: platform-bootstrap
-  status: complete
+  id: FH-01B
+  name: v2-compatibility
+  status: split_provisional_then_promotion
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: main
   pull_request: null
-  issue: 16
-  objective: wait for the accepted V2 reference before FH-01B authority compatibility work
-  next_action: finish Creator Marketplace PR 207 acceptance, merge and smoke, then start FH-01B issue 16
+  issue: 18
+  objective: allow provisional V2 compatibility work without enabling authority
+  next_action: FH-01B1 may proceed with current #207 SHA as provisional; after Claude quota reset finish #207, then run FH-01B2 reconciliation before any authority promotion
 
 fh01a:
   issue: 15
   pull_request: 17
   status: complete
-  coding_started: true
-  authority_port_started: false
 
 fh01b:
   issue: 16
-  status: blocked
-  blocker: creator-marketplace-pr-207-not-fully-accepted
-  authority_port_started: false
+  status: in_progress_split
+  provisional:
+    issue: 18
+    status: ready
+    reference_status: PROVISIONAL
+    reference_sha: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
+    authority: DISABLED
+  promotion:
+    issue: 19
+    status: blocked
+    blocker: creator-marketplace-pr-207-not-fully-accepted
 
 external_dependency:
   repository: skonyd/creator-marketplace
@@ -44,6 +50,14 @@ external_dependency:
     - human-decision
     - merge
     - post-merge-smoke
+
+promotion_confirmation_required:
+  - provisional_reference_sha_recorded
+  - final_accepted_reference_sha_recorded
+  - delta_reviewed
+  - parity_suite_passed
+  - post_port_smoke_passed
+  - authority_promotion_reviewed
 
 accepted_direction:
   product_mode: local-first-single-user
