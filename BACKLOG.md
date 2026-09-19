@@ -30,7 +30,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 
 ## V3 control plane
 - [x] FH-10 V3 architecture contract freeze — issue #38 / PR #39
-- [ ] FH-11 Provider adapter implementations + binding registry
+- [x] FH-11 Provider adapter implementations + binding registry — issue #40 / PR #42
 - [ ] FH-12 Role registry + role packages
 - [ ] FH-13 Workflow DAG + explicit state machine
 - [ ] FH-14 Debate/council + disagreement escalation

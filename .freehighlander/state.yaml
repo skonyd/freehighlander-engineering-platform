@@ -8,8 +8,8 @@ mode:
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-10
-  name: v3-architecture-contract-freeze
+  id: FH-11
+  name: provider-binding-registry
   status: complete
 
 active_work:
@@ -17,8 +17,8 @@ active_work:
   branch: main
   pull_request: null
   issue: null
-  objective: implement provider adapters and binding registry while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-11 provider adapters + binding registry
+  objective: implement logical role registry and role packages while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-12 role registry + role packages
 
 fh01a:
   issue: 15
@@ -108,6 +108,13 @@ fh10:
   contract_version: 1.0.0
   authority_effect: none
   v3_authority: SHADOW_ONLY
+
+fh11:
+  issue: 40
+  pull_request: 42
+  status: complete
+  authority_effect: none
+  fallback_policy: availability_only
 
 external_dependency:
   repository: skonyd/creator-marketplace

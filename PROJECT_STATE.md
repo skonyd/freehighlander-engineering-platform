@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-10 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-11 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -95,6 +95,17 @@ authorityGranted = false
 No role is considered ready for promotion merely because FH-06 exists. Real benchmark samples are still
 required: NORMAL >= 50 eligible samples and HIGH >= 100, with their respective quality floors.
 
+## FH-11 completed
+
+Provider and versioned model-binding resolution is now deterministic and authority-neutral:
+
+- duplicate and unknown registrations fail closed;
+- capability, risk-tier and independence constraints are enforced before selection;
+- ordered fallback is availability-only;
+- semantic/malformed failures cannot model-shop;
+- identical binding inputs produce a stable plan hash;
+- binding configuration cannot grant authority.
+
 ## V2 authority remains blocked
 
 ```text
@@ -106,4 +117,4 @@ FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, 
 
 ## Next action
 
-Start FH-11 provider adapters + binding registry while FH-01B2 remains blocked by Creator Marketplace #207.
+Start FH-12 role registry + role packages while FH-01B2 remains blocked by Creator Marketplace #207.
