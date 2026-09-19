@@ -29,5 +29,8 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Show Prettier diff
+        run: |
+          npx prettier --write packages/orchestration/src/prompt-layout.ts packages/orchestration/test/orchestration.test.mjs
+          git diff -- packages/orchestration/src/prompt-layout.ts packages/orchestration/test/orchestration.test.mjs
+          exit 1
