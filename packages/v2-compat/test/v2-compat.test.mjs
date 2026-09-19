@@ -2,8 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  AUTHORITATIVE_ARTIFACT_KIND,
   PROVISIONAL_V2_REFERENCE,
+  V2_REFERENCE_LOCAL_WORKER_LIMITS,
   V2_REFERENCE_PROFILE,
+  V2_REFERENCE_TEST_REVIEW,
   assertProvisionalReference,
   authorityPromotionAllowed,
   candidateIds,
@@ -18,6 +21,7 @@ import {
   stampContextTriageAdjudication,
   taskFingerprint,
   testReviewRequired,
+  v2FallbackAllowed,
   validateArtifactForStore,
   validateCandidateAdjudication,
   validateContextTriageGate,
@@ -106,6 +110,30 @@ test('FH-01B1 cannot promote authority', () => {
   assert.equal(PROVISIONAL_V2_REFERENCE.authority, 'DISABLED');
   assert.equal(authorityPromotionAllowed(), false);
   assert.doesNotThrow(assertProvisionalReference);
+});
+
+
+test('provisional reference captures full-artifact, Opus and worker budget invariants', () => {
+  assert.equal(AUTHORITATIVE_ARTIFACT_KIND, 'full');
+  assert.deepEqual(V2_REFERENCE_TEST_REVIEW, {
+    model: 'opus',
+    effort: 'medium',
+    maxRepairRounds: 2,
+  });
+  assert.equal(V2_REFERENCE_LOCAL_WORKER_LIMITS.gateTimeoutSeconds, 120);
+  assert.equal(V2_REFERENCE_LOCAL_WORKER_LIMITS.timeoutSeconds, 600);
+  assert.equal(V2_REFERENCE_LOCAL_WORKER_LIMITS.maxTotalSeconds, 900);
+  assert.equal(V2_REFERENCE_LOCAL_WORKER_LIMITS.retries, 2);
+  assert.equal(V2_REFERENCE_LOCAL_WORKER_LIMITS.retryDelaySeconds, 5);
+  assert.equal(V2_REFERENCE_LOCAL_WORKER_LIMITS.maxInputBytes, 2_000_000);
+});
+
+test('fallback is availability-only and never semantic model shopping', () => {
+  assert.equal(v2FallbackAllowed('quota_exhausted'), true);
+  assert.equal(v2FallbackAllowed('rate_limited'), true);
+  assert.equal(v2FallbackAllowed('provider_unavailable'), true);
+  assert.equal(v2FallbackAllowed('semantic_failure'), false);
+  assert.equal(v2FallbackAllowed('malformed_output'), false);
 });
 
 test('task fingerprint is sha256(repository|task) and task IDs remain task-scoped', async () => {

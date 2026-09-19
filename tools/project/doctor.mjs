@@ -26,6 +26,7 @@ for (const requiredPath of [
   'packages/telemetry',
   'packages/persistence',
   'packages/contracts',
+  'packages/v2-compat',
 ]) {
   try {
     await fs.access(path.join(root, requiredPath));

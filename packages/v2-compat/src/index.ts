@@ -9,6 +9,45 @@ export const PROVISIONAL_V2_REFERENCE = {
 export type RiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
 export type Effort = 'low' | 'medium' | 'high';
 
+
+export const AUTHORITATIVE_ARTIFACT_KIND = 'full' as const;
+
+export const V2_REFERENCE_TEST_REVIEW = {
+  model: 'opus',
+  effort: 'medium',
+  maxRepairRounds: 2,
+} as const;
+
+export const V2_REFERENCE_LOCAL_WORKER_LIMITS = {
+  gateTimeoutSeconds: 120,
+  timeoutSeconds: 600,
+  maxTotalSeconds: 900,
+  retries: 2,
+  retryDelaySeconds: 5,
+  maxInputBytes: 2_000_000,
+} as const;
+
+export type V2ProviderFailureKind =
+  | 'quota_exhausted'
+  | 'rate_limited'
+  | 'auth_unavailable'
+  | 'provider_unavailable'
+  | 'transport_failure'
+  | 'semantic_failure'
+  | 'malformed_output';
+
+const v2AvailabilityFailures = new Set<V2ProviderFailureKind>([
+  'quota_exhausted',
+  'rate_limited',
+  'auth_unavailable',
+  'provider_unavailable',
+  'transport_failure',
+]);
+
+export function v2FallbackAllowed(kind: V2ProviderFailureKind): boolean {
+  return v2AvailabilityFailures.has(kind);
+}
+
 export interface ModelRoute {
   readonly model: string;
   readonly effort: Effort;

@@ -43,3 +43,15 @@ After #207 final acceptance/merge/smoke:
 - explicitly review authority promotion
 
 No silent promotion is permitted.
+
+
+## Implementation status
+
+FH-01B1 implementation:
+- package: `packages/v2-compat`
+- PR: `#21`
+- state: COMPLETE once final PR CI is green and merged
+- authority remains DISABLED
+- `automation/legacy-v2/` remains documentation-only
+
+Deterministic architecture checks fail if the provisional source is changed to `ACCEPTED` or `ENABLED` before FH-01B2.
