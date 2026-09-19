@@ -6,96 +6,102 @@
 
 İlk single-user local mode:
 - loopback/local process trust boundary
-- ayrı login zorunlu değil
+- ayrı full account system zorunlu değil
 - UI/control-plane remote interface varsayılan olarak expose edilmez
+- human approval actor'ı stable `local-owner` identity ile kaydedilir
 
-"Local mode" gelecekte remote/self-hosted mode için auth bypass anlamına gelmez.
+"Local mode" remote/self-hosted mode için auth bypass değildir.
 
 ## Remote/self-hosted auth
 
-Remote erişim açıldığında:
-- OIDC/OAuth tabanlı auth
+Control plane loopback dışına bind edilecekse authentication zorunludur.
+
+Self-hosted/multi-user aşamasında:
+- OIDC/OAuth2-compatible identity provider
 - Authorization Code + PKCE
 - exact redirect URI validation
-- secure token storage
-- short-lived access tokens
-- rotated/sender-constrained refresh token yaklaşımı
-- explicit scopes
+- secure server-side/session token handling
+- stable subject ID
+- workspace/project authorization
 
-tercih edilir.
+kullanılır.
 
-WebAuthn/passkeys güçlü user authentication seçeneği olarak desteklenebilir.
+High-impact human approvals step-up authentication isteyebilir.
 
-## MCP / external authorization
+Authentication authority değildir; authenticated actor'ın project/approval scope'u policy tarafından ayrıca doğrulanır.
 
-Remote HTTP MCP/tool integrations için protocol-standard authorization izlenir.
+## External/MCP authorization
 
-Güvenlik kuralları:
-- token audience/resource binding
+Remote HTTP tool/MCP integrations protocol-standard authorization kullanır.
+
+Kurallar:
+- audience/resource-bound tokens
 - token passthrough yok
-- PKCE
+- PKCE where applicable
 - HTTPS
-- exact redirect URIs
-- separate upstream token when proxying
+- scoped/short-lived credentials
+- proxy/upstream token separation
 
-Local STDIO-style integrations secrets'i environment/credential broker üzerinden alır; repo state'ten değil.
+Local STDIO-style integrations credentials'i environment/credential broker üzerinden alır; repo state'ten değil.
 
 ## Backup scope
 
-Backup birlikte ele alınır:
+Bir recovery point birlikte ele alır:
 
 ~~~text
 SQLite state/index
 artifact content
 published workflow/role/policy specs
-critical configuration
+critical configuration references
 audit metadata
+repository/config refs
 ~~~
 
-Git repository zaten source-controlled specs/code için bir recovery layer'dır; runtime state/artifacts ayrıca yedeklenir.
+Secrets backup payload'ına plaintext olarak girmez.
 
 ## SQLite backup
 
-Live SQLite DB için raw file copy varsayılmaz.
+Live DB için raw file copy varsayılmaz.
 
 Tercih:
 - SQLite Online Backup API / library-supported equivalent
-- veya controlled VACUUM INTO snapshot
+- veya uygun use case'te VACUUM INTO
 
-WAL mode kullanılıyorsa `-wal` state'i dikkate alınır; açık DB'nin sadece ana dosyasını kopyalamak güvenli backup kontratı değildir.
+WAL mode'da açık DB'nin yalnız ana dosyasını kopyalamak güvenli backup kontratı değildir.
 
 ## Backup manifest
 
-Her backup:
-- schema version
+Her backup en az:
+- schema/migration version
 - DB snapshot hash
 - artifact inventory/hash
 - timestamp
 - app version
-- migration version
+- workflow/role/policy refs
+- repository revision
 
 taşır.
 
-## Restore
+## Restore validation
 
-Restore acceptance:
-1. backup manifest validate
-2. DB integrity/migration compatibility
-3. artifact hash/reference validation
-4. critical state reconciliation
-5. read-only smoke/replay
-6. only then normal operation
+1. manifest/hash validate
+2. DB integrity/schema compatibility
+3. artifact refs/checksums
+4. migration compatibility
+5. critical state reconciliation
+6. read-only app smoke/replay
+7. then normal operation
+
+Backup "dosya üretildi" ile tamam sayılmaz; restore drill gerekir.
 
 ## Recovery targets
 
-İlk local ürün için formal enterprise RPO/RTO zorunlu değildir; ancak:
-- manual on-demand backup
+İlk local ürün için formal enterprise RPO/RTO sayısı zorunlu değildir.
+
+Başlangıç:
+- on-demand backup
 - pre-migration backup
 - automatic periodic backup
 - restore verification
 
-desteklenmelidir.
-
-## Consequences
-
-Local-first kullanım basit kalır; remote mode güvenliği sonradan yapıştırılmış bir bypass'a dönüşmez.
+RPO/RTO gerçek kullanım başladıktan sonra ölçülür ve versioned policy olur.

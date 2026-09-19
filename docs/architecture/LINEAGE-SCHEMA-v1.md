@@ -21,10 +21,12 @@ archived_at?
 id
 entity_id
 version
+status
 title?
-payload_json
+payload_json/content_ref
 content_hash
 created_at
+created_by
 source_artifact_id?
 ~~~
 
@@ -38,10 +40,22 @@ source_entity_id
 source_version_id?
 target_entity_id
 target_version_id?
-evidence_artifact_id?
+status
 created_at
+created_by
 valid_from?
 valid_to?
+~~~
+
+### relation_evidence
+
+~~~text
+relation_id
+evidence_type
+artifact_id?
+repository?
+revision?
+content_hash?
 ~~~
 
 ### external_refs
@@ -59,6 +73,8 @@ immutable_revision?
 ## Initial relation vocabulary
 
 ~~~text
+DERIVED_FROM
+REFINES
 IMPLEMENTS
 VERIFIES
 CONSTRAINS
@@ -67,25 +83,52 @@ SUPERSEDES
 GENERATED_FROM
 FOUND_IN
 RESOLVED_BY
+MITIGATES
+BLOCKS
+PRODUCES
+REFERENCES
 INCLUDED_IN
-DEPLOYED_AS
-OBSERVED_BY
-TRIGGERED
+RELEASES
+DEPLOYS
+OBSERVES
+TRIGGERED_BY
 CAUSED_BY
-MITIGATED_BY
-CREATED
 ~~~
 
-Vocabulary is versioned. Arbitrary free-text relation names are not authoritative.
+Vocabulary versioned'dır. Arbitrary free-text relation names authoritative değildir.
 
 ## Provenance
 
-Every relation that influences an authoritative decision should be traceable to:
+Authoritative decision'ı etkileyen relation:
 - human action,
 - deterministic import,
 - model candidate + adjudication,
-- accepted artifact.
+- accepted artifact
+
+ile trace edilebilmelidir.
+
+## Integrity
+
+- unknown relation type reject unless approved extension namespace
+- source/target entity exists
+- authoritative relation için evidence requirement policy'ye göre enforced
+- mutable "current" views version/history projection'dır
+- exact code/release relation immutable revision'a bağlanır
+
+## Query targets
+
+- Which code changes implement REQ-X?
+- Which tests verify a requirement?
+- Which decision introduced a component?
+- Which findings remain unresolved for a release?
+- Which deployments contain a code change?
+- Which incidents map to a release/change?
+- Which new work came from an incident?
+
+## Semantic index
+
+Vector/semantic index selected entity content over IDs may exist for discovery/context retrieval. It is not authoritative relation storage.
 
 ## Deletion
 
-Hard deletion of referenced AUDIT lineage is avoided where policy requires audit. Tombstone/archive semantics preserve referential integrity while sensitive payloads may be removed according to data policy.
+Referenced AUDIT lineage hard-delete edilmez where policy requires audit. Tombstone/archive semantics referential integrity'yi korur; sensitive payload data-policy'ye göre silinebilir.

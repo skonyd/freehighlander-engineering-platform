@@ -1,90 +1,67 @@
-# ADR-0011 — Plugin/Tool Ecosystem ve Product Packaging
+# ADR-0011 — Tool / Plugin Ecosystem ve MCP Boundary
 
 **Status:** ACCEPTED
 
-## Product naming
+## Context
 
-`FreeHighlander` current product/project name remains accepted for internal development.
+External systems/tools core içine hard-code edilmemelidir; fakat external plugin/tool doğrudan authority, filesystem, network veya secrets yetkisi kazanamaz.
 
-Public launch/branding may supersede this decision later without changing technical identities.
+## Decision
 
-Initial package namespace:
-~~~text
-@freehighlander/*
-~~~
+### 1. Internal ToolAdapter contract kanoniktir
 
-Repository remains monorepo until measured coupling/build/team constraints justify split.
+Core tüm built-in/external integrations'ı internal capability/permission modeline normalize eder.
 
-## Built-in vs plugin
+### 2. MCP preferred external interoperability protocol'dür
 
-Core built-in adapters:
-- Git/GitHub
-- local filesystem/command sandbox
-- primary provider adapters
-- SQLite/artifact store
+External tool/resource/prompt integration için ilk tercih MCP'dir.
 
-External integrations should prefer a versioned plugin/tool protocol rather than direct core imports.
+Initial target:
+- MCP 2026-07-28 semantics
+- official TypeScript SDK v2 line where implementation time compatibility is verified
 
-## MCP direction
+MCP support = trust/authority değildir.
 
-Model Context Protocol is an accepted candidate/default interoperability layer for external tool/resource integrations where it fits.
+### 3. Self-reported metadata security identity değildir
 
-However:
-- MCP server is not automatically trusted
-- tool discovery does not grant permission
-- transport auth does not grant workflow authority
-- every MCP/tool capability is mapped into FreeHighlander policy/sandbox permissions
+MCP server/client metadata display/debug için kullanılabilir; permission/identity policy'den gelir.
 
-## Plugin manifest
+### 4. Catalog cache kullanılabilir
 
-Each plugin/tool adapter should declare:
-- id/version
-- protocol/transport
-- capabilities/tools/resources
-- read/write/mutation flags
-- network needs
-- secret scopes
-- data classifications
-- auth method
-- trust/source metadata
-- timeout/rate limits
+Protocol cache hints/TTL varsa tool/resource catalog caching token/context maliyetini düşürmek için kullanılabilir.
 
-## Trust tiers
+Cache permission revalidation'ı bypass etmez.
 
-Initial:
+### 5. Trust levels
+
 ~~~text
 BUILT_IN
-APPROVED
-UNTRUSTED
-DISABLED
+REVIEWED_PINNED
+EXTERNAL_UNTRUSTED
 ~~~
 
-Unknown plugin defaults to UNTRUSTED/DISABLED for mutation-sensitive use.
+External plugin default:
+- human install/enable
+- version/source pin
+- explicit tool allowlist
+- no secrets
+- no unrestricted network/filesystem
 
-## Supply-chain controls
+### 6. Long-running tool operations
 
-Future plugin install should support:
-- version pinning
-- checksum/integrity
-- source identity
-- explicit human enablement
-- capability diff on upgrade
-- revoke/disable
-- audit events
+MCP Tasks veya native job adapters future execution mechanism olabilir; workflow authority/state yine FreeHighlander'dadır.
 
-## MCP authorization notes
+### 7. Skills/plugins code gibi incelenir
 
-For HTTP MCP integrations:
-- follow protocol authorization/security requirements
-- use audience/resource-bound tokens
-- no token passthrough
-- PKCE where OAuth flow is used
-- short-lived/scoped credentials
+Third-party skills/plugins prompt injection, scripts ve supply-chain risk taşıyabilir. Preview/review/pin zorunlu policy olabilir.
 
-For local STDIO:
-- credentials from controlled environment/secret broker
-- no credentials committed in plugin config
+## Product packaging
+
+Product/package naming ve bounded-context monorepo kararı ADR-0012'ye ayrılmıştır.
 
 ## Consequences
 
-FreeHighlander can integrate broad ecosystems without giving third-party tools implicit filesystem/network/authority access.
+- broad integration ecosystem mümkün
+- core external protocol'a kilitlenmez
+- permission/authority merkezi kalır
+- external supply-chain riski explicit policy ile sınırlandırılır
