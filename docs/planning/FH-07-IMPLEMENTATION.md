@@ -1,7 +1,7 @@
 # FH-07 — Token/context optimization implementation
 
 **Issue:** #11  
-**Status:** IN PROGRESS  
+**Status:** COMPLETE  
 **Authority effect:** NONE
 
 ## Objective
@@ -51,14 +51,14 @@ Acceptance:
 - provider-neutral cache hints
 - no assumption that a cache hit occurred\n- executable token-policy/context-profile loader and doctor validation
 
-### FH-07E — integration / verification
+### FH-07E — integration / verification — COMPLETE
 
-- wire packet + budget + telemetry into bounded model execution paths
-- deterministic unit/contract tests
-- architecture guards for authority neutrality
-- `npm run verify`
-- update canonical state/docs
-- PR review; no direct main write
+- model-runtime token-budget preflight integrated at the provider capability boundary;
+- deterministic unit/contract tests;
+- architecture guards for authority neutrality;
+- `npm run verify` passed in required CI;
+- canonical state/docs updated;
+- PR #33 merged through protected-main flow.
 
 ## Non-negotiable invariants
 
