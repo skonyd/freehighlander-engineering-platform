@@ -1,17 +1,18 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-00 READY FOR HUMAN REVIEW  
+**State status:** FH-00 COMPLETE / FH-01 BLOCKED BY EXTERNAL DEPENDENCY  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
-## Active repository work
+## Completed foundation
 
-Repository: `skonyd/freehighlander-engineering-platform`  
-Branch: `docs/planning-foundation`  
-PR: **#1 — planning foundation**
+Repository: `skonyd/freehighlander-engineering-platform`
 
-FH-00 comprehensive audit is complete.
+FH-00 planning foundation was merged through PR **#1**.
 
-Canonical planning now covers:
+Merge SHA:
+`02b9e2af56c00852daecbe8e15da633113c3c41a`
+
+Canonical planning covers:
 - product/stack/monorepo direction
 - repository-native resume + 3'lü mode
 - token/context efficiency
@@ -25,12 +26,18 @@ Canonical planning now covers:
 - backup/restore
 - plugin/MCP/tool boundary
 - OpenTelemetry mapping direction
+- V2.5 telemetry/Qwen plan
+- V3 strangler/parity migration
 - FH-01 implementation contract
+- coding-entry gate
 
-Final audit:
-`docs/planning/FH-00-FINAL-AUDIT.md`
+Key:
+- `docs/planning/FH-00-FINAL-AUDIT.md`
+- `docs/planning/FH-01-IMPLEMENTATION-PLAN.md`
+- `docs/planning/CODING-ENTRY-GATE.md`
+- issue **#12** is the canonical FH-01 implementation issue
 
-## External bootstrap dependency
+## Current blocker
 
 Creator Marketplace remains the behavioral V2 reference.
 
@@ -38,31 +45,28 @@ Repository: `skonyd/creator-marketplace`
 PR: **#207**  
 Expected exact HEAD: `0e70f4a9680fcc5c287b7926f2aa20170c79f47d`
 
-Revalidated during FH-00 audit:
-- PR OPEN
-- not draft
-- mergeable
-- exact HEAD unchanged
-- exact-head GitHub checks green
-
-Cached pending stages:
+Known pending:
 1. Sonnet candidate adjudication
 2. Astra final review
 3. HUMAN REQUIRED / human decision
 4. merge
 5. post-merge smoke
 
-Remote/automation evidence remains authoritative over this summary.
+Do **not** start FH-01 V2 adaptation from a partially accepted #207.
 
-## Next exact actions
+## Next exact action
 
-1. Human-review FreeHighlander PR #1.
-2. Merge PR #1 when satisfied.
-3. Complete Creator Marketplace #207 when Claude/provider quota allows.
-4. Run #207 post-merge smoke.
-5. Start FH-01 using issue #12 and `docs/planning/FH-01-IMPLEMENTATION-PLAN.md`.
+When Claude/provider quota is available:
 
-Do not start V2 adaptation from a partially accepted #207.
+1. finish Creator Marketplace #207 acceptance,
+2. human merge if acceptance passes,
+3. run #207 post-merge smoke,
+4. record the accepted V2 reference SHA,
+5. revalidate issue #12 against current main,
+6. create FH-01 implementation branch,
+7. begin first code commit.
+
+Until then, FreeHighlander is intentionally at the **coding boundary**: planning is complete, implementation has not started.
 
 ## Cross-machine continuation
 
