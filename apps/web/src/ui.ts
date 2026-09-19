@@ -114,6 +114,7 @@ async function load() {
     const health = await api('/api/health');
     document.querySelector('#health').textContent =
       health.databaseExists ? 'SQLite schema v' + health.schemaVersion + ' · local observer' : 'Waiting for SQLite telemetry database';
+
     if (!health.databaseExists) {
       document.querySelector('#metrics').innerHTML = metric('State', 'No database');
       document.querySelector('#runs').innerHTML = '<div class="empty">Run telemetry has not been indexed yet.</div>';
@@ -121,11 +122,14 @@ async function load() {
       return;
     }
 
-    const [summary, runs, models] = await Promise.all([
+    const values = await Promise.all([
       api('/api/summary'),
       api('/api/runs?limit=100'),
       api('/api/models?limit=100')
     ]);
+    const summary = values[0];
+    const runs = values[1];
+    const models = values[2];
 
     document.querySelector('#metrics').innerHTML = [
       metric('Runs', fmt.format(summary.runs)),
@@ -148,19 +152,26 @@ function renderRuns(runs) {
     document.querySelector('#runs').innerHTML = '<div class="empty">No runs indexed yet.</div>';
     return;
   }
-  const rows = runs.map(run => `
-    <tr data-run="${esc(run.runId)}">
-      <td><code>${esc(run.runId.slice(0, 12))}</code></td>
-      <td><span class="status-${esc(run.status)}">${esc(run.status)}</span>${run.humanRequired ? ' <span class="pill human">HUMAN</span>' : ''}</td>
-      <td>${esc(run.workflowId)}<br><span class="muted">${esc(run.workflowVersion)}</span></td>
-      <td>${fmt.format(run.eventCount)}</td>
-      <td>${fmt.format(run.modelCallCount)}</td>
-      <td class="muted">${esc(new Date(run.lastTimestamp).toLocaleString())}</td>
-    </tr>`).join('');
-  document.querySelector('#runs').innerHTML = `
-    <table><thead><tr><th>Run</th><th>Status</th><th>Workflow</th><th>Events</th><th>Models</th><th>Updated</th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
-  document.querySelectorAll('tr[data-run]').forEach(row => row.addEventListener('click', () => loadRun(row.dataset.run)));
+
+  const rows = runs.map(run =>
+    '<tr data-run="' + esc(run.runId) + '">' +
+      '<td><code>' + esc(run.runId.slice(0, 12)) + '</code></td>' +
+      '<td><span class="status-' + esc(run.status) + '">' + esc(run.status) + '</span>' +
+        (run.humanRequired ? ' <span class="pill human">HUMAN</span>' : '') + '</td>' +
+      '<td>' + esc(run.workflowId) + '<br><span class="muted">' + esc(run.workflowVersion) + '</span></td>' +
+      '<td>' + fmt.format(run.eventCount) + '</td>' +
+      '<td>' + fmt.format(run.modelCallCount) + '</td>' +
+      '<td class="muted">' + esc(new Date(run.lastTimestamp).toLocaleString()) + '</td>' +
+    '</tr>'
+  ).join('');
+
+  document.querySelector('#runs').innerHTML =
+    '<table><thead><tr><th>Run</th><th>Status</th><th>Workflow</th><th>Events</th><th>Models</th><th>Updated</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>';
+
+  document.querySelectorAll('tr[data-run]').forEach(row =>
+    row.addEventListener('click', () => loadRun(row.dataset.run))
+  );
 }
 
 function renderModels(models) {
@@ -168,35 +179,50 @@ function renderModels(models) {
     document.querySelector('#models').innerHTML = '<div class="empty">No completed model calls indexed yet.</div>';
     return;
   }
-  const rows = models.map(item => `
-    <tr>
-      <td>${esc(item.logicalRole)}</td><td>${esc(item.provider)}</td><td>${esc(item.model)}</td><td>${esc(item.effort)}</td>
-      <td>${fmt.format(item.calls)}</td><td>${fmt.format(item.totalTokens)}</td>
-      <td>${money.format(item.actualCostUsd || item.estimatedCostUsd)}</td><td>${duration(item.averageLatencyMs)}</td>
-      <td>${fmt.format(item.retries)}</td><td>${fmt.format(item.fallbacks)}</td>
-    </tr>`).join('');
-  document.querySelector('#models').innerHTML = `
-    <table><thead><tr><th>Role</th><th>Provider</th><th>Model</th><th>Effort</th><th>Calls</th><th>Tokens</th><th>Cost</th><th>Latency</th><th>Retries</th><th>Fallbacks</th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
+
+  const rows = models.map(item =>
+    '<tr>' +
+      '<td>' + esc(item.logicalRole) + '</td>' +
+      '<td>' + esc(item.provider) + '</td>' +
+      '<td>' + esc(item.model) + '</td>' +
+      '<td>' + esc(item.effort) + '</td>' +
+      '<td>' + fmt.format(item.calls) + '</td>' +
+      '<td>' + fmt.format(item.totalTokens) + '</td>' +
+      '<td>' + money.format(item.actualCostUsd || item.estimatedCostUsd) + '</td>' +
+      '<td>' + duration(item.averageLatencyMs) + '</td>' +
+      '<td>' + fmt.format(item.retries) + '</td>' +
+      '<td>' + fmt.format(item.fallbacks) + '</td>' +
+    '</tr>'
+  ).join('');
+
+  document.querySelector('#models').innerHTML =
+    '<table><thead><tr><th>Role</th><th>Provider</th><th>Model</th><th>Effort</th><th>Calls</th><th>Tokens</th><th>Cost</th><th>Latency</th><th>Retries</th><th>Fallbacks</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table>';
 }
 
 async function loadRun(runId) {
   const target = document.querySelector('#detail');
   target.textContent = 'Loading ' + runId + '…';
+
   try {
     const detail = await api('/api/runs/' + encodeURIComponent(runId));
     const run = detail.run;
     const tabs = ['events', 'modelCalls', 'artifacts'];
-    target.innerHTML = `
-      <div><code>${esc(run.runId)}</code></div>
-      <div class="muted">${esc(run.repository)} ${run.pullRequest ? '· PR #' + run.pullRequest : ''}</div>
-      <div style="margin-top:8px"><span class="pill status-${esc(run.status)}">${esc(run.status)}</span>
-        ${run.humanRequired ? '<span class="pill human">HUMAN REQUIRED</span>' : ''}</div>
-      <div class="tabs">${tabs.map(tab => '<button data-tab="' + tab + '">' + tab + '</button>').join('')}</div>
-      <pre id="run-payload"></pre>`;
+
+    target.innerHTML =
+      '<div><code>' + esc(run.runId) + '</code></div>' +
+      '<div class="muted">' + esc(run.repository) + (run.pullRequest ? ' · PR #' + run.pullRequest : '') + '</div>' +
+      '<div style="margin-top:8px"><span class="pill status-' + esc(run.status) + '">' + esc(run.status) + '</span> ' +
+        (run.humanRequired ? '<span class="pill human">HUMAN REQUIRED</span>' : '') + '</div>' +
+      '<div class="tabs">' +
+        tabs.map(tab => '<button data-tab="' + tab + '">' + tab + '</button>').join('') +
+      '</div><pre id="run-payload"></pre>';
+
     const payload = target.querySelector('#run-payload');
-    const show = key => payload.textContent = JSON.stringify(detail[key], null, 2);
-    target.querySelectorAll('button[data-tab]').forEach(button => button.addEventListener('click', () => show(button.dataset.tab)));
+    const show = key => { payload.textContent = JSON.stringify(detail[key], null, 2); };
+    target.querySelectorAll('button[data-tab]').forEach(button =>
+      button.addEventListener('click', () => show(button.dataset.tab))
+    );
     show('events');
   } catch (error) {
     target.innerHTML = '<span class="error">' + esc(error.message) + '</span>';
