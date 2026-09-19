@@ -12,11 +12,11 @@ When the user says **"3'lü modda devam edelim"**, **"kaldığımız yerden deva
    - `PROJECT_STATE.md`
    - `docs/state/RESUME-PROTOCOL.md`
    - `docs/state/TRIPLE-MODE.md`
-   - active PR / issue / roadmap documents referenced by state.
-3. Verify Git/remote state before modifying anything.
-4. Continue only the current active work item and current workflow stage.
-5. Preserve authority, reviewer-independence and fail-closed rules.
-6. Before ending or switching machines, create a repository checkpoint as defined in the resume protocol.
+3. Read `.freehighlander/context.yaml` and load only the smallest context profile required for the current task.
+4. Verify Git/remote state before modifying anything.
+5. Continue only the current active work item and current workflow stage.
+6. Preserve authority, reviewer-independence and fail-closed rules.
+7. Before ending or switching machines, create a repository checkpoint as defined in the resume protocol.
 
 ## Canonical sources
 
@@ -30,7 +30,19 @@ Order of precedence:
 6. `BACKLOG.md`
 7. other DRAFT planning documents
 
-If two sources conflict, do not silently choose. Surface the conflict and use the higher-precedence source.
+If two sources conflict, do not silently choose. Surface the conflict and use the higher-precedence source after remote verification.
+
+## Context discipline
+
+Do not load the entire repository by default.
+
+Use `.freehighlander/context.yaml`:
+- `resume-minimal` for continuation,
+- `planning` for product/architecture work,
+- `implementation` for bounded coding,
+- `review` for independent review.
+
+Expand context only when an active dependency requires it.
 
 ## Repository purpose
 
@@ -68,8 +80,21 @@ Project state must be recoverable from:
 
 Before changing machines, push a safe checkpoint. A continuation that depends on an unpushed local change is incomplete.
 
-## Current model role
+## Current logical role
 
-Do not infer your authority from your model name. Determine the current logical role/stage from state.
+Do not infer your authority from your model name. Determine the current logical role/stage from:
+- `.freehighlander/state.yaml`
+- `.freehighlander/triple-mode.yaml`
+- active workflow/policy.
 
-If the preferred model for a role is unavailable, follow the fallback/authority policy. Do not impersonate a missing independent reviewer when independence is required.
+If the preferred model for a role is unavailable, follow fallback/authority policy. Do not impersonate a missing independent reviewer when independence is required.
+
+## GitHub-native helpers
+
+When supported by the client:
+- reusable resume prompt: `.github/prompts/resume.prompt.md`
+- reusable checkpoint prompt: `.github/prompts/checkpoint.prompt.md`
+- logical-role helper agents: `.github/agents/`
+- path-scoped instructions: `.github/instructions/`
+
+These helpers do not supersede repository policy or authority.
