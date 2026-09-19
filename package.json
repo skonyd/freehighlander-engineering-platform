@@ -23,6 +23,7 @@
     "project:resume": "node tools/project/resume.mjs",
     "project:checkpoint": "node tools/project/checkpoint.mjs",
     "project:context": "node tools/project/context.mjs",
+    "project:architecture": "node tools/project/architecture.mjs",
     "dashboard:start": "npm run start -w @freehighlander/web",
     "verify": "npm run format && npm run typecheck && npm run build && npm run test && npm run check:architecture && npm run project:doctor"
   },

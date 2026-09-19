@@ -1,0 +1,171 @@
+schema_version: 1
+contract_version: "1.0.0"
+status: FROZEN_BASELINE
+phase: FH-10
+
+change_policy:
+  semantic_change_requires_adr: true
+  semantic_change_requires_version_bump: true
+  published_contract_is_immutable: true
+
+accepted_adrs:
+  - ADR-0001
+  - ADR-0002
+  - ADR-0003
+  - ADR-0004
+  - ADR-0005
+  - ADR-0006
+  - ADR-0007
+  - ADR-0008
+  - ADR-0009
+  - ADR-0010
+  - ADR-0011
+  - ADR-0012
+
+product:
+  mode: local-first-single-user
+  implementation_language: TypeScript
+  workflow_authoring_initial: repo-as-code
+  query_state_store: SQLite
+
+planes:
+  control:
+    - orchestration
+    - governance
+    - routing
+    - scheduling
+    - artifact-event-management
+  execution:
+    - model-providers
+    - git
+    - deterministic-commands
+    - scanners
+    - runtime-integrations
+  invariant: provider-model-tool changes must not change core state semantics
+
+bounded_contexts:
+  apps:
+    - control-plane
+    - web
+  packages:
+    - orchestration
+    - governance
+    - model-runtime
+    - evidence
+    - telemetry
+    - persistence
+    - contracts
+  forbidden:
+    - packages/core
+  contracts_rule: shared serialization contracts only, not shared business-domain dumping
+
+authority:
+  levels:
+    - ADVISORY
+    - CANDIDATE
+    - WRITER
+    - ADJUDICATOR
+    - FINAL_REVIEWER
+    - HUMAN_APPROVER
+    - SYSTEM_POLICY
+  human_approver_principal: HUMAN
+  system_policy_principal: SYSTEM
+  producer_must_not_be_final_approver: true
+  unknown_gate_fails_closed: true
+  revision_mismatch_fails_or_stales: true
+  semantic_negative_cannot_be_bypassed_by_fallback: true
+
+providers:
+  core_contract: ProviderAdapter
+  capability_registry_required: true
+  fallback_policy: availability-only
+  fallback_availability_classes:
+    - quota_exhausted
+    - rate_limited
+    - auth_unavailable
+    - provider_unavailable
+    - transport_failure
+  fallback_forbidden_classes:
+    - semantic_failure
+    - malformed_output
+  health_is_separate_from_semantic_quality: true
+  credentials_in_repository: false
+
+roles:
+  identity: logical-role
+  package_format: YAML
+  semantic_versioning: true
+  authority_escalation_from_manifest_forbidden: true
+  unknown_tool_permission: DENY
+  run_version_pinning: true
+  independence_first_class: true
+
+workflows:
+  publish_immutable: true
+  run_snapshot_required: true
+  node_kinds:
+    - MODEL
+    - COMMAND
+    - GATE
+    - CONDITION
+    - PARALLEL
+    - AGGREGATE
+    - DEBATE
+    - LOOP
+    - HUMAN
+    - SUBWORKFLOW
+  loops_must_be_bounded: true
+  snapshot_fields:
+    - workflow_hash
+    - role_versions
+    - policy_hash
+    - resolved_bindings
+    - provider_capability_snapshot
+
+debate:
+  independent_round_zero: true
+  bounded_rounds: true
+  consensus_is_not_authority: true
+  disagreement_can_escalate_to_human: true
+
+evidence:
+  exact_revision_binding_required: true
+  trusted_provenance_required_for_authority: true
+  summaries_do_not_replace_required_raw_evidence: true
+  authoritative_relation_evidence_required: true
+
+telemetry:
+  append_only_events: true
+  query_projection: SQLite
+  raw_prompt_response_default_retention: false
+  structured_lifecycle_events_required: true
+
+security:
+  execution_default: DENY
+  network_default: DENY
+  secret_remote_egress: DENY
+  repository_plaintext_secrets: DENY
+  role_tool_permissions_explicit: true
+  destructive_actions_may_require_human: true
+  data_classification:
+    - PUBLIC
+    - INTERNAL
+    - CONFIDENTIAL
+    - SECRET
+
+evaluation:
+  unit: logical-role+risk-tier+evidence-profile
+  automatic_authority_promotion: false
+  required_evidence_may_be_truncated_for_budget: false
+  semantic_model_shopping_after_verdict: false
+
+migration:
+  v2_reference_status: PROVISIONAL
+  v3_authority: SHADOW_ONLY
+  v3_authority_cutover_phase: FH-20
+  fh01b2_dependency: creator-marketplace#207
+
+ui:
+  web_is_client_only: true
+  workflow_execution_survives_ui_disconnect: true
+  published_runtime_contract_not_owned_by_ui_draft: true
