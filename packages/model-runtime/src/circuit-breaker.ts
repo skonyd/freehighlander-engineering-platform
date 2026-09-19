@@ -1,4 +1,4 @@
-import { isAvailabilityFailure, type ProviderFailureKind, type ProviderHealth } from './index.js';
+import type { ProviderFailureKind, ProviderHealth } from './index.js';
 
 export type ProviderCircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
@@ -114,7 +114,7 @@ export class ProviderCircuitBreaker {
     validateNow(nowMs);
     validateRetryAfter(retryAfterMs);
 
-    if (!isAvailabilityFailure(kind)) {
+    if (!isAvailabilityFailureKind(kind)) {
       return this.recordSuccess(nowMs);
     }
 
@@ -189,6 +189,18 @@ export function providerCircuitCanChangeAuthority(): false {
 
 export function providerCircuitCanTripOnSemanticFailure(): false {
   return false;
+}
+
+const availabilityFailures = new Set<ProviderFailureKind>([
+  'quota_exhausted',
+  'rate_limited',
+  'auth_unavailable',
+  'provider_unavailable',
+  'transport_failure',
+]);
+
+function isAvailabilityFailureKind(kind: ProviderFailureKind): boolean {
+  return availabilityFailures.has(kind);
 }
 
 function effectiveOpenDuration(baseMs: number, retryAfterMs: number | undefined): number {
