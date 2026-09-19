@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T00:51:00+03:00"
+updated_at: "2026-09-20T01:05:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-06
-  name: benchmark-reconciliation
-  status: complete
+  id: FH-07
+  name: token-context-optimization
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-07-context-token-optimization
   pull_request: null
-  issue: null
-  objective: optimize context/token economics without changing authority while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-07 token/context optimization and enabling contracts
+  issue: 11
+  objective: implement deterministic context identity, token budgets and cache/reuse diagnostics without changing authority
+  next_action: complete FH-07A deterministic context/reuse identity and run CI before FH-07B
 
 fh01a:
   issue: 15
@@ -85,6 +85,18 @@ fh06:
     p0_p1_misses: 0
     regression_suite_required: true
   critical: human_policy_required
+
+fh07:
+  issue: 11
+  status: in_progress
+  branch: feat/fh-07-context-token-optimization
+  authority_effect: none
+  slices:
+    fh07a: in_progress
+    fh07b: pending
+    fh07c: pending
+    fh07d: pending
+    fh07e: pending
 
 external_dependency:
   repository: skonyd/creator-marketplace
