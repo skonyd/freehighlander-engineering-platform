@@ -1,0 +1,201 @@
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { DASHBOARD_HTML } from './ui.js';
+import { DashboardReadModel, MissingDashboardDatabaseError } from './read-model.js';
+
+export interface DashboardServerOptions {
+  readonly databasePath?: string;
+}
+
+export interface StartedDashboardServer {
+  readonly url: string;
+  close(): Promise<void>;
+}
+
+export function createDashboardServer(options: DashboardServerOptions = {}) {
+  const databasePath =
+    options.databasePath ??
+    process.env.FREEHIGHLANDER_DB ??
+    path.resolve(process.cwd(), '.freehighlander', 'runtime', 'freehighlander.sqlite');
+  const readModel = new DashboardReadModel(databasePath);
+
+  return createServer((request, response) => {
+    void handleRequest(request, response, readModel, databasePath);
+  });
+}
+
+export async function startDashboardServer(
+  options: DashboardServerOptions & { readonly host?: string; readonly port?: number } = {},
+): Promise<StartedDashboardServer> {
+  const host = options.host ?? process.env.FREEHIGHLANDER_HOST ?? '127.0.0.1';
+  const port = options.port ?? Number(process.env.FREEHIGHLANDER_PORT ?? 4310);
+  const server = createDashboardServer(options);
+
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(port, host, () => {
+      server.off('error', reject);
+      resolve();
+    });
+  });
+
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('dashboard server address unavailable');
+
+  return {
+    url: `http://${host}:${address.port}`,
+    close: () =>
+      new Promise<void>((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+      }),
+  };
+}
+
+async function handleRequest(
+  request: IncomingMessage,
+  response: ServerResponse,
+  readModel: DashboardReadModel,
+  databasePath: string,
+): Promise<void> {
+  try {
+    const method = request.method ?? 'GET';
+    if (method !== 'GET' && method !== 'HEAD') {
+      json(response, 405, { error: 'read_only_dashboard', allowed: ['GET', 'HEAD'] });
+      return;
+    }
+
+    const url = new URL(request.url ?? '/', 'http://localhost');
+
+    if (url.pathname === '/') {
+      html(response, method === 'HEAD' ? '' : DASHBOARD_HTML);
+      return;
+    }
+
+    if (url.pathname === '/api/health') {
+      const health = readModel.health();
+      json(response, 200, {
+        status: health.databaseExists ? 'ok' : 'waiting_for_database',
+        mode: 'read-only',
+        databasePath,
+        ...health,
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/summary') {
+      json(response, 200, readModel.summary());
+      return;
+    }
+
+    if (url.pathname === '/api/runs') {
+      json(response, 200, { runs: readModel.listRuns(readLimit(url, 100)) });
+      return;
+    }
+
+    if (url.pathname === '/api/models') {
+      json(response, 200, { models: readModel.modelAggregates(readLimit(url, 100)) });
+      return;
+    }
+
+    const route = parseRunRoute(url.pathname);
+    if (route) {
+      const limit = readLimit(url, 1_000);
+
+      if (route.resource === 'detail') {
+        const detail = readModel.runDetail(route.runId, limit);
+        if (!detail) {
+          json(response, 404, { error: 'run_not_found', runId: route.runId });
+          return;
+        }
+        json(response, 200, detail);
+        return;
+      }
+
+      if (!readModel.getRun(route.runId)) {
+        json(response, 404, { error: 'run_not_found', runId: route.runId });
+        return;
+      }
+
+      if (route.resource === 'events') {
+        json(response, 200, { events: readModel.listEvents(route.runId, limit) });
+        return;
+      }
+      if (route.resource === 'model-calls') {
+        json(response, 200, { modelCalls: readModel.listModelCalls(route.runId, limit) });
+        return;
+      }
+      if (route.resource === 'artifacts') {
+        json(response, 200, { artifacts: readModel.listArtifacts(route.runId, limit) });
+        return;
+      }
+    }
+
+    json(response, 404, { error: 'not_found' });
+  } catch (error) {
+    if (error instanceof MissingDashboardDatabaseError) {
+      json(response, 503, {
+        error: 'database_not_ready',
+        databasePath: error.filePath,
+      });
+      return;
+    }
+
+    const message = error instanceof Error ? error.message : 'unknown error';
+    json(response, 500, { error: 'dashboard_error', message });
+  }
+}
+
+function parseRunRoute(pathname: string):
+  | {
+      readonly runId: string;
+      readonly resource: 'detail' | 'events' | 'model-calls' | 'artifacts';
+    }
+  | null {
+  const match = /^\/api\/runs\/([^/]+)(?:\/(events|model-calls|artifacts))?$/.exec(pathname);
+  if (!match?.[1]) return null;
+
+  return {
+    runId: decodeURIComponent(match[1]),
+    resource: (match[2] ?? 'detail') as 'detail' | 'events' | 'model-calls' | 'artifacts',
+  };
+}
+
+function readLimit(url: URL, defaultValue: number): number {
+  const raw = url.searchParams.get('limit');
+  if (!raw) return defaultValue;
+
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1 || value > 10_000) {
+    throw new Error('limit must be an integer between 1 and 10000');
+  }
+  return value;
+}
+
+function json(response: ServerResponse, status: number, value: unknown): void {
+  const body = JSON.stringify(value);
+  response.writeHead(status, {
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    'content-length': Buffer.byteLength(body),
+    'x-freehighlander-mode': 'read-only',
+  });
+  response.end(body);
+}
+
+function html(response: ServerResponse, body: string): void {
+  response.writeHead(200, {
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'no-store',
+    'content-length': Buffer.byteLength(body),
+    'x-freehighlander-mode': 'read-only',
+  });
+  response.end(body);
+}
+
+const executedFile = process.argv[1] ? path.resolve(process.argv[1]) : '';
+if (executedFile === fileURLToPath(import.meta.url)) {
+  const started = await startDashboardServer();
+  console.log(`FreeHighlander read-only dashboard: ${started.url}`);
+}
