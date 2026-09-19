@@ -195,3 +195,29 @@ test('cached input share is bounded and unavailable without denominator', () => 
   assert.equal(cachedInputShare({ inputTokens: 0, cachedInputTokens: 0 }), undefined);
   assert.equal(cachedInputShare({ inputTokens: 100 }), undefined);
 });
+
+test('provider resilience telemetry is metadata-only and circuit-aware', () => {
+  const event = createEvent({
+    type: 'provider.circuit.opened',
+    timestamp: '2026-09-19T20:00:00.000Z',
+    runId: 'run-provider',
+    provider: {
+      id: 'qwen-local',
+      available: false,
+      circuitState: 'OPEN',
+      failureKind: 'quota_exhausted',
+      nextProbeAtMs: 5000,
+      retryAfterMs: 4000,
+    },
+    payload: {
+      reason: 'availability failure threshold reached',
+    },
+  });
+
+  const restored = parseEvent(serializeEvent(event));
+  assert.equal(restored.provider?.id, 'qwen-local');
+  assert.equal(restored.provider?.circuitState, 'OPEN');
+  assert.equal(restored.provider?.failureKind, 'quota_exhausted');
+  assert.equal('prompt' in restored, false);
+  assert.equal('completion' in restored, false);
+});

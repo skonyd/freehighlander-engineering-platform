@@ -25,6 +25,10 @@ export type EventType =
   | 'human.required'
   | 'human.decision'
   | 'provider.unavailable'
+  | 'provider.health.checked'
+  | 'provider.circuit.opened'
+  | 'provider.circuit.half_opened'
+  | 'provider.circuit.closed'
   | 'quota.exhausted'
   | 'budget.warning'
   | 'budget.exhausted'
@@ -66,6 +70,15 @@ export interface WorkflowMetadata {
 export interface NodeMetadata {
   readonly id?: string;
   readonly type?: string;
+}
+
+export interface ProviderMetadata {
+  readonly id: string;
+  readonly available?: boolean;
+  readonly circuitState?: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+  readonly failureKind?: string;
+  readonly nextProbeAtMs?: number;
+  readonly retryAfterMs?: number;
 }
 
 export interface ModelMetadata {
@@ -126,6 +139,7 @@ export interface EngineeringEvent<
   readonly workflow?: WorkflowMetadata;
   readonly node?: NodeMetadata;
   readonly model?: ModelMetadata;
+  readonly provider?: ProviderMetadata;
   readonly context?: ContextMetadata;
   readonly execution?: ExecutionMetadata;
   readonly usage?: ModelUsage;

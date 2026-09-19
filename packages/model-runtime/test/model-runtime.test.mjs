@@ -136,7 +136,10 @@ test('OpenAI-compatible adapter classifies quota and malformed output', async ()
   let mode = 'quota';
   const server = createServer((_request, response) => {
     if (mode === 'quota') {
-      response.writeHead(429, { 'content-type': 'application/json' });
+      response.writeHead(429, {
+        'content-type': 'application/json',
+        'retry-after': '3',
+      });
       response.end(JSON.stringify({ error: { message: 'quota exhausted' } }));
       return;
     }
@@ -162,7 +165,10 @@ test('OpenAI-compatible adapter classifies quota and malformed output', async ()
           model: 'qwen-local',
           timeoutMs: 2_000,
         }),
-      (error) => error instanceof ProviderInvocationError && error.kind === 'quota_exhausted',
+      (error) =>
+        error instanceof ProviderInvocationError &&
+        error.kind === 'quota_exhausted' &&
+        error.retryAfterMs === 3_000,
     );
 
     mode = 'malformed';

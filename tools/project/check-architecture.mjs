@@ -119,6 +119,27 @@ try {
   failures.push('missing FH-07 optimization authority guards');
 }
 
+try {
+  const providerCircuitSource = await fs.readFile(
+    path.join(root, 'packages', 'model-runtime', 'src', 'circuit-breaker.ts'),
+    'utf8',
+  );
+  if (
+    !providerCircuitSource.includes('export function providerCircuitCanChangeAuthority(): false')
+  ) {
+    failures.push('FH-08 provider circuit breaker must remain authority-neutral');
+  }
+  if (
+    !providerCircuitSource.includes(
+      'export function providerCircuitCanTripOnSemanticFailure(): false',
+    )
+  ) {
+    failures.push('FH-08 semantic failures must not trip availability circuit');
+  }
+} catch {
+  failures.push('missing FH-08 provider circuit-breaker authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
