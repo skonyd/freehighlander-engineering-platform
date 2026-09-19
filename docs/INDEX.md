@@ -1,8 +1,6 @@
 # Documentation Index
 
-Bu dosya dokümantasyonun kanonik giriş noktasıdır.
-
-## 1. Product / Project
+## Product / Project
 - [Vision](VISION.md)
 - [Project Charter](project/CHARTER.md)
 - [Scope & Non-goals](project/SCOPE-AND-NONGOALS.md)
@@ -11,15 +9,16 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Risk Register](project/RISK-REGISTER.md)
 - [Glossary](project/GLOSSARY.md)
 
-## 2. Planning / Delivery
+## Planning / Delivery
 - [Roadmap](ROADMAP.md)
 - [PR Roadmap](planning/PR-ROADMAP.md)
+- [FH-00 Final Audit](planning/FH-00-FINAL-AUDIT.md)
 - [FH-01 Implementation Plan](planning/FH-01-IMPLEMENTATION-PLAN.md)
 - [Discussion Agenda](planning/DISCUSSION-AGENDA.md)
 - [Definition of Ready / Done](planning/DEFINITION-OF-READY-DONE.md)
 - [Backlog](../BACKLOG.md)
 
-## 3. Continuity / Multi-model work
+## Continuity / Multi-model
 - [Resume Protocol](state/RESUME-PROTOCOL.md)
 - [Triple Mode](state/TRIPLE-MODE.md)
 - [Context Profiles](state/CONTEXT-PROFILES.md)
@@ -29,23 +28,25 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Checkpoint Template](state/CHECKPOINT-TEMPLATE.md)
 - [History](state/HISTORY.md)
 
-## 4. Automation contracts
+## Automation contracts
 - [Automation Adoption](automation/AUTOMATION-ADOPTION.md)
 - [Repository Contract](automation/REPO-CONTRACT.md)
 - [Context Packet Contract](automation/CONTEXT-PACKET-CONTRACT.md)
 - [Model Call Reuse](automation/MODEL-CALL-REUSE.md)
 - [Prompt Contracts](automation/PROMPT-CONTRACTS.md)
-- [Provider Adapter Contract](architecture/PROVIDER-ADAPTER-CONTRACT.md)
-- [Role Package Spec](architecture/ROLE-PACKAGE-SPEC.md)
-- [Workflow Spec v1](architecture/WORKFLOW-SPEC-v1.md)
+- [Provider Adapter](architecture/PROVIDER-ADAPTER-CONTRACT.md)
+- [Role Package](architecture/ROLE-PACKAGE-SPEC.md)
+- [Workflow Spec](architecture/WORKFLOW-SPEC-v1.md)
+- [Tool / Plugin Contract](architecture/TOOL-PLUGIN-CONTRACT.md)
 
-## 5. Evaluation / V2.5
+## Evaluation / V2.5
 - [Evals and Benchmarks](evaluation/EVALS-AND-BENCHMARKS.md)
 - [V2.5 Plan](v2.5/PLAN.md)
 - [Metrics & Dashboard](v2.5/METRICS-DASHBOARD.md)
 - [Qwen Benchmark](v2.5/QWEN-BENCHMARK.md)
+- [OpenTelemetry Alignment](telemetry/OTEL-ALIGNMENT.md)
 
-## 6. Architecture / lineage / V3
+## Architecture / lineage / V3
 - [Platform Boundaries](architecture/PLATFORM-BOUNDARIES.md)
 - [Core Domain Model](architecture/CORE-DOMAIN-MODEL.md)
 - [Lineage Schema v1](architecture/LINEAGE-SCHEMA-v1.md)
@@ -53,7 +54,7 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Role / Model Router](v3/ROLE-MODEL-ROUTER.md)
 - [Workflow Engine](v3/WORKFLOW-ENGINE.md)
 
-## 7. Governance / Quality / Security / Operations
+## Governance / Security / Operations
 - [Authority Matrix](governance/AUTHORITY-MATRIX.md)
 - [Authority & Decisions](governance/AUTHORITY-AND-DECISIONS.md)
 - [ADR Index](decisions/README.md)
@@ -65,16 +66,14 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Control Plane UX](ui/CONTROL-PLANE-UX.md)
 - [Environments & Delivery](operations/ENVIRONMENTS-AND-DELIVERY.md)
 
-## 8. Reusable templates
+## Reusable template
 - [Portable AI Engineering Repository Blueprint](templates/PORTABLE-AI-ENGINEERING-REPO.md)
 
-## 9. Research
+## Research
 - [Agent Repository Continuity](research/AGENT-REPOSITORY-CONTINUITY.md)
 - [Token Efficiency 2026](research/TOKEN-EFFICIENCY-2026.md)
 - [Security / Operations 2026](research/SECURITY-OPERATIONS-2026.md)
 
-## Machine-readable policies
-See `.freehighlander/` for current state, context, token, provider, authority, sandbox, data, debate, budget, evidence and plugin policies.
+Machine-readable policies are under `.freehighlander/`.
 
-## Doküman statüleri
-DRAFT → PROPOSED → ACCEPTED → SUPERSEDED. Kritik kararlar ADR ile kalıcılaştırılır.
+Document status lifecycle: DRAFT → PROPOSED → ACCEPTED → SUPERSEDED.

@@ -1,90 +1,80 @@
 # Metrics & Dashboard
 
-## Event-first yaklaşım
+## Event-first approach
 
-Dashboard özel log parsing yapmamalı. Pipeline önce yapılandırılmış event üretmeli, dashboard bu event'lerden türetilmeli.
+Dashboard parses structured domain events, not ad-hoc shell logs.
 
-Örnek event türleri:
+Initial event families:
 
-```text
-run.started
-run.completed
-gate.started
-gate.completed
-model.call.started
-model.call.completed
-artifact.created
-artifact.invalidated
+~~~text
+run.started / run.completed
+node.started / node.completed
+gate.started / gate.completed
+model.call.started / model.call.completed
+tool.call.started / tool.call.completed
+artifact.created / artifact.invalidated / artifact.reused
 candidate.created
 finding.adjudicated
-human.required
-human.decision
+human.required / human.decision
 provider.unavailable
 quota.exhausted
-```
+budget.warning / budget.exhausted
+checkpoint.created
+~~~
 
 ## Minimum event metadata
 
 - schema_version
 - timestamp
-- run_id
-- task_id
-- workflow_id / workflow_version
-- PR / branch / base_sha / head_sha
-- node_id
-- gate/role
-- provider
-- model
-- effort
+- run_id / task_id
+- workflow id/version/hash
+- PR/branch/base/head revision
+- node id/type
+- logical role
+- binding/provider/model/effort
+- context profile / packet id/hash
 - status/result
-- duration_ms
-- retry_count
-- input/output/total tokens (varsa)
-- artifact ids/hashes
+- duration
+- retry/fallback
 - failure class
+- artifact/evidence ids
+- budget scope/action
 
-## İlk dashboard ekranları
+Model usage when available:
+- input tokens
+- cache-read/cached input tokens
+- cache-write/creation tokens
+- output tokens
+- reasoning output tokens
+- estimated/actual cost
+
+## OpenTelemetry alignment
+
+Internal domain events remain canonical.
+
+Exporter should map compatible provider/model spans/metrics to current OpenTelemetry GenAI semantic conventions through a versioned mapping layer. See `docs/telemetry/OTEL-ALIGNMENT.md`.
+
+Do not export prompt/completion content by default.
+
+## First dashboard
 
 ### Runs
-
-- Run listesi.
-- Final status.
-- Total duration.
-- Risk tier.
-- Human-required.
+status, risk, duration, human-required, budget.
 
 ### Run detail
-
-```text
-Triage          PASS   35s
-CI              PASS   2m10s
-Qwen pre-review PASS   3m48s
-Opus            PASS   2m51s
-Full verify     PASS   1m55s
-Candidate       WAIT
-Astra           -
-Human           -
-```
+node/gate timeline, retries/fallback, exact evidence/artifacts.
 
 ### Models
+role→binding/model calls, token/cache/cost, latency p50/p95, timeout/quota.
 
-- Role → model kullanımı.
-- Calls.
-- Tokens.
-- Latency avg/p50/p95.
-- Retry/timeout/quota.
-- Cache hit.
+### Findings/evals
+candidate/adjudicated state, agreement, precision, misses, promotion status.
 
-### Findings benchmark
+### Continuity
+last checkpoint, active work item, remote state, resume health.
 
-- Candidate count.
-- Confirmed/rejected/unresolved.
-- Precision.
-- Agreement.
-- P0/P1 misses.
+## Storage path
 
-## Storage geçişi
-
-1. `events.jsonl`
-2. SQLite index/state store
-3. Gerekirse ileride PostgreSQL
+1. append-only `events.jsonl` for first instrumentation
+2. SQLite current/query/metadata store
+3. PostgreSQL only when centralized/multi-user scale justifies it

@@ -1,120 +1,135 @@
 # FH-01 — Implementation Plan
 
-**Status:** DRAFT  
-**Starts after:** Creator Marketplace PR #207 merge + post-merge smoke.
+**Status:** READY AFTER DEPENDENCY  
+**Starts after:** Creator Marketplace PR #207 final acceptance + merge + post-merge smoke.
 
 ## Objective
 
-Turn this planning repository into the first executable FreeHighlander codebase and make it capable of managing its own development workflow.
+Turn the planning repository into the first executable FreeHighlander codebase and make it capable of managing its own development workflow while preserving V2 behavior.
 
-## Scope
-
-### Monorepo bootstrap
-
-Initial target:
+## Initial monorepo bounded contexts
 
 ~~~text
 apps/
-  web/
   control-plane/
+  web/
 
 packages/
-  core/
-  workflow/
-  roles/
-  providers/
-  policy/
-  artifacts/
+  orchestration/
+  governance/
+  model-runtime/
+  evidence/
   telemetry/
   persistence/
-  ui-components/
+  contracts/
 
 automation/
+  legacy-v2/
 ~~~
 
-Exact package boundaries can still be refined before implementation.
+Principles:
+- no generic shared domain dumping ground
+- package = coherent capability/dependency boundary
+- UI component library stays inside web until genuine cross-app reuse
+- web is client/control UI; workflow execution survives UI disconnect
 
-### Toolchain
+## Toolchain selection at PR start
 
-To decide/pin:
-- Node version
-- package manager
-- TypeScript config
-- lint/format/test framework
-- build orchestration
-- workspace tooling
+Pin exact versions at FH-01 implementation time:
+- current supported Node LTS
+- package manager/workspace version
+- TypeScript version
+- format/lint/test framework
+- build runner only if it adds measured value
 
-### Automation adaptation
+Avoid adding monorepo orchestration framework before the workspace needs it.
 
-Carry forward behavior from Creator Marketplace reference implementation:
+## V2 automation adaptation
 
-- exact-SHA review/artifact binding
+Preserve behavioral invariants:
+- exact-SHA artifact binding
+- fail-closed gates
+- risk routing / human-required
 - context triage
-- risk routing
 - candidate/adjudication separation
-- Opus-style test-review logical role
+- test-review specialist role
 - independent final review
-- human-required policy
 - trusted provenance writes
-- repair round semantics
-- timeout/quota handling
+- repair-round semantics
+- timeout/quota/fallback safety
 
-Do not copy marketplace-specific domain/DB checks.
+Do not copy Creator Marketplace domain/DB assumptions.
 
-### Continuity executable tooling
+## Continuity executable tooling
 
 Implement:
 - `project:bootstrap`
 - `project:doctor`
 - `project:resume`
 - `project:checkpoint`
-- state schema validation
+- state/schema validation
 - remote pointer reconciliation
 - context profile loader
 
-### Token foundation
+## Foundation interfaces
 
-Implement or prepare interfaces for:
-- context packet builder
-- token budget guardrails
-- prompt contract/version
-- model-call reuse keys
-- provider token-count capability
-- cache telemetry hooks
+Implement or stub with tests:
+- ProviderAdapter + capabilities/failure taxonomy
+- logical role/role package schema validation
+- authority/policy validator
+- workflow spec parser/validator for the V2-compatible subset
+- context packet builder/manifest
+- evidence/artifact interfaces
+- semantic model-call reuse key
+- sandbox/data-policy interfaces
+
+These interfaces do not imply full native V3 orchestration in FH-01.
+
+## Token/eval foundation
+
+Prepare:
+- prompt contract/version registry
+- provider token-count optional capability
+- token/cached-token telemetry hook
+- budget guardrail interface
+- benchmark/eval event hooks
 
 ## Explicit non-scope
 
 FH-01 does not implement:
 - full dashboard
-- SQLite telemetry UI
-- V3 DAG engine
+- full native V3 DAG/debate engine
 - all providers
-- Planning/Security/Incident modules
+- remote multi-user auth
+- Planning/Security/Incident product modules
 - autonomous merge authority
+- graph database
 
 ## Acceptance criteria
 
-1. Fresh clone can bootstrap deterministically.
-2. Repository state can be validated.
-3. Resume command reports active phase/PR/blocker/next action.
-4. Checkpoint command creates a safe, pushable handoff state.
-5. Automation reference behavior has regression coverage.
-6. No hard-coded marketplace domain assumptions remain.
-7. Initial CI passes.
-8. No secrets/runtime artifacts enter source control.
-9. Prompt/role/provider boundaries are represented in interfaces even if some are adapters over V2 shell.
-10. Product code and automation remain separable enough for V3 migration.
+1. Fresh clone bootstraps deterministically.
+2. State/resume/checkpoint validation works.
+3. V2 reference automation runs in FreeHighlander repo-specific config.
+4. Reference invariants have regression coverage.
+5. No marketplace-specific application assumptions remain.
+6. Initial CI passes.
+7. No secrets/runtime artifacts enter source control.
+8. Provider/role/policy/evidence interfaces are vendor-neutral.
+9. Context packet and token/evidence preservation are testable.
+10. Product code boundaries support V3 strangler migration.
+11. Current web UI absence/disconnect cannot invalidate workflow state.
+12. Documentation/state checkpoint is remotely reproducible.
 
 ## Migration principle
 
-Use strangler migration:
-
 ~~~text
-V2 shell behavior
-      ↓ wrapped/adapted
-TypeScript control interfaces
-      ↓ shadow replacements
-native V3 implementations
+V2 shell authority
+      ↓ wrap/adapt
+TypeScript domain/control interfaces
+      ↓ V3 shadow implementations
+parity/evals
+      ↓
+native V3 authority
 ~~~
 
 No big-bang rewrite.

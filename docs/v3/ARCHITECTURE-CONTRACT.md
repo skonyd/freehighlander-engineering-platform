@@ -1,77 +1,162 @@
-# V3 Architecture Contract — Taslak
+# V3 Architecture Contract
 
-## Hedef
+**Status:** ACCEPTED DIRECTION — implementation contract evolves by ADR
 
-V2 shell reference implementation'ını gerçek bir reusable engineering control plane'e dönüştürmek.
+## Goal
 
-## Zorunlu mimari özellikler
+V2 shell reference implementation'ını reusable, provider-neutral engineering control plane'e strangler migration ile dönüştürmek.
 
-### Control plane / execution plane ayrımı
+## Planes
 
-```text
+~~~text
 CONTROL PLANE
-- orchestrator
-- state machine
-- policy engine
-- role router
-- scheduler
-- quota/budget manager
-- artifact/provenance manager
+- orchestrator / explicit state machine
+- policy + authority
+- role/binding router
+- scheduler / budgets / deadlines
+- artifact/evidence/lineage manager
+- state/event persistence
+- approvals
 
 EXECUTION PLANE
-- model providers
-- git/GitHub
+- model provider adapters
+- Git/SCM
 - deterministic commands/tests
-- sandbox/tool adapters
-```
+- sandboxed tools/plugins/MCP
+- scanners/runtime integrations
+~~~
 
-### Event-sourced run history
+Provider/model/tool change must not silently change core state/authority semantics.
 
-Her state change append-only event üretir. Metrics, audit, replay ve UI aynı event stream'den beslenir.
+## State and event model
 
-### Persistence
+FreeHighlander **full event sourcing zorunluluğu koymaz**.
 
-İlk hedef SQLite:
+Initial model:
+- append-only structured event history/audit
+- transactional/current-state projections in SQLite
+- artifacts/content outside DB where appropriate
+- replay/simulation uses persisted events + execution snapshots where sufficient
 
-- runs
+JSONL is initial telemetry/audit transport; SQLite becomes query/current-state/metadata store.
+
+## Persistence targets
+
+Initial SQLite read model/state includes concepts such as:
+- runs / node_runs
 - events
-- node_runs
 - artifacts metadata
 - model_calls
 - approvals
+- findings/adjudications
 - provider_health
-- findings
-- benchmark_labels
+- benchmark samples
+- entities/entity_versions/relations
 
-### Artifact lineage
+## Immutable run execution contract
 
-Her authoritative artifact en az şunlara bağlanır:
+Run start pins:
+- workflow id/version/hash
+- role package versions/hashes
+- policy hash
+- prompt contract versions
+- resolved bindings/capability snapshot
+- repository exact revision(s)
+- budget/deadline config
 
+Published definitions can change only for future runs.
+
+## Provider/runtime
+
+Core uses ProviderAdapter + capability registry.
+
+Binding records:
+- provider/model/version
+- effort/verbosity
+- quota group
+- independence group
+- context/capabilities
+- cache/token-count capabilities
+
+Fallback only on policy-approved availability classes and cannot collapse required independence.
+
+## Authority
+
+Logical-role authority classes:
+ADVISORY, CANDIDATE, WRITER, ADJUDICATOR, FINAL_REVIEWER, HUMAN_APPROVER, SYSTEM_POLICY.
+
+Workflow/prompt/model cannot elevate itself above policy.
+
+## Context / evidence
+
+Every expensive/authoritative model call should eventually receive a deterministic context packet with:
+- exact revision
+- required evidence
+- inclusion manifest/reasons
+- packet hash
+- truncation disclosure
+
+Required evidence cannot be removed for token budget.
+
+## Artifact / lineage
+
+Authoritative artifact binds:
 - run/workflow/node
 - exact revision
 - logical role
-- binding
-- provider/model/effort
-- prompt/contract hash
-- input content hash
+- binding/provider/model/effort
+- prompt/contract/policy hashes
+- input packet hash
 - output hash
-- parent artifacts
+- parent/evidence artifacts
 
-### Human approval
+Project lineage uses relational-first versioned entity/relation model.
 
-İnsan kararı first-class artifact olmalıdır; SHA, kapsam, gerekçe ve incelenen evidence'a bağlanır.
+## Human approval
 
-### Replay / simulation
+Approval is first-class:
+- stable actor
+- exact revision
+- scope/action
+- reviewed evidence
+- timestamp
+- policy context
 
+## Sandbox / privacy
+
+Effective permission is intersection of role, workflow node, sandbox/data policy and human approval.
+
+Default-deny:
+- filesystem outside workspace
+- network
+- secrets
+- destructive/high-impact actions
+
+Data egress respects PUBLIC/INTERNAL/CONFIDENTIAL/SECRET classification.
+
+## Tools / plugins
+
+Core owns ToolAdapter/permission contract.
+
+MCP is preferred external interoperability protocol where appropriate; external tool discovery/metadata never grants authority.
+
+## Budget / eval
+
+Routing uses role-specific benchmark and quality/cost data.
+
+Budget exhaustion is operational stop/escalation, not PASS.
+
+## Replay / simulation / recovery
+
+Target capabilities:
 - models-disabled replay
-- alternate router simulation
-- policy simulation
-- historical runs üzerinde regression
+- alternate router/policy simulation
+- historical regression
+- crash-safe continuation
+- consistent DB/artifact backup and validated restore
 
-### Crash recovery
+## UI / CLI
 
-Run güvenli state'ten devam edebilmeli; state/artifact publication transaction-benzeri olmalıdır.
+UI and CLI use the same control-plane API/contracts.
 
-### UI/CLI contract
-
-UI ve CLI aynı API/control plane'i kullanır. UI günlük operasyonlarda source code veya shell düzenlemeyi gerektirmemelidir.
+V2.5 UI read-only; V3 adds validated Draft → Validate → Simulate → Publish management workflows.

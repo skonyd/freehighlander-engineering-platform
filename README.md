@@ -4,50 +4,60 @@
 
 ## Durum
 
-Bu repository şu anda **planning / architecture / governance repository** olarak kullanılır. Ürün kodu başlamadan önce hedefler, kararlar, PR sırası, quality/security kuralları ve mevcut Creator Marketplace automation çekirdeğinin buraya nasıl taşınacağı burada tanımlanır.
+Bu repository **FreeHighlander'ın ana ürün repository'sidir** ve hem ürün kodunu hem de planning/architecture/governance kontratlarını taşır.
 
-Mevcut bootstrap/reference implementation:
+Şu anda FH-00 planning foundation tamamlanmış ve review aşamasındadır. Ürün implementation'ı FH-01 ile başlayacaktır.
+
+Bootstrap/reference implementation:
 - `skonyd/creator-marketplace`
 - PR #207: multi-model automation çekirdeği
-- #207 tamamlandıktan sonra bu repo için V2.5 telemetry + dashboard + Qwen benchmark fazı başlar.
+- FH-01, #207 final acceptance + merge + post-merge smoke sonrasında başlar.
 
-## İlk teslim sırası
+## Delivery order
 
-1. #207 final acceptance + merge + post-merge smoke.
-2. Bu repo için automation bootstrap.
-3. Telemetry/event schema.
-4. Read-only dashboard.
-5. Qwen specialist shadow benchmark.
-6. Ölçüme göre rol offloading.
-7. Token/context optimizasyonu.
-8. V3 logical role/model router.
-9. Workflow DAG + state machine.
-10. TypeScript control plane.
-11. Planning → Development → Testing → Security → Release → Operations → Incident modülleri.
+1. Creator Marketplace #207 final acceptance + merge + smoke
+2. FH-01 TypeScript monorepo + automation bootstrap
+3. FH-02 telemetry/event schema
+4. FH-03 SQLite state/index
+5. FH-04 read-only dashboard
+6. FH-05/06 Qwen/local shadow benchmark
+7. FH-07/08 token/context + provider optimization
+8. FH-10..20 V3 logical role/model/workflow control plane
+9. FH-30..37 Planning → Development → Testing → Security → Release → Operations → Incident + lineage
 
-## Dokümantasyon
+## Resume / another machine
 
-- [Documentation Index](docs/INDEX.md)
-- [Vision](docs/VISION.md)
+For a fresh clone/model:
+
+> Repo'yu aç. AGENTS.md ve PROJECT_STATE.md'yi oku. 3'lü modda kaldığımız yerden devam et.
+
+Canonical current-state files:
+- `AGENTS.md`
+- `.freehighlander/state.yaml`
+- `PROJECT_STATE.md`
+- `docs/state/RESUME-PROTOCOL.md`
+
+## Documentation
+
+Start from [docs/INDEX.md](docs/INDEX.md).
+
+Important:
 - [Roadmap](docs/ROADMAP.md)
-- [Project Charter](docs/project/CHARTER.md)
-- [Scope & Non-goals](docs/project/SCOPE-AND-NONGOALS.md)
-- [Requirements](docs/project/REQUIREMENTS.md)
-- [Non-functional Requirements](docs/project/NON-FUNCTIONAL-REQUIREMENTS.md)
 - [PR Roadmap](docs/planning/PR-ROADMAP.md)
-- [Discussion Agenda](docs/planning/DISCUSSION-AGENDA.md)
-- [Automation Adoption](docs/automation/AUTOMATION-ADOPTION.md)
-- [Architecture Contract](docs/v3/ARCHITECTURE-CONTRACT.md)
-- [Backlog](BACKLOG.md)
+- [FH-00 Final Audit](docs/planning/FH-00-FINAL-AUDIT.md)
+- [FH-01 Implementation Plan](docs/planning/FH-01-IMPLEMENTATION-PLAN.md)
+- [ADR Index](docs/decisions/README.md)
+- [Portable AI Engineering Repo Blueprint](docs/templates/PORTABLE-AI-ENGINEERING-REPO.md)
 
-## Değişmez prensipler
+## Non-negotiable principles
 
 - **LLM output is data, never authority.**
-- Model değişebilir; logical role/contract sabit kalır.
-- Producer kendi çıktısının final approver'ı olamaz.
-- Deterministik kapılar model yorumuyla bypass edilemez.
-- Fallback yalnız availability/quota/provider sınıfındaki hatalar içindir; semantic FAIL üzerine model shopping yapılmaz.
-- CRITICAL/denylist akışlarda insan otoritesi korunur.
-- Workflow esnek olabilir; authority invariant'ları workflow tarafından zayıflatılamaz.
-- Yeni roller core orchestrator source code'u değiştirmeden eklenebilmelidir.
-- Telemetry ve baseline ölçümü rewrite'tan önce gelir.
+- Model identity does not grant authority.
+- Producer cannot independently final-approve its own output.
+- Unknown/unverifiable gate fails closed.
+- Exact revision/evidence binding is required for authoritative artifacts.
+- Fallback is for availability/budget-before-call routing, not semantic result shopping.
+- CRITICAL/high-impact policy may require human approval.
+- Workflow configurability cannot weaken system-policy invariants.
+- Secrets/data egress are default-deny by policy.
+- Telemetry/evals precede model-routing optimization.
