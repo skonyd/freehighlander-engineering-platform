@@ -148,11 +148,7 @@ test('stable prompt prefix is independent of task evidence and volatile request'
   assert.notEqual(first.input, second.input);
   assert.deepEqual(
     first.stableSections.map((section) => section.id),
-    [
-      'stable_system_and_role_contract',
-      'stable_tool_definitions',
-      'stable_repository_contract',
-    ],
+    ['stable_system_and_role_contract', 'stable_tool_definitions', 'stable_repository_contract'],
   );
   assert.equal(first.cacheHint.prefixVersion, 'implementation:v1');
   assert.equal(first.cacheHint.cacheHitAssumed, false);
