@@ -10,15 +10,15 @@ mode:
 phase:
   id: FH-11
   name: provider-binding-registry
-  status: in_progress
+  status: complete
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-11-provider-binding-registry
+  branch: main
   pull_request: null
-  issue: 40
-  objective: implement deterministic provider adapters and binding registry while FH-01B2 waits for Creator Marketplace #207
-  next_action: verify FH-11 registry invariants and protected-main CI
+  issue: null
+  objective: implement logical role registry and role packages while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-12 role registry + role packages
 
 fh01a:
   issue: 15
@@ -111,8 +111,8 @@ fh10:
 
 fh11:
   issue: 40
-  status: in_progress
-  branch: feat/fh-11-provider-binding-registry
+  pull_request: 42
+  status: complete
   authority_effect: none
   fallback_policy: availability_only
 
