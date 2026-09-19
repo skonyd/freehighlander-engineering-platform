@@ -1,3 +1,14 @@
+export {
+  RoleRegistry,
+  roleRegistryCanGrantAuthority,
+  roleSupportsRiskTier,
+  toolPermission,
+  type RolePrincipalKind,
+  type RoleRegistrationPolicy,
+  type RoleSnapshot,
+  type ToolPermission,
+} from './role-registry.js';
+
 export type AuthorityLevel =
   | 'ADVISORY'
   | 'CANDIDATE'

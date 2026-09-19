@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-11 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-12 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -15,6 +15,8 @@
 - FH-06 benchmark reconciliation and promotion-candidate reporting
 - FH-07 token/context optimization foundation
 - FH-08 provider health/quota/circuit-breaker telemetry
+- FH-11 provider adapters and binding registry
+- FH-12 logical role registry and immutable role packages
 
 FH-06 can aggregate only adjudicated real samples into quality/economics reports:
 
@@ -106,6 +108,17 @@ Provider and versioned model-binding resolution is now deterministic and authori
 - identical binding inputs produce a stable plan hash;
 - binding configuration cannot grant authority.
 
+## FH-12 completed
+
+Logical role packages are now YAML-backed, semantically versioned and immutable by exact `id@version`.
+
+- manifest authority is bounded by registration policy;
+- model principals cannot self-grant human/system authority;
+- unknown tool/action permission defaults to DENY;
+- explicit forbidden actions win;
+- exact-version snapshots have deterministic hashes;
+- risk-tier and independence requirements are preserved.
+
 ## V2 authority remains blocked
 
 ```text
@@ -117,4 +130,4 @@ FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, 
 
 ## Next action
 
-Start FH-12 role registry + role packages while FH-01B2 remains blocked by Creator Marketplace #207.
+Start FH-13 workflow DAG + explicit state machine while FH-01B2 remains blocked by Creator Marketplace #207.

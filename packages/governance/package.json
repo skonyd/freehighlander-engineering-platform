@@ -9,5 +9,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json",
     "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@freehighlander/contracts": "0.0.0",
+    "yaml": "2.9.1"
   }
 }
