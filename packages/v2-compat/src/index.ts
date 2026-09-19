@@ -111,9 +111,7 @@ export async function taskFingerprint(repositoryIdentity: string, taskId: string
 }
 
 export function parsePrTaskId(body: string): string | null {
-  const matches = [
-    ...body.matchAll(/<!--\s*automation-task-id:\s*([A-Za-z0-9-]+)\s*-->/g),
-  ];
+  const matches = [...body.matchAll(/<!--\s*automation-task-id:\s*([A-Za-z0-9-]+)\s*-->/g)];
   return matches.length === 1 ? (matches[0]?.[1] ?? null) : null;
 }
 
@@ -242,10 +240,7 @@ export function finalReviewRoute(
 }
 
 export function isTestPath(path: string): boolean {
-  return (
-    /\.(test|spec)\.(ts|tsx)$/.test(path) ||
-    /^automation\/tests\/[^/]+\.sh$/.test(path)
-  );
+  return /\.(test|spec)\.(ts|tsx)$/.test(path) || /^automation\/tests\/[^/]+\.sh$/.test(path);
 }
 
 function isProductionLogicPath(path: string): boolean {
@@ -444,17 +439,14 @@ export function validateTestReview(text: string, expectedSha?: string): Validati
 
   const findings = section(text, 'FINDINGS').trimEnd();
   const nonBlankLines = findings.split('\n').filter((line) => line.trim());
-  const isNone =
-    nonBlankLines.length === 1 && /^\s*-\s*none\s*$/.test(nonBlankLines[0] ?? '');
+  const isNone = nonBlankLines.length === 1 && /^\s*-\s*none\s*$/.test(nonBlankLines[0] ?? '');
 
   if (sufficiency === 'INSUFFICIENT' && (!findings.trim() || isNone)) {
     errors.push('INSUFFICIENT requires a finding');
   }
 
   if (findings.trim() && !isNone) {
-    const blocks = findings
-      .split(/(?=^\s*-\s*ID:)/m)
-      .filter((block) => block.trim());
+    const blocks = findings.split(/(?=^\s*-\s*ID:)/m).filter((block) => block.trim());
     if (blocks.length === 0) errors.push('malformed FINDINGS');
     for (const block of blocks) {
       for (const field of [
