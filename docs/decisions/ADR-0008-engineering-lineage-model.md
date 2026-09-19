@@ -1,137 +1,127 @@
-# ADR-0008 — Engineering Lineage ve Project Knowledge Graph Modeli
+# ADR-0008 — Engineering Lineage / Project Knowledge Model
 
 **Status:** ACCEPTED
 
+## Context
+
+FreeHighlander'ın ayırt edici hedeflerinden biri yalnız agent orchestration değil; bir değişikliğin neden var olduğunu fikirden production davranışına kadar izleyebilmektir.
+
+Semantic search tek başına authoritative lineage değildir. Aynı şekilde ilk sürümde graph database kurmak da gereksiz operasyonel karmaşıklık yaratır.
+
 ## Decision
 
-FreeHighlander'ın ayırt edici çekirdeği bir "chat history" değil, ilişkilendirilebilir engineering lineage olacaktır.
+### 1. Relational-first, graph-shaped domain
 
-İlk veri modeli relational kalır; graph database zorunlu değildir.
+İlk persistence relational olacaktır; domain ise graph şeklinde modellenir.
 
-## First-class entities
-
-~~~text
-Project
-Repository
-Requirement
-NonFunctionalRequirement
-Assumption
-Risk
-Decision / ADR
-WorkItem
-PullRequest
-Commit
-Artifact
-Evidence
-Finding
-Adjudication
-TestEvidence
-WorkflowRun
-Release
-Deployment
-MetricReference
-Alert
-Incident
-Postmortem
-~~~
-
-## Relationship model
-
-İlişkiler first-class kayıt olarak tutulur:
+Temel yapı:
 
 ~~~text
-Requirement        implemented-by   WorkItem
-WorkItem           changed-by       PullRequest
-PullRequest        contains         Commit
-PullRequest        verified-by      TestEvidence
-Decision           constrains       Requirement / WorkItem
-Finding            found-in         Revision / Artifact
-Finding            resolved-by      PullRequest
-Release            contains         PullRequest / Commit
-Deployment         deploys          Release
-Incident           observed-in      Deployment
-Incident           caused-by        Change / Condition
-Postmortem         creates          Requirement / Test / WorkItem
+Entity
+EntityVersion
+Relation
+RelationEvidence
 ~~~
 
-Her relation:
-- id
-- type
+Graph database ancak gerçek traversal/query ölçümleri relational modelin yetersiz olduğunu gösterirse değerlendirilir.
+
+### 2. Stable identity + versioned state
+
+Her first-class entity stable bir ID taşır. Anlamlı değişiklikler version/history üretir.
+
+İlk entity türleri:
+
+- Project
+- Repository
+- Idea
+- Requirement
+- NonFunctionalRequirement
+- Assumption
+- Risk
+- Decision/ADR
+- WorkItem
+- CodeChange
+- WorkflowRun
+- Artifact
+- Finding
+- TestEvidence
+- Approval
+- Release
+- Deployment
+- MetricReference
+- Alert
+- Incident
+- Postmortem
+
+### 3. Relations first-class'tır
+
+Relation yalnız string link değildir. En az:
+
+- relation type
 - source entity/version
 - target entity/version
-- created_at
-- provenance/evidence ref
-- optional validity interval
+- provenance/evidence
+- created by actor/role
+- created at
+- confidence/status where applicable
 
 taşır.
 
-## Identity
-
-Entity kimliği display name değildir.
-
-Kullan:
-- stable UUID/ULID internal id
-- repository scoped external references
-- immutable revision identifiers where relevant
-
-Git objects:
-- repository identity
-- commit SHA
-- PR number + repository
-- branch is pointer, not immutable identity
-
-## Versioning
-
-Requirements/decisions/workflows mutable display objects olabilir ancak accepted historical meaning kaybolmamalıdır.
-
-Önemli semantic değişiklikler version/revision üretir.
-
-## Query examples
-
-Platform aşağıdakileri cevaplayabilmelidir:
-
-- Bu kod neden var?
-- Bu requirement hangi testlerle doğrulanıyor?
-- Bu release hangi security finding'lerini kapattı?
-- Bu incident hangi deployment/change ile ilişkili?
-- Bu ADR'den etkilenen aktif work item'lar neler?
-- Production sinyali hangi requirement'a geri bağlanıyor?
-
-## Relational-first schema
-
-İlk implementation:
+Örnek relation tipleri:
 
 ~~~text
-entities
-entity_versions
-relations
-external_refs
+DERIVED_FROM
+REFINES
+SUPERSEDES
+IMPLEMENTS
+VERIFIES
+MITIGATES
+BLOCKS
+PRODUCES
+REFERENCES
+RELEASES
+DEPLOYS
+OBSERVES
+TRIGGERED_BY
+CAUSED_BY
+RESOLVED_BY
 ~~~
 
-ve domain-specific read models.
+### 4. Structured lineage authoritative, semantic search discovery'dir
 
-Graph DB ancak gerçek workload'da:
-- deep multi-hop traversal,
-- complex path queries,
-- scale/performance
+Embedding/vector search:
+- benzer doküman bulabilir,
+- candidate relationship önerebilir,
+- context retrieval yapabilir.
 
-gereksinimi relational modelde sorun olursa değerlendirilir.
+Ancak authoritative relation oluşturmak için deterministic/imported evidence veya adjudication gerekir.
 
-## Search
+### 5. Code identity exact revision'a bağlıdır
 
-İki ayrı mekanizma:
-1. exact structured lineage query
-2. semantic/full-text discovery
+CodeChange ve related evidence:
+- repository identity
+- commit/PR
+- exact base/head revision
+- changed paths
 
-Semantic search ilişki doğruluğunun yerine geçmez.
+ile bağlanır.
 
-## Cross-repository
+"current main" gibi hareketli referans authoritative historical relation için yeterli değildir.
 
-Entity/relation kimliği repository id içerir. Multi-repo lineage ileride aynı project/workspace altında birleştirilebilir.
+### 6. Requirement coverage first-class'tır
+
+Requirement -> acceptance criterion -> test evidence ilişkisi tutulmalıdır.
+
+Bu sayede test coverage yalnız line/branch coverage değildir.
+
+### 7. Runtime feedback aynı graph'a bağlanır
+
+Release/Deployment -> Metric/Alert/Incident -> Postmortem -> new Requirement/WorkItem/Test ilişkileri desteklenir.
 
 ## Consequences
 
-- planning/code/runtime aynı digital thread'e bağlanabilir
-- incident çıktısı tekrar requirement/test/task'a dönebilir
-- AI summary yerine queryable provenance oluşur
-- graph DB bağımlılığı ertelenir
+- fikirden production'a digital thread kurulabilir
+- dashboard "bu kod neden var?" sorusunu cevaplayabilir
+- semantic retrieval güvenilir lineage yerine geçmez
+- graph DB dependency'si ertelenir
+- audit/replay için version/provenance korunur

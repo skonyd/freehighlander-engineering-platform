@@ -1,30 +1,30 @@
 schema_version: 1
 
-trust_tiers:
-  - BUILT_IN
-  - APPROVED
-  - UNTRUSTED
-  - DISABLED
+internal_contract: ToolAdapter
 
-defaults:
-  unknown_plugin_trust: UNTRUSTED
-  mutation_enabled: false
-  explicit_enable_required: true
+external_protocols:
+  preferred:
+    - mcp-2026-07-28
 
-manifest_required:
-  - id
-  - version
-  - transport
-  - capabilities
-  - mutation_flags
-  - network_scope
-  - secret_scopes
-  - auth_method
+trust_levels:
+  BUILT_IN:
+    require_human_install: false
+  REVIEWED_PINNED:
+    require_human_install: true
+    require_version_pin: true
+  EXTERNAL_UNTRUSTED:
+    require_human_install: true
+    default_enabled: false
+    secrets_access: deny
+    unrestricted_network: deny
+    unrestricted_filesystem: deny
 
-security:
-  token_passthrough: deny
-  version_pinning: required_for_approved
-  capability_diff_on_upgrade: required
-  audit_tool_calls: true
-  sandbox_mapping_required: true
-  authority_granted_by_plugin: false
+rules:
+  external_metadata_grants_authority: false
+  plugin_may_bypass_sandbox: false
+  plugin_may_bypass_data_egress_policy: false
+  external_skill_scripts_require_review: true
+
+catalog:
+  provider_cache_hints_may_be_used: true
+  cache_may_not_bypass_permission_revalidation: true

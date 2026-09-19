@@ -1,0 +1,21 @@
+schema_version: 1
+
+initial_mode:
+  users: single
+  bind_interface: loopback
+  full_account_system_required: false
+  approval_actor: local-owner
+
+remote_exposure:
+  authentication_required: true
+  future_protocol: oidc
+  stable_subject_required: true
+
+authorization:
+  authentication_is_authority: false
+  project_scope_required: true
+  high_impact_may_require_step_up: true
+
+rules:
+  non_loopback_without_auth: deny
+  anonymous_high_impact_approval: deny

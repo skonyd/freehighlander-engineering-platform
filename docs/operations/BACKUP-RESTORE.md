@@ -1,44 +1,64 @@
-# Backup / Restore Contract
+# Backup and Restore Contract
 
 **Status:** ACCEPTED DIRECTION
 
-## Backup sets
+## Recovery point
 
-### Configuration set
-Git-tracked:
-- workflows
-- roles
-- policies
-- ADR/docs
+A backup is a versioned recovery point, not just a copied SQLite file.
 
-### Runtime state set
-- SQLite database
-- artifact/evidence content
-- local project metadata not stored in Git
+Manifest concept:
 
-## Backup triggers
+~~~yaml
+schemaVersion: 1
+createdAt: ...
+database:
+  schemaVersion: ...
+  snapshotHash: ...
+artifacts:
+  manifestHash: ...
+contracts:
+  workflowRefs: [...]
+  roleRefs: [...]
+  policyHash: ...
+repository:
+  repo: owner/name
+  revision: ...
+~~~
 
-- manual
-- scheduled
-- before schema migration
-- before authority/policy migration
-- before destructive maintenance
+## SQLite
 
-## SQLite rule
+Preferred live backup:
+1. Online Backup API for incremental/live snapshot, or
+2. VACUUM INTO when a compact standalone snapshot is useful.
 
-Do not blindly copy a live WAL-mode DB main file.
+If WAL mode is enabled, do not copy only the main DB file while live and assume it contains all committed state.
 
-Use SQLite-supported snapshot/backup mechanics.
+## Artifact backup
+
+Artifacts referenced by authoritative DB rows should be:
+- content-addressed where practical,
+- checksum validated,
+- included in or resolvable by the recovery manifest.
+
+## Secrets
+
+Backup contains secret references/metadata, not plaintext provider credentials by default.
 
 ## Restore test
 
-A backup is not considered reliable until a restore test can:
-- open DB
-- verify integrity
-- resolve artifact refs
-- read workflow/run history
-- validate state schema
+A restore must be exercised in a temporary location and verify:
+- DB integrity
+- migrations
+- artifact checksums
+- authoritative references
+- app start/read smoke
 
-## Retention
+## Future
 
-Backup retention follows data classification and retention policy. Secrets are not intentionally embedded into backup payloads.
+When multi-user/remote:
+- encrypted backup target
+- rotation
+- retention policy
+- RPO/RTO
+- offsite copy
+- recovery drill events

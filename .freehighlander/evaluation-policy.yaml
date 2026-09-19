@@ -1,0 +1,32 @@
+schema_version: 1
+
+unit_of_evaluation: logical_role_risk_profile
+
+promotion:
+  automatic: false
+  requires_human_decision: true
+
+  NORMAL:
+    min_adjudicated_real_samples: 50
+    min_agreement_ratio: 0.95
+    max_p0_p1_misses: 0
+
+  HIGH:
+    min_adjudicated_real_samples: 100
+    min_agreement_ratio: 0.97
+    max_p0_p1_misses: 0
+    require_regression_suite_pass: true
+
+  CRITICAL:
+    economic_only_promotion: deny
+    require_human_review: true
+    require_regression_suite_pass: true
+    require_independence_validation: true
+
+regression:
+  serious_miss_should_become_case: true
+  model_upgrade_requires_revalidation: true
+
+rules:
+  generic_model_ranking_grants_authority: false
+  benchmark_score_grants_authority: false
