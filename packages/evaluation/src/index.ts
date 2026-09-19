@@ -258,7 +258,6 @@ async function sha256Hex(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-
 export type BenchmarkRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
 
 export interface ShadowBenchmarkSample {
@@ -302,10 +301,7 @@ export interface BenchmarkReport {
 }
 
 export type PromotionScreeningStatus =
-  | 'INSUFFICIENT_DATA'
-  | 'BLOCKED'
-  | 'PROMOTION_CANDIDATE'
-  | 'HUMAN_POLICY_REQUIRED';
+  'INSUFFICIENT_DATA' | 'BLOCKED' | 'PROMOTION_CANDIDATE' | 'HUMAN_POLICY_REQUIRED';
 
 export interface PromotionScreening {
   readonly status: PromotionScreeningStatus;

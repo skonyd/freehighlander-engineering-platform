@@ -176,7 +176,6 @@ test('initial shadow role registry stays bounded to non-authoritative specialist
   ]);
 });
 
-
 function reconciliation({
   role = 'repo-analysis',
   agreement = true,
