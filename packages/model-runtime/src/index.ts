@@ -1,4 +1,19 @@
 export {
+  BindingRegistry,
+  ProviderRegistry,
+  bindingRegistryCanGrantAuthority,
+  resolveBindingPlan,
+  selectBinding,
+  type BindingPlan,
+  type BindingPlanRequest,
+  type BindingRiskTier,
+  type BindingSelection,
+  type ModelBindingDefinition,
+  type ProviderRegistration,
+  type ResolvedBinding,
+} from './binding-registry.js';
+
+export {
   buildProviderHealthSnapshot,
   ProviderCircuitBreaker,
   providerCircuitCanChangeAuthority,
