@@ -52,12 +52,24 @@ async function fixture() {
     ) STRICT;
   `);
 
-  db.prepare(
-    `INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    'run-1', 'task-1', '2026-09-19T20:00:00.000Z', '2026-09-19T20:00:03.000Z', 'PASSED',
-    'skonyd/freehighlander-engineering-platform', 25, 'feat/test', 'base', 'head',
-    'pr-review', '1.0.0', 'wf-hash', 1, 3, 1, 'run.completed',
+  db.prepare(`INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    'run-1',
+    'task-1',
+    '2026-09-19T20:00:00.000Z',
+    '2026-09-19T20:00:03.000Z',
+    'PASSED',
+    'skonyd/freehighlander-engineering-platform',
+    25,
+    'feat/test',
+    'base',
+    'head',
+    'pr-review',
+    '1.0.0',
+    'wf-hash',
+    1,
+    3,
+    1,
+    'run.completed',
   );
 
   const rawEvent = {
@@ -76,14 +88,37 @@ async function fixture() {
   db.prepare(
     `INSERT INTO model_calls VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
-    'event-model', 'run-1', '2026-09-19T20:00:01.000Z', 'test-reviewer', 'opus-medium',
-    'claude-cli', 'opus', 'medium', 'PASS', 'SUFFICIENT', 1500, 1, 0, null,
-    100, 20, 0, 30, 10, 140, 0.10, 0.09,
+    'event-model',
+    'run-1',
+    '2026-09-19T20:00:01.000Z',
+    'test-reviewer',
+    'opus-medium',
+    'claude-cli',
+    'opus',
+    'medium',
+    'PASS',
+    'SUFFICIENT',
+    1500,
+    1,
+    0,
+    null,
+    100,
+    20,
+    0,
+    30,
+    10,
+    140,
+    0.1,
+    0.09,
   );
 
   db.prepare(`INSERT INTO artifacts VALUES (?, ?, ?, ?, ?, ?)`).run(
-    'artifact-1', 'run-1', '2026-09-19T20:00:01.000Z', '2026-09-19T20:00:02.000Z',
-    'CREATED', 'event-model',
+    'artifact-1',
+    'run-1',
+    '2026-09-19T20:00:01.000Z',
+    '2026-09-19T20:00:02.000Z',
+    'CREATED',
+    'event-model',
   );
   db.close();
 

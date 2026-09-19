@@ -42,7 +42,8 @@ export async function startDashboardServer(
   });
 
   const address = server.address();
-  if (!address || typeof address === 'string') throw new Error('dashboard server address unavailable');
+  if (!address || typeof address === 'string')
+    throw new Error('dashboard server address unavailable');
 
   return {
     url: `http://${host}:${address.port}`,
@@ -147,12 +148,10 @@ async function handleRequest(
   }
 }
 
-function parseRunRoute(pathname: string):
-  | {
-      readonly runId: string;
-      readonly resource: 'detail' | 'events' | 'model-calls' | 'artifacts';
-    }
-  | null {
+function parseRunRoute(pathname: string): {
+  readonly runId: string;
+  readonly resource: 'detail' | 'events' | 'model-calls' | 'artifacts';
+} | null {
   const match = /^\/api\/runs\/([^/]+)(?:\/(events|model-calls|artifacts))?$/.exec(pathname);
   if (!match?.[1]) return null;
 
