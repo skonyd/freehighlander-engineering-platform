@@ -1,11 +1,5 @@
 export type RunStatus =
-  | 'PENDING'
-  | 'RUNNING'
-  | 'WAITING'
-  | 'PASSED'
-  | 'FAILED'
-  | 'BLOCKED'
-  | 'HUMAN_REQUIRED';
+  'PENDING' | 'RUNNING' | 'WAITING' | 'PASSED' | 'FAILED' | 'BLOCKED' | 'HUMAN_REQUIRED';
 
 export interface WorkflowNode {
   readonly id: string;
