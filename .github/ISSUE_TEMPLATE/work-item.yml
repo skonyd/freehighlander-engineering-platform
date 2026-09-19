@@ -1,0 +1,45 @@
+name: FreeHighlander Work Item
+description: Define a bounded implementation/planning work item
+title: "work: "
+body:
+  - type: input
+    id: fh
+    attributes:
+      label: FH ID / parent roadmap item
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope / non-scope
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Initial risk
+      options:
+        - NORMAL
+        - HIGH
+        - CRITICAL
+        - TBD
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / blockers
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification strategy

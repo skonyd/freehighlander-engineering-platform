@@ -1,0 +1,57 @@
+schema_version: 1
+mode: triple
+
+roles:
+  discovery-review:
+    preferred_binding: claude
+    authority: advisory_and_independent_review
+    allowed:
+      - discovery
+      - requirement_refinement
+      - architecture_analysis
+      - independent_final_diff_review
+    forbidden:
+      - self_approve_own_implementation
+      - lower_risk_to_pass_gate
+
+  implementation:
+    preferred_binding: codex
+    authority: bounded_writer
+    allowed:
+      - plan_challenge
+      - bounded_implementation
+      - deterministic_verification
+      - accepted_finding_fix
+    forbidden:
+      - final_independent_approval
+
+  local-worker:
+    preferred_binding: qwen3.8-flash-next
+    authority: advisory_candidate
+    allowed:
+      - repository_scan
+      - bulk_mechanical_work
+      - classification
+      - candidate_generation
+      - evidence_collection
+    forbidden:
+      - self_adjudication
+      - final_merge_authority
+
+handoff:
+  source_of_truth: git_remote_and_github
+  require_remote_checkpoint: true
+  unpushed_work_is_canonical: false
+
+fallback:
+  allowed_reasons:
+    - quota
+    - rate_limit
+    - provider_unavailable
+    - cli_unavailable
+    - auth_unavailable
+  forbidden_reasons:
+    - semantic_fail
+    - blocked
+    - insufficient
+    - finding_disagreement
