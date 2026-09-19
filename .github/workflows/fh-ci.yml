@@ -29,5 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
+      - name: Format diagnostic
+        run: |
+          npx prettier --write apps/web/src/server.ts apps/web/test/dashboard.test.mjs
+          git diff -- apps/web/src/server.ts apps/web/test/dashboard.test.mjs
+
       - name: Verify
         run: npm run verify
