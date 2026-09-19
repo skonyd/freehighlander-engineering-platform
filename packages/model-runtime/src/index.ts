@@ -1,3 +1,17 @@
+export {
+  buildProviderHealthSnapshot,
+  ProviderCircuitBreaker,
+  providerCircuitCanChangeAuthority,
+  providerCircuitCanTripOnSemanticFailure,
+  type ProviderCircuitBreakerPolicy,
+  type ProviderCircuitDecision,
+  type ProviderCircuitSnapshot,
+  type ProviderCircuitState,
+  type ProviderCircuitTransition,
+  type ProviderCircuitUpdate,
+  type ProviderHealthSnapshot,
+} from './circuit-breaker.js';
+
 export { OpenAiCompatibleProviderAdapter, ProviderInvocationError } from './openai-compatible.js';
 export {
   preflightInputTokenBudget,
