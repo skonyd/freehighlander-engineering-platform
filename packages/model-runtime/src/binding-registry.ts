@@ -1,10 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import type {
-  ProviderAdapter,
-  ProviderCapability,
-  ProviderFailureKind,
-} from './index.js';
+import type { ProviderAdapter, ProviderCapability, ProviderFailureKind } from './index.js';
 
 export type BindingRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
 
@@ -43,10 +39,7 @@ export interface BindingSelectionRequest {
   readonly previousFailureKind?: ProviderFailureKind;
 }
 
-export type BindingSelectionStatus =
-  | 'SELECTED'
-  | 'NO_ELIGIBLE_BINDING'
-  | 'FALLBACK_FORBIDDEN';
+export type BindingSelectionStatus = 'SELECTED' | 'NO_ELIGIBLE_BINDING' | 'FALLBACK_FORBIDDEN';
 
 export interface BindingSelection {
   readonly status: BindingSelectionStatus;
@@ -174,7 +167,8 @@ export class BindingRegistry {
 
       return {
         status: 'SELECTED',
-        reason: index === 0 ? 'primary binding eligible' : 'eligible availability fallback selected',
+        reason:
+          index === 0 ? 'primary binding eligible' : 'eligible availability fallback selected',
         binding,
         usedFallback: index > 0,
       };
@@ -257,9 +251,7 @@ function freezePlan(plan: BindingPlan): BindingPlan {
   return {
     ...plan,
     fallbackBindingIds: [...plan.fallbackBindingIds],
-    ...(plan.requiredCapabilities
-      ? { requiredCapabilities: [...plan.requiredCapabilities] }
-      : {}),
+    ...(plan.requiredCapabilities ? { requiredCapabilities: [...plan.requiredCapabilities] } : {}),
   };
 }
 
