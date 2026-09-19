@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto';
 
-import { rolePackageSchema, type AuthorityLevel, type RiskTier, type RolePackage } from '@freehighlander/contracts';
+import {
+  rolePackageSchema,
+  type AuthorityLevel,
+  type RiskTier,
+  type RolePackage,
+} from '@freehighlander/contracts';
 import YAML from 'yaml';
 
 export type RolePrincipalKind = 'MODEL' | 'HUMAN' | 'SYSTEM';
