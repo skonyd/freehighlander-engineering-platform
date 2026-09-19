@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T01:43:00+03:00"
+updated_at: "2026-09-20T01:48:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-07
-  name: token-context-optimization
-  status: complete
+  id: FH-08
+  name: provider-resilience-telemetry
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-08-provider-resilience
   pull_request: null
-  issue: null
-  objective: continue platform hardening while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-08 provider health / quota / circuit-breaker telemetry
+  issue: 36
+  objective: implement provider health, quota and circuit-breaker telemetry without changing authority
+  next_action: verify deterministic circuit transitions, telemetry metadata and architecture guards
 
 fh01a:
   issue: 15
@@ -93,6 +93,13 @@ fh07:
   merge_sha: b1698795b6a2ce529a1886d02cd5181c12f217bf
   authority_effect: none
   optimization_only: true
+
+fh08:
+  issue: 36
+  status: in_progress
+  branch: feat/fh-08-provider-resilience
+  authority_effect: none
+  fallback_policy: availability_only
 
 external_dependency:
   repository: skonyd/creator-marketplace
