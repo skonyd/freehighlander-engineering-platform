@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-10 IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-10 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -77,9 +77,9 @@ provider resilience != authority change
 semantic failure != availability failure
 ```
 
-## FH-10 active work
+## FH-10 completed
 
-Issue **#38** freezes the accepted ADR baseline into `.freehighlander/architecture.yaml`.
+Issue **#38** / PR **#39** freezes the accepted ADR baseline into `.freehighlander/architecture.yaml`.
 
 The contract pins platform boundaries, authority, provider fallback, role/workflow versioning, evidence, telemetry, security, evaluation and migration semantics. V3 authority remains `SHADOW_ONLY` until FH-20.
 
@@ -106,4 +106,4 @@ FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, 
 
 ## Next action
 
-Complete FH-10 verification/merge, then advance automatically to FH-11 provider adapters + binding registry.
+Start FH-11 provider adapters + binding registry while FH-01B2 remains blocked by Creator Marketplace #207.
