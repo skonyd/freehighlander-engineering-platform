@@ -23,7 +23,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [ ] token/cache/context packet tooling — issue #11
 
 ## Qwen / model economics
-- [ ] FH-05 Qwen specialist shadow roles
+- [ ] FH-05 Qwen specialist shadow roles — issue #29
 - [ ] FH-06 Benchmark reconciliation + role promotion reports
 - [ ] FH-07 Token/context optimization
 - [ ] FH-08 Provider health / quota / circuit-breaker telemetry

@@ -28,7 +28,10 @@ export type EventType =
   | 'quota.exhausted'
   | 'budget.warning'
   | 'budget.exhausted'
-  | 'checkpoint.created';
+  | 'checkpoint.created'
+  | 'shadow.opinion.completed'
+  | 'shadow.reconciliation.completed'
+  | 'benchmark.sample.recorded';
 
 export type FailureClass =
   | 'quota'
