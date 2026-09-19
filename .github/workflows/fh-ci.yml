@@ -29,5 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
+      - name: Format diagnostic
+        run: |
+          npx prettier --write packages/evaluation/src/index.ts packages/evaluation/test/evaluation.test.mjs packages/model-runtime/src/openai-compatible.ts
+          git diff -- packages/evaluation/src/index.ts packages/evaluation/test/evaluation.test.mjs packages/model-runtime/src/openai-compatible.ts
+
       - name: Verify
         run: npm run verify
