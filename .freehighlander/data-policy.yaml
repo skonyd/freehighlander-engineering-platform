@@ -1,0 +1,50 @@
+schema_version: 1
+
+classification:
+  levels:
+    - PUBLIC
+    - INTERNAL
+    - CONFIDENTIAL
+    - SECRET
+
+provider_egress:
+  PUBLIC:
+    remote_allowed: true
+  INTERNAL:
+    remote_allowed: policy
+  CONFIDENTIAL:
+    remote_allowed: approved_bindings_only
+  SECRET:
+    remote_allowed: false
+
+persistence:
+  redact_before_store: true
+  raw_prompt_response_default: false
+  debug_raw_capture:
+    allowed: opt_in
+    retention_class: SHORT
+
+retention_classes:
+  EPHEMERAL:
+    purpose: transient execution/tool/model data
+  SHORT:
+    purpose: troubleshooting data with bounded TTL
+  PROJECT:
+    purpose: artifacts needed for active project lifecycle
+  AUDIT:
+    purpose: approvals, provenance, decisions, authority events
+
+redaction:
+  categories:
+    - api_keys
+    - bearer_tokens
+    - passwords
+    - private_keys
+    - connection_strings
+    - secret_environment_variables
+
+rules:
+  secret_in_project_state: deny
+  secret_in_prompt_artifact: deny
+  secret_in_source_control: deny
+  confidential_remote_egress_requires_policy: true
