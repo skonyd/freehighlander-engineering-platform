@@ -125,9 +125,7 @@ try {
     'utf8',
   );
   if (
-    !bindingRegistrySource.includes(
-      'export function bindingRegistryCanGrantAuthority(): false',
-    )
+    !bindingRegistrySource.includes('export function bindingRegistryCanGrantAuthority(): false')
   ) {
     failures.push('FH-11 binding registry must remain authority-neutral');
   }
