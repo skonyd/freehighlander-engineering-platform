@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T01:52:00+03:00"
+updated_at: "2026-09-20T01:57:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-08
-  name: provider-resilience-telemetry
-  status: complete
+  id: FH-10
+  name: v3-architecture-contract-freeze
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-10-architecture-freeze
   pull_request: null
-  issue: null
-  objective: freeze V3 architecture contracts while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-10 V3 architecture contract freeze
+  issue: 38
+  objective: freeze accepted ADR direction into a versioned machine-readable V3 architecture contract
+  next_action: verify architecture contract drift guards and doctor integration
 
 fh01a:
   issue: 15
@@ -100,6 +100,14 @@ fh08:
   status: complete
   authority_effect: none
   fallback_policy: availability_only
+
+fh10:
+  issue: 38
+  status: in_progress
+  branch: feat/fh-10-architecture-freeze
+  contract_version: 1.0.0
+  authority_effect: none
+  v3_authority: SHADOW_ONLY
 
 external_dependency:
   repository: skonyd/creator-marketplace
