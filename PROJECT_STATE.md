@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-06 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-07 IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -37,6 +37,27 @@ HUMAN_POLICY_REQUIRED
 
 There is deliberately no PROMOTED state.
 
+## FH-07 active work
+
+Issue **#11** is active on branch:
+
+```text
+feat/fh-07-token-context-optimization
+```
+
+Execution plan: `docs/planning/FH-07-IMPLEMENTATION.md`.
+
+Current slice, FH-07A, introduces deterministic context packet manifests, prompt/contract fingerprints and semantic reuse identity. These are optimization contracts only.
+
+Hard invariant:
+
+```text
+token/context optimization != authority reduction
+cache/reuse != correctness evidence
+```
+
+Required gate evidence, full-diff final-review evidence and exact revision binding cannot be trimmed to satisfy a token budget.
+
 ## Promotion remains human/policy controlled
 
 ```text
@@ -56,14 +77,6 @@ AUTHORITY         = DISABLED
 
 FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, merge and smoke.
 
-## Next unblocked work
+## Next action
 
-FH-07 token/context optimization and its enabling contracts:
-
-- context packet manifest
-- prompt/contract hashes
-- semantic reuse key
-- token budgeting
-- cache diagnostics
-
-These optimizations must not reduce the strong-reviewer/full-evidence authority invariant.
+Complete FH-07A, then implement token-budget preflight and cache/reuse diagnostics telemetry without changing authoritative routing.

@@ -1,3 +1,17 @@
+export {
+  buildContextPacket,
+  buildContractFingerprint,
+  buildSemanticReuseKey,
+  sha256Text,
+  trimStaleContextItems,
+  type ContextItemKind,
+  type ContextPacket,
+  type ContextPacketItemInput,
+  type ContextPacketManifestItem,
+  type ContractFingerprintInput,
+  type SemanticReuseKeyInput,
+} from './context-packet.js';
+
 export type RunStatus =
   'PENDING' | 'RUNNING' | 'WAITING' | 'PASSED' | 'FAILED' | 'BLOCKED' | 'HUMAN_REQUIRED';
 
