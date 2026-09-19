@@ -3,46 +3,52 @@
 **Date:** 2026-09-19  
 **Status:** RESEARCH INPUT
 
-Bu çalışma repository'nin farklı makineler, IDE'ler ve modeller arasında taşınabilir context sunması için güncel GitHub agent customization yaklaşımını değerlendirdi.
+## Current GitHub customization layers
 
-## Bulgular
+GitHub currently supports several repository customization mechanisms:
 
-GitHub repository-wide instructions için `.github/copilot-instructions.md` destekliyor; path-specific talimatlar `.github/instructions/*.instructions.md` ile verilebiliyor. Ayrıca `AGENTS.md`, `CLAUDE.md` ve `GEMINI.md` agent talimatı olarak desteklenebiliyor.
+- `.github/copilot-instructions.md` — repository-wide always-on Copilot rules
+- `.github/instructions/*.instructions.md` — path-specific rules
+- `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` — agent instructions with surface-dependent support
+- `.github/prompts/*.prompt.md` — reusable prompts
+- `.github/agents/*` — custom agents with tool restrictions
+- `.github/skills/*/SKILL.md` — task-specific skills loaded when relevant
+- `.github/hooks/*.json` — deterministic lifecycle/tool hooks
 
-GitHub ayrıca:
-- reusable prompt files: `.github/prompts/*.prompt.md`
-- repository custom agents: `.github/agents/*.agent.md`
-- PR/issue templates
-- CODEOWNERS / branch protections / rulesets
+## FreeHighlander design result
 
-gibi mekanizmaları sağlıyor.
+1. Root `AGENTS.md` remains vendor-neutral canonical entry.
+2. Vendor files only point to canonical project state/contracts.
+3. Path-specific instructions keep specialized rules out of unrelated token contexts.
+4. Detailed resume/checkpoint/review procedures are also available as on-demand skills.
+5. Custom agents are convenience personas/tool filters, not FreeHighlander authority.
+6. Hooks are deferred until FH-01 provides real deterministic validator scripts.
+7. PR/issue templates and CODEOWNERS standardize human/agent handoff.
+8. Machine-readable context profiles limit token use.
 
-## FreeHighlander'a uygulanan sonuçlar
+## Why skills matter
 
-1. Root `AGENTS.md` vendor-neutral kanonik giriş olarak kalır.
-2. Vendor-specific files yalnız root contract'a yönlendirir.
-3. Path-specific instructions global context'i şişirmeden ilgili alana özel kurallar verir.
-4. Resume/checkpoint reusable prompt olarak tanımlanır.
-5. Custom agents logical role yardımcısıdır; platform authority değildir.
-6. PR template her değişiklikte work item, risk, evidence ve handoff bilgisini ister.
-7. CODEOWNERS hassas control-plane/policy/state alanlarını explicit human owner'a yönlendirir.
-8. Context profiles token kullanımını sınırlar.
+GitHub guidance distinguishes always-on custom instructions from skills that are injected only when relevant. This supports our token-efficiency goal: long procedural instructions should not be repeated in every unrelated prompt.
 
-## Kaynaklar
+## Why hooks are deferred
 
-- GitHub repository instructions:
-  https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions
-- Custom instruction support matrix:
-  https://docs.github.com/en/copilot/reference/custom-instructions-support
-- Copilot customization cheat sheet:
-  https://docs.github.com/en/copilot/reference/customization-cheat-sheet
-- Custom agents:
-  https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-custom-agents
-- Custom agent configuration:
-  https://docs.github.com/en/copilot/reference/custom-agents-configuration
-- PR standardization:
-  https://docs.github.com/en/pull-requests/reference/managing-and-standardizing-pull-requests
+Hooks can deny tool actions, run secret checks and create audit events, but premature hooks would call nonexistent or untested scripts. FH-01 should first implement:
+- state validator
+- secret/staged-file check
+- checkpoint verifier
+- risk/tool validator
 
-## Bilinçli olarak etkinleştirilmemiş
+then hook them.
 
-GitHub Agentic Workflows güçlü bir seçenek olsa da FreeHighlander kendi workflow/authority modelini geliştiriyor. Bu nedenle şimdilik ayrı bir GitHub agentic workflow authority katmanı eklenmiyor; ileride adapter olarak değerlendirilebilir.
+## Compatibility caution
+
+Some Copilot features/custom agents remain preview or surface-dependent. They are adapters only; FreeHighlander repository state and policy do not depend on them.
+
+## Official references
+
+- https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions
+- https://docs.github.com/en/copilot/reference/custom-instructions-support
+- https://docs.github.com/en/copilot/reference/customization-cheat-sheet
+- https://docs.github.com/en/copilot/reference/custom-agents-configuration
+- https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills
+- https://docs.github.com/en/copilot/concepts/agents/hooks
