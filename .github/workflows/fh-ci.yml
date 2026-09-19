@@ -30,5 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Show FH-10 Prettier diff
+        run: |
+          npx prettier --write tools/project/architecture.mjs tools/project/lib/architecture-contract.mjs tools/project/test/architecture-contract.test.mjs
+          git diff -- tools/project/architecture.mjs tools/project/lib/architecture-contract.mjs tools/project/test/architecture-contract.test.mjs
+          exit 1
