@@ -158,8 +158,8 @@ export class SqliteTelemetryStore {
     const statement = this.#db.prepare(
       'SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations',
     );
-      const row = statement.get() as SqlRow | undefined;
-      return toNumber(row?.version) ?? 0;
+    const row = statement.get() as SqlRow | undefined;
+    return toNumber(row?.version) ?? 0;
   }
 
   append(event: IndexedEngineeringEvent): Promise<void> {
@@ -202,13 +202,13 @@ export class SqliteTelemetryStore {
        LIMIT ?`,
     );
 
-      return statement.all(limit).map((row) => mapRun(row as SqlRow));
+    return statement.all(limit).map((row) => mapRun(row as SqlRow));
   }
 
   getRun(runId: string): RunIndexRecord | null {
     const statement = this.#db.prepare('SELECT * FROM runs WHERE run_id = ?');
-      const row = statement.get(runId) as SqlRow | undefined;
-      return row ? mapRun(row) : null;
+    const row = statement.get(runId) as SqlRow | undefined;
+    return row ? mapRun(row) : null;
   }
 
   listEvents(runId: string, limit = 1_000): readonly IndexedEngineeringEvent[] {
@@ -221,9 +221,9 @@ export class SqliteTelemetryStore {
        LIMIT ?`,
     );
 
-      return statement
-        .all(runId, limit)
-        .map((row) => JSON.parse(String((row as SqlRow).event_json)) as IndexedEngineeringEvent);
+    return statement
+      .all(runId, limit)
+      .map((row) => JSON.parse(String((row as SqlRow).event_json)) as IndexedEngineeringEvent);
   }
 
   listModelCalls(runId: string, limit = 1_000): readonly ModelCallIndexRecord[] {
@@ -236,7 +236,7 @@ export class SqliteTelemetryStore {
        LIMIT ?`,
     );
 
-      return statement.all(runId, limit).map((row) => mapModelCall(row as SqlRow));
+    return statement.all(runId, limit).map((row) => mapModelCall(row as SqlRow));
   }
 
   listArtifacts(runId: string, limit = 1_000): readonly ArtifactIndexRecord[] {
@@ -249,7 +249,7 @@ export class SqliteTelemetryStore {
        LIMIT ?`,
     );
 
-      return statement.all(runId, limit).map((row) => mapArtifact(row as SqlRow));
+    return statement.all(runId, limit).map((row) => mapArtifact(row as SqlRow));
   }
 
   #migrate(): void {
@@ -382,7 +382,7 @@ export class SqliteTelemetryStore {
       const statement = this.#db.prepare(
         'INSERT INTO schema_migrations(version, applied_at) VALUES (?, ?)',
       );
-        statement.run(SQLITE_SCHEMA_VERSION, new Date().toISOString());
+      statement.run(SQLITE_SCHEMA_VERSION, new Date().toISOString());
     });
   }
 
@@ -413,42 +413,42 @@ export class SqliteTelemetryStore {
     );
 
     let changes: number;
-      const result = insert.run(
-        eventHash,
-        event.schemaVersion,
-        event.type,
-        event.timestamp,
-        event.runId,
-        event.taskId ?? null,
-        event.workflow?.id ?? null,
-        event.workflow?.version ?? null,
-        event.workflow?.hash ?? null,
-        event.node?.id ?? null,
-        event.node?.type ?? null,
-        event.model?.logicalRole ?? null,
-        event.model?.bindingId ?? null,
-        event.model?.provider ?? null,
-        event.model?.model ?? null,
-        event.model?.effort ?? null,
-        event.execution?.status ?? null,
-        event.execution?.result ?? null,
-        event.execution?.durationMs ?? null,
-        event.execution?.retryCount ?? null,
-        event.execution?.fallbackCount ?? null,
-        event.execution?.failureClass ?? null,
-        event.usage?.inputTokens ?? null,
-        event.usage?.cachedInputTokens ?? null,
-        event.usage?.cacheWriteTokens ?? null,
-        event.usage?.outputTokens ?? null,
-        event.usage?.reasoningTokens ?? null,
-        event.usage?.totalTokens ?? null,
-        event.usage?.estimatedCostUsd ?? null,
-        event.usage?.actualCostUsd ?? null,
-        event.budget?.scope ?? null,
-        event.budget?.action ?? null,
-        eventJson,
-      );
-      changes = Number(result.changes);
+    const result = insert.run(
+      eventHash,
+      event.schemaVersion,
+      event.type,
+      event.timestamp,
+      event.runId,
+      event.taskId ?? null,
+      event.workflow?.id ?? null,
+      event.workflow?.version ?? null,
+      event.workflow?.hash ?? null,
+      event.node?.id ?? null,
+      event.node?.type ?? null,
+      event.model?.logicalRole ?? null,
+      event.model?.bindingId ?? null,
+      event.model?.provider ?? null,
+      event.model?.model ?? null,
+      event.model?.effort ?? null,
+      event.execution?.status ?? null,
+      event.execution?.result ?? null,
+      event.execution?.durationMs ?? null,
+      event.execution?.retryCount ?? null,
+      event.execution?.fallbackCount ?? null,
+      event.execution?.failureClass ?? null,
+      event.usage?.inputTokens ?? null,
+      event.usage?.cachedInputTokens ?? null,
+      event.usage?.cacheWriteTokens ?? null,
+      event.usage?.outputTokens ?? null,
+      event.usage?.reasoningTokens ?? null,
+      event.usage?.totalTokens ?? null,
+      event.usage?.estimatedCostUsd ?? null,
+      event.usage?.actualCostUsd ?? null,
+      event.budget?.scope ?? null,
+      event.budget?.action ?? null,
+      eventJson,
+    );
+    changes = Number(result.changes);
 
     if (changes === 0) return false;
 
@@ -493,24 +493,24 @@ export class SqliteTelemetryStore {
          last_timestamp = MAX(runs.last_timestamp, excluded.last_timestamp)`,
     );
 
-      statement.run(
-        event.runId,
-        event.taskId ?? null,
-        event.timestamp,
-        event.timestamp,
-        runStatus(event),
-        event.revision?.repository ?? null,
-        event.revision?.pullRequest ?? null,
-        event.revision?.branch ?? null,
-        event.revision?.baseSha ?? null,
-        event.revision?.headSha ?? null,
-        event.workflow?.id ?? null,
-        event.workflow?.version ?? null,
-        event.workflow?.hash ?? null,
-        event.type === 'human.required' ? 1 : 0,
-        event.type === 'model.call.completed' ? 1 : 0,
-        event.type,
-      );
+    statement.run(
+      event.runId,
+      event.taskId ?? null,
+      event.timestamp,
+      event.timestamp,
+      runStatus(event),
+      event.revision?.repository ?? null,
+      event.revision?.pullRequest ?? null,
+      event.revision?.branch ?? null,
+      event.revision?.baseSha ?? null,
+      event.revision?.headSha ?? null,
+      event.workflow?.id ?? null,
+      event.workflow?.version ?? null,
+      event.workflow?.hash ?? null,
+      event.type === 'human.required' ? 1 : 0,
+      event.type === 'model.call.completed' ? 1 : 0,
+      event.type,
+    );
   }
 
   #projectModelCall(eventHash: string, event: IndexedEngineeringEvent): void {
@@ -525,30 +525,30 @@ export class SqliteTelemetryStore {
        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
 
-      statement.run(
-        eventHash,
-        event.runId,
-        event.timestamp,
-        event.model?.logicalRole ?? null,
-        event.model?.bindingId ?? null,
-        event.model?.provider ?? null,
-        event.model?.model ?? null,
-        event.model?.effort ?? null,
-        event.execution?.status ?? null,
-        event.execution?.result ?? null,
-        event.execution?.durationMs ?? null,
-        event.execution?.retryCount ?? null,
-        event.execution?.fallbackCount ?? null,
-        event.execution?.failureClass ?? null,
-        event.usage?.inputTokens ?? null,
-        event.usage?.cachedInputTokens ?? null,
-        event.usage?.cacheWriteTokens ?? null,
-        event.usage?.outputTokens ?? null,
-        event.usage?.reasoningTokens ?? null,
-        event.usage?.totalTokens ?? null,
-        event.usage?.estimatedCostUsd ?? null,
-        event.usage?.actualCostUsd ?? null,
-      );
+    statement.run(
+      eventHash,
+      event.runId,
+      event.timestamp,
+      event.model?.logicalRole ?? null,
+      event.model?.bindingId ?? null,
+      event.model?.provider ?? null,
+      event.model?.model ?? null,
+      event.model?.effort ?? null,
+      event.execution?.status ?? null,
+      event.execution?.result ?? null,
+      event.execution?.durationMs ?? null,
+      event.execution?.retryCount ?? null,
+      event.execution?.fallbackCount ?? null,
+      event.execution?.failureClass ?? null,
+      event.usage?.inputTokens ?? null,
+      event.usage?.cachedInputTokens ?? null,
+      event.usage?.cacheWriteTokens ?? null,
+      event.usage?.outputTokens ?? null,
+      event.usage?.reasoningTokens ?? null,
+      event.usage?.totalTokens ?? null,
+      event.usage?.estimatedCostUsd ?? null,
+      event.usage?.actualCostUsd ?? null,
+    );
   }
 
   #projectArtifacts(eventHash: string, event: IndexedEngineeringEvent): void {
@@ -575,14 +575,14 @@ export class SqliteTelemetryStore {
            END`,
       );
 
-        statement.run(
-          artifactId,
-          event.runId,
-          event.timestamp,
-          event.timestamp,
-          artifactState(event.type),
-          eventHash,
-        );
+      statement.run(
+        artifactId,
+        event.runId,
+        event.timestamp,
+        event.timestamp,
+        artifactState(event.type),
+        eventHash,
+      );
     }
   }
 

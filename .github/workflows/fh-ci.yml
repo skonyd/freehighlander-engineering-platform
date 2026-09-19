@@ -29,10 +29,5 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Format diagnostic
-        run: |
-          npx prettier --write packages/persistence/src/sqlite-telemetry-store.ts
-          git diff -- packages/persistence/src/sqlite-telemetry-store.ts
-
       - name: Verify
         run: npm run verify
