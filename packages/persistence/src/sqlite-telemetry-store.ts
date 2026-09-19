@@ -158,12 +158,8 @@ export class SqliteTelemetryStore {
     const statement = this.#db.prepare(
       'SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations',
     );
-    try {
       const row = statement.get() as SqlRow | undefined;
       return toNumber(row?.version) ?? 0;
-    } finally {
-      statement.close();
-    }
   }
 
   append(event: IndexedEngineeringEvent): Promise<void> {
@@ -206,21 +202,13 @@ export class SqliteTelemetryStore {
        LIMIT ?`,
     );
 
-    try {
       return statement.all(limit).map((row) => mapRun(row as SqlRow));
-    } finally {
-      statement.close();
-    }
   }
 
   getRun(runId: string): RunIndexRecord | null {
     const statement = this.#db.prepare('SELECT * FROM runs WHERE run_id = ?');
-    try {
       const row = statement.get(runId) as SqlRow | undefined;
       return row ? mapRun(row) : null;
-    } finally {
-      statement.close();
-    }
   }
 
   listEvents(runId: string, limit = 1_000): readonly IndexedEngineeringEvent[] {
@@ -233,13 +221,9 @@ export class SqliteTelemetryStore {
        LIMIT ?`,
     );
 
-    try {
       return statement
         .all(runId, limit)
         .map((row) => JSON.parse(String((row as SqlRow).event_json)) as IndexedEngineeringEvent);
-    } finally {
-      statement.close();
-    }
   }
 
   listModelCalls(runId: string, limit = 1_000): readonly ModelCallIndexRecord[] {
@@ -252,11 +236,7 @@ export class SqliteTelemetryStore {
        LIMIT ?`,
     );
 
-    try {
       return statement.all(runId, limit).map((row) => mapModelCall(row as SqlRow));
-    } finally {
-      statement.close();
-    }
   }
 
   listArtifacts(runId: string, limit = 1_000): readonly ArtifactIndexRecord[] {
@@ -269,11 +249,7 @@ export class SqliteTelemetryStore {
        LIMIT ?`,
     );
 
-    try {
       return statement.all(runId, limit).map((row) => mapArtifact(row as SqlRow));
-    } finally {
-      statement.close();
-    }
   }
 
   #migrate(): void {
@@ -406,11 +382,7 @@ export class SqliteTelemetryStore {
       const statement = this.#db.prepare(
         'INSERT INTO schema_migrations(version, applied_at) VALUES (?, ?)',
       );
-      try {
         statement.run(SQLITE_SCHEMA_VERSION, new Date().toISOString());
-      } finally {
-        statement.close();
-      }
     });
   }
 
@@ -441,7 +413,6 @@ export class SqliteTelemetryStore {
     );
 
     let changes: number;
-    try {
       const result = insert.run(
         eventHash,
         event.schemaVersion,
@@ -478,9 +449,6 @@ export class SqliteTelemetryStore {
         eventJson,
       );
       changes = Number(result.changes);
-    } finally {
-      insert.close();
-    }
 
     if (changes === 0) return false;
 
@@ -525,7 +493,6 @@ export class SqliteTelemetryStore {
          last_timestamp = MAX(runs.last_timestamp, excluded.last_timestamp)`,
     );
 
-    try {
       statement.run(
         event.runId,
         event.taskId ?? null,
@@ -544,9 +511,6 @@ export class SqliteTelemetryStore {
         event.type === 'model.call.completed' ? 1 : 0,
         event.type,
       );
-    } finally {
-      statement.close();
-    }
   }
 
   #projectModelCall(eventHash: string, event: IndexedEngineeringEvent): void {
@@ -561,7 +525,6 @@ export class SqliteTelemetryStore {
        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
 
-    try {
       statement.run(
         eventHash,
         event.runId,
@@ -586,9 +549,6 @@ export class SqliteTelemetryStore {
         event.usage?.estimatedCostUsd ?? null,
         event.usage?.actualCostUsd ?? null,
       );
-    } finally {
-      statement.close();
-    }
   }
 
   #projectArtifacts(eventHash: string, event: IndexedEngineeringEvent): void {
@@ -615,7 +575,6 @@ export class SqliteTelemetryStore {
            END`,
       );
 
-      try {
         statement.run(
           artifactId,
           event.runId,
@@ -624,9 +583,6 @@ export class SqliteTelemetryStore {
           artifactState(event.type),
           eventHash,
         );
-      } finally {
-        statement.close();
-      }
     }
   }
 

@@ -193,7 +193,10 @@ test('corrupt JSONL is rejected before any events are indexed', async () => {
   const jsonlPath = path.join(root, 'events.jsonl');
 
   try {
-    await writeFile(jsonlPath, `${JSON.stringify(event('run.started', '2026-09-19T20:00:00.000Z'))}\n`);
+    await writeFile(
+      jsonlPath,
+      `${JSON.stringify(event('run.started', '2026-09-19T20:00:00.000Z'))}\n`,
+    );
     await appendFile(jsonlPath, '{broken}\n', 'utf8');
 
     assert.throws(() => store.importJsonl(jsonlPath), /line 2/);
