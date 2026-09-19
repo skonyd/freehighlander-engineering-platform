@@ -196,7 +196,6 @@ test('cached input share is bounded and unavailable without denominator', () => 
   assert.equal(cachedInputShare({ inputTokens: 100 }), undefined);
 });
 
-
 test('provider resilience telemetry is metadata-only and circuit-aware', () => {
   const event = createEvent({
     type: 'provider.circuit.opened',
