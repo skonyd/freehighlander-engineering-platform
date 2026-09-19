@@ -170,8 +170,5 @@ test('invalid circuit policies and clock inputs fail closed', () => {
     openDurationMs: 100,
   });
   assert.throws(() => circuit.beforeRequest(-1), /nowMs/);
-  assert.throws(
-    () => circuit.recordFailure('quota_exhausted', 1, -1),
-    /retryAfterMs/,
-  );
+  assert.throws(() => circuit.recordFailure('quota_exhausted', 1, -1), /retryAfterMs/);
 });
