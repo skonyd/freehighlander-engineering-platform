@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-02 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-03 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -9,44 +9,45 @@
 - FH-01A executable TypeScript platform bootstrap
 - FH-01B1 provisional V2 compatibility port
 - FH-02 append-only telemetry event history
+- FH-03 SQLite telemetry read model
 
-FH-02 adds:
+FH-03 provides:
 
-- event schema v1
-- provider/model/token/cache/reasoning/cost metadata
-- failure/retry/fallback/budget metadata
-- provider-neutral `TelemetryEmitter`
-- append-only JSONL sink
-- durable fsync by default
-- concurrent in-process append serialization
-- JSONL readback and corruption diagnostics
-- runtime telemetry Git-ignore
+- SQLite schema migration v1
+- idempotent SHA-256 event ingestion
+- run current/read model
+- model-call index
+- artifact lifecycle index
+- JSONL history import
+- out-of-order run-status protection
+- query APIs for dashboard work
 
-Canonical runtime path:
+The canonical data relationship is:
 
 ```text
-.freehighlander/runtime/events.jsonl
+FH-02 domain events / events.jsonl
+              ↓
+         SQLite index
+              ↓
+       read/query model
+              ↓
+FH-04 read-only dashboard
 ```
 
-## V2 authority state remains unchanged
+SQLite is not a replacement for event provenance.
+
+## V2 authority remains blocked
 
 ```text
 REFERENCE_STATUS = PROVISIONAL
 AUTHORITY         = DISABLED
 ```
 
-FH-01B2 issue **#19** still waits for Creator Marketplace #207 final acceptance, merge and smoke.
+FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, merge and post-merge smoke.
 
 ## Next unblocked work
 
-FH-03:
+FH-04 read-only dashboard.
 
-```text
-SQLite run/event/artifact metadata store
-        ↓
-read model / query APIs
-        ↓
-FH-04 read-only dashboard
-```
-
-The SQLite layer must index/query telemetry without changing the canonical event contract.
+The dashboard is an observer only. It may query runs/events/model-calls/artifacts but must not mutate
+workflow, role, provider, policy or authority configuration.
