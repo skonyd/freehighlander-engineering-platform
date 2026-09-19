@@ -10,15 +10,15 @@ mode:
 phase:
   id: FH-12
   name: logical-role-registry
-  status: in_progress
+  status: complete
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-12-role-registry
+  branch: main
   pull_request: null
-  issue: 43
-  objective: implement logical role registry and immutable role packages while FH-01B2 waits for Creator Marketplace #207
-  next_action: verify FH-12 role registry invariants and protected-main CI
+  issue: null
+  objective: implement workflow DAG and explicit state machine while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-13 workflow DAG + explicit state machine
 
 fh01a:
   issue: 15
@@ -118,8 +118,8 @@ fh11:
 
 fh12:
   issue: 43
-  status: in_progress
-  branch: feat/fh-12-role-registry
+  pull_request: 44
+  status: complete
   authority_effect: none
   package_format: YAML
   exact_version_pinning: true
