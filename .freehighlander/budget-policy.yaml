@@ -1,0 +1,43 @@
+schema_version: 1
+
+scope:
+  primary_unit: run
+  child_units:
+    - workflow_node
+    - logical_role
+
+limits:
+  track:
+    - input_tokens
+    - cached_input_tokens
+    - output_tokens
+    - model_calls
+    - tool_calls
+    - retries
+    - wall_clock_ms
+    - estimated_cost
+
+enforcement:
+  reserve_before_model_call: true
+  reconcile_actual_usage_after_call: true
+  retries_share_parent_budget: true
+  fallback_shares_parent_budget: true
+
+thresholds:
+  soft:
+    action:
+      - emit_warning
+      - reduce_irrelevant_context
+      - prefer_safe_lower_cost_binding_if_policy_allows
+  hard:
+    action:
+      - stop_run_or_node
+      - preserve_checkpoint
+      - require_explicit_override_when_policy_allows
+
+rules:
+  budget_exhaustion_is_pass: false
+  budget_exhaustion_is_semantic_fail: false
+  may_skip_required_review_for_cost: false
+  may_break_independence_for_cost: false
+  may_truncate_required_evidence_for_cost: false

@@ -1,0 +1,30 @@
+schema_version: 1
+
+trust_tiers:
+  - BUILT_IN
+  - APPROVED
+  - UNTRUSTED
+  - DISABLED
+
+defaults:
+  unknown_plugin_trust: UNTRUSTED
+  mutation_enabled: false
+  explicit_enable_required: true
+
+manifest_required:
+  - id
+  - version
+  - transport
+  - capabilities
+  - mutation_flags
+  - network_scope
+  - secret_scopes
+  - auth_method
+
+security:
+  token_passthrough: deny
+  version_pinning: required_for_approved
+  capability_diff_on_upgrade: required
+  audit_tool_calls: true
+  sandbox_mapping_required: true
+  authority_granted_by_plugin: false
