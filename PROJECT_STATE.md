@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-10 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-11 IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -85,6 +85,19 @@ The contract pins platform boundaries, authority, provider fallback, role/workfl
 
 Architecture drift is now validated by `project:doctor` and deterministic tests.
 
+## FH-11 active work
+
+Issue **#40** implements the provider adapter and model-binding registry under the frozen V3 architecture.
+
+The registry keeps logical roles independent from vendor/model identity, validates provider capabilities, risk tiers and independence groups, and permits fallback only for availability-class failures.
+
+Hard invariant:
+
+```text
+binding registry != authority
+semantic failure != fallback opportunity
+```
+
 ## Promotion remains human/policy controlled
 
 ```text
@@ -106,4 +119,4 @@ FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, 
 
 ## Next action
 
-Start FH-11 provider adapters + binding registry while FH-01B2 remains blocked by Creator Marketplace #207.
+Complete FH-11 verification/merge, then advance automatically to FH-12 role registry + role packages.
