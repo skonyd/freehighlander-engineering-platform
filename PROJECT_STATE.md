@@ -1,31 +1,61 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-01A IN PROGRESS  
+**State status:** FH-01A COMPLETE / FH-01B BLOCKED BY EXTERNAL DEPENDENCY  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
-## Active work
+## Completed foundation
 
-Repository: `skonyd/freehighlander-engineering-platform`  
-Branch: `feat/fh-01a-platform-bootstrap`  
-Issue: **#15 — FH-01A platform bootstrap**
+Repository: `skonyd/freehighlander-engineering-platform`
 
-FH-01A may implement platform foundations, contracts, CI and read-only continuity tooling.
+FH-00 planning foundation is complete.
 
-It must not port or authorize unfinished Creator Marketplace V2 automation behavior.
+FH-01A platform bootstrap is complete through PR **#17** and provides:
 
-## External dependency for FH-01B
+- Node/TypeScript bounded-context monorepo
+- control-plane + web skeletons
+- role/workflow serialized contracts
+- ProviderAdapter capability/failure taxonomy
+- authority/fallback primitives
+- evidence/artifact metadata contracts
+- telemetry event contracts
+- persistence ports
+- bounded orchestration primitives
+- bootstrap / doctor / resume / checkpoint-preview tooling
+- architecture validation
+- CI / deterministic tests
+
+FH-01A intentionally does **not** make Creator Marketplace V2 automation authoritative.
+
+## Current blocker
+
+FH-01B is blocked by the behavioral V2 reference:
 
 Repository: `skonyd/creator-marketplace`  
 PR: **#207**  
 Expected exact HEAD: `0e70f4a9680fcc5c287b7926f2aa20170c79f47d`
 
-FH-01B remains blocked until:
+Required before FH-01B:
 1. Sonnet candidate adjudication
 2. Astra final review
-3. human decision
+3. HUMAN REQUIRED / human decision
 4. merge
 5. post-merge smoke
 
-## Next
+## Next exact action
 
-Complete FH-01A verify/CI and merge it independently. Then wait for #207 before starting FH-01B issue #16.
+When Claude/provider quota is available:
+
+1. finish Creator Marketplace #207 acceptance,
+2. merge #207 if the human decision is GO,
+3. run post-merge smoke,
+4. record the final accepted V2 reference SHA,
+5. start FH-01B issue #16,
+6. port V2 authority behavior with parity/golden tests.
+
+Until then, FreeHighlander can continue only with work that does not depend on unfinished V2 authority semantics.
+
+## Cross-machine continuation
+
+> Repo'yu aç. AGENTS.md ve PROJECT_STATE.md'yi oku. 3'lü modda kaldığımız yerden devam et.
+
+Then verify current Git/GitHub state before acting.

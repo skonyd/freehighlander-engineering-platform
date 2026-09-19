@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-19T22:50:00+03:00"
+updated_at: "2026-09-19T23:05:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -10,32 +10,40 @@ mode:
 phase:
   id: FH-01A
   name: platform-bootstrap
-  status: in_progress
+  status: complete
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-01a-platform-bootstrap
+  branch: main
   pull_request: null
-  issue: 15
-  objective: bootstrap executable TypeScript platform foundations without unfinished V2 authority
-  next_action: run CI/verification for FH-01A and merge when green
-
-external_dependency:
-  repository: skonyd/creator-marketplace
-  pull_request: 207
-  expected_head: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
-  last_verified_state: open_mergeable_ci_green_acceptance_incomplete
+  issue: 16
+  objective: wait for the accepted V2 reference before FH-01B authority compatibility work
+  next_action: finish Creator Marketplace PR 207 acceptance, merge and smoke, then start FH-01B issue 16
 
 fh01a:
   issue: 15
-  status: in_progress
+  pull_request: 17
+  status: complete
   coding_started: true
+  authority_port_started: false
 
 fh01b:
   issue: 16
   status: blocked
   blocker: creator-marketplace-pr-207-not-fully-accepted
   authority_port_started: false
+
+external_dependency:
+  repository: skonyd/creator-marketplace
+  pull_request: 207
+  expected_head: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
+  last_verified_state: open_mergeable_ci_green_acceptance_incomplete
+  known_pending:
+    - sonnet-candidate-adjudication
+    - astra-final-review
+    - human-decision
+    - merge
+    - post-merge-smoke
 
 accepted_direction:
   product_mode: local-first-single-user
@@ -56,3 +64,12 @@ accepted_direction:
   model_promotion: eval-plus-human-policy
   plugin_interop: mcp-preferred-through-tool-adapter
   run_budgeting: required
+
+resume:
+  read_first:
+    - AGENTS.md
+    - PROJECT_STATE.md
+    - docs/state/RESUME-PROTOCOL.md
+    - docs/state/TRIPLE-MODE.md
+  verify_remote_before_action: true
+  unpushed_work_is_not_canonical: true
