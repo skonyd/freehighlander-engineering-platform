@@ -145,7 +145,9 @@ try {
     path.join(root, 'packages', 'model-runtime', 'src', 'binding-registry.ts'),
     'utf8',
   );
-  if (!bindingRegistrySource.includes('export function bindingRegistryCanGrantAuthority(): false')) {
+  if (
+    !bindingRegistrySource.includes('export function bindingRegistryCanGrantAuthority(): false')
+  ) {
     failures.push('FH-11 binding registry must not grant authority');
   }
   if (
