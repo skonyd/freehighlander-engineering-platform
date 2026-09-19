@@ -1,4 +1,7 @@
-import { architectureContractHash, loadArchitectureContract } from './lib/architecture-contract.mjs';
+import {
+  architectureContractHash,
+  loadArchitectureContract,
+} from './lib/architecture-contract.mjs';
 import { findRepoRoot } from './lib/state.mjs';
 
 const root = await findRepoRoot();
