@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-19T20:00:00+03:00"
+updated_at: "2026-09-19T20:50:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -10,14 +10,14 @@ mode:
 phase:
   id: FH-00
   name: planning-foundation
-  status: in_progress
+  status: ready_for_review
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: docs/planning-foundation
   pull_request: 1
-  objective: establish canonical planning, automation adoption and resumable project state
-  next_action: finish planning review, then wait for Creator Marketplace PR 207 final acceptance before FH-01
+  objective: review and merge the completed planning/governance/continuity foundation
+  next_action: review PR 1; then finish Creator Marketplace PR 207 before FH-01 implementation
 
 external_dependency:
   repository: skonyd/creator-marketplace
@@ -41,13 +41,19 @@ accepted_direction:
   product_mode: local-first-single-user
   implementation_language: TypeScript
   repository_shape: monorepo
+  package_namespace: "@freehighlander/*"
   ui_boundary: control-plane-and-web-logically-separated
   telemetry_first_store: JSONL
   query_state_store: SQLite
   workflow_authoring_initial: repo-as-code
-  knowledge_graph_initial: relational-entities-and-relations
+  knowledge_graph_initial: relational-versioned-entities-and-relations
   dashboard_v2_5: read-only
   management_ui: V3
+  provider_architecture: adapter-capability-registry
+  fallback: availability-only
+  sandbox: default-deny
+  remote_secret_egress: deny
+  run_budgeting: required
 
 resume:
   read_first:
