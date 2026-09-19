@@ -1,0 +1,59 @@
+schema_version: 1
+project: freehighlander-engineering-platform
+repository: skonyd/freehighlander-engineering-platform
+updated_at: "2026-09-19T20:00:00+03:00"
+
+mode:
+  default_working_mode: triple
+  contract: docs/state/TRIPLE-MODE.md
+
+phase:
+  id: FH-00
+  name: planning-foundation
+  status: in_progress
+
+active_work:
+  repository: skonyd/freehighlander-engineering-platform
+  branch: docs/planning-foundation
+  pull_request: 1
+  objective: establish canonical planning, automation adoption and resumable project state
+  next_action: finish planning review, then wait for Creator Marketplace PR 207 final acceptance before FH-01
+
+external_dependency:
+  repository: skonyd/creator-marketplace
+  pull_request: 207
+  expected_head: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
+  state: blocked_on_claude_candidate_adjudication
+  known_completed:
+    - exact-head-ci
+    - context-triage
+    - qwen-pre-review
+    - opus-test-review-sufficient
+    - deterministic-full-verify
+  known_pending:
+    - sonnet-candidate-adjudication
+    - astra-final-review
+    - human-decision
+    - merge
+    - post-merge-smoke
+
+accepted_direction:
+  product_mode: local-first-single-user
+  implementation_language: TypeScript
+  repository_shape: monorepo
+  ui_boundary: control-plane-and-web-logically-separated
+  telemetry_first_store: JSONL
+  query_state_store: SQLite
+  workflow_authoring_initial: repo-as-code
+  knowledge_graph_initial: relational-entities-and-relations
+  dashboard_v2_5: read-only
+  management_ui: V3
+
+resume:
+  read_first:
+    - AGENTS.md
+    - PROJECT_STATE.md
+    - docs/state/RESUME-PROTOCOL.md
+    - docs/state/TRIPLE-MODE.md
+  verify_remote_before_action: true
+  unpushed_work_is_not_canonical: true
