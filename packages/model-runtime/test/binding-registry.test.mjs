@@ -26,6 +26,7 @@ test('provider and binding registries reject duplicate IDs', () => {
   const bindings = new BindingRegistry();
   const binding = {
     id: 'b1',
+    version: '1.0.0',
     providerId: 'p1',
     model: 'm1',
     allowedRiskTiers: ['NORMAL'],
@@ -43,6 +44,7 @@ test('binding plan is deterministic and authority-neutral', () => {
   const bindings = new BindingRegistry();
   bindings.register({
     id: 'primary',
+    version: '1.0.0',
     providerId: 'p1',
     model: 'm1',
     effort: 'medium',
@@ -52,6 +54,7 @@ test('binding plan is deterministic and authority-neutral', () => {
   });
   bindings.register({
     id: 'fallback',
+    version: '1.0.0',
     providerId: 'p2',
     model: 'm2',
     effort: 'medium',
@@ -93,6 +96,7 @@ test('unavailable primary may select eligible fallback', () => {
   ]) {
     bindings.register({
       id,
+      version: '1.0.0',
       providerId,
       model: id,
       allowedRiskTiers: ['NORMAL'],
@@ -121,6 +125,7 @@ test('semantic or malformed failure cannot model-shop to fallback', () => {
   const bindings = new BindingRegistry();
   bindings.register({
     id: 'primary',
+    version: '1.0.0',
     providerId: 'p1',
     model: 'm1',
     allowedRiskTiers: ['NORMAL'],
@@ -128,6 +133,7 @@ test('semantic or malformed failure cannot model-shop to fallback', () => {
   });
   bindings.register({
     id: 'fallback',
+    version: '1.0.0',
     providerId: 'p2',
     model: 'm2',
     allowedRiskTiers: ['NORMAL'],
@@ -155,6 +161,7 @@ test('capability, risk and independence incompatibility fail closed', () => {
   const bindings = new BindingRegistry();
   bindings.register({
     id: 'b1',
+    version: '1.0.0',
     providerId: 'p1',
     model: 'm1',
     allowedRiskTiers: ['NORMAL'],
@@ -201,6 +208,7 @@ test('unknown provider and binding references fail closed', () => {
 
   bindings.register({
     id: 'bad-provider',
+    version: '1.0.0',
     providerId: 'missing',
     model: 'm',
     allowedRiskTiers: ['NORMAL'],
