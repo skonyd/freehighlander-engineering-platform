@@ -1,30 +1,37 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-19T21:37:00+03:00"
+updated_at: "2026-09-19T23:05:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-00
-  name: planning-foundation
-  status: complete_waiting_for_fh01_dependency
+  id: FH-01A
+  name: platform-bootstrap
+  status: complete
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: main
   pull_request: null
-  objective: wait at coding boundary until the accepted V2 reference is available
-  next_action: finish Creator Marketplace PR 207; merge and smoke; then start canonical FH-01 issue 12
+  issue: 16
+  objective: wait for the accepted V2 reference before FH-01B authority compatibility work
+  next_action: finish Creator Marketplace PR 207 acceptance, merge and smoke, then start FH-01B issue 16
 
-fh00:
-  planning_pr: 1
-  merge_sha: 02b9e2af56c00852daecbe8e15da633113c3c41a
-  final_audit: docs/planning/FH-00-FINAL-AUDIT.md
-  implementation_plan: docs/planning/FH-01-IMPLEMENTATION-PLAN.md
-  coding_entry_gate: docs/planning/CODING-ENTRY-GATE.md
+fh01a:
+  issue: 15
+  pull_request: 17
+  status: complete
+  coding_started: true
+  authority_port_started: false
+
+fh01b:
+  issue: 16
+  status: blocked
+  blocker: creator-marketplace-pr-207-not-fully-accepted
+  authority_port_started: false
 
 external_dependency:
   repository: skonyd/creator-marketplace
@@ -37,12 +44,6 @@ external_dependency:
     - human-decision
     - merge
     - post-merge-smoke
-
-fh01:
-  canonical_issue: 12
-  status: blocked
-  blocker: creator-marketplace-pr-207-not-fully-accepted
-  coding_started: false
 
 accepted_direction:
   product_mode: local-first-single-user

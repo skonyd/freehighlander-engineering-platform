@@ -1,72 +1,58 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-00 COMPLETE / FH-01 BLOCKED BY EXTERNAL DEPENDENCY  
+**State status:** FH-01A COMPLETE / FH-01B BLOCKED BY EXTERNAL DEPENDENCY  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed foundation
 
 Repository: `skonyd/freehighlander-engineering-platform`
 
-FH-00 planning foundation was merged through PR **#1**.
+FH-00 planning foundation is complete.
 
-Merge SHA:
-`02b9e2af56c00852daecbe8e15da633113c3c41a`
+FH-01A platform bootstrap is complete through PR **#17** and provides:
 
-Canonical planning covers:
-- product/stack/monorepo direction
-- repository-native resume + 3'lü mode
-- token/context efficiency
-- provider/capability/fallback
-- authority + role packages
-- versioned workflows + debate
-- sandbox/privacy/retention
-- engineering lineage
-- model eval/promotion + budget
-- local identity/remote auth
-- backup/restore
-- plugin/MCP/tool boundary
-- OpenTelemetry mapping direction
-- V2.5 telemetry/Qwen plan
-- V3 strangler/parity migration
-- FH-01 implementation contract
-- coding-entry gate
+- Node/TypeScript bounded-context monorepo
+- control-plane + web skeletons
+- role/workflow serialized contracts
+- ProviderAdapter capability/failure taxonomy
+- authority/fallback primitives
+- evidence/artifact metadata contracts
+- telemetry event contracts
+- persistence ports
+- bounded orchestration primitives
+- bootstrap / doctor / resume / checkpoint-preview tooling
+- architecture validation
+- CI / deterministic tests
 
-Key:
-- `docs/planning/FH-00-FINAL-AUDIT.md`
-- `docs/planning/FH-01-IMPLEMENTATION-PLAN.md`
-- `docs/planning/CODING-ENTRY-GATE.md`
-- issue **#12** is the canonical FH-01 implementation issue
+FH-01A intentionally does **not** make Creator Marketplace V2 automation authoritative.
 
 ## Current blocker
 
-Creator Marketplace remains the behavioral V2 reference.
+FH-01B is blocked by the behavioral V2 reference:
 
 Repository: `skonyd/creator-marketplace`  
 PR: **#207**  
 Expected exact HEAD: `0e70f4a9680fcc5c287b7926f2aa20170c79f47d`
 
-Known pending:
+Required before FH-01B:
 1. Sonnet candidate adjudication
 2. Astra final review
 3. HUMAN REQUIRED / human decision
 4. merge
 5. post-merge smoke
 
-Do **not** start FH-01 V2 adaptation from a partially accepted #207.
-
 ## Next exact action
 
 When Claude/provider quota is available:
 
 1. finish Creator Marketplace #207 acceptance,
-2. human merge if acceptance passes,
-3. run #207 post-merge smoke,
-4. record the accepted V2 reference SHA,
-5. revalidate issue #12 against current main,
-6. create FH-01 implementation branch,
-7. begin first code commit.
+2. merge #207 if the human decision is GO,
+3. run post-merge smoke,
+4. record the final accepted V2 reference SHA,
+5. start FH-01B issue #16,
+6. port V2 authority behavior with parity/golden tests.
 
-Until then, FreeHighlander is intentionally at the **coding boundary**: planning is complete, implementation has not started.
+Until then, FreeHighlander can continue only with work that does not depend on unfinished V2 authority semantics.
 
 ## Cross-machine continuation
 
