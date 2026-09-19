@@ -1,15 +1,15 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T00:05:00+03:00"
+updated_at: "2026-09-20T00:31:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-03
-  name: sqlite-read-model
+  id: FH-04
+  name: readonly-dashboard
   status: complete
 
 active_work:
@@ -17,8 +17,8 @@ active_work:
   branch: main
   pull_request: null
   issue: null
-  objective: continue unblocked V2.5 work while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-04 read-only metrics dashboard
+  objective: continue unblocked V2.5 optimization work while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-05 Qwen specialist shadow roles and benchmark instrumentation
 
 fh01a:
   issue: 15
@@ -57,6 +57,16 @@ fh03:
   database_default: .freehighlander/runtime/freehighlander.sqlite
   role: query-current-state-index
   canonical_source: telemetry-domain-events
+  authority_effect: none
+
+fh04:
+  issue: 26
+  pull_request: 27
+  status: complete
+  mode: local-read-only-observer
+  default_bind: 127.0.0.1
+  sqlite_access: read-only
+  mutation_http_methods: denied
   authority_effect: none
 
 external_dependency:

@@ -22,6 +22,7 @@
     "project:doctor": "node tools/project/doctor.mjs",
     "project:resume": "node tools/project/resume.mjs",
     "project:checkpoint": "node tools/project/checkpoint.mjs",
+    "dashboard:start": "npm run start -w @freehighlander/web",
     "verify": "npm run format && npm run typecheck && npm run build && npm run test && npm run check:architecture && npm run project:doctor"
   },
   "dependencies": {
