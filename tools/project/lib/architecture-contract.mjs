@@ -4,8 +4,9 @@ import path from 'node:path';
 
 import YAML from 'yaml';
 
-const REQUIRED_ADRS = Array.from({ length: 12 }, (_, index) =>
-  `ADR-${String(index + 1).padStart(4, '0')}`,
+const REQUIRED_ADRS = Array.from(
+  { length: 12 },
+  (_, index) => `ADR-${String(index + 1).padStart(4, '0')}`,
 );
 
 const REQUIRED_AUTHORITY_LEVELS = [
@@ -52,28 +53,37 @@ export function assertArchitectureContract(contract) {
   if (!isRecord(contract) || contract.schema_version !== 1) {
     throw new Error('architecture schema_version must be 1');
   }
-  if (typeof contract.contract_version !== 'string' || !/^\d+\.\d+\.\d+$/.test(contract.contract_version)) {
+  if (
+    typeof contract.contract_version !== 'string' ||
+    !/^\d+\.\d+\.\d+$/.test(contract.contract_version)
+  ) {
     throw new Error('architecture contract_version must be semantic version');
   }
   expect(contract.status, 'FROZEN_BASELINE', 'architecture status');
   expect(contract.phase, 'FH-10', 'architecture phase');
 
-  expectTrue(contract.change_policy?.semantic_change_requires_adr, 'semantic architecture change requires ADR');
+  expectTrue(
+    contract.change_policy?.semantic_change_requires_adr,
+    'semantic architecture change requires ADR',
+  );
   expectTrue(
     contract.change_policy?.semantic_change_requires_version_bump,
     'semantic architecture change requires contract version bump',
   );
-  expectTrue(contract.change_policy?.published_contract_is_immutable, 'published architecture contract is immutable');
+  expectTrue(
+    contract.change_policy?.published_contract_is_immutable,
+    'published architecture contract is immutable',
+  );
 
   assertContainsExactly(contract.accepted_adrs, REQUIRED_ADRS, 'accepted ADRs');
   assertContainsExactly(contract.bounded_contexts?.packages, REQUIRED_CONTEXTS, 'bounded contexts');
-  assertIncludes(contract.bounded_contexts?.forbidden, 'packages/core', 'forbidden package boundaries');
-
-  assertContainsExactly(
-    contract.authority?.levels,
-    REQUIRED_AUTHORITY_LEVELS,
-    'authority levels',
+  assertIncludes(
+    contract.bounded_contexts?.forbidden,
+    'packages/core',
+    'forbidden package boundaries',
   );
+
+  assertContainsExactly(contract.authority?.levels, REQUIRED_AUTHORITY_LEVELS, 'authority levels');
   expect(contract.authority?.human_approver_principal, 'HUMAN', 'human approver principal');
   expect(contract.authority?.system_policy_principal, 'SYSTEM', 'system policy principal');
   expectTrue(
@@ -87,7 +97,10 @@ export function assertArchitectureContract(contract) {
   );
 
   expect(contract.providers?.core_contract, 'ProviderAdapter', 'provider core contract');
-  expectTrue(contract.providers?.capability_registry_required, 'provider capability registry is required');
+  expectTrue(
+    contract.providers?.capability_registry_required,
+    'provider capability registry is required',
+  );
   expect(contract.providers?.fallback_policy, 'availability-only', 'provider fallback policy');
   assertContainsExactly(
     contract.providers?.fallback_availability_classes,
@@ -123,7 +136,10 @@ export function assertArchitectureContract(contract) {
   expectTrue(contract.debate?.bounded_rounds, 'debate rounds are bounded');
   expectTrue(contract.debate?.consensus_is_not_authority, 'debate consensus is not authority');
 
-  expectTrue(contract.evidence?.exact_revision_binding_required, 'exact revision binding is required');
+  expectTrue(
+    contract.evidence?.exact_revision_binding_required,
+    'exact revision binding is required',
+  );
   expectTrue(
     contract.evidence?.trusted_provenance_required_for_authority,
     'trusted provenance is required for authority',
@@ -137,10 +153,7 @@ export function assertArchitectureContract(contract) {
   expect(contract.security?.secret_remote_egress, 'DENY', 'secret remote egress');
   expect(contract.security?.repository_plaintext_secrets, 'DENY', 'repository plaintext secrets');
 
-  expectFalse(
-    contract.evaluation?.automatic_authority_promotion,
-    'automatic authority promotion',
-  );
+  expectFalse(contract.evaluation?.automatic_authority_promotion, 'automatic authority promotion');
   expectFalse(
     contract.evaluation?.required_evidence_may_be_truncated_for_budget,
     'required evidence truncation for budget',
