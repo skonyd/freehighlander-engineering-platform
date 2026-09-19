@@ -60,10 +60,10 @@ test('manifest authority cannot exceed registration policy', () => {
 
   assert.throws(
     () =>
-      registry.registerYaml(
-        advisoryYaml.replace('ADVISORY', 'FINAL_REVIEWER'),
-        { principalKind: 'MODEL', allowedAuthorities: ['ADVISORY'] },
-      ),
+      registry.registerYaml(advisoryYaml.replace('ADVISORY', 'FINAL_REVIEWER'), {
+        principalKind: 'MODEL',
+        allowedAuthorities: ['ADVISORY'],
+      }),
     /exceeds registration policy/,
   );
 });
@@ -111,11 +111,10 @@ test('risk-tier compatibility is explicit', () => {
 
 test('schema validation fails closed for malformed role YAML', () => {
   const registry = new RoleRegistry();
-  assert.throws(
-    () =>
-      registry.registerYaml(
-        'id: Bad Role\nversion: nope\nauthority: [ADVISORY]',
-        { principalKind: 'MODEL', allowedAuthorities: ['ADVISORY'] },
-      ),
+  assert.throws(() =>
+    registry.registerYaml('id: Bad Role\nversion: nope\nauthority: [ADVISORY]', {
+      principalKind: 'MODEL',
+      allowedAuthorities: ['ADVISORY'],
+    }),
   );
 });
