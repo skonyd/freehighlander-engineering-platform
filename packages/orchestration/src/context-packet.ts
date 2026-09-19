@@ -1,12 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export type ContextItemKind =
-  | 'repository-contract'
-  | 'requirement'
-  | 'evidence'
-  | 'tool-result'
-  | 'task'
-  | 'other';
+  'repository-contract' | 'requirement' | 'evidence' | 'tool-result' | 'task' | 'other';
 
 export interface ContextPacketItemInput {
   readonly id: string;
