@@ -1,61 +1,58 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-01A COMPLETE / FH-01B BLOCKED BY EXTERNAL DEPENDENCY  
+**State status:** FH-01B SPLIT / PROVISIONAL PORT ALLOWED / AUTHORITY PROMOTION BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
-## Completed foundation
+## Completed
 
-Repository: `skonyd/freehighlander-engineering-platform`
+- FH-00 planning foundation
+- FH-01A executable TypeScript platform bootstrap
+- PR #17 merged
+- main SHA before this planning update: `384d7264a26f68dd05e2512b8917f880a1e6a0c9`
+- post-merge CI success
 
-FH-00 planning foundation is complete.
+## FH-01B split
 
-FH-01A platform bootstrap is complete through PR **#17** and provides:
+### FH-01B1 — provisional compatibility
 
-- Node/TypeScript bounded-context monorepo
-- control-plane + web skeletons
-- role/workflow serialized contracts
-- ProviderAdapter capability/failure taxonomy
-- authority/fallback primitives
-- evidence/artifact metadata contracts
-- telemetry event contracts
-- persistence ports
-- bounded orchestration primitives
-- bootstrap / doctor / resume / checkpoint-preview tooling
-- architecture validation
-- CI / deterministic tests
+Issue: **#18**
 
-FH-01A intentionally does **not** make Creator Marketplace V2 automation authoritative.
+May proceed using Creator Marketplace PR #207 current exact HEAD:
 
-## Current blocker
+`0e70f4a9680fcc5c287b7926f2aa20170c79f47d`
 
-FH-01B is blocked by the behavioral V2 reference:
+Mandatory state:
 
-Repository: `skonyd/creator-marketplace`  
-PR: **#207**  
-Expected exact HEAD: `0e70f4a9680fcc5c287b7926f2aa20170c79f47d`
+```text
+REFERENCE_STATUS = PROVISIONAL
+AUTHORITY         = DISABLED
+```
 
-Required before FH-01B:
+The purpose is to port/test compatibility now without trusting the unfinished reference as final authority.
+
+### FH-01B2 — reconciliation + promotion
+
+Issue: **#19**
+
+Blocked until Creator Marketplace #207 completes:
+
 1. Sonnet candidate adjudication
 2. Astra final review
-3. HUMAN REQUIRED / human decision
+3. human decision
 4. merge
 5. post-merge smoke
 
-## Next exact action
+After #207 closes, explicitly compare the provisional SHA with the final accepted reference SHA, inspect any delta, rerun parity/regression tests, and only then review authority promotion.
 
-When Claude/provider quota is available:
+## Mandatory reminder
 
-1. finish Creator Marketplace #207 acceptance,
-2. merge #207 if the human decision is GO,
-3. run post-merge smoke,
-4. record the final accepted V2 reference SHA,
-5. start FH-01B issue #16,
-6. port V2 authority behavior with parity/golden tests.
+Do not treat FH-01B as complete until these are explicitly confirmed:
 
-Until then, FreeHighlander can continue only with work that does not depend on unfinished V2 authority semantics.
+- provisional reference SHA
+- final accepted reference SHA
+- delta reviewed
+- parity suite passed
+- post-port smoke passed
+- authority promotion reviewed
 
-## Cross-machine continuation
-
-> Repo'yu aç. AGENTS.md ve PROJECT_STATE.md'yi oku. 3'lü modda kaldığımız yerden devam et.
-
-Then verify current Git/GitHub state before acting.
+The Claude quota reset / #207 closure is therefore a required re-evaluation checkpoint, not just a scheduling note.
