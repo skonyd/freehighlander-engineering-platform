@@ -21,6 +21,7 @@ export class ProviderInvocationError extends Error {
     message: string,
     readonly kind: ProviderFailureKind,
     readonly status?: number,
+    readonly retryAfterMs?: number,
   ) {
     super(message);
     this.name = 'ProviderInvocationError';
@@ -135,6 +136,7 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
         `provider returned HTTP ${response.status}: ${truncate(raw, 500)}`,
         classifyHttpFailure(response.status, raw),
         response.status,
+        parseRetryAfterMs(response.headers.get('retry-after')),
       );
     }
 
@@ -206,6 +208,13 @@ function classifyHttpFailure(status: number, body: string): ProviderFailureKind 
   }
   if (status >= 500) return 'provider_unavailable';
   return 'transport_failure';
+}
+
+function parseRetryAfterMs(value: string | null): number | undefined {
+  if (value === null) return undefined;
+  const seconds = Number(value.trim());
+  if (!Number.isFinite(seconds) || seconds < 0) return undefined;
+  return Math.round(seconds * 1_000);
 }
 
 function isAbortError(error: unknown): boolean {
