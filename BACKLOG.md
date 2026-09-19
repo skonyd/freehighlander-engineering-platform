@@ -13,19 +13,19 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-04 Read-only metrics dashboard — issue #26 / PR #27
 
 ## FH-01/FH-02 enabling contracts
-- [ ] Context packet builder + manifest validation
-- [ ] Prompt contract/version registry
-- [ ] Semantic model-call reuse key
+- [x] Context packet builder + manifest validation — FH-07 / PR #33
+- [x] Prompt contract/version registry — FH-07 / PR #33
+- [x] Semantic model-call reuse key — FH-07 / PR #33
 - [ ] Evidence policy validator
-- [ ] Provider token-count capability implementation
-- [ ] Token-budget diagnostics
+- [x] Provider token-count capability contract/preflight — FH-07 / PR #33
+- [x] Token-budget diagnostics — FH-07 / PR #33
 - [ ] canonical project checkpoint / remote reconciliation — issue #10
-- [ ] token/cache/context packet tooling — issue #11
+- [x] token/cache/context packet tooling — issue #11 / PR #33
 
 ## Qwen / model economics
 - [x] FH-05 Qwen specialist shadow roles — issue #29 / PR #30
 - [x] FH-06 Benchmark reconciliation + role promotion reports — issue #31 / PR #32
-- [ ] FH-07 Token/context optimization
+- [x] FH-07 Token/context optimization — issue #11 / PR #33
 - [ ] FH-08 Provider health / quota / circuit-breaker telemetry
 
 ## V3 control plane
