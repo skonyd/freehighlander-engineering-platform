@@ -14,7 +14,9 @@ export type EventType =
   | 'provider.unavailable'
   | 'quota.exhausted';
 
-export interface EngineeringEvent<TPayload extends Record<string, unknown> = Record<string, unknown>> {
+export interface EngineeringEvent<
+  TPayload extends Record<string, unknown> = Record<string, unknown>,
+> {
   readonly schemaVersion: 1;
   readonly type: EventType;
   readonly timestamp: string;

@@ -34,7 +34,10 @@ export function validateBoundedExecution(snapshot: WorkflowSnapshot): readonly s
   const errors: string[] = [];
 
   for (const node of snapshot.nodes) {
-    if (node.kind === 'LOOP' && (node.maxIterations === undefined || node.maxIterations < 1)) {
+    if (
+      node.kind === 'LOOP' &&
+      (node.maxIterations === undefined || node.maxIterations < 1)
+    ) {
       errors.push(`LOOP node ${node.id} must define maxIterations >= 1`);
     }
   }
