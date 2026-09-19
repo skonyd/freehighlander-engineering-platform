@@ -112,7 +112,6 @@ test('FH-01B1 cannot promote authority', () => {
   assert.doesNotThrow(assertProvisionalReference);
 });
 
-
 test('provisional reference captures full-artifact, Opus and worker budget invariants', () => {
   assert.equal(AUTHORITATIVE_ARTIFACT_KIND, 'full');
   assert.deepEqual(V2_REFERENCE_TEST_REVIEW, {
