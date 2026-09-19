@@ -1,10 +1,9 @@
 import { createHash } from 'node:crypto';
 
-import {
-  isAvailabilityFailure,
-  type ProviderAdapter,
-  type ProviderCapability,
-  type ProviderFailureKind,
+import type {
+  ProviderAdapter,
+  ProviderCapability,
+  ProviderFailureKind,
 } from './index.js';
 
 export type BindingRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
@@ -192,7 +191,7 @@ export function selectBinding(
   availability: Readonly<Record<string, boolean>>,
   previousFailure?: ProviderFailureKind,
 ): BindingSelection {
-  if (previousFailure !== undefined && !isAvailabilityFailure(previousFailure)) {
+  if (previousFailure !== undefined && !availabilityFailures.has(previousFailure)) {
     return {
       status: 'SEMANTIC_FAILURE_NO_FALLBACK',
       fallbackUsed: false,
@@ -220,6 +219,14 @@ export function selectBinding(
 export function bindingRegistryCanGrantAuthority(): false {
   return false;
 }
+
+const availabilityFailures = new Set<ProviderFailureKind>([
+  'quota_exhausted',
+  'rate_limited',
+  'auth_unavailable',
+  'provider_unavailable',
+  'transport_failure',
+]);
 
 function validateBinding(binding: ModelBindingDefinition): ModelBindingDefinition {
   requireId(binding.id, 'binding id');
