@@ -73,3 +73,32 @@ SHADOW
 ~~~
 
 System never self-promotes authority from benchmark score alone.
+
+
+## FH-06 implementation contract
+
+The evaluation package now distinguishes:
+
+- total samples,
+- eligible adjudicated real samples,
+- excluded synthetic/unadjudicated samples,
+- agreement,
+- precision,
+- confirmed/false-positive/missed findings,
+- P0/P1 and P2 misses,
+- candidate malformed samples,
+- candidate/reference latency p50/p95,
+- token totals,
+- cost totals,
+- projected cost-saving ratio.
+
+Screening produces only:
+
+~~~text
+INSUFFICIENT_DATA
+BLOCKED
+PROMOTION_CANDIDATE
+HUMAN_POLICY_REQUIRED
+~~~
+
+It never produces a promoted/authoritative state. `promotionCanApplyAutomatically() === false`.
