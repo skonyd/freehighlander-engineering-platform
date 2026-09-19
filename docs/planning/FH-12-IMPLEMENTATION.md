@@ -1,7 +1,7 @@
 # FH-12 — Logical role registry and role packages
 
 **Issue:** #43  
-**Status:** IN PROGRESS  
+**Status:** COMPLETE  
 **Authority effect:** NONE
 
 ## Objective
