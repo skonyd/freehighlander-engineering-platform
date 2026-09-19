@@ -26,7 +26,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-05 Qwen specialist shadow roles — issue #29 / PR #30
 - [x] FH-06 Benchmark reconciliation + role promotion reports — issue #31 / PR #32
 - [x] FH-07 Token/context optimization — issue #11 / PR #33
-- [ ] FH-08 Provider health / quota / circuit-breaker telemetry
+- [x] FH-08 Provider health / quota / circuit-breaker telemetry — issue #36 / PR #37
 
 ## V3 control plane
 - [ ] FH-10 V3 architecture contract freeze
