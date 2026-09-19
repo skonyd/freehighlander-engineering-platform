@@ -140,6 +140,25 @@ try {
   failures.push('missing FH-08 provider circuit-breaker authority guards');
 }
 
+try {
+  const bindingRegistrySource = await fs.readFile(
+    path.join(root, 'packages', 'model-runtime', 'src', 'binding-registry.ts'),
+    'utf8',
+  );
+  if (!bindingRegistrySource.includes('export function bindingRegistryCanGrantAuthority(): false')) {
+    failures.push('FH-11 binding registry must not grant authority');
+  }
+  if (
+    !bindingRegistrySource.includes(
+      'export function bindingFallbackCanOverrideSemanticFailure(): false',
+    )
+  ) {
+    failures.push('FH-11 binding fallback must not override semantic failure');
+  }
+} catch {
+  failures.push('missing FH-11 binding registry authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
