@@ -28,6 +28,7 @@
     "yaml": "2.9.1"
   },
   "devDependencies": {
+    "@types/node": "24.13.5",
     "prettier": "3.9.8",
     "typescript": "7.0.2"
   }

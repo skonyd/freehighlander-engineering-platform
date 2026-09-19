@@ -8,7 +8,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [ ] FH-01B umbrella — issue #16
   - [x] FH-01B1 Provisional V2 compatibility, authority disabled — issue #18 / PR #21
   - [ ] FH-01B2 Accepted V2 reconciliation + authority promotion — issue #19, blocked by Creator Marketplace #207
-- [ ] FH-02 Telemetry event emitter / durable event history
+- [ ] FH-02 Telemetry event emitter / durable event history — issue #22
 - [ ] FH-03 SQLite run/event/artifact metadata store
 - [ ] FH-04 Read-only metrics dashboard
 

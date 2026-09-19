@@ -8,3 +8,5 @@ dist/
 coverage/
 *.db
 *.sqlite
+.freehighlander/runtime/
+events.jsonl
