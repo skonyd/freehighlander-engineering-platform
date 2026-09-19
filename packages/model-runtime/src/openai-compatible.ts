@@ -5,6 +5,7 @@ import type {
   ProviderHealth,
   ProviderRequest,
   ProviderResponse,
+  ProviderUsage,
 } from './index.js';
 
 export interface OpenAiCompatibleProviderOptions {
@@ -48,11 +49,14 @@ interface ChatCompletionResponse {
 
 export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
   readonly #baseUrl: string;
-  readonly #apiKey?: string;
+  readonly #apiKey: string | undefined;
   readonly #healthTimeoutMs: number;
   readonly #headers: Readonly<Record<string, string>>;
 
-  constructor(readonly id: string, options: Omit<OpenAiCompatibleProviderOptions, 'id'>) {
+  constructor(
+    readonly id: string,
+    options: Omit<OpenAiCompatibleProviderOptions, 'id'>,
+  ) {
     if (!id.trim()) throw new Error('provider id is required');
     if (!options.baseUrl.trim()) throw new Error('baseUrl is required');
 
@@ -141,37 +145,18 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
 
     const output = parsed.choices?.[0]?.message?.content;
     if (typeof output !== 'string') {
-      throw new ProviderInvocationError('provider response has no assistant content', 'malformed_output');
+      throw new ProviderInvocationError(
+        'provider response has no assistant content',
+        'malformed_output',
+      );
     }
+
+    const mappedUsage = mapUsage(parsed.usage);
 
     return {
       output,
       model: parsed.model ?? request.model,
-      ...(parsed.usage
-        ? {
-            usage: {
-              ...(numberValue(parsed.usage.prompt_tokens) !== undefined
-                ? { inputTokens: numberValue(parsed.usage.prompt_tokens) }
-                : {}),
-              ...(numberValue(parsed.usage.prompt_tokens_details?.cached_tokens) !== undefined
-                ? { cachedInputTokens: numberValue(parsed.usage.prompt_tokens_details?.cached_tokens) }
-                : {}),
-              ...(numberValue(parsed.usage.completion_tokens) !== undefined
-                ? { outputTokens: numberValue(parsed.usage.completion_tokens) }
-                : {}),
-              ...(numberValue(parsed.usage.completion_tokens_details?.reasoning_tokens) !== undefined
-                ? {
-                    reasoningTokens: numberValue(
-                      parsed.usage.completion_tokens_details?.reasoning_tokens,
-                    ),
-                  }
-                : {}),
-              ...(numberValue(parsed.usage.total_tokens) !== undefined
-                ? { totalTokens: numberValue(parsed.usage.total_tokens) }
-                : {}),
-            },
-          }
-        : {}),
+      ...(mappedUsage ? { usage: mappedUsage } : {}),
     };
   }
 
@@ -194,6 +179,24 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
   }
 }
 
+function mapUsage(usage: ChatCompletionResponse['usage']): ProviderUsage | undefined {
+  if (!usage) return undefined;
+
+  const inputTokens = numberValue(usage.prompt_tokens);
+  const cachedInputTokens = numberValue(usage.prompt_tokens_details?.cached_tokens);
+  const outputTokens = numberValue(usage.completion_tokens);
+  const reasoningTokens = numberValue(usage.completion_tokens_details?.reasoning_tokens);
+  const totalTokens = numberValue(usage.total_tokens);
+
+  return {
+    ...(inputTokens !== undefined ? { inputTokens } : {}),
+    ...(cachedInputTokens !== undefined ? { cachedInputTokens } : {}),
+    ...(outputTokens !== undefined ? { outputTokens } : {}),
+    ...(reasoningTokens !== undefined ? { reasoningTokens } : {}),
+    ...(totalTokens !== undefined ? { totalTokens } : {}),
+  };
+}
+
 function classifyHttpFailure(status: number, body: string): ProviderFailureKind {
   if (status === 401 || status === 403) return 'auth_unavailable';
   if (status === 429) {
@@ -204,14 +207,12 @@ function classifyHttpFailure(status: number, body: string): ProviderFailureKind 
 }
 
 function isAbortError(error: unknown): boolean {
-  return (
-    error instanceof DOMException
-      ? error.name === 'AbortError'
-      : !!error &&
+  return error instanceof DOMException
+    ? error.name === 'AbortError'
+    : !!error &&
         typeof error === 'object' &&
         'name' in error &&
-        (error as { readonly name?: string }).name === 'AbortError'
-  );
+        (error as { readonly name?: string }).name === 'AbortError';
 }
 
 function truncate(value: string, max: number): string {

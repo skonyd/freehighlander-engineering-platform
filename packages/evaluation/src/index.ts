@@ -61,10 +61,7 @@ export interface ShadowPairResult {
 }
 
 export type ReconciliationLabel =
-  | 'CONFIRMED'
-  | 'FALSE_POSITIVE'
-  | 'MISSED_BY_CANDIDATE'
-  | 'UNRESOLVED';
+  'CONFIRMED' | 'FALSE_POSITIVE' | 'MISSED_BY_CANDIDATE' | 'UNRESOLVED';
 
 export interface FindingReconciliation {
   readonly key: string;
@@ -109,9 +106,21 @@ export async function runIndependentShadowPair(input: {
   const now = input.now ?? (() => Date.now());
 
   const candidateStarted = now();
-  const candidatePromise = settleWorker(input.candidate, input.authoritativeInput, inputHash, candidateStarted, now);
+  const candidatePromise = settleWorker(
+    input.candidate,
+    input.authoritativeInput,
+    inputHash,
+    candidateStarted,
+    now,
+  );
   const referenceStarted = now();
-  const referencePromise = settleWorker(input.reference, input.authoritativeInput, inputHash, referenceStarted, now);
+  const referencePromise = settleWorker(
+    input.reference,
+    input.authoritativeInput,
+    inputHash,
+    referenceStarted,
+    now,
+  );
   const [candidate, reference] = await Promise.all([candidatePromise, referencePromise]);
 
   return {

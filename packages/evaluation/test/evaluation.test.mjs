@@ -159,7 +159,10 @@ test('failed shadow side becomes unresolved instead of authority fallback', asyn
 
   const result = reconcileShadowPair(pair);
   assert.equal(pair.candidate.status, 'REJECTED');
-  assert.equal(result.findings.some((finding) => finding.label === 'UNRESOLVED'), true);
+  assert.equal(
+    result.findings.some((finding) => finding.label === 'UNRESOLVED'),
+    true,
+  );
   assert.equal(result.agreement, false);
 });
 
