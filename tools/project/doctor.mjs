@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import { loadArchitectureContract } from './lib/architecture-contract.mjs';
 import {
   budgetNameForContextProfile,
   loadContextConfig,
@@ -19,6 +20,13 @@ const actualMajor = Number(process.versions.node.split('.')[0]);
 const requiredMajor = Number(packageJson.engines.node.match(/>=([0-9]+)/)?.[1] ?? 0);
 
 const failures = [];
+
+try {
+  await loadArchitectureContract(root);
+} catch (error) {
+  failures.push(error instanceof Error ? error.message : 'architecture contract validation failed');
+}
+
 if (actualMajor < requiredMajor) {
   failures.push(`Node ${packageJson.engines.node} required; current ${process.versions.node}`);
 }
