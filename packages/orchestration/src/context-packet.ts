@@ -124,7 +124,7 @@ export function buildContractFingerprint(input: ContractFingerprintInput): strin
 }
 
 export function buildSemanticReuseKey(input: SemanticReuseKeyInput): string {
-  const required: readonly [string, string][] = [
+  const required: ReadonlyArray<readonly [string, string]> = [
     ['logicalRole', input.logicalRole],
     ['exactRevision', input.exactRevision],
     ['workflowHash', input.workflowHash],
@@ -176,11 +176,15 @@ function sha256Fields(fields: readonly string[]): string {
 function assertUniqueContextIds(items: readonly ContextPacketItemInput[]): void {
   const seen = new Set<string>();
   for (const item of items) {
-    if (seen.has(item.id)) throw new Error(`duplicate context item id: ${item.id}`);
+    if (seen.has(item.id)) {
+      throw new Error(`duplicate context item id: ${item.id}`);
+    }
     seen.add(item.id);
   }
 }
 
 function requireText(value: string, name: string): void {
-  if (!value.trim()) throw new Error(`${name} is required`);
+  if (!value.trim()) {
+    throw new Error(`${name} is required`);
+  }
 }
