@@ -1,10 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import type {
-  ProviderAdapter,
-  ProviderCapability,
-  ProviderFailureKind,
-} from './index.js';
+import type { ProviderAdapter, ProviderCapability, ProviderFailureKind } from './index.js';
 
 export type BindingRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
 
@@ -129,9 +125,7 @@ export function resolveBindingPlan(
     const provider = providers.get(binding.providerId);
 
     if (!binding.allowedRiskTiers.includes(request.riskTier)) {
-      throw new Error(
-        `binding ${binding.id} is not allowed for risk tier ${request.riskTier}`,
-      );
+      throw new Error(`binding ${binding.id} is not allowed for risk tier ${request.riskTier}`);
     }
 
     const required = uniqueSorted([
@@ -140,9 +134,7 @@ export function resolveBindingPlan(
     ]);
     for (const capability of required) {
       if (!provider.capabilities.has(capability)) {
-        throw new Error(
-          `binding ${binding.id} requires unsupported capability ${capability}`,
-        );
+        throw new Error(`binding ${binding.id} requires unsupported capability ${capability}`);
       }
     }
 
