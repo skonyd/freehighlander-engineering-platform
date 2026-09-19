@@ -8,17 +8,17 @@ mode:
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-10
-  name: v3-architecture-contract-freeze
-  status: complete
+  id: FH-11
+  name: provider-binding-registry
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-11-provider-binding-registry
   pull_request: null
-  issue: null
-  objective: implement provider adapters and binding registry while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-11 provider adapters + binding registry
+  issue: 40
+  objective: implement deterministic provider adapters and binding registry while FH-01B2 waits for Creator Marketplace #207
+  next_action: verify FH-11 registry invariants and protected-main CI
 
 fh01a:
   issue: 15
@@ -108,6 +108,13 @@ fh10:
   contract_version: 1.0.0
   authority_effect: none
   v3_authority: SHADOW_ONLY
+
+fh11:
+  issue: 40
+  status: in_progress
+  branch: feat/fh-11-provider-binding-registry
+  authority_effect: none
+  fallback_policy: availability_only
 
 external_dependency:
   repository: skonyd/creator-marketplace
