@@ -153,6 +153,10 @@ export function buildSemanticReuseKey(input: SemanticReuseKeyInput): string {
   ]);
 }
 
+export function tokenOptimizationCanChangeAuthority(): false {
+  return false;
+}
+
 export function sha256Text(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex');
 }

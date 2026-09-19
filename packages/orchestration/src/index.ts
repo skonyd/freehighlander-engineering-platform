@@ -3,6 +3,7 @@ export {
   buildContractFingerprint,
   buildSemanticReuseKey,
   sha256Text,
+  tokenOptimizationCanChangeAuthority,
   trimStaleContextItems,
   type ContextItemKind,
   type ContextPacket,

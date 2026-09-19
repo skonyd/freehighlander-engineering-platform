@@ -6,6 +6,8 @@ import {
   OpenAiCompatibleProviderAdapter,
   ProviderInvocationError,
   isAvailabilityFailure,
+  preflightInputTokenBudget,
+  tokenBudgetCanAuthorizeEvidenceRemoval,
 } from '../dist/index.js';
 
 test('fallback eligibility is limited to availability failures', () => {
@@ -13,6 +15,65 @@ test('fallback eligibility is limited to availability failures', () => {
   assert.equal(isAvailabilityFailure('provider_unavailable'), true);
   assert.equal(isAvailabilityFailure('semantic_failure'), false);
   assert.equal(isAvailabilityFailure('malformed_output'), false);
+});
+
+test('token budget preflight uses exact provider counting when available', async () => {
+  const provider = {
+    id: 'counter',
+    capabilities: () => new Set(['token_counting']),
+    health: async () => ({ available: true }),
+    invoke: async () => ({ output: 'unused', model: 'unused' }),
+    countInputTokens: async () => 120,
+  };
+
+  const result = await preflightInputTokenBudget(provider, 'input', 'model', {
+    targetInputTokens: 100,
+    hardWarnTokens: 200,
+  });
+
+  assert.equal(result.status, 'OVER_TARGET');
+  assert.equal(result.countSource, 'provider');
+  assert.equal(result.estimatedInputTokens, 120);
+  assert.equal(result.requiredEvidenceMayBeDropped, false);
+  assert.equal(tokenBudgetCanAuthorizeEvidenceRemoval(), false);
+});
+
+test('token budget preflight is UNKNOWN rather than guessing without provider counting', async () => {
+  const provider = {
+    id: 'no-counter',
+    capabilities: () => new Set(),
+    health: async () => ({ available: true }),
+    invoke: async () => ({ output: 'unused', model: 'unused' }),
+  };
+
+  const result = await preflightInputTokenBudget(provider, 'a very long input', 'model', {
+    targetInputTokens: 100,
+    hardWarnTokens: 200,
+  });
+
+  assert.equal(result.status, 'UNKNOWN');
+  assert.equal(result.countSource, 'unavailable');
+  assert.equal(result.estimatedInputTokens, undefined);
+  assert.equal(result.requiredEvidenceMayBeDropped, false);
+});
+
+test('token budget preflight validates policy bounds', async () => {
+  const provider = {
+    id: 'counter',
+    capabilities: () => new Set(['token_counting']),
+    health: async () => ({ available: true }),
+    invoke: async () => ({ output: 'unused', model: 'unused' }),
+    countInputTokens: async () => 10,
+  };
+
+  await assert.rejects(
+    () =>
+      preflightInputTokenBudget(provider, 'input', 'model', {
+        targetInputTokens: 200,
+        hardWarnTokens: 100,
+      }),
+    /cannot exceed/,
+  );
 });
 
 test('OpenAI-compatible adapter maps content and usage without a real model', async () => {
@@ -49,6 +110,7 @@ test('OpenAI-compatible adapter maps content and usage without a real model', as
     });
 
     assert.equal((await adapter.health()).available, true);
+    assert.equal(adapter.capabilities().has('token_counting'), false);
     const result = await adapter.invoke({
       logicalRole: 'repo-analysis',
       input: 'analyze',

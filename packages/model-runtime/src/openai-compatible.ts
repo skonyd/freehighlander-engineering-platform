@@ -67,7 +67,9 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
   }
 
   capabilities(): ReadonlySet<ProviderCapability> {
-    return new Set<ProviderCapability>(['token_counting', 'usage_token_breakdown']);
+    // Generic OpenAI-compatible servers do not define a standard token-count
+    // endpoint. Do not advertise token_counting unless an adapter implements it.
+    return new Set<ProviderCapability>(['usage_token_breakdown']);
   }
 
   async health(): Promise<ProviderHealth> {

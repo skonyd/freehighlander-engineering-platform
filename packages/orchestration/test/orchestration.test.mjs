@@ -5,6 +5,7 @@ import {
   buildContextPacket,
   buildContractFingerprint,
   buildSemanticReuseKey,
+  tokenOptimizationCanChangeAuthority,
   trimStaleContextItems,
   validateBoundedExecution,
 } from '../dist/index.js';
@@ -91,6 +92,7 @@ test('stale trimming never removes gate-required evidence', () => {
     trimmed.map((item) => item.id),
     ['required-old', 'current'],
   );
+  assert.equal(tokenOptimizationCanChangeAuthority(), false);
 });
 
 test('contract fingerprint and semantic reuse key bind all correctness inputs', () => {

@@ -100,6 +100,25 @@ try {
   failures.push('missing FH-05 shadow evaluation source');
 }
 
+try {
+  const contextSource = await fs.readFile(
+    path.join(root, 'packages', 'orchestration', 'src', 'context-packet.ts'),
+    'utf8',
+  );
+  const runtimeSource = await fs.readFile(
+    path.join(root, 'packages', 'model-runtime', 'src', 'token-budget.ts'),
+    'utf8',
+  );
+  if (!contextSource.includes('export function tokenOptimizationCanChangeAuthority(): false')) {
+    failures.push('FH-07 token/context optimization must remain authority-neutral');
+  }
+  if (!runtimeSource.includes('export function tokenBudgetCanAuthorizeEvidenceRemoval(): false')) {
+    failures.push('FH-07 token budget must not authorize required-evidence removal');
+  }
+} catch {
+  failures.push('missing FH-07 optimization authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
