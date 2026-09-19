@@ -257,3 +257,243 @@ async function sha256Hex(value: string): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
+
+export type BenchmarkRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
+
+export interface ShadowBenchmarkSample {
+  readonly sampleId: string;
+  readonly role: ShadowRoleId;
+  readonly riskTier: BenchmarkRiskTier;
+  readonly adjudicated: boolean;
+  readonly synthetic: boolean;
+  readonly reconciliation: ShadowReconciliation;
+  readonly candidateLatencyMs?: number;
+  readonly referenceLatencyMs?: number;
+  readonly candidateTotalTokens?: number;
+  readonly referenceTotalTokens?: number;
+  readonly candidateCostUsd?: number;
+  readonly referenceCostUsd?: number;
+}
+
+export interface BenchmarkReport {
+  readonly role: ShadowRoleId;
+  readonly riskTier: BenchmarkRiskTier;
+  readonly totalSamples: number;
+  readonly eligibleSamples: number;
+  readonly excludedSamples: number;
+  readonly agreementRate: number | null;
+  readonly precision: number | null;
+  readonly confirmedFindings: number;
+  readonly falsePositives: number;
+  readonly missedFindings: number;
+  readonly p0p1Misses: number;
+  readonly p2Misses: number;
+  readonly malformedCandidateSamples: number;
+  readonly candidateLatencyP50Ms: number | null;
+  readonly candidateLatencyP95Ms: number | null;
+  readonly referenceLatencyP50Ms: number | null;
+  readonly referenceLatencyP95Ms: number | null;
+  readonly candidateTotalTokens: number;
+  readonly referenceTotalTokens: number;
+  readonly candidateCostUsd: number;
+  readonly referenceCostUsd: number;
+  readonly projectedCostSavingRatio: number | null;
+}
+
+export type PromotionScreeningStatus =
+  | 'INSUFFICIENT_DATA'
+  | 'BLOCKED'
+  | 'PROMOTION_CANDIDATE'
+  | 'HUMAN_POLICY_REQUIRED';
+
+export interface PromotionScreening {
+  readonly status: PromotionScreeningStatus;
+  readonly reasons: readonly string[];
+  readonly authorityGranted: false;
+}
+
+export interface PromotionScreeningOptions {
+  readonly regressionSuitePassed?: boolean;
+  readonly minimumNormalCostSavingRatio?: number;
+}
+
+export const PROVISIONAL_PROMOTION_FLOORS = {
+  NORMAL: {
+    minimumSamples: 50,
+    minimumAgreementRate: 0.95,
+    minimumCostSavingRatio: 0.1,
+  },
+  HIGH: {
+    minimumSamples: 100,
+    minimumAgreementRate: 0.97,
+  },
+} as const;
+
+export function promotionCanApplyAutomatically(): false {
+  return false;
+}
+
+export function buildBenchmarkReport(
+  samples: readonly ShadowBenchmarkSample[],
+  role: ShadowRoleId,
+  riskTier: BenchmarkRiskTier,
+): BenchmarkReport {
+  const matching = samples.filter((sample) => sample.role === role && sample.riskTier === riskTier);
+  const eligible = matching.filter((sample) => sample.adjudicated && !sample.synthetic);
+
+  let confirmedFindings = 0;
+  let falsePositives = 0;
+  let missedFindings = 0;
+  let p0p1Misses = 0;
+  let p2Misses = 0;
+  let malformedCandidateSamples = 0;
+  let agreements = 0;
+
+  const candidateLatencies: number[] = [];
+  const referenceLatencies: number[] = [];
+  let candidateTotalTokens = 0;
+  let referenceTotalTokens = 0;
+  let candidateCostUsd = 0;
+  let referenceCostUsd = 0;
+
+  for (const sample of eligible) {
+    const reconciliation = sample.reconciliation;
+    if (reconciliation.role !== role) {
+      throw new Error(`sample ${sample.sampleId} role does not match reconciliation role`);
+    }
+    if (reconciliation.agreement) agreements += 1;
+    if (reconciliation.malformedCandidate) malformedCandidateSamples += 1;
+
+    confirmedFindings += reconciliation.confirmed;
+    falsePositives += reconciliation.falsePositive;
+    p0p1Misses += reconciliation.p0p1Miss;
+    p2Misses += reconciliation.p2Miss;
+    missedFindings += reconciliation.findings.filter(
+      (finding) => finding.label === 'MISSED_BY_CANDIDATE',
+    ).length;
+
+    pushFinite(candidateLatencies, sample.candidateLatencyMs);
+    pushFinite(referenceLatencies, sample.referenceLatencyMs);
+    candidateTotalTokens += finiteOrZero(sample.candidateTotalTokens);
+    referenceTotalTokens += finiteOrZero(sample.referenceTotalTokens);
+    candidateCostUsd += finiteOrZero(sample.candidateCostUsd);
+    referenceCostUsd += finiteOrZero(sample.referenceCostUsd);
+  }
+
+  const precisionDenominator = confirmedFindings + falsePositives;
+  return {
+    role,
+    riskTier,
+    totalSamples: matching.length,
+    eligibleSamples: eligible.length,
+    excludedSamples: matching.length - eligible.length,
+    agreementRate: eligible.length > 0 ? agreements / eligible.length : null,
+    precision: precisionDenominator > 0 ? confirmedFindings / precisionDenominator : null,
+    confirmedFindings,
+    falsePositives,
+    missedFindings,
+    p0p1Misses,
+    p2Misses,
+    malformedCandidateSamples,
+    candidateLatencyP50Ms: percentile(candidateLatencies, 0.5),
+    candidateLatencyP95Ms: percentile(candidateLatencies, 0.95),
+    referenceLatencyP50Ms: percentile(referenceLatencies, 0.5),
+    referenceLatencyP95Ms: percentile(referenceLatencies, 0.95),
+    candidateTotalTokens,
+    referenceTotalTokens,
+    candidateCostUsd,
+    referenceCostUsd,
+    projectedCostSavingRatio:
+      referenceCostUsd > 0 ? (referenceCostUsd - candidateCostUsd) / referenceCostUsd : null,
+  };
+}
+
+export function screenPromotionCandidate(
+  report: BenchmarkReport,
+  options: PromotionScreeningOptions = {},
+): PromotionScreening {
+  if (report.riskTier === 'CRITICAL') {
+    return {
+      status: 'HUMAN_POLICY_REQUIRED',
+      reasons: ['CRITICAL roles cannot be promoted from benchmark economics alone'],
+      authorityGranted: false,
+    };
+  }
+
+  const reasons: string[] = [];
+  const floor = PROVISIONAL_PROMOTION_FLOORS[report.riskTier];
+
+  if (report.eligibleSamples < floor.minimumSamples) {
+    reasons.push(
+      `eligible sample count ${report.eligibleSamples} is below ${floor.minimumSamples}`,
+    );
+  }
+
+  if (report.agreementRate === null || report.agreementRate < floor.minimumAgreementRate) {
+    reasons.push(
+      `agreement rate ${formatRate(report.agreementRate)} is below ${formatRate(
+        floor.minimumAgreementRate,
+      )}`,
+    );
+  }
+
+  if (report.p0p1Misses > 0) {
+    reasons.push(`P0/P1 misses must be zero; observed ${report.p0p1Misses}`);
+  }
+
+  if (report.riskTier === 'NORMAL') {
+    const minimumCostSavingRatio =
+      options.minimumNormalCostSavingRatio ??
+      PROVISIONAL_PROMOTION_FLOORS.NORMAL.minimumCostSavingRatio;
+
+    if (
+      report.projectedCostSavingRatio === null ||
+      report.projectedCostSavingRatio < minimumCostSavingRatio
+    ) {
+      reasons.push(
+        `projected cost saving ${formatRate(
+          report.projectedCostSavingRatio,
+        )} is below ${formatRate(minimumCostSavingRatio)}`,
+      );
+    }
+  }
+
+  if (report.riskTier === 'HIGH' && options.regressionSuitePassed !== true) {
+    reasons.push('HIGH promotion screening requires regression/adversarial suite PASS');
+  }
+
+  if (reasons.length === 0) {
+    return {
+      status: 'PROMOTION_CANDIDATE',
+      reasons: ['provisional screening floors satisfied; human/policy decision still required'],
+      authorityGranted: false,
+    };
+  }
+
+  const insufficientData = report.eligibleSamples < floor.minimumSamples;
+  return {
+    status: insufficientData ? 'INSUFFICIENT_DATA' : 'BLOCKED',
+    reasons,
+    authorityGranted: false,
+  };
+}
+
+function percentile(values: readonly number[], quantile: number): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((left, right) => left - right);
+  const index = Math.max(0, Math.ceil(quantile * sorted.length) - 1);
+  return sorted[index] ?? null;
+}
+
+function pushFinite(target: number[], value: number | undefined): void {
+  if (typeof value === 'number' && Number.isFinite(value) && value >= 0) target.push(value);
+}
+
+function finiteOrZero(value: number | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
+function formatRate(value: number | null): string {
+  return value === null ? 'n/a' : `${(value * 100).toFixed(2)}%`;
+}

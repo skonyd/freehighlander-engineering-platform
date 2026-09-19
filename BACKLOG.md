@@ -24,7 +24,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 
 ## Qwen / model economics
 - [x] FH-05 Qwen specialist shadow roles — issue #29 / PR #30
-- [ ] FH-06 Benchmark reconciliation + role promotion reports
+- [ ] FH-06 Benchmark reconciliation + role promotion reports — issue #31
 - [ ] FH-07 Token/context optimization
 - [ ] FH-08 Provider health / quota / circuit-breaker telemetry
 
