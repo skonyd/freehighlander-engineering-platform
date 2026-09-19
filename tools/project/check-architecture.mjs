@@ -127,7 +127,9 @@ try {
   if (!roleRegistrySource.includes('export function roleRegistryCanGrantAuthority(): false')) {
     failures.push('FH-12 role registry must remain authority-neutral');
   }
-  if (!roleRegistrySource.includes("return role.allowedActions.includes(action) ? 'ALLOW' : 'DENY'")) {
+  if (
+    !roleRegistrySource.includes("return role.allowedActions.includes(action) ? 'ALLOW' : 'DENY'")
+  ) {
     failures.push('FH-12 unknown tool permission must default to DENY');
   }
 } catch {
