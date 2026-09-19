@@ -1,3 +1,14 @@
+export {
+  SQLITE_SCHEMA_VERSION,
+  SqliteTelemetryStore,
+  type ArtifactIndexRecord,
+  type ImportResult,
+  type IndexedEngineeringEvent,
+  type ModelCallIndexRecord,
+  type RunIndexRecord,
+  type SqliteTelemetryStoreOptions,
+} from './sqlite-telemetry-store.js';
+
 export interface StoredRunState {
   readonly runId: string;
   readonly workflowId: string;
