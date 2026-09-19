@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T01:48:00+03:00"
+updated_at: "2026-09-20T01:52:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -10,15 +10,15 @@ mode:
 phase:
   id: FH-08
   name: provider-resilience-telemetry
-  status: in_progress
+  status: complete
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-08-provider-resilience
+  branch: main
   pull_request: null
-  issue: 36
-  objective: implement provider health, quota and circuit-breaker telemetry without changing authority
-  next_action: verify deterministic circuit transitions, telemetry metadata and architecture guards
+  issue: null
+  objective: freeze V3 architecture contracts while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-10 V3 architecture contract freeze
 
 fh01a:
   issue: 15
@@ -96,8 +96,8 @@ fh07:
 
 fh08:
   issue: 36
-  status: in_progress
-  branch: feat/fh-08-provider-resilience
+  pull_request: 37
+  status: complete
   authority_effect: none
   fallback_policy: availability_only
 
