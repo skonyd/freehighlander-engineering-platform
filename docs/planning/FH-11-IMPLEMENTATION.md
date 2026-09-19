@@ -1,7 +1,7 @@
 # FH-11 — Provider adapters and binding registry
 
 **Issue:** #40  
-**Status:** COMPLETE CANDIDATE  
+**Status:** COMPLETE  
 **Authority effect:** NONE
 
 ## Objective
