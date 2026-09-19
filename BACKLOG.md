@@ -29,7 +29,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-08 Provider health / quota / circuit-breaker telemetry — issue #36 / PR #37
 
 ## V3 control plane
-- [ ] FH-10 V3 architecture contract freeze
+- [x] FH-10 V3 architecture contract freeze — issue #38 / PR #39
 - [ ] FH-11 Provider adapter implementations + binding registry
 - [ ] FH-12 Role registry + role packages
 - [ ] FH-13 Workflow DAG + explicit state machine
