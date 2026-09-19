@@ -1,7 +1,7 @@
 # FH-08 — Provider health / quota / circuit-breaker telemetry
 
 **Issue:** #36  
-**Status:** IN PROGRESS  
+**Status:** COMPLETE  
 **Authority effect:** NONE
 
 ## Objective
