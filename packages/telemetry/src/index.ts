@@ -31,7 +31,10 @@ export type EventType =
   | 'checkpoint.created'
   | 'shadow.opinion.completed'
   | 'shadow.reconciliation.completed'
-  | 'benchmark.sample.recorded';
+  | 'benchmark.sample.recorded'
+  | 'context.packet.built'
+  | 'cache.diagnostic'
+  | 'reuse.diagnostic';
 
 export type FailureClass =
   | 'quota'
@@ -77,6 +80,10 @@ export interface ContextMetadata {
   readonly profile?: string;
   readonly packetId?: string;
   readonly packetHash?: string;
+  readonly promptVersion?: string;
+  readonly contractHash?: string;
+  readonly semanticReuseKey?: string;
+  readonly cacheKeyOrPrefixVersion?: string;
 }
 
 export interface ExecutionMetadata {
@@ -247,4 +254,16 @@ export function totalUsageTokens(usage: ModelUsage): number | undefined {
   ].filter((value): value is number => value !== undefined);
 
   return known.length > 0 ? known.reduce((sum, value) => sum + value, 0) : undefined;
+}
+
+export function cachedInputShare(usage: ModelUsage): number | undefined {
+  if (
+    usage.inputTokens === undefined ||
+    usage.inputTokens <= 0 ||
+    usage.cachedInputTokens === undefined
+  ) {
+    return undefined;
+  }
+
+  return Math.min(1, Math.max(0, usage.cachedInputTokens / usage.inputTokens));
 }

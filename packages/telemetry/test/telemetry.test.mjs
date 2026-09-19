@@ -8,6 +8,7 @@ import {
   InMemoryEventSink,
   JsonlFileEventSink,
   TelemetryEmitter,
+  cachedInputShare,
   createEvent,
   parseEvent,
   readJsonlEvents,
@@ -35,6 +36,15 @@ test('event schema is versioned and preserves run/workflow/model metadata', () =
       model: 'opus',
       effort: 'medium',
     },
+    context: {
+      profile: 'review',
+      packetId: 'ctx-1',
+      packetHash: 'packet-hash',
+      promptVersion: 'review:v3',
+      contractHash: 'contract-hash',
+      semanticReuseKey: 'reuse-key',
+      cacheKeyOrPrefixVersion: 'review-prefix:v3',
+    },
     execution: {
       status: 'PASS',
       durationMs: 1234,
@@ -55,6 +65,8 @@ test('event schema is versioned and preserves run/workflow/model metadata', () =
   assert.equal(parsed.schemaVersion, 1);
   assert.equal(parsed.runId, 'run-1');
   assert.equal(parsed.model?.logicalRole, 'test-reviewer');
+  assert.equal(parsed.context?.semanticReuseKey, 'reuse-key');
+  assert.equal(parsed.context?.cacheKeyOrPrefixVersion, 'review-prefix:v3');
   assert.equal(parsed.usage?.reasoningTokens, 10);
 });
 
@@ -94,7 +106,7 @@ test('TelemetryEmitter carries stable run context without prompt/completion cont
     { now: () => new Date('2026-09-19T20:00:00.000Z') },
   );
 
-  await emitter.emit('run.started', { trigger: 'test' });
+  await emitter.emit('context.packet.built', { itemCount: 3 });
 
   assert.equal(sink.events.length, 1);
   assert.equal(sink.events[0]?.timestamp, '2026-09-19T20:00:00.000Z');
@@ -175,4 +187,11 @@ test('usage totals prefer provider total and otherwise derive known billable tok
     120,
   );
   assert.equal(totalUsageTokens({}), undefined);
+});
+
+test('cached input share is bounded and unavailable without denominator', () => {
+  assert.equal(cachedInputShare({ inputTokens: 100, cachedInputTokens: 40 }), 0.4);
+  assert.equal(cachedInputShare({ inputTokens: 100, cachedInputTokens: 120 }), 1);
+  assert.equal(cachedInputShare({ inputTokens: 0, cachedInputTokens: 0 }), undefined);
+  assert.equal(cachedInputShare({ inputTokens: 100 }), undefined);
 });

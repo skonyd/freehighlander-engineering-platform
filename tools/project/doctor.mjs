@@ -1,6 +1,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import {
+  budgetNameForContextProfile,
+  loadContextConfig,
+  loadTokenPolicy,
+  resolveContextProfile,
+  tokenBudgetFor,
+} from './lib/context-policy.mjs';
 import { assertStateContract, findRepoRoot, loadProjectState } from './lib/state.mjs';
 
 const root = await findRepoRoot();
@@ -33,6 +40,27 @@ for (const requiredPath of [
   } catch {
     failures.push(`missing ${requiredPath}`);
   }
+}
+
+try {
+  const tokenPolicy = await loadTokenPolicy(root);
+  const contextConfig = await loadContextConfig(root);
+
+  for (const profileName of Object.keys(contextConfig.profiles)) {
+    const resolved = resolveContextProfile(contextConfig, profileName);
+    const budgetName = budgetNameForContextProfile(profileName);
+    tokenBudgetFor(tokenPolicy, budgetName);
+
+    for (const file of resolved.read) {
+      try {
+        await fs.access(path.join(root, file));
+      } catch {
+        failures.push(`context profile ${profileName} references missing file ${file}`);
+      }
+    }
+  }
+} catch (error) {
+  failures.push(error instanceof Error ? error.message : 'token/context policy validation failed');
 }
 
 if (failures.length > 0) {

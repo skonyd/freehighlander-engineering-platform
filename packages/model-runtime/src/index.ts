@@ -1,4 +1,12 @@
 export { OpenAiCompatibleProviderAdapter, ProviderInvocationError } from './openai-compatible.js';
+export {
+  preflightInputTokenBudget,
+  tokenBudgetCanAuthorizeEvidenceRemoval,
+  type InputTokenBudget,
+  type TokenBudgetPreflight,
+  type TokenBudgetStatus,
+  type TokenCountSource,
+} from './token-budget.js';
 
 export type ProviderCapability =
   | 'streaming'

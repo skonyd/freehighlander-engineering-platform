@@ -1,3 +1,26 @@
+export {
+  buildContextPacket,
+  buildContractFingerprint,
+  buildSemanticReuseKey,
+  sha256Text,
+  tokenOptimizationCanChangeAuthority,
+  trimStaleContextItems,
+  type ContextItemKind,
+  type ContextPacket,
+  type ContextPacketItemInput,
+  type ContextPacketManifestItem,
+  type ContractFingerprintInput,
+  type SemanticReuseKeyInput,
+} from './context-packet.js';
+
+export {
+  buildStablePrompt,
+  type PromptAssembly,
+  type PromptCacheHint,
+  type PromptSection,
+  type StablePromptInput,
+} from './prompt-layout.js';
+
 export type RunStatus =
   'PENDING' | 'RUNNING' | 'WAITING' | 'PASSED' | 'FAILED' | 'BLOCKED' | 'HUMAN_REQUIRED';
 
