@@ -120,6 +120,22 @@ try {
 }
 
 try {
+  const bindingRegistrySource = await fs.readFile(
+    path.join(root, 'packages', 'model-runtime', 'src', 'binding-registry.ts'),
+    'utf8',
+  );
+  if (
+    !bindingRegistrySource.includes(
+      'export function bindingRegistryCanGrantAuthority(): false',
+    )
+  ) {
+    failures.push('FH-11 binding registry must remain authority-neutral');
+  }
+} catch {
+  failures.push('missing FH-11 binding registry authority guard');
+}
+
+try {
   const providerCircuitSource = await fs.readFile(
     path.join(root, 'packages', 'model-runtime', 'src', 'circuit-breaker.ts'),
     'utf8',
