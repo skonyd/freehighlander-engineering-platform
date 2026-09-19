@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-19T23:20:00+03:00"
+updated_at: "2026-09-19T23:35:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -10,15 +10,15 @@ mode:
 phase:
   id: FH-01B
   name: v2-compatibility
-  status: split_provisional_then_promotion
+  status: provisional_complete_promotion_blocked
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: main
   pull_request: null
-  issue: 18
-  objective: allow provisional V2 compatibility work without enabling authority
-  next_action: FH-01B1 may proceed with current #207 SHA as provisional; after Claude quota reset finish #207, then run FH-01B2 reconciliation before any authority promotion
+  issue: 19
+  objective: preserve the completed provisional V2 compatibility port while waiting for final accepted #207
+  next_action: after Claude quota reset finish Creator Marketplace PR 207, record final accepted SHA, then execute FH-01B2 reconciliation before any authority promotion
 
 fh01a:
   issue: 15
@@ -27,10 +27,11 @@ fh01a:
 
 fh01b:
   issue: 16
-  status: in_progress_split
+  status: provisional_complete_promotion_blocked
   provisional:
     issue: 18
-    status: ready
+    pull_request: 21
+    status: complete
     reference_status: PROVISIONAL
     reference_sha: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
     authority: DISABLED

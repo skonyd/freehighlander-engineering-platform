@@ -14,7 +14,7 @@ To avoid idle time without trusting an unfinished reference, FH-01B is split int
 ## FH-01B1 — Provisional V2 Compatibility Port
 
 **Issue:** #18  
-**May start now**
+**Status: COMPLETE — PR #21**
 
 Reference at planning time:
 
@@ -32,7 +32,7 @@ REFERENCE_STATUS = PROVISIONAL
 AUTHORITY         = DISABLED
 ```
 
-FH-01B1 may implement:
+FH-01B1 delivered the following provisional compatibility surfaces:
 
 - compatibility layer for exact-SHA artifact binding
 - fail-closed gate structure

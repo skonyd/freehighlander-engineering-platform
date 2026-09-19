@@ -1,36 +1,26 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-01B SPLIT / PROVISIONAL PORT ALLOWED / AUTHORITY PROMOTION BLOCKED  
+**State status:** FH-01B1 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
 
 - FH-00 planning foundation
 - FH-01A executable TypeScript platform bootstrap
-- PR #17 merged
-- main SHA before this planning update: `384d7264a26f68dd05e2512b8917f880a1e6a0c9`
-- post-merge CI success
+- FH-01B1 provisional V2 compatibility port
+- FH-01B1 PR: **#21**
+- provisional reference SHA: `0e70f4a9680fcc5c287b7926f2aa20170c79f47d`
 
-## FH-01B split
-
-### FH-01B1 — provisional compatibility
-
-Issue: **#18**
-
-May proceed using Creator Marketplace PR #207 current exact HEAD:
-
-`0e70f4a9680fcc5c287b7926f2aa20170c79f47d`
-
-Mandatory state:
+FH-01B1 implements compatibility contracts and golden tests for the current Creator Marketplace #207 behavior while keeping:
 
 ```text
 REFERENCE_STATUS = PROVISIONAL
 AUTHORITY         = DISABLED
 ```
 
-The purpose is to port/test compatibility now without trusting the unfinished reference as final authority.
+The shell authority implementation is still not copied into `automation/legacy-v2/`.
 
-### FH-01B2 — reconciliation + promotion
+## FH-01B2 — reconciliation + promotion
 
 Issue: **#19**
 
@@ -42,17 +32,25 @@ Blocked until Creator Marketplace #207 completes:
 4. merge
 5. post-merge smoke
 
-After #207 closes, explicitly compare the provisional SHA with the final accepted reference SHA, inspect any delta, rerun parity/regression tests, and only then review authority promotion.
+After #207 closes:
+
+1. record the final accepted V2 reference SHA
+2. compare it with the provisional SHA above
+3. inspect any exact delta
+4. update the compatibility port only for accepted delta
+5. rerun parity/regression suites
+6. run post-port smoke
+7. explicitly review authority promotion
 
 ## Mandatory reminder
 
-Do not treat FH-01B as complete until these are explicitly confirmed:
+FH-01B is not complete and authority must remain disabled until all are confirmed:
 
-- provisional reference SHA
-- final accepted reference SHA
+- provisional reference SHA recorded
+- final accepted reference SHA recorded
 - delta reviewed
 - parity suite passed
 - post-port smoke passed
 - authority promotion reviewed
 
-The Claude quota reset / #207 closure is therefore a required re-evaluation checkpoint, not just a scheduling note.
+The Claude quota reset / #207 closure remains a hard re-evaluation checkpoint.

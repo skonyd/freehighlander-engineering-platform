@@ -15,6 +15,7 @@ const expectedPackages = new Map([
   ['packages/telemetry', '@freehighlander/telemetry'],
   ['packages/persistence', '@freehighlander/persistence'],
   ['packages/contracts', '@freehighlander/contracts'],
+  ['packages/v2-compat', '@freehighlander/v2-compat'],
 ]);
 
 const failures = [];
@@ -47,11 +48,40 @@ try {
   );
   if (implementationFiles.length > 0) {
     failures.push(
-      'automation/legacy-v2 must remain documentation-only until FH-01B and accepted #207',
+      'automation/legacy-v2 must remain documentation-only until FH-01B2 accepted promotion',
     );
   }
 } catch {
   failures.push('automation/legacy-v2 placeholder is required');
+}
+
+// FH-01B1 provisional guard: compatibility code may exist, but it must stay
+// explicitly non-authoritative until FH-01B2 reconciles the final accepted #207.
+try {
+  const v2CompatSource = await fs.readFile(
+    path.join(root, 'packages', 'v2-compat', 'src', 'index.ts'),
+    'utf8',
+  );
+  const requiredFragments = [
+    "sha: '0e70f4a9680fcc5c287b7926f2aa20170c79f47d'",
+    "referenceStatus: 'PROVISIONAL'",
+    "authority: 'DISABLED'",
+    "export const AUTHORITATIVE_ARTIFACT_KIND = 'full' as const",
+    'export function authorityPromotionAllowed(): false',
+  ];
+  for (const fragment of requiredFragments) {
+    if (!v2CompatSource.includes(fragment)) {
+      failures.push(`FH-01B1 provisional guard missing: ${fragment}`);
+    }
+  }
+  if (/referenceStatus:\s*'ACCEPTED'/.test(v2CompatSource)) {
+    failures.push('FH-01B1 cannot mark the V2 reference ACCEPTED');
+  }
+  if (/authority:\s*'ENABLED'/.test(v2CompatSource)) {
+    failures.push('FH-01B1 cannot enable V2 authority');
+  }
+} catch {
+  failures.push('missing FH-01B1 provisional compatibility source');
 }
 
 if (failures.length > 0) {
