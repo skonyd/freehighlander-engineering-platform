@@ -1,0 +1,64 @@
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+import {
+  architectureContractHash,
+  assertArchitectureContract,
+  loadArchitectureContract,
+} from '../lib/architecture-contract.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+
+test('repository V3 architecture contract validates and hashes deterministically', async () => {
+  const contract = await loadArchitectureContract(root);
+  const first = architectureContractHash(contract);
+  const second = architectureContractHash(structuredClone(contract));
+
+  assert.match(first, /^[a-f0-9]{64}$/);
+  assert.equal(first, second);
+  assert.equal(contract.status, 'FROZEN_BASELINE');
+  assert.equal(contract.migration.v3_authority, 'SHADOW_ONLY');
+});
+
+test('architecture freeze rejects authority cutover before FH-20', async () => {
+  const contract = structuredClone(await loadArchitectureContract(root));
+  contract.migration.v3_authority = 'ENABLED';
+
+  assert.throws(() => assertArchitectureContract(contract), /V3 authority must be SHADOW_ONLY/);
+});
+
+test('architecture freeze rejects semantic fallback/model-shopping drift', async () => {
+  const contract = structuredClone(await loadArchitectureContract(root));
+  contract.providers.fallback_policy = 'semantic-retry';
+
+  assert.throws(() => assertArchitectureContract(contract), /provider fallback policy/);
+});
+
+test('architecture freeze rejects permissive unknown tool permissions', async () => {
+  const contract = structuredClone(await loadArchitectureContract(root));
+  contract.roles.unknown_tool_permission = 'ALLOW';
+
+  assert.throws(() => assertArchitectureContract(contract), /unknown tool permission must be DENY/);
+});
+
+test('architecture freeze rejects missing accepted ADRs and unbounded loops', async () => {
+  const missingAdr = structuredClone(await loadArchitectureContract(root));
+  missingAdr.accepted_adrs.pop();
+  assert.throws(() => assertArchitectureContract(missingAdr), /accepted ADRs/);
+
+  const unbounded = structuredClone(await loadArchitectureContract(root));
+  unbounded.workflows.loops_must_be_bounded = false;
+  assert.throws(() => assertArchitectureContract(unbounded), /workflow loops must be bounded/);
+});
+
+test('architecture freeze rejects weakened sandbox or automatic authority promotion', async () => {
+  const permissiveNetwork = structuredClone(await loadArchitectureContract(root));
+  permissiveNetwork.security.network_default = 'ALLOW';
+  assert.throws(() => assertArchitectureContract(permissiveNetwork), /network default must be DENY/);
+
+  const autoPromotion = structuredClone(await loadArchitectureContract(root));
+  autoPromotion.evaluation.automatic_authority_promotion = true;
+  assert.throws(() => assertArchitectureContract(autoPromotion), /automatic authority promotion must be false/);
+});
