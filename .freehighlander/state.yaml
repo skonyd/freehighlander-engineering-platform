@@ -1,15 +1,15 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T00:44:00+03:00"
+updated_at: "2026-09-20T00:51:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-05
-  name: qwen-shadow-evaluation
+  id: FH-06
+  name: benchmark-reconciliation
   status: complete
 
 active_work:
@@ -17,8 +17,8 @@ active_work:
   branch: main
   pull_request: null
   issue: null
-  objective: continue benchmark/economics work while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-06 benchmark reconciliation and promotion-candidate reporting
+  objective: optimize context/token economics without changing authority while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-07 token/context optimization and enabling contracts
 
 fh01a:
   issue: 15
@@ -44,29 +44,16 @@ fh02:
   issue: 22
   pull_request: 23
   status: complete
-  schema_version: 1
-  durable_history: .freehighlander/runtime/events.jsonl
-  storage_format: jsonl
-  authority_effect: none
 
 fh03:
   issue: 24
   pull_request: 25
   status: complete
-  schema_version: 1
-  database_default: .freehighlander/runtime/freehighlander.sqlite
-  role: query-current-state-index
-  canonical_source: telemetry-domain-events
-  authority_effect: none
 
 fh04:
   issue: 26
   pull_request: 27
   status: complete
-  mode: local-read-only-observer
-  default_bind: 127.0.0.1
-  sqlite_access: read-only
-  mutation_http_methods: denied
   authority_effect: none
 
 fh05:
@@ -76,13 +63,28 @@ fh05:
   mode: independent-shadow
   authority: NONE
   auto_promotion: false
-  local_provider_adapter: openai-compatible
-  roles:
-    - repo-analysis
-    - test-candidate-reviewer
-    - security-candidate-reviewer
-    - architecture-consistency-reviewer
-    - cve-dependency-triage
+
+fh06:
+  issue: 31
+  pull_request: 32
+  status: complete
+  screening_only: true
+  auto_promotion: false
+  statuses:
+    - INSUFFICIENT_DATA
+    - BLOCKED
+    - PROMOTION_CANDIDATE
+    - HUMAN_POLICY_REQUIRED
+  normal_floor:
+    minimum_samples: 50
+    minimum_agreement: 0.95
+    p0_p1_misses: 0
+  high_floor:
+    minimum_samples: 100
+    minimum_agreement: 0.97
+    p0_p1_misses: 0
+    regression_suite_required: true
+  critical: human_policy_required
 
 external_dependency:
   repository: skonyd/creator-marketplace
