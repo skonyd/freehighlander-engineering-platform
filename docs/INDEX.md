@@ -20,7 +20,6 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Backlog](../BACKLOG.md)
 
 ## 3. Continuity / Multi-model work
-- [State README](state/README.md)
 - [Resume Protocol](state/RESUME-PROTOCOL.md)
 - [Triple Mode](state/TRIPLE-MODE.md)
 - [Context Profiles](state/CONTEXT-PROFILES.md)
@@ -30,31 +29,39 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Checkpoint Template](state/CHECKPOINT-TEMPLATE.md)
 - [History](state/HISTORY.md)
 
-## 4. Automation
+## 4. Automation contracts
 - [Automation Adoption](automation/AUTOMATION-ADOPTION.md)
 - [Repository Contract](automation/REPO-CONTRACT.md)
 - [Context Packet Contract](automation/CONTEXT-PACKET-CONTRACT.md)
 - [Model Call Reuse](automation/MODEL-CALL-REUSE.md)
 - [Prompt Contracts](automation/PROMPT-CONTRACTS.md)
+- [Provider Adapter Contract](architecture/PROVIDER-ADAPTER-CONTRACT.md)
+- [Role Package Spec](architecture/ROLE-PACKAGE-SPEC.md)
+- [Workflow Spec v1](architecture/WORKFLOW-SPEC-v1.md)
+
+## 5. Evaluation / V2.5
+- [Evals and Benchmarks](evaluation/EVALS-AND-BENCHMARKS.md)
 - [V2.5 Plan](v2.5/PLAN.md)
 - [Metrics & Dashboard](v2.5/METRICS-DASHBOARD.md)
 - [Qwen Benchmark](v2.5/QWEN-BENCHMARK.md)
 
-## 5. Evaluation
-- [Evals and Benchmarks](evaluation/EVALS-AND-BENCHMARKS.md)
-
-## 6. Architecture / V3
+## 6. Architecture / lineage / V3
 - [Platform Boundaries](architecture/PLATFORM-BOUNDARIES.md)
 - [Core Domain Model](architecture/CORE-DOMAIN-MODEL.md)
+- [Lineage Schema v1](architecture/LINEAGE-SCHEMA-v1.md)
 - [V3 Architecture Contract](v3/ARCHITECTURE-CONTRACT.md)
 - [Role / Model Router](v3/ROLE-MODEL-ROUTER.md)
 - [Workflow Engine](v3/WORKFLOW-ENGINE.md)
 
-## 7. Governance / Quality / Security
+## 7. Governance / Quality / Security / Operations
+- [Authority Matrix](governance/AUTHORITY-MATRIX.md)
 - [Authority & Decisions](governance/AUTHORITY-AND-DECISIONS.md)
 - [ADR Index](decisions/README.md)
 - [Quality Strategy](testing/QUALITY-STRATEGY.md)
 - [Security Baseline](security/SECURITY-BASELINE.md)
+- [Execution & Data Boundaries](security/EXECUTION-AND-DATA-BOUNDARIES.md)
+- [Threat Model](security/THREAT-MODEL.md)
+- [Backup / Restore](operations/BACKUP-RESTORE.md)
 - [Control Plane UX](ui/CONTROL-PLANE-UX.md)
 - [Environments & Delivery](operations/ENVIRONMENTS-AND-DELIVERY.md)
 
@@ -64,6 +71,10 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 ## 9. Research
 - [Agent Repository Continuity](research/AGENT-REPOSITORY-CONTINUITY.md)
 - [Token Efficiency 2026](research/TOKEN-EFFICIENCY-2026.md)
+- [Security / Operations 2026](research/SECURITY-OPERATIONS-2026.md)
+
+## Machine-readable policies
+See `.freehighlander/` for current state, context, token, provider, authority, sandbox, data, debate, budget, evidence and plugin policies.
 
 ## Doküman statüleri
 DRAFT → PROPOSED → ACCEPTED → SUPERSEDED. Kritik kararlar ADR ile kalıcılaştırılır.
