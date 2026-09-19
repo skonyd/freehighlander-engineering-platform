@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-03 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-04 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -10,31 +10,22 @@
 - FH-01B1 provisional V2 compatibility port
 - FH-02 append-only telemetry event history
 - FH-03 SQLite telemetry read model
+- FH-04 read-only local observability dashboard
 
-FH-03 provides:
+FH-04 provides:
 
-- SQLite schema migration v1
-- idempotent SHA-256 event ingestion
-- run current/read model
-- model-call index
-- artifact lifecycle index
-- JSONL history import
-- out-of-order run-status protection
-- query APIs for dashboard work
+- localhost-first HTTP dashboard
+- SQLite read-only access
+- summary metrics
+- run list and run detail
+- event timeline
+- model role/provider/token/cost/latency visibility
+- artifact lifecycle visibility
+- explicit human-required visibility
+- missing-database/empty-state handling
+- GET/HEAD-only API surface; mutation methods return 405
 
-The canonical data relationship is:
-
-```text
-FH-02 domain events / events.jsonl
-              ↓
-         SQLite index
-              ↓
-       read/query model
-              ↓
-FH-04 read-only dashboard
-```
-
-SQLite is not a replacement for event provenance.
+The dashboard is an observer only. It has no workflow, role, provider, policy or authority mutation path.
 
 ## V2 authority remains blocked
 
@@ -47,7 +38,18 @@ FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, 
 
 ## Next unblocked work
 
-FH-04 read-only dashboard.
+FH-05 Qwen specialist shadow roles.
 
-The dashboard is an observer only. It may query runs/events/model-calls/artifacts but must not mutate
-workflow, role, provider, policy or authority configuration.
+Shadow work must remain non-authoritative:
+
+```text
+Qwen shadow role
+      ↓
+candidate/evidence/measurement
+      ↓
+independent strong reviewer
+      ↓
+benchmark only
+```
+
+Promotion decisions belong to FH-06 and remain human/policy controlled.
