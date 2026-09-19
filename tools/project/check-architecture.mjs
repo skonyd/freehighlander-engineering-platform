@@ -124,7 +124,9 @@ try {
     path.join(root, 'packages', 'model-runtime', 'src', 'circuit-breaker.ts'),
     'utf8',
   );
-  if (!providerCircuitSource.includes('export function providerCircuitCanChangeAuthority(): false')) {
+  if (
+    !providerCircuitSource.includes('export function providerCircuitCanChangeAuthority(): false')
+  ) {
     failures.push('FH-08 provider circuit breaker must remain authority-neutral');
   }
   if (
