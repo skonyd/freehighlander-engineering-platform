@@ -148,8 +148,7 @@ export class ProviderCircuitBreaker {
     const previous = this.#state;
     this.#state = 'OPEN';
     this.#openedAtMs = nowMs;
-    this.#nextProbeAtMs =
-      nowMs + effectiveOpenDuration(this.policy.openDurationMs, retryAfterMs);
+    this.#nextProbeAtMs = nowMs + effectiveOpenDuration(this.policy.openDurationMs, retryAfterMs);
 
     return {
       snapshot: this.snapshot(),
@@ -223,10 +222,7 @@ function validateNow(nowMs: number): void {
 }
 
 function validateRetryAfter(retryAfterMs: number | undefined): void {
-  if (
-    retryAfterMs !== undefined &&
-    (!Number.isFinite(retryAfterMs) || retryAfterMs < 0)
-  ) {
+  if (retryAfterMs !== undefined && (!Number.isFinite(retryAfterMs) || retryAfterMs < 0)) {
     throw new Error('retryAfterMs must be a non-negative finite number');
   }
 }
