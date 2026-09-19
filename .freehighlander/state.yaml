@@ -1,15 +1,15 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-19T23:55:00+03:00"
+updated_at: "2026-09-20T00:05:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-02
-  name: telemetry-foundation
+  id: FH-03
+  name: sqlite-read-model
   status: complete
 
 active_work:
@@ -17,8 +17,8 @@ active_work:
   branch: main
   pull_request: null
   issue: null
-  objective: continue unblocked V2.5 platform work while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-03 SQLite run/event/artifact metadata store
+  objective: continue unblocked V2.5 work while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-04 read-only metrics dashboard
 
 fh01a:
   issue: 15
@@ -47,6 +47,16 @@ fh02:
   schema_version: 1
   durable_history: .freehighlander/runtime/events.jsonl
   storage_format: jsonl
+  authority_effect: none
+
+fh03:
+  issue: 24
+  pull_request: 25
+  status: complete
+  schema_version: 1
+  database_default: .freehighlander/runtime/freehighlander.sqlite
+  role: query-current-state-index
+  canonical_source: telemetry-domain-events
   authority_effect: none
 
 external_dependency:
