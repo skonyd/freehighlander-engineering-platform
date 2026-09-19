@@ -16,6 +16,7 @@ const expectedPackages = new Map([
   ['packages/persistence', '@freehighlander/persistence'],
   ['packages/contracts', '@freehighlander/contracts'],
   ['packages/v2-compat', '@freehighlander/v2-compat'],
+  ['packages/evaluation', '@freehighlander/evaluation'],
 ]);
 
 const failures = [];
@@ -82,6 +83,21 @@ try {
   }
 } catch {
   failures.push('missing FH-01B1 provisional compatibility source');
+}
+
+try {
+  const evaluationSource = await fs.readFile(
+    path.join(root, 'packages', 'evaluation', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!evaluationSource.includes('export function shadowCanGrantAuthority(): false')) {
+    failures.push('FH-05 shadow evaluation must remain non-authoritative');
+  }
+  if (!evaluationSource.includes("readonly authority: 'NONE'")) {
+    failures.push('FH-05 shadow pair authority guard is missing');
+  }
+} catch {
+  failures.push('missing FH-05 shadow evaluation source');
 }
 
 if (failures.length > 0) {

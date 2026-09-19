@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-04 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-05 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -11,23 +11,34 @@
 - FH-02 append-only telemetry event history
 - FH-03 SQLite telemetry read model
 - FH-04 read-only local observability dashboard
+- FH-05 independent Qwen/local shadow evaluation framework
 
-FH-04 provides:
+FH-05 provides:
 
-- localhost-first HTTP dashboard
-- SQLite read-only access
-- summary metrics
-- run list and run detail
-- event timeline
-- model role/provider/token/cost/latency visibility
-- artifact lifecycle visibility
-- explicit human-required visibility
-- missing-database/empty-state handling
-- GET/HEAD-only API surface; mutation methods return 405
+- OpenAI-compatible local provider adapter
+- local provider health + chat-completion calls
+- usage-token mapping
+- availability/failure classification
+- independent candidate/reference first opinions
+- same-authoritative-input hash binding
+- independence-key separation
+- finding reconciliation
+- CONFIRMED / FALSE_POSITIVE / MISSED_BY_CANDIDATE / UNRESOLVED labels
+- explicit P0/P1 and P2 miss accounting
+- initial specialist shadow-role registry
+- shadow/benchmark telemetry event types
 
-The dashboard is an observer only. It has no workflow, role, provider, policy or authority mutation path.
+## Authority remains unchanged
 
-## V2 authority remains blocked
+Shadow evaluation is measurement only:
+
+```text
+shadowCanGrantAuthority() = false
+pair.authority = NONE
+reconciliation.promotionAuthority = NONE
+```
+
+FH-01B1 remains:
 
 ```text
 REFERENCE_STATUS = PROVISIONAL
@@ -38,18 +49,6 @@ FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, 
 
 ## Next unblocked work
 
-FH-05 Qwen specialist shadow roles.
+FH-06 benchmark reconciliation and promotion-candidate reporting.
 
-Shadow work must remain non-authoritative:
-
-```text
-Qwen shadow role
-      ↓
-candidate/evidence/measurement
-      ↓
-independent strong reviewer
-      ↓
-benchmark only
-```
-
-Promotion decisions belong to FH-06 and remain human/policy controlled.
+FH-06 may say `PROMOTION_CANDIDATE`; it must never self-promote a role to authority.

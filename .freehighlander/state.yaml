@@ -1,15 +1,15 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T00:31:00+03:00"
+updated_at: "2026-09-20T00:44:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-04
-  name: readonly-dashboard
+  id: FH-05
+  name: qwen-shadow-evaluation
   status: complete
 
 active_work:
@@ -17,8 +17,8 @@ active_work:
   branch: main
   pull_request: null
   issue: null
-  objective: continue unblocked V2.5 optimization work while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-05 Qwen specialist shadow roles and benchmark instrumentation
+  objective: continue benchmark/economics work while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-06 benchmark reconciliation and promotion-candidate reporting
 
 fh01a:
   issue: 15
@@ -68,6 +68,21 @@ fh04:
   sqlite_access: read-only
   mutation_http_methods: denied
   authority_effect: none
+
+fh05:
+  issue: 29
+  pull_request: 30
+  status: complete
+  mode: independent-shadow
+  authority: NONE
+  auto_promotion: false
+  local_provider_adapter: openai-compatible
+  roles:
+    - repo-analysis
+    - test-candidate-reviewer
+    - security-candidate-reviewer
+    - architecture-consistency-reviewer
+    - cve-dependency-triage
 
 external_dependency:
   repository: skonyd/creator-marketplace

@@ -1,3 +1,5 @@
+export { OpenAiCompatibleProviderAdapter, ProviderInvocationError } from './openai-compatible.js';
+
 export type ProviderCapability =
   | 'streaming'
   | 'structured_output'
@@ -30,6 +32,7 @@ export interface ProviderUsage {
   readonly cachedInputTokens?: number;
   readonly outputTokens?: number;
   readonly reasoningTokens?: number;
+  readonly totalTokens?: number;
 }
 
 export interface ProviderRequest {
