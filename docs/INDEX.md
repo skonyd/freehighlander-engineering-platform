@@ -14,6 +14,7 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 ## 2. Planning / Delivery
 - [Roadmap](ROADMAP.md)
 - [PR Roadmap](planning/PR-ROADMAP.md)
+- [FH-01 Implementation Plan](planning/FH-01-IMPLEMENTATION-PLAN.md)
 - [Discussion Agenda](planning/DISCUSSION-AGENDA.md)
 - [Definition of Ready / Done](planning/DEFINITION-OF-READY-DONE.md)
 - [Backlog](../BACKLOG.md)
@@ -32,18 +33,24 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 ## 4. Automation
 - [Automation Adoption](automation/AUTOMATION-ADOPTION.md)
 - [Repository Contract](automation/REPO-CONTRACT.md)
+- [Context Packet Contract](automation/CONTEXT-PACKET-CONTRACT.md)
+- [Model Call Reuse](automation/MODEL-CALL-REUSE.md)
+- [Prompt Contracts](automation/PROMPT-CONTRACTS.md)
 - [V2.5 Plan](v2.5/PLAN.md)
 - [Metrics & Dashboard](v2.5/METRICS-DASHBOARD.md)
 - [Qwen Benchmark](v2.5/QWEN-BENCHMARK.md)
 
-## 5. Architecture / V3
+## 5. Evaluation
+- [Evals and Benchmarks](evaluation/EVALS-AND-BENCHMARKS.md)
+
+## 6. Architecture / V3
 - [Platform Boundaries](architecture/PLATFORM-BOUNDARIES.md)
 - [Core Domain Model](architecture/CORE-DOMAIN-MODEL.md)
 - [V3 Architecture Contract](v3/ARCHITECTURE-CONTRACT.md)
 - [Role / Model Router](v3/ROLE-MODEL-ROUTER.md)
 - [Workflow Engine](v3/WORKFLOW-ENGINE.md)
 
-## 6. Governance / Quality / Security
+## 7. Governance / Quality / Security
 - [Authority & Decisions](governance/AUTHORITY-AND-DECISIONS.md)
 - [ADR Index](decisions/README.md)
 - [Quality Strategy](testing/QUALITY-STRATEGY.md)
@@ -51,10 +58,10 @@ Bu dosya dokümantasyonun kanonik giriş noktasıdır.
 - [Control Plane UX](ui/CONTROL-PLANE-UX.md)
 - [Environments & Delivery](operations/ENVIRONMENTS-AND-DELIVERY.md)
 
-## 7. Reusable templates
+## 8. Reusable templates
 - [Portable AI Engineering Repository Blueprint](templates/PORTABLE-AI-ENGINEERING-REPO.md)
 
-## 8. Research
+## 9. Research
 - [Agent Repository Continuity](research/AGENT-REPOSITORY-CONTINUITY.md)
 - [Token Efficiency 2026](research/TOKEN-EFFICIENCY-2026.md)
 

@@ -9,6 +9,15 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır. F
 - [ ] FH-03 SQLite run/event/artifact metadata store
 - [ ] FH-04 Read-only metrics dashboard
 
+## FH-01/FH-02 enabling contracts
+- [ ] Context packet builder + manifest validation
+- [ ] Prompt contract/version registry
+- [ ] Semantic model-call reuse key
+- [ ] Evidence policy validator
+- [ ] Provider token-count capability
+- [ ] Token-budget diagnostics
+- [ ] project:bootstrap / doctor / resume / checkpoint
+
 ## Qwen / model economics
 - [ ] FH-05 Qwen specialist shadow roles
 - [ ] FH-06 Benchmark reconciliation + role promotion reports
