@@ -603,9 +603,7 @@ export async function stampContextTriageAdjudication(
   configHash: string,
   triageFull: string,
 ): Promise<string> {
-  if (
-    containsReservedLine(controllerArtifact, ['PRODUCER', 'TRIAGE_CONTENT_HASH'])
-  ) {
+  if (containsReservedLine(controllerArtifact, ['PRODUCER', 'TRIAGE_CONTENT_HASH'])) {
     throw new Error('context-triage adjudication contains reserved provenance');
   }
 
