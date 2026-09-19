@@ -9,7 +9,6 @@ export const PROVISIONAL_V2_REFERENCE = {
 export type RiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
 export type Effort = 'low' | 'medium' | 'high';
 
-
 export const AUTHORITATIVE_ARTIFACT_KIND = 'full' as const;
 
 export const V2_REFERENCE_TEST_REVIEW = {
