@@ -134,7 +134,8 @@ export function createEvent<TPayload extends Record<string, unknown>>(
 ): EngineeringEvent<TPayload> {
   if (!input.runId.trim()) throw new Error('runId is required');
   if (!input.type.trim()) throw new Error('event type is required');
-  if (Number.isNaN(Date.parse(input.timestamp))) throw new Error('timestamp must be ISO-8601 compatible');
+  if (Number.isNaN(Date.parse(input.timestamp)))
+    throw new Error('timestamp must be ISO-8601 compatible');
 
   return {
     schemaVersion: TELEMETRY_SCHEMA_VERSION,

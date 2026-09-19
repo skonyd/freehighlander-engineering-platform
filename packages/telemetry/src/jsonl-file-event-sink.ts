@@ -1,12 +1,7 @@
 import { mkdir, open, readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import {
-  parseEvent,
-  serializeEvent,
-  type EngineeringEvent,
-  type EventSink,
-} from './index.js';
+import { parseEvent, serializeEvent, type EngineeringEvent, type EventSink } from './index.js';
 
 export interface JsonlFileEventSinkOptions {
   readonly durable?: boolean;

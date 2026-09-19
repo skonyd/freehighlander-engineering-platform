@@ -170,6 +170,9 @@ test('JSONL read reports the corrupt line number', async () => {
 
 test('usage totals prefer provider total and otherwise derive known billable token fields', () => {
   assert.equal(totalUsageTokens({ inputTokens: 100, outputTokens: 20, reasoningTokens: 5 }), 125);
-  assert.equal(totalUsageTokens({ inputTokens: 100, cachedInputTokens: 80, totalTokens: 120 }), 120);
+  assert.equal(
+    totalUsageTokens({ inputTokens: 100, cachedInputTokens: 80, totalTokens: 120 }),
+    120,
+  );
   assert.equal(totalUsageTokens({}), undefined);
 });
