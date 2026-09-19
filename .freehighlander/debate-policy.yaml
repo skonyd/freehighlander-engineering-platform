@@ -1,0 +1,38 @@
+schema_version: 1
+
+defaults:
+  independent_first_opinion: true
+  max_rounds: 2
+  max_participants: 4
+  consensus_is_authority: false
+  preserve_raw_round_artifacts: true
+
+strategies:
+  allowed:
+    - unanimous
+    - majority
+    - weighted
+    - adjudicator
+
+escalation:
+  on_tie:
+    - adjudicator
+    - human
+  on_budget_exhausted:
+    - adjudicator
+    - human
+  on_unresolved_critical:
+    - human
+
+authority:
+  may_override_system_policy: false
+  may_override_human_required: false
+  may_override_exact_evidence_requirement: false
+
+independence:
+  enforce_when_required: true
+  same_binding_aliases_count_as_independent: false
+
+budgets:
+  token_budget_required: true
+  time_budget_required: true
