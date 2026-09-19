@@ -91,7 +91,9 @@ export function buildStablePrompt(input: StablePromptInput): PromptAssembly {
 }
 
 function renderSections(sections: readonly PromptSection[]): string {
-  return sections.map((section) => `<${section.id}>\n${section.content}\n</${section.id}>`).join('\n\n');
+  return sections
+    .map((section) => `<${section.id}>\n${section.content}\n</${section.id}>`)
+    .join('\n\n');
 }
 
 function requireText(value: string, name: string): void {
