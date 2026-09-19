@@ -2,23 +2,38 @@
 
 **Status:** ACTIVE
 
-Bu kararları ilgili PR başlamadan netleştireceğiz.
+## Accepted
 
-1. **Ürün çalışma modeli:** local-first / self-hosted / hosted SaaS; multi-user ne zaman?
-2. **Backend/UI stack:** TypeScript + SQLite + API/SSE yönü; Next.js monorepo mu ayrı API/frontend mi?
-3. **Event source of truth:** JSONL audit/transport mı; SQLite ne zaman canonical?
-4. **Provider access:** CLI vs API primary; subscription quota nasıl temsil edilecek?
-5. **Authority matrix:** advisory, blocker candidate, adjudicator, final reviewer, human.
-6. **Role package format:** YAML/JSON manifest, prompt/versioning, permissions, schema.
-7. **Workflow persistence:** repo-as-code mı DB-native mı; UI ne publish edecek?
-8. **Debate semantics:** unanimous/majority/weighted, tie, max rounds, arbiter.
-9. **Tool sandbox:** filesystem, network, command allowlists, container/host execution.
-10. **Artifact/data retention:** raw prompts, PII/secrets redaction, compression, export/delete.
-11. **Project knowledge graph:** relational relationship table yeterli mi; graph DB kriteri?
-12. **Promotion thresholds:** NORMAL/HIGH benchmark eşikleri gerçek V2.5 verisiyle kalibre edilecek.
-13. **Cost/budget policy:** per-run/per-role/provider budget, hard/soft cap.
-14. **Naming/product packaging:** FreeHighlander kalıcı mı; monorepo/repo ayrımı?
-15. **Auth ve identity:** ilk UI local trusted user mı; login ne zaman?
-16. **Backup/restore:** SQLite/artifacts/event history recovery hedefi.
-17. **Plugin/tool ecosystem:** built-in adapter ile external plugin sınırı.
-18. **Data privacy:** project source/prompt/model data hangi provider'a gidebilir?
+### D-001 — İlk ürün çalışma modeli
+**ACCEPTED:** local-first, single-user first. Domain modeli ileride self-hosted/multi-user'a açılabilir.
+
+### D-002 — Backend/UI stack
+**ACCEPTED direction:** TypeScript monorepo, control-plane ile web UI mantıksal olarak ayrılır. SQLite + API/SSE yönü korunur.
+
+### D-003 — Event/source-of-truth yaklaşımı
+**ACCEPTED:** JSONL ilk telemetry/audit stream; SQLite query/current-state/metadata store; pragmatic event history.
+
+### D-007 — Workflow authoring başlangıcı
+**ACCEPTED direction:** repo-as-code workflow specs. V3 UI versioned publish katmanı ekler.
+
+### D-011 — Knowledge graph başlangıcı
+**ACCEPTED:** relational entity/relationship modeliyle başla; graph DB yalnız ihtiyaç ölçülürse.
+
+### Dashboard
+**ACCEPTED:** V2.5 read-only; V3 management/control plane.
+
+## Açık kararlar
+
+1. **D-004 Provider access:** CLI vs API adapter önceliği, subscription quota gösterimi, API-key providers, local endpoint discovery.
+2. **D-005 Authority matrix:** advisory / candidate / adjudicator / final review / human.
+3. **D-006 Role package format:** manifest, prompt versioning, permissions, output schemas, import/export.
+4. **D-008 Debate semantics:** consensus, tie, max rounds, arbiter, quota budget.
+5. **D-009 Tool sandbox:** filesystem/network/command boundaries, container vs host.
+6. **D-010 Artifact/data retention:** raw prompts/responses, PII/secrets redaction, retention/export/delete.
+7. **D-012 Model promotion thresholds:** V2.5 benchmark verisiyle kalibrasyon.
+8. **D-013 Cost/budget policy:** per-run/per-role/provider budgets.
+9. **D-014 Product packaging/naming:** FreeHighlander adı, package boundaries.
+10. **D-015 Auth/identity:** V3 self-hosted/multi-user öncesi.
+11. **D-016 Backup/restore:** SQLite/artifacts/event history.
+12. **D-017 Plugin/tool ecosystem:** built-in adapter vs external plugin sınırı.
+13. **D-018 Data privacy:** project source/prompt data hangi provider'a gidebilir?
