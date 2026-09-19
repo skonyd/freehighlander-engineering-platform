@@ -120,6 +120,21 @@ try {
 }
 
 try {
+  const roleRegistrySource = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'role-registry.ts'),
+    'utf8',
+  );
+  if (!roleRegistrySource.includes('export function roleRegistryCanGrantAuthority(): false')) {
+    failures.push('FH-12 role registry must remain authority-neutral');
+  }
+  if (!roleRegistrySource.includes("return role.allowedActions.includes(action) ? 'ALLOW' : 'DENY'")) {
+    failures.push('FH-12 unknown tool permission must default to DENY');
+  }
+} catch {
+  failures.push('missing FH-12 role registry authority guards');
+}
+
+try {
   const bindingRegistrySource = await fs.readFile(
     path.join(root, 'packages', 'model-runtime', 'src', 'binding-registry.ts'),
     'utf8',
