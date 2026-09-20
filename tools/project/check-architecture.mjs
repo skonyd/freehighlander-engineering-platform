@@ -190,7 +190,6 @@ try {
   failures.push('missing FH-13 workflow engine authority guards');
 }
 
-
 try {
   const debateEngineSource = await fs.readFile(
     path.join(root, 'packages', 'orchestration', 'src', 'debate-engine.ts'),
