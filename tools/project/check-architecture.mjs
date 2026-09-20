@@ -20,6 +20,7 @@ const expectedPackages = new Map([
   ['packages/planning', '@freehighlander/planning'],
   ['packages/development', '@freehighlander/development'],
   ['packages/testing', '@freehighlander/testing'],
+  ['packages/security', '@freehighlander/security'],
 ]);
 
 const failures = [];
@@ -419,6 +420,33 @@ try {
   }
 } catch {
   failures.push('missing FH-32A testing authority guards');
+}
+
+
+try {
+  const securitySource = await fs.readFile(
+    path.join(root, 'packages', 'security', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!securitySource.includes('export function securityCanGrantAuthority(): false')) {
+    failures.push('FH-33A security must remain authority-neutral');
+  }
+  if (!securitySource.includes('export function securityCanWaiveFinding(): false')) {
+    failures.push('FH-33A security must not self-waive findings');
+  }
+  if (!securitySource.includes('export function securityClearCanAuthorizeRelease(): false')) {
+    failures.push('FH-33A security CLEAR must not authorize release');
+  }
+  if (
+    !securitySource.includes('export function securityCanExecuteProductionMutation(): false')
+  ) {
+    failures.push('FH-33A security must not execute production mutation');
+  }
+  if (!securitySource.includes("readonly authority: 'NONE'")) {
+    failures.push('FH-33A security readiness authority must remain NONE');
+  }
+} catch {
+  failures.push('missing FH-33A security authority guards');
 }
 
 if (failures.length > 0) {
