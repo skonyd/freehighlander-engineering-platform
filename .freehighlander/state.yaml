@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T10:10:00+03:00"
+updated_at: "2026-09-20T10:31:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -10,15 +10,15 @@ mode:
 phase:
   id: FH-15
   name: policy-human-approval
-  status: in_progress
+  status: complete
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-15-policy-human-approval
+  branch: main
   pull_request: null
-  issue: 49
-  objective: implement policy-as-code and exact-bound human approval gates while FH-01B2 waits for Creator Marketplace #207
-  next_action: verify FH-15 policy/human approval implementation and protected-main CI
+  issue: null
+  objective: continue V3 foundation while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-16 artifact lineage and hash-bound provenance
 
 fh01a:
   issue: 15
@@ -146,8 +146,9 @@ fh14:
 
 fh15:
   issue: 49
-  status: in_progress
-  branch: feat/fh-15-policy-human-approval
+  pull_request: 50
+  status: complete
+  merge_sha: 8a22363b15f3e37bb2055c14b7893d70c9f8fcea
   default_policy: DENY
   decision_precedence: DENY>HUMAN_REQUIRED>ALLOW
   exact_approval_binding: true
