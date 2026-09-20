@@ -62,7 +62,7 @@ export type HardeningEventType =
 
 export type HardeningEventOutcome = 'ALLOW' | 'DENY' | 'PASS' | 'FAIL' | 'PLANNED' | 'SKIPPED';
 
-export interface HardeningEventPayload {
+export interface HardeningEventPayload extends Record<string, unknown> {
   readonly category: string;
   readonly action: string;
   readonly outcome: HardeningEventOutcome;
