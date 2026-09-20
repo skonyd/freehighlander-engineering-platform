@@ -2,7 +2,11 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { collectRepositoryReconciliation, assertSafeCheckpointWorktree, checkpointCanInferSemanticGatePass } from './lib/reconciliation.mjs';
+import {
+  collectRepositoryReconciliation,
+  assertSafeCheckpointWorktree,
+  checkpointCanInferSemanticGatePass,
+} from './lib/reconciliation.mjs';
 import { assertStateContract, findRepoRoot, loadProjectState } from './lib/state.mjs';
 
 const root = await findRepoRoot();
