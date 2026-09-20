@@ -1,7 +1,7 @@
 # FH-13 — Workflow DAG and explicit state machine
 
 **Issue:** #45  
-**Status:** IN PROGRESS  
+**Status:** COMPLETE  
 **Authority effect:** NONE
 
 ## Objective
