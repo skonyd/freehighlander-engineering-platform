@@ -627,7 +627,6 @@ try {
   failures.push('missing retention/privacy dry-run planner');
 }
 
-
 try {
   const sqliteStoreSource = await fs.readFile(
     path.join(root, 'packages', 'persistence', 'src', 'sqlite-telemetry-store.ts'),
