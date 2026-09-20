@@ -105,7 +105,7 @@ test('currentness is exact revision/workflow/role/policy bound', async () => {
   );
 });
 
-test('lineage traversal is deterministic and fails closed on missing parents', async () => {
+test(\n  'lineage traversal is deterministic and fails closed on missing parents',\n  async () => {
   const rootParent = await createArtifactEnvelope({
     artifactId: 'root-parent',
     artifactKind: 'evidence',
@@ -136,7 +136,7 @@ test('lineage traversal is deterministic and fails closed on missing parents', a
   assert.match(missing.errors[0], /missing lineage artifact/);
 });
 
-test('duplicate parent hashes are rejected and lineage cannot grant authority', async () => {
+test(\n  'duplicate parent hashes are rejected and lineage cannot grant authority',\n  async () => {
   const parent = await createArtifactEnvelope({
     artifactId: 'parent',
     artifactKind: 'evidence',
