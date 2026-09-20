@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-13 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-14 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -143,6 +143,19 @@ The implementation adds:
 
 Authority remains unchanged and V3 remains `SHADOW_ONLY`.
 
+## FH-14 completed
+
+Issue **#47** is implemented through PR **#48**.
+
+The implementation adds bounded council rounds, strict round-zero independence, deterministic consensus/disagreement evaluation and human escalation when bounded disagreement remains unresolved.
+
+Consensus is advisory only:
+
+```text
+consensus != authority
+unresolved final-round disagreement => HUMAN_REQUIRED
+```
+
 ## Next action
 
-Start FH-14 debate/council + disagreement escalation while FH-01B2 remains blocked by Creator Marketplace #207.
+Start FH-15 human approval + policy-as-code while FH-01B2 remains blocked by Creator Marketplace #207.
