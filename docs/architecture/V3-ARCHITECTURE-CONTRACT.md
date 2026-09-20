@@ -2,12 +2,12 @@
 
 **Status:** FROZEN BASELINE  
 **Machine-readable source:** `.freehighlander/architecture.yaml`  
-**Contract version:** 1.1.0  
+**Contract version:** 1.2.0  
 **Freeze phase:** FH-10
 
 ## Purpose
 
-This document records the accepted architecture direction from ADR-0001 through ADR-0013. Version 1.1.0 adds the Planning module as the first authority-neutral module bounded context while preserving all V3 foundation authority constraints.
+This document records the accepted architecture direction from ADR-0001 through ADR-0014. Version 1.2.0 adds the Development module alongside Planning while preserving all V3 foundation authority constraints.
 
 The machine-readable contract is normative for automated drift checks. Existing ADRs remain the decision rationale.
 
