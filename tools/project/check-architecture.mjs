@@ -372,7 +372,6 @@ try {
   failures.push('missing FH-30A planning authority guards');
 }
 
-
 try {
   const developmentSource = await fs.readFile(
     path.join(root, 'packages', 'development', 'src', 'index.ts'),
