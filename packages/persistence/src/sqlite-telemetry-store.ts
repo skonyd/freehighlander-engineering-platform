@@ -692,7 +692,6 @@ export class SqliteTelemetryStore {
   }
 }
 
-
 export function inspectSqliteTelemetryFile(filePath: string): SqliteIntegrityResult {
   if (!filePath.trim() || filePath === ':memory:') {
     throw new Error('SQLite inspection requires a file path');
