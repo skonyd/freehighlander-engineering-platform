@@ -42,11 +42,7 @@ export interface ParityDimensionResult {
 }
 
 export type ShadowParityStatus =
-  | 'PASS'
-  | 'MISMATCH'
-  | 'INSUFFICIENT_EVIDENCE'
-  | 'EXCLUDED'
-  | 'UNAVAILABLE';
+  'PASS' | 'MISMATCH' | 'INSUFFICIENT_EVIDENCE' | 'EXCLUDED' | 'UNAVAILABLE';
 
 export interface ShadowParityReport {
   readonly schemaVersion: 1;
@@ -101,8 +97,7 @@ export async function buildShadowParityReport(
     const v3 = normalize(input.v3[dimension]);
     return {
       dimension,
-      status:
-        v2 === null || v3 === null ? 'MISSING_EVIDENCE' : v2 === v3 ? 'MATCH' : 'MISMATCH',
+      status: v2 === null || v3 === null ? 'MISSING_EVIDENCE' : v2 === v3 ? 'MATCH' : 'MISMATCH',
       v2,
       v3,
     };
@@ -183,9 +178,6 @@ function canonicalJson(value: unknown): string {
 }
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await globalThis.crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(value),
-  );
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
