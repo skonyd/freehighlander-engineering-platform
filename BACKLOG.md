@@ -58,8 +58,8 @@ Activation lane FH-30B..FH-37B remains blocked by FH-01B2/FH-20 final authority 
 ## Pre-cutover hardening — independent of Creator Marketplace #207
 - [x] Executable data-policy/redaction/provider-egress enforcement — issue #89 / PR #90
 - [x] Executable sandbox permission evaluator — issue #91 / PR #92
-- [ ] Retention/privacy lifecycle — issue #93
-- [ ] SQLite backup/restore/integrity hardening
+- [x] Retention/privacy lifecycle — issue #93 / PR #94
+- [ ] SQLite backup/restore/integrity hardening — issue #95
 - [ ] FH-30A..FH-37A cross-module read-only integration
 - [ ] Hardening observability + adversarial/fail-closed tests
 - [ ] Architecture dependency-boundary enforcement

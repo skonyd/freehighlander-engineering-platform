@@ -1,7 +1,15 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync } from 'node:fs';
-import { dirname } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
+import {
+  constants as fsConstants,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { backup, DatabaseSync } from 'node:sqlite';
 
 export const SQLITE_SCHEMA_VERSION = 1 as const;
 
@@ -66,6 +74,34 @@ export interface IndexedEngineeringEvent {
 
 export interface SqliteTelemetryStoreOptions {
   readonly timeoutMs?: number;
+}
+
+export type WalCheckpointMode = 'PASSIVE' | 'FULL' | 'RESTART' | 'TRUNCATE';
+
+export interface SqliteIntegrityResult {
+  readonly ok: boolean;
+  readonly messages: readonly string[];
+  readonly schemaVersion: number;
+}
+
+export interface WalCheckpointResult {
+  readonly mode: WalCheckpointMode;
+  readonly busy: number;
+  readonly logPages: number;
+  readonly checkpointedPages: number;
+}
+
+export interface SqliteBackupResult {
+  readonly targetPath: string;
+  readonly totalPages: number;
+  readonly integrity: SqliteIntegrityResult;
+}
+
+export interface SqliteRestoreResult {
+  readonly sourcePath: string;
+  readonly targetPath: string;
+  readonly integrity: SqliteIntegrityResult;
+  readonly restored: true;
 }
 
 export interface ImportResult {
@@ -160,6 +196,59 @@ export class SqliteTelemetryStore {
     );
     const row = statement.get() as SqlRow | undefined;
     return toNumber(row?.version) ?? 0;
+  }
+
+  integrityCheck(): SqliteIntegrityResult {
+    return inspectDatabase(this.#db);
+  }
+
+  walCheckpoint(mode: WalCheckpointMode = 'PASSIVE'): WalCheckpointResult {
+    if (!new Set<WalCheckpointMode>(['PASSIVE', 'FULL', 'RESTART', 'TRUNCATE']).has(mode)) {
+      throw new Error('unsupported WAL checkpoint mode');
+    }
+
+    const row = this.#db.prepare(`PRAGMA wal_checkpoint(${mode})`).get() as SqlRow | undefined;
+    return {
+      mode,
+      busy: toNumber(row?.busy) ?? 0,
+      logPages: toNumber(row?.log) ?? 0,
+      checkpointedPages: toNumber(row?.checkpointed) ?? 0,
+    };
+  }
+
+  async backupTo(targetPath: string): Promise<SqliteBackupResult> {
+    if (!targetPath.trim() || targetPath === ':memory:') {
+      throw new Error('backup targetPath must be a file path');
+    }
+    if (this.filePath !== ':memory:' && resolve(this.filePath) === resolve(targetPath)) {
+      throw new Error('backup target must differ from the live database path');
+    }
+    if (existsSync(targetPath)) {
+      throw new Error('backup target already exists');
+    }
+
+    mkdirSync(dirname(targetPath), { recursive: true });
+    const tempDirectory = mkdtempSync(join(dirname(targetPath), '.fh-sqlite-backup-'));
+    const temporaryPath = join(tempDirectory, 'backup.sqlite');
+
+    try {
+      const totalPages = await backup(this.#db, temporaryPath);
+      const integrity = inspectSqliteTelemetryFile(temporaryPath);
+      if (!integrity.ok || integrity.schemaVersion !== SQLITE_SCHEMA_VERSION) {
+        throw new Error('backup verification failed');
+      }
+
+      copyFileSync(temporaryPath, targetPath, fsConstants.COPYFILE_EXCL);
+      const targetIntegrity = inspectSqliteTelemetryFile(targetPath);
+      if (!targetIntegrity.ok || targetIntegrity.schemaVersion !== SQLITE_SCHEMA_VERSION) {
+        rmSync(targetPath, { force: true });
+        throw new Error('backup target verification failed');
+      }
+
+      return { targetPath, totalPages, integrity: targetIntegrity };
+    } finally {
+      rmSync(tempDirectory, { recursive: true, force: true });
+    }
   }
 
   append(event: IndexedEngineeringEvent): Promise<void> {
@@ -601,6 +690,95 @@ export class SqliteTelemetryStore {
       throw error;
     }
   }
+}
+
+export function inspectSqliteTelemetryFile(filePath: string): SqliteIntegrityResult {
+  if (!filePath.trim() || filePath === ':memory:') {
+    throw new Error('SQLite inspection requires a file path');
+  }
+  if (!existsSync(filePath)) throw new Error('SQLite file does not exist');
+
+  let database: DatabaseSync | null = null;
+  try {
+    database = new DatabaseSync(filePath, { readOnly: true });
+    return inspectDatabase(database);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'unknown SQLite inspection failure';
+    throw new Error(`invalid SQLite telemetry database: ${message}`);
+  } finally {
+    database?.close();
+  }
+}
+
+export function restoreSqliteTelemetryBackupToNewFile(
+  sourcePath: string,
+  targetPath: string,
+): SqliteRestoreResult {
+  if (!sourcePath.trim() || !targetPath.trim()) {
+    throw new Error('restore sourcePath and targetPath are required');
+  }
+  if (sourcePath === ':memory:' || targetPath === ':memory:') {
+    throw new Error('restore requires file-backed source and target');
+  }
+  if (resolve(sourcePath) === resolve(targetPath)) {
+    throw new Error('restore target must differ from source backup');
+  }
+  if (!existsSync(sourcePath)) throw new Error('restore source backup does not exist');
+  if (existsSync(targetPath)) {
+    throw new Error('restore target already exists; live/existing databases are never overwritten');
+  }
+
+  const sourceIntegrity = inspectSqliteTelemetryFile(sourcePath);
+  if (!sourceIntegrity.ok || sourceIntegrity.schemaVersion !== SQLITE_SCHEMA_VERSION) {
+    throw new Error('restore source backup failed integrity/schema verification');
+  }
+
+  mkdirSync(dirname(targetPath), { recursive: true });
+  let copied = false;
+  try {
+    copyFileSync(sourcePath, targetPath, fsConstants.COPYFILE_EXCL);
+    copied = true;
+
+    const targetIntegrity = inspectSqliteTelemetryFile(targetPath);
+    if (!targetIntegrity.ok || targetIntegrity.schemaVersion !== SQLITE_SCHEMA_VERSION) {
+      throw new Error('restored database failed integrity/schema verification');
+    }
+
+    return {
+      sourcePath,
+      targetPath,
+      integrity: targetIntegrity,
+      restored: true,
+    };
+  } catch (error) {
+    if (copied) rmSync(targetPath, { force: true });
+    throw error;
+  }
+}
+
+function inspectDatabase(database: DatabaseSync): SqliteIntegrityResult {
+  const rows = database.prepare('PRAGMA integrity_check').all() as SqlRow[];
+  const messages = rows.map((row) => {
+    const value = row.integrity_check ?? Object.values(row)[0];
+    return String(value ?? 'unknown integrity result');
+  });
+
+  let schemaVersion = 0;
+  try {
+    const statement = database.prepare(
+      'SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations',
+    );
+    schemaVersion = toNumber((statement.get() as SqlRow | undefined)?.version) ?? 0;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'schema inspection failed';
+    messages.push(`schema inspection failed: ${message}`);
+  }
+
+  return {
+    ok: messages.length === 1 && messages[0] === 'ok' && schemaVersion > 0,
+    messages,
+    schemaVersion,
+  };
 }
 
 function parseJsonlFile(filePath: string): IndexedEngineeringEvent[] {

@@ -627,6 +627,30 @@ try {
   failures.push('missing retention/privacy dry-run planner');
 }
 
+try {
+  const sqliteStoreSource = await fs.readFile(
+    path.join(root, 'packages', 'persistence', 'src', 'sqlite-telemetry-store.ts'),
+    'utf8',
+  );
+  if (!sqliteStoreSource.includes('integrityCheck(): SqliteIntegrityResult')) {
+    failures.push('SQLite persistence must expose deterministic integrity verification');
+  }
+  if (!sqliteStoreSource.includes('async backupTo(targetPath: string)')) {
+    failures.push('SQLite persistence must expose verified native backup');
+  }
+  if (!sqliteStoreSource.includes('restoreSqliteTelemetryBackupToNewFile')) {
+    failures.push('SQLite restore must be explicit and offline/new-file only');
+  }
+  if (!sqliteStoreSource.includes('backup target already exists')) {
+    failures.push('SQLite backup must not overwrite an existing target');
+  }
+  if (!sqliteStoreSource.includes('live/existing databases are never overwritten')) {
+    failures.push('SQLite restore must not overwrite live/existing databases');
+  }
+} catch {
+  failures.push('missing SQLite backup/restore/integrity hardening');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

@@ -1,12 +1,19 @@
 export {
   SQLITE_SCHEMA_VERSION,
+  inspectSqliteTelemetryFile,
+  restoreSqliteTelemetryBackupToNewFile,
   SqliteTelemetryStore,
   type ArtifactIndexRecord,
   type ImportResult,
   type IndexedEngineeringEvent,
   type ModelCallIndexRecord,
   type RunIndexRecord,
+  type SqliteBackupResult,
+  type SqliteIntegrityResult,
+  type SqliteRestoreResult,
   type SqliteTelemetryStoreOptions,
+  type WalCheckpointMode,
+  type WalCheckpointResult,
 } from './sqlite-telemetry-store.js';
 
 export interface StoredRunState {
