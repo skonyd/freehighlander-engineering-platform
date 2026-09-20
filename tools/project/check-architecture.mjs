@@ -232,6 +232,26 @@ try {
   failures.push('missing FH-15 policy/human approval authority guards');
 }
 
+try {
+  const artifactLineageSource = await fs.readFile(
+    path.join(root, 'packages', 'evidence', 'src', 'artifact-lineage.ts'),
+    'utf8',
+  );
+  if (
+    !artifactLineageSource.includes('export function artifactLineageCanGrantAuthority(): false')
+  ) {
+    failures.push('FH-16 artifact lineage must remain authority-neutral');
+  }
+  if (!artifactLineageSource.includes('missing lineage artifact')) {
+    failures.push('FH-16 lineage verification must fail closed on missing parents');
+  }
+  if (!artifactLineageSource.includes('lineage cycle detected')) {
+    failures.push('FH-16 lineage verification must fail closed on cycles');
+  }
+} catch {
+  failures.push('missing FH-16 artifact-lineage authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

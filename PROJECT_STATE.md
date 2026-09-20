@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-15 IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-16 IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -156,9 +156,9 @@ consensus != authority
 unresolved final-round disagreement => HUMAN_REQUIRED
 ```
 
-## FH-15 active work
+## FH-15 completed
 
-Issue **#49** is active on `feat/fh-15-policy-human-approval`.
+Issue **#49** was implemented through PR **#50**.
 
 Policy evaluation is deterministic and fail-closed:
 - no match => DENY;
@@ -167,6 +167,12 @@ Policy evaluation is deterministic and fail-closed:
 - only HUMAN principals may record approval/denial;
 - request mismatch/replay does not verify.
 
+## FH-16 active work
+
+Issue **#52** is active on `feat/fh-16-artifact-lineage`.
+
+The evidence package now adds deterministic hash-bound artifact envelopes, exact revision/workflow/role/policy binding, parent lineage, missing-parent/cycle fail-closed verification and authority-neutral architecture guards.
+
 ## Next action
 
-Start FH-16 artifact lineage and hash-bound provenance while FH-01B2 remains blocked by Creator Marketplace #207.
+Verify FH-16 through protected-main CI, then advance to FH-17 replay/simulation + crash recovery.

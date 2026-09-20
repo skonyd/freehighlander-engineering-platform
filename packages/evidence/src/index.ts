@@ -1,3 +1,16 @@
+export {
+  artifactLineageCanGrantAuthority,
+  createArtifactEnvelope,
+  isLineageArtifactCurrent,
+  verifyArtifactEnvelope,
+  verifyArtifactLineage,
+  type ArtifactCurrentContext,
+  type ArtifactEnvelope,
+  type ArtifactEnvelopeInput,
+  type ArtifactLineageBinding,
+  type LineageVerificationResult,
+} from './artifact-lineage.js';
+
 export interface ArtifactMetadata {
   readonly artifactId: string;
   readonly exactRevision: string;

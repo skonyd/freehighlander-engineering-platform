@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T10:31:00+03:00"
+updated_at: "2026-09-20T10:34:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-15
-  name: policy-human-approval
-  status: complete
+  id: FH-16
+  name: artifact-lineage
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-16-artifact-lineage
   pull_request: null
-  issue: null
-  objective: continue V3 foundation while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-16 artifact lineage and hash-bound provenance
+  issue: 52
+  objective: implement immutable hash-bound artifact lineage while FH-01B2 waits for Creator Marketplace #207
+  next_action: verify FH-16 lineage, provenance and architecture guards
 
 fh01a:
   issue: 15
@@ -153,6 +153,15 @@ fh15:
   decision_precedence: DENY>HUMAN_REQUIRED>ALLOW
   exact_approval_binding: true
   model_human_approver: false
+
+fh16:
+  issue: 52
+  status: in_progress
+  branch: feat/fh-16-artifact-lineage
+  authority_effect: none
+  hash_bound: true
+  missing_parent_policy: fail_closed
+  cycle_policy: fail_closed
 
 external_dependency:
   repository: skonyd/creator-marketplace
