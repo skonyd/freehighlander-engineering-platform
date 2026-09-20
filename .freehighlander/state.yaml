@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T15:52:00+03:00"
+updated_at: "2026-09-20T16:16:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -332,7 +332,7 @@ fh37a:
 
 pre_cutover_hardening:
   umbrella_issue: 88
-  status: complete_through_documentation_reconciliation
+  status: complete_through_repository_hygiene
   authority_effect: none
   completed:
     - issue: 89
@@ -362,6 +362,12 @@ pre_cutover_hardening:
     - issue: 107
       pull_request: 108
       area: roadmap-state-documentation-drift
+    - issue: 109
+      pull_request: 110
+      area: reproducible-ci-supply-chain
+    - issue: 111
+      pull_request: 112
+      area: repository-credential-dependency-hygiene
 
 external_dependency:
   repository: skonyd/creator-marketplace
