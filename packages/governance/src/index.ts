@@ -1,4 +1,27 @@
 export {
+  createHumanApprovalRequest,
+  evaluatePolicy,
+  modelCanActAsHumanApprover,
+  policyConfigurationCanSelfApprove,
+  publishPolicy,
+  recordHumanDecision,
+  validatePolicyDefinition,
+  verifyHumanDecisionBinding,
+  type DataClassification,
+  type HumanApprovalRequest,
+  type HumanApprovalRequestInput,
+  type HumanDecision,
+  type HumanDecisionValue,
+  type PolicyDecision,
+  type PolicyDefinition,
+  type PolicyEffect,
+  type PolicyInput,
+  type PolicyPrincipalKind,
+  type PolicyRule,
+  type PublishedPolicy,
+} from './policy-engine.js';
+
+export {
   RoleRegistry,
   roleRegistryCanGrantAuthority,
   roleSupportsRiskTier,

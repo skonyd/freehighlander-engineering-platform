@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-14 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-15 IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -156,6 +156,17 @@ consensus != authority
 unresolved final-round disagreement => HUMAN_REQUIRED
 ```
 
+## FH-15 active work
+
+Issue **#49** is active on `feat/fh-15-policy-human-approval`.
+
+Policy evaluation is deterministic and fail-closed:
+- no match => DENY;
+- precedence: DENY > HUMAN_REQUIRED > ALLOW;
+- human requests bind exact policy/run/revision/action/risk/evidence identity;
+- only HUMAN principals may record approval/denial;
+- request mismatch/replay does not verify.
+
 ## Next action
 
-Start FH-15 human approval + policy-as-code while FH-01B2 remains blocked by Creator Marketplace #207.
+Verify FH-15 through protected-main CI, close canonical state, then automatically start FH-16 artifact lineage + hashes.
