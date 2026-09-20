@@ -277,8 +277,8 @@ V3 authority remains SHADOW_ONLY
 With FH-30A complete, these A-lane packages remain available without Creator
 Marketplace #207:
 
-- FH-31A Development — active as issue #72;
-- FH-32A Testing (after Development contracts);
+- FH-31A Development — complete via issue #72 / PR #73;
+- FH-32A Testing — next; Development contracts are now available;
 - FH-33A Security;
 - FH-34A Release readiness (after Development/Testing/Security inputs);
 - FH-35A Operations;
@@ -287,10 +287,12 @@ Marketplace #207:
 
 Only B-lane activation remains blocked by FH-01B2/FH-20.
 
-## FH-31A active
+## FH-31A completed
 
-Issue **#72** introduces the Development bounded context under ADR-0014 and
-architecture contract 1.2.0.
+Issue **#72** was implemented through PR **#73** and merged as `2e713fdc4cd3472aeb7d10d08121499f7c2d425e`.
+
+The Development bounded context is governed by ADR-0014 and architecture contract
+1.2.0.
 
 Development binds implementation tasks and change candidates to exact repository
 base/head revisions, scope paths, result evidence and shadow-only execution intents.
@@ -303,3 +305,12 @@ development review-ready != Git mutation/merge authority
 shadow intent sideEffects = FORBIDDEN
 V3 authority remains SHADOW_ONLY
 ```
+
+
+## FH-31A closeout
+
+FH-31A is complete and remains authority-neutral. Exact revision binding, path
+scope, evidence hashing and shadow-intent validation are now available to FH-32A.
+
+Next sequential module: **FH-32A Testing**. FH-33A Security, FH-35A Operations and
+FH-37A engineering lineage remain independently available in parallel.
