@@ -774,7 +774,6 @@ try {
   failures.push('missing documentation drift enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   await fs.access(path.join(root, 'package-lock.json'));
