@@ -24,6 +24,7 @@ const expectedPackages = new Map([
   ['packages/release', '@freehighlander/release'],
   ['packages/operations', '@freehighlander/operations'],
   ['packages/incident', '@freehighlander/incident'],
+  ['packages/lineage', '@freehighlander/lineage'],
 ]);
 
 const failures = [];
@@ -522,6 +523,38 @@ try {
   }
 } catch {
   failures.push('missing FH-36A incident authority guards');
+}
+
+try {
+  const lineageSource = await fs.readFile(
+    path.join(root, 'packages', 'lineage', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!lineageSource.includes('export function lineageCanGrantAuthority(): false')) {
+    failures.push('FH-37A lineage must remain authority-neutral');
+  }
+  if (!lineageSource.includes('export function lineageCanMutateDomain(): false')) {
+    failures.push('FH-37A lineage must remain read-only pre-cutover');
+  }
+  if (
+    !lineageSource.includes('export function semanticSearchCanEstablishLineageAuthority(): false')
+  ) {
+    failures.push('FH-37A semantic search must never establish lineage authority');
+  }
+  if (!lineageSource.includes('export function lineageRequiresGraphDatabase(): false')) {
+    failures.push('FH-37A graph database must remain deferred');
+  }
+  if (!lineageSource.includes("readonly semanticSearchAuthority: 'FORBIDDEN'")) {
+    failures.push('FH-37A semantic search authority must remain FORBIDDEN');
+  }
+  if (!lineageSource.includes("readonly storageModel: 'RELATIONAL_FIRST'")) {
+    failures.push('FH-37A storage must remain relational-first');
+  }
+  if (!lineageSource.includes("readonly authority: 'NONE'")) {
+    failures.push('FH-37A lineage authority must remain NONE');
+  }
+} catch {
+  failures.push('missing FH-37A lineage authority guards');
 }
 
 if (failures.length > 0) {
