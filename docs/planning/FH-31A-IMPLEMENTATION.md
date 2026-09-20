@@ -2,7 +2,7 @@
 
 **Issue:** #72  
 **PR:** #73  
-**Status:** IN PROGRESS  
+**Status:** COMPLETE  
 **Architecture contract:** 1.2.0  
 **Authority effect:** NONE
 
