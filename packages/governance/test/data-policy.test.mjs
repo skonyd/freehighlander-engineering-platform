@@ -15,7 +15,10 @@ import {
 } from '../dist/index.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const canonicalSource = fs.readFileSync(path.join(root, '.freehighlander', 'data-policy.yaml'), 'utf8');
+const canonicalSource = fs.readFileSync(
+  path.join(root, '.freehighlander', 'data-policy.yaml'),
+  'utf8',
+);
 const policy = parseDataPolicyYaml(canonicalSource);
 
 test('canonical data policy validates and cannot grant authority', () => {
