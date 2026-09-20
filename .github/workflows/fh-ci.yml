@@ -30,5 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Diagnose hardening telemetry formatting
+        run: |
+          npx prettier --write packages/telemetry/src/index.ts packages/telemetry/test/hardening-events.test.mjs
+          git diff -- packages/telemetry/src/index.ts packages/telemetry/test/hardening-events.test.mjs
+          exit 1
