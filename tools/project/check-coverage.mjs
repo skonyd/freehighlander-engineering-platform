@@ -126,9 +126,7 @@ function validateThreshold(workspace, threshold) {
       continue;
     }
     if (minimum !== Math.floor(observed)) {
-      failures.push(
-        `${workspace} minimum ${metric} coverage must equal floor(observed baseline)`,
-      );
+      failures.push(`${workspace} minimum ${metric} coverage must equal floor(observed baseline)`);
     }
   }
 }
