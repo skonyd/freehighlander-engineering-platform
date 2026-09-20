@@ -68,8 +68,9 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #105 / PR #106 — workspace dependency-boundary enforcement
 - #109 / PR #110 — reproducible CI: lockfile, npm ci, immutable Action SHAs and pinned runner family
 - #111 / PR #112 — checkout credential isolation, bounded Dependabot updates and reconciled CODEOWNERS
+- #114 / PR #117 — deterministic git-tracked secret leakage gate
 
-Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority.
+Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority. Dependency update PRs remain review-only and do not gain merge authority.
 
 ## What remains blocked
 
