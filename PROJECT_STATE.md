@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-19 IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-19 COMPLETE / PROJECT STATE TOOLING IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -185,13 +185,13 @@ Issue **#56** was implemented through PR **#57** and merged as `722a7137930e3716
 
 The web layer remains client-only. Management snapshots expose runs, human-required events, artifacts and model calls. Management actions remain explicit control-plane-required intents; web cannot execute them or self-approve human gates.
 
-## FH-19 active work
+## FH-19 completed
 
-Issue **#58** is active on `feat/fh-19-shadow-parity`.
+Issue **#58** was implemented through PR **#59** and merged as `102e508288c3caa76e59008ed0cfdd425056ccdb`.
 
-Parity evidence compares V2 and V3 shadow observations across route, gate, artifact, state, failure and outcome dimensions. Every case binds exact revision/workflow/policy/artifact/input identity and the exact V2 reference SHA/status.
+Parity evidence now compares V2 and V3 shadow observations across route, gate, artifact, state, failure and outcome dimensions with exact revision/workflow/policy/artifact/input binding.
 
-Hard invariant:
+Hard invariant remains:
 
 ```text
 parity PASS != authority
@@ -201,6 +201,19 @@ missing evidence != parity
 
 V2 remains PROVISIONAL and V3 remains SHADOW_ONLY.
 
+## Project-state tooling active work
+
+Issue **#10** is active on `feat/project-checkpoint-reconciliation`.
+
+The tooling now:
+- validates canonical state before resume/checkpoint;
+- compares local branch/HEAD with remote branch HEAD;
+- verifies active PR number/state/head binding;
+- reports stale pointers instead of guessing;
+- rejects dirty checkpoint worktrees and forbidden runtime/secret-like paths;
+- supports explicit `project:checkpoint -- --write` history commit + push + remote SHA verification;
+- never infers semantic gate PASS from checkpoint state.
+
 ## Next action
 
-Verify FH-19 through protected-main CI. FH-20 authority cutover remains blocked until FH-01B2 has a final accepted Creator Marketplace #207 reference and explicit human/policy promotion review.
+Verify issue #10 through protected-main CI, then complete the remaining evidence-policy validator. FH-20 authority cutover remains blocked until FH-01B2 has a final accepted Creator Marketplace #207 reference and explicit human/policy promotion review.
