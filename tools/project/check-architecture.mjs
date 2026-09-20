@@ -788,6 +788,36 @@ try {
   failures.push('missing deterministic CI supply-chain enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const secretScanner = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'secret-scan.mjs'),
+    'utf8',
+  );
+  await fs.access(path.join(root, 'tools', 'project', 'check-secrets.mjs'));
+
+  for (const invariant of [
+    'PRIVATE_KEY_PEM',
+    'AWS_ACCESS_KEY_ID',
+    'GITHUB_TOKEN',
+    'OPENAI_API_KEY',
+    'TRACKED_ENV_FILE',
+  ]) {
+    if (!secretScanner.includes(invariant)) {
+      failures.push(`tracked-secret scanner missing invariant: ${invariant}`);
+    }
+  }
+
+  if (rootPackage.scripts?.['check:secrets'] !== 'node tools/project/check-secrets.mjs') {
+    failures.push('root package must expose check:secrets');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:secrets')) {
+    failures.push('npm run verify must include tracked-secret enforcement');
+  }
+} catch {
+  failures.push('missing deterministic tracked-secret enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

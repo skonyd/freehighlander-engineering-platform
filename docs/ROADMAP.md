@@ -118,7 +118,8 @@ Independent of #207, the repository now includes:
 - immutable GitHub Action SHA and ubuntu-24.04 pinning;
 - checkout credential isolation;
 - bounded weekly Dependabot PRs for npm/GitHub Actions;
-- reconciled sensitive-path CODEOWNERS.
+- reconciled sensitive-path CODEOWNERS;
+- deterministic git-tracked high-confidence secret leakage gate.
 
 ## Phase 10 — Full lifecycle
 
