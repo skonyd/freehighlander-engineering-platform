@@ -497,7 +497,6 @@ try {
   failures.push('missing FH-35A operations authority guards');
 }
 
-
 try {
   const incidentSource = await fs.readFile(
     path.join(root, 'packages', 'incident', 'src', 'index.ts'),
