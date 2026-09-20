@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T09:55:00+03:00"
+updated_at: "2026-09-20T10:00:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-13
-  name: workflow-dag-state-machine
-  status: complete
+  id: FH-14
+  name: debate-council
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-14-debate-council
   pull_request: null
-  issue: null
-  objective: implement debate/council and disagreement escalation while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-14 debate/council + disagreement escalation
+  issue: 47
+  objective: implement bounded debate/council and disagreement escalation while FH-01B2 waits for Creator Marketplace #207
+  next_action: verify FH-14 debate/council implementation and protected-main CI
 
 fh01a:
   issue: 15
@@ -133,6 +133,16 @@ fh13:
   graph: DAG
   bounded_loops: true
   v3_authority: SHADOW_ONLY
+
+fh14:
+  issue: 47
+  status: in_progress
+  branch: feat/fh-14-debate-council
+  authority_effect: none
+  independent_round_zero: true
+  bounded_rounds: true
+  consensus_authority: false
+  unresolved_disagreement: HUMAN_REQUIRED
 
 external_dependency:
   repository: skonyd/creator-marketplace
