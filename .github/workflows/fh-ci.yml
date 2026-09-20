@@ -30,5 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Diagnose adversarial test formatting
+        run: |
+          npx prettier --write tools/project/test/adversarial-fail-closed.test.mjs
+          git diff -- tools/project/test/adversarial-fail-closed.test.mjs
+          exit 1
