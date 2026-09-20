@@ -1,4 +1,13 @@
 export {
+  cutoverCanBypassFinalReferenceAcceptance,
+  cutoverReadinessCanEnableAuthority,
+  evaluateV3CutoverReadiness,
+  type CutoverReadinessInput,
+  type CutoverReadinessResult,
+  type CutoverReadinessStatus,
+} from './cutover-readiness.js';
+
+export {
   createHumanApprovalRequest,
   evaluatePolicy,
   modelCanActAsHumanApprover,
