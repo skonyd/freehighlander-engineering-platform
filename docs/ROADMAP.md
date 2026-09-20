@@ -103,7 +103,7 @@ Authority-neutral preparation is complete:
 
 FH-30B..FH-37B activation remains blocked by FH-01B2/FH-20.
 
-## Pre-cutover hardening — COMPLETE THROUGH DEPENDENCY ENFORCEMENT
+## Pre-cutover hardening — COMPLETE THROUGH REPOSITORY HYGIENE
 
 Independent of #207, the repository now includes:
 - executable data-policy and remote-egress enforcement;
@@ -113,7 +113,12 @@ Independent of #207, the repository now includes:
 - FH-30A..FH-37A cross-module digital-thread integration;
 - privacy-safe hardening telemetry;
 - deterministic adversarial/fail-closed test matrices;
-- workspace dependency-boundary enforcement.
+- workspace dependency-boundary enforcement;
+- canonical npm lockfile + npm ci;
+- immutable GitHub Action SHA and ubuntu-24.04 pinning;
+- checkout credential isolation;
+- bounded weekly Dependabot PRs for npm/GitHub Actions;
+- reconciled sensitive-path CODEOWNERS.
 
 ## Phase 10 — Full lifecycle
 
