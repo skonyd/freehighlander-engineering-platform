@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T17:03:00+03:00"
+updated_at: "2026-09-20T17:10:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -332,7 +332,7 @@ fh37a:
 
 pre_cutover_hardening:
   umbrella_issue: 88
-  status: complete_through_full_workspace_coverage
+  status: complete_through_secret_handle_contract
   authority_effect: none
   completed:
     - issue: 89
@@ -380,6 +380,9 @@ pre_cutover_hardening:
     - issue: 122
       pull_request: 123
       area: control-plane-test-coverage-gap
+    - issue: 124
+      pull_request: 125
+      area: secret-handle-ephemeral-injection-contract
 
 external_dependency:
   repository: skonyd/creator-marketplace

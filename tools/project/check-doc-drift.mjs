@@ -32,7 +32,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_full_workspace_coverage',
+  'complete_through_secret_handle_contract',
   'pre-cutover hardening state',
 );
 
@@ -58,6 +58,7 @@ for (const [documentName, content, required] of [
       'Pinned GitHub Actions v7 current-main refresh — issue #118 / PR #119',
       'Native Node per-workspace coverage regression gate — issue #120 / PR #121',
       'Control-plane test/coverage gap closure (19/19 workspaces) — issue #122 / PR #123',
+      'Secret-handle + EPHEMERAL injection contract — issue #124 / PR #125',
       'FH-30B..FH-37B',
     ],
   ],
@@ -74,6 +75,7 @@ for (const [documentName, content, required] of [
       '#118 / PR #119 — reviewed current-main refresh',
       '#120 / PR #121 — Node 24 native per-workspace coverage regression floors',
       '#122 / PR #123 — control-plane contract tests',
+      '#124 / PR #125 — opaque SecretHandle',
     ],
   ],
   [
@@ -82,7 +84,7 @@ for (const [documentName, content, required] of [
     [
       'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
       'READINESS COMPLETE / CUTOVER BLOCKED',
-      'Pre-cutover hardening — COMPLETE THROUGH FULL WORKSPACE COVERAGE',
+      'Pre-cutover hardening — COMPLETE THROUGH SECRET-HANDLE CONTRACT',
     ],
   ],
   [
@@ -92,7 +94,7 @@ for (const [documentName, content, required] of [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
       'repository hygiene',
-      'measured native coverage regression floors is complete for all 19 workspaces',
+      'opaque SecretHandle/EPHEMERAL injection contract is complete',
       'Creator Marketplace #207',
     ],
   ],

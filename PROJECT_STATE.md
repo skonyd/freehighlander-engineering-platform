@@ -72,6 +72,7 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #118 / PR #119 — reviewed current-main refresh to pinned checkout v7.0.1 and setup-node v7.0.0; Node type majors remain aligned to Node 24 runtime
 - #120 / PR #121 — Node 24 native per-workspace coverage regression floors from measured baseline
 - #122 / PR #123 — control-plane contract tests; coverage inventory is now 19/19 workspaces with no untested exception
+- #124 / PR #125 — opaque SecretHandle + fail-closed EPHEMERAL injection contract; real credential backend resolution remains intentionally unimplemented
 
 Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority.
 

@@ -1,4 +1,25 @@
 export {
+  evaluateSecretAccess,
+  planSecretInjection,
+  promptCanRequestRawSecretValue,
+  secretBrokerCanGrantAuthority,
+  secretValueCanBePersisted,
+  secretValueCanReachRemoteModel,
+  validateSecretHandle,
+  validateSecretInjectionReceipt,
+  type SecretAccessDecision,
+  type SecretAccessRequest,
+  type SecretBackendKind,
+  type SecretBrokerAdapter,
+  type SecretHandle,
+  type SecretInjectionPlan,
+  type SecretInjectionPlanningResult,
+  type SecretInjectionReceipt,
+  type SecretInjectionTarget,
+  type SecretValidationResult,
+} from './secret-broker.js';
+
+export {
   buildRetentionPlan,
   retentionPlanCanDeleteAuditData,
   retentionPlanCanDeleteData,

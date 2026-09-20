@@ -861,6 +861,51 @@ try {
   failures.push('missing native coverage regression enforcement');
 }
 
+try {
+  const secretBrokerSource = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'secret-broker.ts'),
+    'utf8',
+  );
+  const securityBoundary = await fs.readFile(
+    path.join(root, 'docs', 'security', 'EXECUTION-AND-DATA-BOUNDARIES.md'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    "readonly classification: 'SECRET'",
+    'readonly persistValue: false',
+    'readonly remoteModelEgress: false',
+    "readonly retentionClass: 'EPHEMERAL'",
+    'readonly sandboxDecision: SandboxPermissionDecision',
+    'export function secretBrokerCanGrantAuthority(): false',
+    'export function secretValueCanBePersisted(): false',
+    'export function secretValueCanReachRemoteModel(): false',
+    'export function promptCanRequestRawSecretValue(): false',
+  ]) {
+    if (!secretBrokerSource.includes(invariant)) {
+      failures.push(`secret-handle contract missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const forbidden of ['readonly value: string', 'readonly locator: string']) {
+    if (secretBrokerSource.includes(forbidden)) {
+      failures.push(`secret-handle contract must not expose raw secret metadata: ${forbidden}`);
+    }
+  }
+
+  for (const marker of [
+    'SecretHandle',
+    'role ∩ workflow ∩ sandbox SECRET_ACCESS',
+    'actual secret backend resolution/injection adapters are intentionally not implemented',
+  ]) {
+    if (!securityBoundary.includes(marker)) {
+      failures.push(`security boundary missing secret-broker marker: ${marker}`);
+    }
+  }
+} catch {
+  failures.push('missing secret-handle / ephemeral-injection hardening contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
