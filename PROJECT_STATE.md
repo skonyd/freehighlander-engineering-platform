@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-13 IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-13 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -128,9 +128,9 @@ AUTHORITY         = DISABLED
 
 FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, merge and smoke.
 
-## FH-13 active work
+## FH-13 completed
 
-Issue **#45** is active on `feat/fh-13-workflow-state-machine`.
+Issue **#45** is implemented through PR **#46**.
 
 The implementation adds:
 - immutable semantic-versioned workflow DAG publication;
@@ -145,4 +145,4 @@ Authority remains unchanged and V3 remains `SHADOW_ONLY`.
 
 ## Next action
 
-Verify FH-13 through protected-main CI, close canonical state, then automatically start FH-14 debate/council + disagreement escalation.
+Start FH-14 debate/council + disagreement escalation while FH-01B2 remains blocked by Creator Marketplace #207.
