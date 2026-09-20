@@ -1,4 +1,23 @@
 export {
+  dataPolicyCanAllowSecretRemoteEgress,
+  dataPolicyCanGrantAuthority,
+  evaluateProviderEgress,
+  evaluateRawCapture,
+  parseDataPolicyYaml,
+  redactSensitive,
+  sanitizeForPersistence,
+  validateDataPolicy,
+  type DataClassification,
+  type DataPolicy,
+  type ProviderEgressDecision,
+  type ProviderEgressRequest,
+  type RawCaptureDecision,
+  type RawCaptureRequest,
+  type RemoteAllowance,
+  type RetentionClass,
+} from './data-policy.js';
+
+export {
   cutoverCanBypassFinalReferenceAcceptance,
   cutoverReadinessCanEnableAuthority,
   evaluateV3CutoverReadiness,
