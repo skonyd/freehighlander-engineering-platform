@@ -33,7 +33,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_lockfile_provenance_gate',
+  'complete_through_security_reporting_policy',
   'pre-cutover hardening state',
 );
 
@@ -61,6 +61,7 @@ for (const [documentName, content, required] of [
       'Control-plane test/coverage gap closure (19/19 workspaces) — issue #122 / PR #123',
       'Secret-handle + EPHEMERAL injection contract — issue #124 / PR #125',
       'Lockfile provenance + integrity + install-script gate — issue #126 / PR #127',
+      'Private vulnerability reporting policy correction — issue #128 / PR #129',
       'FH-30B..FH-37B',
     ],
   ],
@@ -79,6 +80,7 @@ for (const [documentName, content, required] of [
       '#122 / PR #123 — control-plane contract tests',
       '#124 / PR #125 — opaque SecretHandle',
       '#126 / PR #127 — deterministic npm lockfile provenance',
+      '#128 / PR #129 — safe private vulnerability reporting guidance',
     ],
   ],
   [
@@ -87,7 +89,7 @@ for (const [documentName, content, required] of [
     [
       'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
       'READINESS COMPLETE / CUTOVER BLOCKED',
-      'Pre-cutover hardening — COMPLETE THROUGH LOCKFILE PROVENANCE GATE',
+      'Pre-cutover hardening — COMPLETE THROUGH SECURITY REPORTING POLICY',
     ],
   ],
   [
@@ -97,7 +99,7 @@ for (const [documentName, content, required] of [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
       'repository hygiene',
-      'lockfile provenance enforcement is complete',
+      'safe vulnerability-reporting guidance is complete',
       'Creator Marketplace #207',
     ],
   ],
