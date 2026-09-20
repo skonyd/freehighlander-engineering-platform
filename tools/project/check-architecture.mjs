@@ -22,6 +22,7 @@ const expectedPackages = new Map([
   ['packages/testing', '@freehighlander/testing'],
   ['packages/security', '@freehighlander/security'],
   ['packages/release', '@freehighlander/release'],
+  ['packages/operations', '@freehighlander/operations'],
 ]);
 
 const failures = [];
@@ -469,6 +470,30 @@ try {
   }
 } catch {
   failures.push('missing FH-34A release authority guards');
+}
+
+try {
+  const operationsSource = await fs.readFile(
+    path.join(root, 'packages', 'operations', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!operationsSource.includes('export function operationsCanGrantAuthority(): false')) {
+    failures.push('FH-35A operations must remain authority-neutral');
+  }
+  if (!operationsSource.includes('export function operationsCanMutateInfrastructure(): false')) {
+    failures.push('FH-35A operations must not mutate infrastructure pre-cutover');
+  }
+  if (!operationsSource.includes('export function operationsCanExecuteIntent(): false')) {
+    failures.push('FH-35A operational intents must remain data only');
+  }
+  if (!operationsSource.includes("readonly sideEffects: 'FORBIDDEN'")) {
+    failures.push('FH-35A operational intents must forbid side effects');
+  }
+  if (!operationsSource.includes("readonly authority: 'NONE'")) {
+    failures.push('FH-35A operations authority must remain NONE');
+  }
+} catch {
+  failures.push('missing FH-35A operations authority guards');
 }
 
 if (failures.length > 0) {
