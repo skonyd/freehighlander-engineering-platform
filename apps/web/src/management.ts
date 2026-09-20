@@ -7,9 +7,7 @@ import type {
 } from './read-model.js';
 
 export type ManagementIntentKind =
-  | 'REQUEST_HUMAN_DECISION'
-  | 'REQUEST_CHECKPOINT_RETRY'
-  | 'REQUEST_RUN_CANCEL';
+  'REQUEST_HUMAN_DECISION' | 'REQUEST_CHECKPOINT_RETRY' | 'REQUEST_RUN_CANCEL';
 
 export interface ManagementIntent {
   readonly kind: ManagementIntentKind;
