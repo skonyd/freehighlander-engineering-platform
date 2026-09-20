@@ -4,7 +4,11 @@ export function analyzeLockfileProvenance(lockfile, packageJson) {
   const errors = [];
 
   if (!lockfile || typeof lockfile !== 'object') {
-    return { valid: false, errors: ['package-lock.json must be an object'], externalPackageCount: 0 };
+    return {
+      valid: false,
+      errors: ['package-lock.json must be an object'],
+      externalPackageCount: 0,
+    };
   }
 
   if (lockfile.lockfileVersion !== 3) {
@@ -13,7 +17,11 @@ export function analyzeLockfileProvenance(lockfile, packageJson) {
 
   validateManifestDependencySpecs(packageJson?.dependencies, 'dependencies', errors);
   validateManifestDependencySpecs(packageJson?.devDependencies, 'devDependencies', errors);
-  validateManifestDependencySpecs(packageJson?.optionalDependencies, 'optionalDependencies', errors);
+  validateManifestDependencySpecs(
+    packageJson?.optionalDependencies,
+    'optionalDependencies',
+    errors,
+  );
 
   let externalPackageCount = 0;
 
