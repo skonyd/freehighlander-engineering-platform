@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "nodeVersion": "24.21.0",
+  "method": "node --test --experimental-test-coverage --test-coverage-include=dist/**/*.js",
+  "measuredAt": "2026-09-20",
+  "workspaces": {
+    "apps/web": {
+      "observed": {
+        "lines": 89.29,
+        "branches": 60.94,
+        "functions": 96.08
+      },
+      "minimum": {
+        "lines": 89,
+        "branches": 60,
+        "functions": 96
+      }
+    },
+    "packages/contracts": {
+      "observed": {
+        "lines": 100,
+        "branches": 100,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 100,
+        "branches": 100,
+        "functions": 100
+      }
+    },
+    "packages/development": {
+      "observed": {
+        "lines": 75.23,
+        "branches": 56.72,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 75,
+        "branches": 56,
+        "functions": 100
+      }
+    },
+    "packages/evaluation": {
+      "observed": {
+        "lines": 96.62,
+        "branches": 84.43,
+        "functions": 95
+      },
+      "minimum": {
+        "lines": 96,
+        "branches": 84,
+        "functions": 95
+      }
+    },
+    "packages/evidence": {
+      "observed": {
+        "lines": 96.8,
+        "branches": 91.36,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 96,
+        "branches": 91,
+        "functions": 100
+      }
+    },
+    "packages/governance": {
+      "observed": {
+        "lines": 91.41,
+        "branches": 79.37,
+        "functions": 97.62
+      },
+      "minimum": {
+        "lines": 91,
+        "branches": 79,
+        "functions": 97
+      }
+    },
+    "packages/incident": {
+      "observed": {
+        "lines": 90.5,
+        "branches": 70,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 90,
+        "branches": 70,
+        "functions": 100
+      }
+    },
+    "packages/lineage": {
+      "observed": {
+        "lines": 89.11,
+        "branches": 68.29,
+        "functions": 96.55
+      },
+      "minimum": {
+        "lines": 89,
+        "branches": 68,
+        "functions": 96
+      }
+    },
+    "packages/model-runtime": {
+      "observed": {
+        "lines": 87.41,
+        "branches": 75.3,
+        "functions": 94.34
+      },
+      "minimum": {
+        "lines": 87,
+        "branches": 75,
+        "functions": 94
+      }
+    },
+    "packages/operations": {
+      "observed": {
+        "lines": 86.06,
+        "branches": 62.5,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 86,
+        "branches": 62,
+        "functions": 100
+      }
+    },
+    "packages/orchestration": {
+      "observed": {
+        "lines": 95.54,
+        "branches": 81.09,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 95,
+        "branches": 81,
+        "functions": 100
+      }
+    },
+    "packages/persistence": {
+      "observed": {
+        "lines": 91.31,
+        "branches": 78.4,
+        "functions": 93.33
+      },
+      "minimum": {
+        "lines": 91,
+        "branches": 78,
+        "functions": 93
+      }
+    },
+    "packages/planning": {
+      "observed": {
+        "lines": 91.03,
+        "branches": 78.79,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 91,
+        "branches": 78,
+        "functions": 100
+      }
+    },
+    "packages/release": {
+      "observed": {
+        "lines": 91.18,
+        "branches": 75,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 91,
+        "branches": 75,
+        "functions": 100
+      }
+    },
+    "packages/security": {
+      "observed": {
+        "lines": 88.04,
+        "branches": 70.31,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 88,
+        "branches": 70,
+        "functions": 100
+      }
+    },
+    "packages/telemetry": {
+      "observed": {
+        "lines": 95.24,
+        "branches": 80,
+        "functions": 88
+      },
+      "minimum": {
+        "lines": 95,
+        "branches": 80,
+        "functions": 88
+      }
+    },
+    "packages/testing": {
+      "observed": {
+        "lines": 88.94,
+        "branches": 74.03,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 88,
+        "branches": 74,
+        "functions": 100
+      }
+    },
+    "packages/v2-compat": {
+      "observed": {
+        "lines": 81.52,
+        "branches": 64.38,
+        "functions": 91.49
+      },
+      "minimum": {
+        "lines": 81,
+        "branches": 64,
+        "functions": 91
+      }
+    }
+  },
+  "explicitlyUntested": [
+    "apps/control-plane"
+  ]
+}
