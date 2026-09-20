@@ -61,6 +61,7 @@ Umbrella: #88.
 - [x] Checkout credential isolation + bounded dependency-update hygiene — issue #111 / PR #112
 - [x] Deterministic tracked-secret leakage gate — issue #114 / PR #117
 - [x] Pinned GitHub Actions v7 current-main refresh — issue #118 / PR #119
+- [x] Native Node per-workspace coverage regression gate — issue #120 / PR #121
 
 ## Current blocker
 
