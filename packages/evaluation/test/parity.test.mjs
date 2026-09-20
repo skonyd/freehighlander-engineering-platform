@@ -49,7 +49,10 @@ test('identical V2/V3 observations produce deterministic PASS without authority'
   assert.equal(first.cutoverAllowed, false);
   assert.equal(parityCanGrantAuthority(), false);
   assert.equal(parityCanCutOverV3(), false);
-  assert.equal(first.dimensions.every((entry) => entry.status === 'MATCH'), true);
+  assert.equal(
+    first.dimensions.every((entry) => entry.status === 'MATCH'),
+    true,
+  );
 });
 
 test('mismatch identifies exact dimensions and remains non-authoritative', async () => {
