@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: feat/fh-20-cutover-readiness
-  pull_request: null
+  pull_request: 65
   issue: 64
   objective: prepare deterministic FH-20 cutover readiness without enabling V3 authority
   next_action: verify fail-closed cutover readiness through protected-main CI; actual cutover remains blocked by Creator Marketplace #207
@@ -216,6 +216,7 @@ evidence_policy:
 
 fh20:
   issue: 64
+  pull_request: 65
   status: preparation_in_progress
   branch: feat/fh-20-cutover-readiness
   readiness_gate: implementing
