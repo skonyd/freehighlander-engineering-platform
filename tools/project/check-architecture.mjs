@@ -761,7 +761,6 @@ try {
   failures.push('missing workspace dependency-boundary enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   await fs.access(path.join(root, 'tools', 'project', 'check-doc-drift.mjs'));
