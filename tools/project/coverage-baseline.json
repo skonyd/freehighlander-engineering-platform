@@ -221,7 +221,5 @@
       }
     }
   },
-  "explicitlyUntested": [
-    "apps/control-plane"
-  ]
+  "explicitlyUntested": ["apps/control-plane"]
 }
