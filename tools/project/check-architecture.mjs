@@ -906,6 +906,36 @@ try {
   failures.push('missing secret-handle / ephemeral-injection hardening contract');
 }
 
+
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const lockfileCheck = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'lockfile-provenance.mjs'),
+    'utf8',
+  );
+  await fs.access(path.join(root, 'tools', 'project', 'check-lockfile.mjs'));
+
+  for (const invariant of [
+    'https://registry.npmjs.org/',
+    'sha512-',
+    'hasInstallScript',
+    'must not use remote/git/file dependency specifier',
+  ]) {
+    if (!lockfileCheck.includes(invariant)) {
+      failures.push(`lockfile provenance gate missing invariant: ${invariant}`);
+    }
+  }
+
+  if (rootPackage.scripts?.['check:lockfile'] !== 'node tools/project/check-lockfile.mjs') {
+    failures.push('root package must expose check:lockfile');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:lockfile')) {
+    failures.push('npm run verify must include lockfile provenance enforcement');
+  }
+} catch {
+  failures.push('missing lockfile provenance/install-script enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
