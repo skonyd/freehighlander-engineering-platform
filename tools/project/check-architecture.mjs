@@ -710,6 +710,29 @@ try {
   failures.push('missing hardening observability event contracts');
 }
 
+try {
+  const adversarialSource = await fs.readFile(
+    path.join(root, 'tools', 'project', 'test', 'adversarial-fail-closed.test.mjs'),
+    'utf8',
+  );
+  for (const invariant of [
+    'adversarial planning mutations fail closed',
+    'combined development scope, revision, evidence and side-effect corruption fails closed',
+    'policy and sandbox layers deny privilege escalation independently',
+    'lineage rejects multiple simultaneous provenance and identity corruptions',
+    'telemetry parsers and hardening payloads reject malformed or secret-bearing input',
+  ]) {
+    if (!adversarialSource.includes(invariant)) {
+      failures.push(`adversarial fail-closed coverage is missing: ${invariant}`);
+    }
+  }
+  if (adversarialSource.includes('Math.random')) {
+    failures.push('adversarial hardening tests must remain deterministic');
+  }
+} catch {
+  failures.push('missing deterministic adversarial fail-closed hardening suite');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
