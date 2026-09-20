@@ -23,6 +23,7 @@ const expectedPackages = new Map([
   ['packages/security', '@freehighlander/security'],
   ['packages/release', '@freehighlander/release'],
   ['packages/operations', '@freehighlander/operations'],
+  ['packages/incident', '@freehighlander/incident'],
 ]);
 
 const failures = [];
@@ -494,6 +495,33 @@ try {
   }
 } catch {
   failures.push('missing FH-35A operations authority guards');
+}
+
+try {
+  const incidentSource = await fs.readFile(
+    path.join(root, 'packages', 'incident', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!incidentSource.includes('export function incidentCanGrantAuthority(): false')) {
+    failures.push('FH-36A incident must remain authority-neutral');
+  }
+  if (!incidentSource.includes('export function incidentCanMutateInfrastructure(): false')) {
+    failures.push('FH-36A incident must not mutate infrastructure pre-cutover');
+  }
+  if (!incidentSource.includes('export function incidentCanExecuteOperationalIntent(): false')) {
+    failures.push('FH-36A incident must not execute operational intents');
+  }
+  if (!incidentSource.includes('export function incidentCanAutomaticallyRemediate(): false')) {
+    failures.push('FH-36A incident must not automatically remediate pre-cutover');
+  }
+  if (!incidentSource.includes("readonly automaticRemediation: 'FORBIDDEN'")) {
+    failures.push('FH-36A automatic remediation must remain forbidden');
+  }
+  if (!incidentSource.includes("readonly authority: 'NONE'")) {
+    failures.push('FH-36A incident authority must remain NONE');
+  }
+} catch {
+  failures.push('missing FH-36A incident authority guards');
 }
 
 if (failures.length > 0) {
