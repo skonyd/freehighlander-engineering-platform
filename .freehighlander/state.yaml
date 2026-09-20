@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T10:00:00+03:00"
+updated_at: "2026-09-20T10:05:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -10,15 +10,15 @@ mode:
 phase:
   id: FH-14
   name: debate-council
-  status: in_progress
+  status: complete
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-14-debate-council
+  branch: main
   pull_request: null
-  issue: 47
-  objective: implement bounded debate/council and disagreement escalation while FH-01B2 waits for Creator Marketplace #207
-  next_action: verify FH-14 debate/council implementation and protected-main CI
+  issue: null
+  objective: implement human approval and policy-as-code while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-15 human approval + policy-as-code
 
 fh01a:
   issue: 15
@@ -136,8 +136,8 @@ fh13:
 
 fh14:
   issue: 47
-  status: in_progress
-  branch: feat/fh-14-debate-council
+  pull_request: 48
+  status: complete
   authority_effect: none
   independent_round_zero: true
   bounded_rounds: true
