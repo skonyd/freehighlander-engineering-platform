@@ -246,3 +246,26 @@ V3 authority = SHADOW_ONLY
 ## Next action
 
 No further authority-bearing migration step is safe until Creator Marketplace #207 is accepted and merged. When that dependency clears: record the final accepted V2 SHA, review the provisional-to-final delta, rerun parity and smoke, verify exact human approval + system policy ALLOW, then execute FH-01B2/FH-20 cutover.
+
+
+## Pre-cutover module lane
+
+Issue **#67** / PR **#68** split FH-30..FH-37 into authority-neutral preparation
+(A) and post-cutover activation (B). The A-lane may proceed while Creator
+Marketplace #207 blocks FH-01B2/FH-20.
+
+## FH-30A active
+
+Issue **#69** introduces the Planning bounded context under ADR-0013 and
+architecture contract 1.1.0.
+
+Planning owns versioned engineering plans, acceptance criteria, work-item
+dependencies, blockers/readiness and exact repository/base-revision binding.
+
+Hard invariant:
+
+```text
+planning READY != execution authority
+planning READY != merge/release/deploy authority
+V3 authority remains SHADOW_ONLY
+```
