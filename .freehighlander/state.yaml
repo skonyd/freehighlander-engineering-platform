@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T10:34:00+03:00"
+updated_at: "2026-09-20T10:44:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-16
-  name: artifact-lineage
+  id: FH-17
+  name: replay-recovery
   status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-16-artifact-lineage
+  branch: feat/fh-17-replay-recovery
   pull_request: null
-  issue: 52
-  objective: implement immutable hash-bound artifact lineage while FH-01B2 waits for Creator Marketplace #207
-  next_action: verify FH-16 lineage, provenance and architecture guards
+  issue: 54
+  objective: implement deterministic replay, simulation and crash recovery while FH-01B2 waits for Creator Marketplace #207
+  next_action: verify FH-17 replay/recovery and protected-main CI
 
 fh01a:
   issue: 15
@@ -156,12 +156,22 @@ fh15:
 
 fh16:
   issue: 52
-  status: in_progress
-  branch: feat/fh-16-artifact-lineage
+  pull_request: 53
+  status: complete
+  merge_sha: 50ec6776e95532167567e1022f03d071dd1fdb41
   authority_effect: none
   hash_bound: true
   missing_parent_policy: fail_closed
   cycle_policy: fail_closed
+
+fh17:
+  issue: 54
+  status: in_progress
+  branch: feat/fh-17-replay-recovery
+  authority_effect: none
+  simulation_authority: none
+  checkpoint_policy: exact_binding
+  divergence_policy: explicit
 
 external_dependency:
   repository: skonyd/creator-marketplace

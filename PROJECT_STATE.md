@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-16 IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-17 IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -167,12 +167,18 @@ Policy evaluation is deterministic and fail-closed:
 - only HUMAN principals may record approval/denial;
 - request mismatch/replay does not verify.
 
-## FH-16 active work
+## FH-16 completed
 
-Issue **#52** is active on `feat/fh-16-artifact-lineage`.
+Issue **#52** was implemented through PR **#53** and merged as `50ec6776e95532167567e1022f03d071dd1fdb41`.
 
-The evidence package now adds deterministic hash-bound artifact envelopes, exact revision/workflow/role/policy binding, parent lineage, missing-parent/cycle fail-closed verification and authority-neutral architecture guards.
+Delivered deterministic hash-bound artifact envelopes, exact semantic binding, parent lineage, tamper checks and fail-closed missing-parent/cycle verification. Lineage remains authority-neutral.
+
+## FH-17 active work
+
+Issue **#54** is active on `feat/fh-17-replay-recovery`.
+
+Replay manifests bind exact revision/workflow/run-snapshot/policy/artifact roots. Recovery checkpoints are replay-manifest bound, tamper checked and resume only from a validated sequence. Divergent replay input is surfaced explicitly; replay/simulation cannot grant authority.
 
 ## Next action
 
-Verify FH-16 through protected-main CI, then advance to FH-17 replay/simulation + crash recovery.
+Verify FH-17 through protected-main CI, then advance to FH-18 management UI.

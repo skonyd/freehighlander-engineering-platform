@@ -1,4 +1,23 @@
 export {
+  buildRecoveryCheckpoint,
+  buildReplayManifest,
+  nextReplaySequence,
+  replayOrSimulationCanGrantAuthority,
+  replayStep,
+  validateRecoveryCheckpoint,
+  validateReplayContext,
+  type RecordedNodeOutcome,
+  type RecoveryCheckpoint,
+  type RecoveryCheckpointInput,
+  type ReplayContext,
+  type ReplayManifest,
+  type ReplayManifestInput,
+  type ReplayMode,
+  type ReplayStepResult,
+  type ReplayValidation,
+} from './replay-engine.js';
+
+export {
   buildDebateSnapshot,
   createDebateSession,
   debateConfigurationCanGrantAuthority,
