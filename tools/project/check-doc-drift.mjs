@@ -32,7 +32,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_tracked_secret_gate',
+  'complete_through_actions_v7_refresh',
   'pre-cutover hardening state',
 );
 
@@ -55,6 +55,7 @@ for (const [documentName, content, required] of [
       'Reproducible CI / npm lockfile / immutable Action SHA pinning — issue #109 / PR #110',
       'Checkout credential isolation + bounded dependency-update hygiene — issue #111 / PR #112',
       'Deterministic tracked-secret leakage gate — issue #114 / PR #117',
+      'Pinned GitHub Actions v7 current-main refresh — issue #118 / PR #119',
       'FH-30B..FH-37B',
     ],
   ],
@@ -68,6 +69,7 @@ for (const [documentName, content, required] of [
       '#109 / PR #110 — reproducible CI',
       '#111 / PR #112 — checkout credential isolation',
       '#114 / PR #117 — deterministic git-tracked secret leakage gate',
+      '#118 / PR #119 — reviewed current-main refresh',
     ],
   ],
   [
