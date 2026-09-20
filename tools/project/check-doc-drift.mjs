@@ -32,7 +32,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_native_coverage_gate',
+  'complete_through_full_workspace_coverage',
   'pre-cutover hardening state',
 );
 
@@ -57,6 +57,7 @@ for (const [documentName, content, required] of [
       'Deterministic tracked-secret leakage gate — issue #114 / PR #117',
       'Pinned GitHub Actions v7 current-main refresh — issue #118 / PR #119',
       'Native Node per-workspace coverage regression gate — issue #120 / PR #121',
+      'Control-plane test/coverage gap closure (19/19 workspaces) — issue #122 / PR #123',
       'FH-30B..FH-37B',
     ],
   ],
@@ -72,6 +73,7 @@ for (const [documentName, content, required] of [
       '#114 / PR #117 — deterministic git-tracked secret leakage gate',
       '#118 / PR #119 — reviewed current-main refresh',
       '#120 / PR #121 — Node 24 native per-workspace coverage regression floors',
+      '#122 / PR #123 — control-plane contract tests',
     ],
   ],
   [
@@ -80,7 +82,7 @@ for (const [documentName, content, required] of [
     [
       'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
       'READINESS COMPLETE / CUTOVER BLOCKED',
-      'Pre-cutover hardening — COMPLETE THROUGH NATIVE COVERAGE GATE',
+      'Pre-cutover hardening — COMPLETE THROUGH FULL WORKSPACE COVERAGE',
     ],
   ],
   [
@@ -90,7 +92,7 @@ for (const [documentName, content, required] of [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
       'repository hygiene',
-      'tracked-secret enforcement and measured native coverage regression floors',
+      'measured native coverage regression floors is complete for all 19 workspaces',
       'Creator Marketplace #207',
     ],
   ],
