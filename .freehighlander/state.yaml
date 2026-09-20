@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: feat/evidence-policy-validator
-  pull_request: null
+  pull_request: 62
   issue: 61
   objective: enforce exact revision, trusted provenance and non-substitutable required evidence
   next_action: verify evidence policy validator through protected-main CI
@@ -205,6 +205,7 @@ project_state_tooling:
 
 evidence_policy:
   issue: 61
+  pull_request: 62
   status: in_progress
   branch: feat/evidence-policy-validator
   authority_effect: none
