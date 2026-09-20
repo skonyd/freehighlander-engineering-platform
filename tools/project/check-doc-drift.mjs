@@ -15,6 +15,7 @@ const backlog = await fs.readFile(path.join(root, 'BACKLOG.md'), 'utf8');
 const projectState = await fs.readFile(path.join(root, 'PROJECT_STATE.md'), 'utf8');
 const roadmap = await fs.readFile(path.join(root, 'docs', 'ROADMAP.md'), 'utf8');
 const prRoadmap = await fs.readFile(path.join(root, 'docs', 'planning', 'PR-ROADMAP.md'), 'utf8');
+const securityPolicy = await fs.readFile(path.join(root, 'SECURITY.md'), 'utf8');
 
 expect(state.phase?.id, 'PRE-CUTOVER', 'state phase');
 expect(state.phase?.status, 'blocked_on_external_dependency', 'state phase status');
@@ -32,7 +33,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_lockfile_provenance_gate',
+  'complete_through_security_reporting_policy',
   'pre-cutover hardening state',
 );
 
@@ -60,6 +61,7 @@ for (const [documentName, content, required] of [
       'Control-plane test/coverage gap closure (19/19 workspaces) — issue #122 / PR #123',
       'Secret-handle + EPHEMERAL injection contract — issue #124 / PR #125',
       'Lockfile provenance + integrity + install-script gate — issue #126 / PR #127',
+      'Private vulnerability reporting policy correction — issue #128 / PR #129',
       'FH-30B..FH-37B',
     ],
   ],
@@ -78,6 +80,7 @@ for (const [documentName, content, required] of [
       '#122 / PR #123 — control-plane contract tests',
       '#124 / PR #125 — opaque SecretHandle',
       '#126 / PR #127 — deterministic npm lockfile provenance',
+      '#128 / PR #129 — safe private vulnerability reporting guidance',
     ],
   ],
   [
@@ -86,7 +89,7 @@ for (const [documentName, content, required] of [
     [
       'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
       'READINESS COMPLETE / CUTOVER BLOCKED',
-      'Pre-cutover hardening — COMPLETE THROUGH LOCKFILE PROVENANCE GATE',
+      'Pre-cutover hardening — COMPLETE THROUGH SECURITY REPORTING POLICY',
     ],
   ],
   [
@@ -96,7 +99,7 @@ for (const [documentName, content, required] of [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
       'repository hygiene',
-      'lockfile provenance enforcement is complete',
+      'safe vulnerability-reporting guidance is complete',
       'Creator Marketplace #207',
     ],
   ],
@@ -127,6 +130,19 @@ for (const [documentName, content, stalePhrases] of [
   for (const phrase of stalePhrases) {
     if (content.includes(phrase)) failures.push(`${documentName} contains stale phrase: ${phrase}`);
   }
+}
+
+for (const marker of [
+  'Security → Report a vulnerability',
+  'A normal issue in a public repository must be treated as public.',
+  'Do not include live production credentials.',
+]) {
+  if (!securityPolicy.includes(marker)) {
+    failures.push(`SECURITY.md missing safe disclosure marker: ${marker}`);
+  }
+}
+if (securityPolicy.includes('create a private GitHub issue')) {
+  failures.push('SECURITY.md must not suggest a private GitHub issue as a disclosure channel');
 }
 
 if (failures.length > 0) {

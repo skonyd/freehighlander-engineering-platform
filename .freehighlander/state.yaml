@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T18:36:00+03:00"
+updated_at: "2026-09-20T19:02:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -332,7 +332,7 @@ fh37a:
 
 pre_cutover_hardening:
   umbrella_issue: 88
-  status: complete_through_lockfile_provenance_gate
+  status: complete_through_security_reporting_policy
   authority_effect: none
   completed:
     - issue: 89
@@ -386,6 +386,9 @@ pre_cutover_hardening:
     - issue: 126
       pull_request: 127
       area: lockfile-provenance-install-script-gate
+    - issue: 128
+      pull_request: 129
+      area: private-vulnerability-reporting-policy
 
 external_dependency:
   repository: skonyd/creator-marketplace

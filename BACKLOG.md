@@ -65,6 +65,7 @@ Umbrella: #88.
 - [x] Control-plane test/coverage gap closure (19/19 workspaces) — issue #122 / PR #123
 - [x] Secret-handle + EPHEMERAL injection contract — issue #124 / PR #125
 - [x] Lockfile provenance + integrity + install-script gate — issue #126 / PR #127
+- [x] Private vulnerability reporting policy correction — issue #128 / PR #129
 
 ## Current blocker
 
