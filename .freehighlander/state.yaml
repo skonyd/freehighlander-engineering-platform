@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T16:21:00+03:00"
+updated_at: "2026-09-20T16:29:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -332,7 +332,7 @@ fh37a:
 
 pre_cutover_hardening:
   umbrella_issue: 88
-  status: complete_through_tracked_secret_gate
+  status: complete_through_actions_v7_refresh
   authority_effect: none
   completed:
     - issue: 89
@@ -371,6 +371,9 @@ pre_cutover_hardening:
     - issue: 114
       pull_request: 117
       area: tracked-secret-leakage-gate
+    - issue: 118
+      pull_request: 119
+      area: pinned-github-actions-v7-refresh
 
 external_dependency:
   repository: skonyd/creator-marketplace
