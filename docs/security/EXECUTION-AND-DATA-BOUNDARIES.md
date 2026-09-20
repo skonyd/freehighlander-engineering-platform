@@ -57,19 +57,30 @@ Future policy can express:
 
 ## Secrets
 
-Prefer handle/reference semantics:
+Handle/reference semantics are now implemented as an authority-neutral governance contract in `packages/governance/src/secret-broker.ts`.
 
 ~~~text
-role requests secret capability
+opaque SecretHandle
         ↓
-policy validates
+role ∩ workflow ∩ sandbox SECRET_ACCESS
         ↓
-broker injects short-lived value
+explicit positive TTL
         ↓
-tool process
+EPHEMERAL injection plan
         ↓
-value not persisted
+metadata-only receipt
 ~~~
+
+Current invariants:
+- `SecretHandle` never contains a raw secret value or secret locator;
+- persistence of secret values is forbidden;
+- secret values cannot cross the remote-model boundary;
+- prompt/model identity cannot request raw secret material;
+- command-environment injection requires a bounded explicit environment-variable name;
+- injection plans are `EPHEMERAL`, log-redacted and authority `NONE`;
+- actual secret backend resolution/injection adapters are intentionally not implemented pre-cutover.
+
+A future backend adapter may consume an approved opaque plan and return a metadata-only receipt, but the resolved value must remain outside persisted domain state.
 
 ## Data egress
 
