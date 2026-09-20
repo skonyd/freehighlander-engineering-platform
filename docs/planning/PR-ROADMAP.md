@@ -1,124 +1,89 @@
 # PR Roadmap
 
-**Status:** ACCEPTED DIRECTION
+**Status:** ACCEPTED DIRECTION / IMPLEMENTATION ADVANCED THROUGH PRE-CUTOVER A-LANE
 
-FH kimlikleri planlanan çalışma paketidir; gerçek GitHub PR numarası değildir.
+FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
+
+## Current execution state
+
+- FH-01A complete.
+- FH-01B1 provisional compatibility complete.
+- FH-01B2 blocked by Creator Marketplace #207 final acceptance/merge/smoke.
+- FH-02..FH-19 complete.
+- FH-20 readiness gate complete; authority cutover blocked.
+- FH-30A..FH-37A complete and authority-neutral.
+- FH-30B..FH-37B remain post-cutover.
+- Pre-cutover hardening through dependency-boundary enforcement is complete.
+
+```text
+V2 reference = PROVISIONAL
+V3 authority = SHADOW_ONLY
+```
 
 ## Foundation / automation
-- **FH-00** Planning foundation
-- **FH-01** TypeScript monorepo + automation bootstrap
-- **FH-02** Telemetry event schema + emitter
-- **FH-03** SQLite telemetry/state index
-- **FH-04** Read-only dashboard
+- **FH-00** Planning foundation — complete
+- **FH-01A** TypeScript monorepo/bootstrap — complete
+- **FH-01B1** Provisional V2 compatibility — complete
+- **FH-01B2** Accepted V2 reconciliation — blocked by #207
+- **FH-02** Telemetry event schema + emitter — complete
+- **FH-03** SQLite telemetry/state index — complete
+- **FH-04** Read-only dashboard — complete
 
 ## Qwen / economics
-- **FH-05** Qwen specialist shadow roles
-- **FH-06** Benchmark reconciliation + promotion reports
-- **FH-07** Token/context optimization
-- **FH-08** Provider health/quota/circuit-breaker telemetry
+- **FH-05** Qwen specialist shadow roles — complete
+- **FH-06** Benchmark reconciliation + promotion reports — complete
+- **FH-07** Token/context optimization — complete
+- **FH-08** Provider health/quota/circuit-breaker telemetry — complete
 
 ## V3
-- **FH-10** Architecture contract freeze
-- **FH-11** Provider adapters + binding registry
-- **FH-12** Role registry + role packages
-- **FH-13** Workflow DAG + explicit state machine
-- **FH-14** Debate/council + disagreement escalation
-- **FH-15** Policy-as-code + human approval
-- **FH-16** Artifact lineage + hashes
-- **FH-17** Replay/simulation + crash recovery
-- **FH-18** Management UI
-- **FH-19** V2/V3 shadow parity
-- **FH-20** V3 authority cutover
+- **FH-10** Architecture contract freeze — complete
+- **FH-11** Provider adapters + binding registry — complete
+- **FH-12** Role registry + role packages — complete
+- **FH-13** Workflow DAG + explicit state machine — complete
+- **FH-14** Debate/council + disagreement escalation — complete
+- **FH-15** Policy-as-code + human approval — complete
+- **FH-16** Artifact lineage + hashes — complete
+- **FH-17** Replay/simulation + crash recovery — complete
+- **FH-18** Management UI — complete
+- **FH-19** V2/V3 shadow parity — complete
+- **FH-20** V3 authority cutover — readiness complete, cutover blocked by FH-01B2/#207
 
 ## Modules
-Each module has an authority-neutral **A** preparation lane that may proceed before final FH-20 cutover, and an authority-bearing **B** activation lane that remains post-cutover.
 
-- **FH-30A/B** Planning module MVP
-- **FH-31A/B** Development module
-- **FH-32A/B** Testing module
-- **FH-33A/B** Security module
-- **FH-34A/B** Release module
-- **FH-35A/B** Operations module
-- **FH-36A/B** Incident module
-- **FH-37A/B** Project knowledge graph / engineering lineage
+Each module has an authority-neutral **A** preparation lane and authority-bearing **B** activation lane.
+
+- **FH-30A..FH-37A** — complete
+- **FH-30B..FH-37B** — blocked until final FH-20 authority cutover
 
 Canonical split and authority boundaries: [FH-30-37-PRECUTOVER.md](FH-30-37-PRECUTOVER.md).
 
-## PR intent details
+## FH-01 status
 
-### FH-01 — TypeScript monorepo + automation bootstrap
-Creator Marketplace #207 merge+smoke sonrası başlar.
+FH-01 did not remain blocked as a whole. The work was split:
 
-Amaç:
-- bu repo ürün kodunu taşımaya başlasın
-- V2 automation bu repo üzerinde çalışsın
-- V3 için yeni codebase foundation oluşsun
-
-Önerilen başlangıç:
 ```text
-apps/
-  web/
-  control-plane/
-
-packages/
-  core/
-  workflow/
-  roles/
-  providers/
-  policy/
-  artifacts/
-  telemetry/
-  persistence/
-  ui-components/
+FH-01A platform bootstrap                         COMPLETE
+FH-01B1 provisional V2 compatibility             COMPLETE
+FH-01B2 final accepted-V2 reconciliation         BLOCKED BY #207
 ```
 
-Bu layout FH-01 başlamadan son kez teknik olarak doğrulanacaktır.
+The provisional reference SHA cannot be promoted to final accepted authority evidence without Creator Marketplace #207 completion.
 
-### FH-02
-Mevcut automation'a davranış değiştirmeden telemetry instrumentation.
+## Dependency spine — current
 
-### FH-03
-SQLite current-state/query/metadata + JSONL import/audit.
-
-### FH-04
-Read-only dashboard; authority/config write yok.
-
-### FH-05/FH-06
-Qwen shadow role benchmark. Strong reviewer ilk verdict'i Qwen'den bağımsız üretir.
-
-### FH-07
-Benchmark sonucu güvenli bulunan iş yüklerinde context/token optimization.
-
-### FH-10+
-V3 role/model/workflow control plane.
-
-## Dependency spine
 ```text
-#207 merge+smoke
-      ↓
-FH-00
-      ↓
-FH-01 → FH-02 → FH-03 → FH-04
-                   ↓
-                FH-05 → FH-06 → FH-07/08
-                                 ↓
-                              FH-10
-                                 ↓
-                    FH-11 → FH-12 → FH-13
-                                      ↓
-                              FH-14/15/16
-                                      ↓
-                                  FH-17/18
-                                      ↓
-                                  FH-19 → FH-20 readiness
+FH-00 → FH-01A/FH-01B1 → FH-02..FH-19 → FH-20 readiness
                                       │
-               ┌──────────────────────┴──────────────────────┐
-               ↓                                             ↓
-        FH-30A..FH-37A                               #207 → FH-01B2
-     authority-neutral prep                                  ↓
-               │                                      FH-20 final cutover
-               └──────────────────────┬──────────────────────┘
-                                      ↓
-                               FH-30B..FH-37B
-                           authority-bearing activation
+                                      ├──→ FH-30A..FH-37A COMPLETE
+                                      │
+                                      └──→ pre-cutover hardening COMPLETE
+Creator Marketplace #207
+        ↓
+FH-01B2 final reconciliation
+        ↓
+FH-20 final authority cutover
+        ↓
+FH-30B..FH-37B activation
 ```
+
+This ordering preserves the distinction between preparation/readiness evidence and authority-bearing activation.
