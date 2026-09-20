@@ -7,7 +7,6 @@ export {
   redactSensitive,
   sanitizeForPersistence,
   validateDataPolicy,
-  type DataClassification,
   type DataPolicy,
   type ProviderEgressDecision,
   type ProviderEgressRequest,
