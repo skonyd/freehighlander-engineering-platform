@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-  createHardeningEvent,
-  parseEvent,
-  serializeEvent,
-} from '../dist/index.js';
+import { createHardeningEvent, parseEvent, serializeEvent } from '../dist/index.js';
 
 const hash = 'a'.repeat(64);
 
