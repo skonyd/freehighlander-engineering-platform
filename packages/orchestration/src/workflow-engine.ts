@@ -37,13 +37,7 @@ export interface PublishedWorkflow {
 }
 
 export type WorkflowNodeState =
-  | 'PENDING'
-  | 'READY'
-  | 'RUNNING'
-  | 'PASSED'
-  | 'FAILED'
-  | 'BLOCKED'
-  | 'HUMAN_REQUIRED';
+  'PENDING' | 'READY' | 'RUNNING' | 'PASSED' | 'FAILED' | 'BLOCKED' | 'HUMAN_REQUIRED';
 
 export interface RunSnapshotInput {
   readonly workflow: PublishedWorkflow;
@@ -95,7 +89,10 @@ export function validateWorkflow(definition: WorkflowDefinition): void {
     requireText(node.id, 'workflow node id');
     if (nodeIds.has(node.id)) throw new Error(`duplicate workflow node id: ${node.id}`);
     nodeIds.add(node.id);
-    if (node.kind === 'LOOP' && (!Number.isInteger(node.maxIterations) || (node.maxIterations ?? 0) < 1)) {
+    if (
+      node.kind === 'LOOP' &&
+      (!Number.isInteger(node.maxIterations) || (node.maxIterations ?? 0) < 1)
+    ) {
       throw new Error(`LOOP node ${node.id} must define maxIterations >= 1`);
     }
   }
@@ -189,7 +186,10 @@ export function workflowConfigurationCanGrantAuthority(): false {
   return false;
 }
 
-function assertAcyclic(nodes: readonly WorkflowDefinitionNode[], edges: readonly WorkflowEdge[]): void {
+function assertAcyclic(
+  nodes: readonly WorkflowDefinitionNode[],
+  edges: readonly WorkflowEdge[],
+): void {
   const indegree = new Map(nodes.map((node) => [node.id, 0]));
   const outgoing = new Map(nodes.map((node) => [node.id, [] as string[]]));
 
@@ -198,7 +198,10 @@ function assertAcyclic(nodes: readonly WorkflowDefinitionNode[], edges: readonly
     outgoing.get(edge.from)?.push(edge.to);
   }
 
-  const queue = nodes.filter((node) => indegree.get(node.id) === 0).map((node) => node.id).sort();
+  const queue = nodes
+    .filter((node) => indegree.get(node.id) === 0)
+    .map((node) => node.id)
+    .sort();
   let visited = 0;
   while (queue.length > 0) {
     const id = queue.shift()!;
@@ -223,7 +226,10 @@ function topologicalNodes(definition: WorkflowDefinition): readonly WorkflowDefi
     indegree.set(edge.to, (indegree.get(edge.to) ?? 0) + 1);
     outgoing.get(edge.from)?.push(edge.to);
   }
-  const queue = definition.nodes.filter((node) => indegree.get(node.id) === 0).map((node) => node.id).sort();
+  const queue = definition.nodes
+    .filter((node) => indegree.get(node.id) === 0)
+    .map((node) => node.id)
+    .sort();
   const ordered: WorkflowDefinitionNode[] = [];
   while (queue.length > 0) {
     const id = queue.shift()!;
@@ -256,12 +262,16 @@ function normalizeWorkflow(definition: WorkflowDefinition): WorkflowDefinition {
       .sort((left, right) => left.id.localeCompare(right.id)),
     edges: definition.edges
       .map((edge) => ({ ...edge }))
-      .sort((left, right) => `${left.from}->${left.to}`.localeCompare(`${right.from}->${right.to}`)),
+      .sort((left, right) =>
+        `${left.from}->${left.to}`.localeCompare(`${right.from}->${right.to}`),
+      ),
   };
 }
 
 function sortedRecord(input: Readonly<Record<string, string>>): Readonly<Record<string, string>> {
-  return Object.fromEntries(Object.entries(input).sort(([left], [right]) => left.localeCompare(right)));
+  return Object.fromEntries(
+    Object.entries(input).sort(([left], [right]) => left.localeCompare(right)),
+  );
 }
 
 function requireText(value: string, name: string): void {
