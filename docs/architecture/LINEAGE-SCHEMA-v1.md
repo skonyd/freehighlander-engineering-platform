@@ -1,6 +1,6 @@
 # Engineering Lineage Schema v1
 
-**Status:** PROPOSED IMPLEMENTATION CONTRACT
+**Status:** ACCEPTED IMPLEMENTATION CONTRACT — FH-37A
 
 ## Core tables
 
@@ -132,3 +132,25 @@ Vector/semantic index selected entity content over IDs may exist for discovery/c
 ## Deletion
 
 Referenced AUDIT lineage hard-delete edilmez where policy requires audit. Tombstone/archive semantics referential integrity'yi korur; sensitive payload data-policy'ye göre silinebilir.
+
+
+## FH-37A executable mapping
+
+`packages/lineage` implements the v1 contract with stable `id@version` entity references, typed relations, explicit evidence/provenance, exact revision bindings and deterministic read-only traversal.
+
+Relation classes are explicit:
+
+- `AUTHORITATIVE`: exact typed endpoints plus trusted evidence/provenance are required.
+- `DISCOVERY`: non-authoritative retrieval/context only. Semantic/vector similarity maps here and cannot establish authority.
+
+The initial implementation remains `RELATIONAL_FIRST`. A graph database is not required by the contract and remains deferred until measured query/traversal needs justify one.
+
+FH-37A authority invariants:
+
+```text
+lineage state != decision authority
+semantic/vector similarity != authoritative lineage
+lineage evidence != merge/release/deploy authority
+lineage traversal != mutation authority
+V3 authority = SHADOW_ONLY
+```
