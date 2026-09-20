@@ -1,12 +1,19 @@
 # Human ownership/routing. This does not itself replace policy/human gates.
 * @skonyd
 
-# Especially sensitive areas
+# Security / authority / execution-policy surfaces
 /.freehighlander/ @skonyd
-/automation/ @skonyd
-/packages/policy/ @skonyd
-/packages/workflow/ @skonyd
-/packages/artifacts/ @skonyd
+/.github/workflows/ @skonyd
+/.github/dependabot.yml @skonyd
+/.github/CODEOWNERS @skonyd
+/apps/control-plane/ @skonyd
+/packages/governance/ @skonyd
+/packages/orchestration/ @skonyd
+/packages/model-runtime/ @skonyd
+/packages/evidence/ @skonyd
+/packages/persistence/ @skonyd
+/packages/security/ @skonyd
+/packages/v2-compat/ @skonyd
+/tools/project/ @skonyd
 /docs/governance/ @skonyd
 /docs/security/ @skonyd
-/.github/CODEOWNERS @skonyd

@@ -2,12 +2,18 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import YAML from 'yaml';
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const failures = [];
 
 const workflow = await fs.readFile(path.join(root, '.github', 'workflows', 'fh-ci.yml'), 'utf8');
 const packageJson = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
 const lockfile = JSON.parse(await fs.readFile(path.join(root, 'package-lock.json'), 'utf8'));
+const dependabot = YAML.parse(
+  await fs.readFile(path.join(root, '.github', 'dependabot.yml'), 'utf8'),
+);
+const codeowners = await fs.readFile(path.join(root, '.github', 'CODEOWNERS'), 'utf8');
 
 if (!workflow.includes('runs-on: ubuntu-24.04')) {
   failures.push('CI runner must be pinned to ubuntu-24.04');
@@ -32,6 +38,10 @@ for (const mutableReference of ['actions/checkout@v4', 'actions/setup-node@v4'])
   if (workflow.includes(mutableReference)) {
     failures.push(`CI must not use mutable action reference: ${mutableReference}`);
   }
+}
+
+if (!workflow.includes('persist-credentials: false')) {
+  failures.push('checkout credentials must not persist in the worktree');
 }
 
 if (!workflow.includes('node-version: 24.21.0')) {
@@ -67,6 +77,56 @@ if (!lockRoot) {
     if (JSON.stringify(actual) !== JSON.stringify(expected)) {
       failures.push(`package-lock root ${field} must exactly match package.json`);
     }
+  }
+}
+
+if (dependabot?.version !== 2 || !Array.isArray(dependabot?.updates)) {
+  failures.push('Dependabot config must use version 2 with explicit updates');
+} else {
+  const expectedEcosystems = ['github-actions', 'npm'];
+  const actualEcosystems = dependabot.updates
+    .map((entry) => entry?.['package-ecosystem'])
+    .filter((value) => typeof value === 'string')
+    .sort();
+
+  if (JSON.stringify(actualEcosystems) !== JSON.stringify(expectedEcosystems)) {
+    failures.push('Dependabot must cover exactly npm and github-actions');
+  }
+
+  for (const entry of dependabot.updates) {
+    if (entry?.directory !== '/') {
+      failures.push('Dependabot update directory must remain repository root');
+    }
+    if (entry?.schedule?.interval !== 'weekly') {
+      failures.push('Dependabot updates must remain weekly');
+    }
+    if (entry?.['open-pull-requests-limit'] !== 5) {
+      failures.push('Dependabot open PR limit must remain 5');
+    }
+  }
+}
+
+for (const sensitivePath of [
+  '/.freehighlander/',
+  '/.github/workflows/',
+  '/apps/control-plane/',
+  '/packages/governance/',
+  '/packages/orchestration/',
+  '/packages/model-runtime/',
+  '/packages/evidence/',
+  '/packages/persistence/',
+  '/packages/security/',
+  '/packages/v2-compat/',
+  '/tools/project/',
+]) {
+  if (!codeowners.includes(`${sensitivePath} @skonyd`)) {
+    failures.push(`CODEOWNERS missing sensitive path: ${sensitivePath}`);
+  }
+}
+
+for (const stalePath of ['/packages/policy/', '/packages/workflow/', '/packages/artifacts/']) {
+  if (codeowners.includes(stalePath)) {
+    failures.push(`CODEOWNERS contains stale sensitive path: ${stalePath}`);
   }
 }
 
