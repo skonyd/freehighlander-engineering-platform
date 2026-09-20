@@ -128,10 +128,7 @@ test('lineage traversal is deterministic and fails closed on missing parents', a
   assert.equal(valid.valid, true);
   assert.deepEqual(valid.ancestry, [rootParent.artifactHash, child.artifactHash]);
 
-  const missing = verifyArtifactLineage(
-    child.artifactHash,
-    new Map([[child.artifactHash, child]]),
-  );
+  const missing = verifyArtifactLineage(child.artifactHash, new Map([[child.artifactHash, child]]));
   assert.equal(missing.valid, false);
   assert.match(missing.errors[0], /missing lineage artifact/);
 });
@@ -157,7 +154,6 @@ test('duplicate parent hashes are rejected and lineage cannot grant authority', 
   );
   assert.equal(artifactLineageCanGrantAuthority(), false);
 });
-
 
 test('lineage cycles fail closed', () => {
   const aHash = 'a'.repeat(64);
