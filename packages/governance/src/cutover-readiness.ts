@@ -21,9 +21,7 @@ export interface CutoverReadinessResult {
   readonly cutoverMayBeApplied: boolean;
 }
 
-export function evaluateV3CutoverReadiness(
-  input: CutoverReadinessInput,
-): CutoverReadinessResult {
+export function evaluateV3CutoverReadiness(input: CutoverReadinessInput): CutoverReadinessResult {
   requireText(input.provisionalReferenceSha, 'provisionalReferenceSha');
 
   const reasons: string[] = [];
