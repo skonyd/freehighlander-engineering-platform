@@ -62,7 +62,7 @@ Activation lane FH-30B..FH-37B remains blocked by FH-01B2/FH-20 final authority 
 - [ ] SQLite backup/restore/integrity hardening — issue #95
 - [ ] FH-30A..FH-37A cross-module read-only integration
 - [ ] Hardening observability + adversarial/fail-closed tests
-- [ ] Architecture dependency-boundary enforcement
+- [ ] Architecture dependency-boundary enforcement — issue #105
 - [ ] Roadmap/documentation drift cleanup
 
 Umbrella: #88. This lane must not enable V3 authority or assume final #207 behavior.
