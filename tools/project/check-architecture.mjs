@@ -788,7 +788,6 @@ try {
   failures.push('missing deterministic CI supply-chain enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   const secretScanner = await fs.readFile(
