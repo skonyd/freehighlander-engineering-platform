@@ -105,15 +105,11 @@ if (dependabot?.version !== 2 || !Array.isArray(dependabot?.updates)) {
     }
   }
 
-  const npmUpdates = dependabot.updates.find(
-    (entry) => entry?.['package-ecosystem'] === 'npm',
-  );
+  const npmUpdates = dependabot.updates.find((entry) => entry?.['package-ecosystem'] === 'npm');
   const nodeTypesMajorIgnore = npmUpdates?.ignore?.find(
     (entry) => entry?.['dependency-name'] === '@types/node',
   );
-  if (
-    !nodeTypesMajorIgnore?.['update-types']?.includes('version-update:semver-major')
-  ) {
+  if (!nodeTypesMajorIgnore?.['update-types']?.includes('version-update:semver-major')) {
     failures.push(
       'Dependabot must ignore semver-major @types/node updates while runtime remains Node 24',
     );
