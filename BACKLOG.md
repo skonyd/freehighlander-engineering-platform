@@ -56,6 +56,10 @@ Activation lane **FH-30B..FH-37B** remains blocked by FH-01B2/FH-20 final author
 
 Umbrella: #88.
 
+## Post-umbrella repository maintenance — independent of Creator Marketplace #207
+- [x] Reproducible CI / npm lockfile / immutable Action SHA pinning — issue #109 / PR #110
+- [x] Checkout credential isolation + bounded dependency-update hygiene — issue #111 / PR #112
+
 ## Current blocker
 
 No authority-bearing migration or B-lane activation may proceed until Creator Marketplace #207 provides the final accepted reference needed by FH-01B2/FH-20.
