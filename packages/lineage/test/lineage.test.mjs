@@ -16,10 +16,39 @@ const digest = (char) => char.repeat(64);
 const revision = { repository: 'skonyd/freehighlander-engineering-platform', sha: 'a'.repeat(40) };
 
 const entities = [
-  { schemaVersion: 1, id: 'req-1', version: 1, kind: 'REQUIREMENT', label: 'Requirement', digest: digest('1') },
-  { schemaVersion: 1, id: 'ac-1', version: 1, kind: 'ACCEPTANCE_CRITERION', label: 'AC', digest: digest('2') },
-  { schemaVersion: 1, id: 'code-1', version: 1, kind: 'CODE_REVISION', label: 'Code', digest: digest('3'), revision },
-  { schemaVersion: 1, id: 'test-1', version: 1, kind: 'TEST_EVIDENCE', label: 'Test', digest: digest('4') },
+  {
+    schemaVersion: 1,
+    id: 'req-1',
+    version: 1,
+    kind: 'REQUIREMENT',
+    label: 'Requirement',
+    digest: digest('1'),
+  },
+  {
+    schemaVersion: 1,
+    id: 'ac-1',
+    version: 1,
+    kind: 'ACCEPTANCE_CRITERION',
+    label: 'AC',
+    digest: digest('2'),
+  },
+  {
+    schemaVersion: 1,
+    id: 'code-1',
+    version: 1,
+    kind: 'CODE_REVISION',
+    label: 'Code',
+    digest: digest('3'),
+    revision,
+  },
+  {
+    schemaVersion: 1,
+    id: 'test-1',
+    version: 1,
+    kind: 'TEST_EVIDENCE',
+    label: 'Test',
+    digest: digest('4'),
+  },
 ];
 
 const trustedEvidence = [{ id: 'ev-1', digest: digest('e'), provenance: 'TRUSTED' }];
