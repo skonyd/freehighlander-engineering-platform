@@ -26,7 +26,15 @@ git remote -v
 
 Do not delete or overwrite unexpected local changes.
 
-### 2. Read state
+### 2. Run repository reconciliation
+
+```bash
+npm run project:resume
+```
+
+The command compares the canonical state pointer with the checked-out branch, local HEAD, remote branch HEAD and active PR metadata. A stale/missing/mismatched pointer exits non-zero and must be reconciled rather than guessed.
+
+### 3. Read state
 
 Read in this order:
 1. `AGENTS.md`
@@ -36,7 +44,7 @@ Read in this order:
 5. accepted ADRs referenced by active work
 6. active PR roadmap section
 
-### 3. Verify pointers
+### 4. Verify pointers
 
 Compare repository state with GitHub:
 - branch exists,
@@ -46,13 +54,13 @@ Compare repository state with GitHub:
 
 Any mismatch is a reconciliation task, not permission to guess.
 
-### 4. Identify current logical role
+### 5. Identify current logical role
 
 Read `TRIPLE-MODE.md`.
 
 The currently running model must not assume it can perform an independent review merely because the preferred reviewer is unavailable.
 
-### 5. Continue only the active step
+### 6. Continue only the active step
 
 Do not opportunistically start future FH work while an earlier dependency/gate is unresolved unless the roadmap explicitly marks it independent.
 
@@ -67,8 +75,17 @@ Before switching from home → work, work → home, or model → model:
 5. Append one entry to `HISTORY.md`.
 6. Commit.
 7. Push the feature branch.
-8. Confirm remote branch contains the checkpoint.
-9. Prefer a clean worktree.
+8. For an explicit repository-native checkpoint, run:
+
+```bash
+npm run project:checkpoint -- --write
+```
+
+This is allowed only on a clean feature branch. It appends `HISTORY.md`, commits the handoff entry, pushes the branch and verifies the remote SHA.
+9. Confirm remote branch contains the checkpoint.
+10. Prefer a clean worktree.
+
+A checkpoint is handoff metadata only. It never implies a semantic/model/policy gate passed.
 
 ### Incomplete implementation
 
