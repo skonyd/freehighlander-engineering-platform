@@ -28,6 +28,4 @@ if (!result.valid) {
   process.exit(1);
 }
 
-console.log(
-  `Lockfile provenance check PASS (${result.externalPackageCount} external packages)`,
-);
+console.log(`Lockfile provenance check PASS (${result.externalPackageCount} external packages)`);
