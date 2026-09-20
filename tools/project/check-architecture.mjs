@@ -606,7 +606,6 @@ try {
   failures.push('missing executable sandbox-policy enforcement');
 }
 
-
 try {
   const retentionSource = await fs.readFile(
     path.join(root, 'packages', 'governance', 'src', 'retention-policy.ts'),
