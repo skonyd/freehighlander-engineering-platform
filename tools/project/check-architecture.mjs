@@ -232,13 +232,16 @@ try {
   failures.push('missing FH-15 policy/human approval authority guards');
 }
 
-
 try {
   const artifactLineageSource = await fs.readFile(
     path.join(root, 'packages', 'evidence', 'src', 'artifact-lineage.ts'),
     'utf8',
   );
-  if (!artifactLineageSource.includes('export function artifactLineageCanGrantAuthority(): false')) {
+  if (
+    !artifactLineageSource.includes(
+      'export function artifactLineageCanGrantAuthority(): false',
+    )
+  ) {
     failures.push('FH-16 artifact lineage must remain authority-neutral');
   }
   if (!artifactLineageSource.includes('missing lineage artifact')) {
