@@ -5,7 +5,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 
 const REQUIRED_ADRS = Array.from(
-  { length: 19 },
+  { length: 20 },
   (_, index) => `ADR-${String(index + 1).padStart(4, '0')}`,
 );
 
@@ -47,6 +47,7 @@ const REQUIRED_CONTEXTS = [
   'release',
   'operations',
   'incident',
+  'lineage',
 ];
 
 export async function loadArchitectureContract(root) {
@@ -66,7 +67,7 @@ export function assertArchitectureContract(contract) {
   ) {
     throw new Error('architecture contract_version must be semantic version');
   }
-  expect(contract.contract_version, '1.7.0', 'architecture contract version');
+  expect(contract.contract_version, '1.8.0', 'architecture contract version');
   expect(contract.status, 'FROZEN_BASELINE', 'architecture status');
   expect(contract.phase, 'FH-10', 'architecture phase');
 
