@@ -208,7 +208,11 @@ export function validateChangeCandidate(candidate: ChangeCandidate): ValidationR
   );
   for (const intent of candidate.shadowPlan) {
     requireText(intent.id, 'shadow intent id', errors);
-    requireText(intent.description, `shadow intent ${intent.id || '<missing>'} description`, errors);
+    requireText(
+      intent.description,
+      `shadow intent ${intent.id || '<missing>'} description`,
+      errors,
+    );
     if (intent.sideEffects !== 'FORBIDDEN') {
       errors.push(`shadow intent ${intent.id} sideEffects must be FORBIDDEN`);
     }
