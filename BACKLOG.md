@@ -62,6 +62,7 @@ Umbrella: #88.
 - [x] Deterministic tracked-secret leakage gate — issue #114 / PR #117
 - [x] Pinned GitHub Actions v7 current-main refresh — issue #118 / PR #119
 - [x] Native Node per-workspace coverage regression gate — issue #120 / PR #121
+- [x] Control-plane test/coverage gap closure (19/19 workspaces) — issue #122 / PR #123
 
 ## Current blocker
 
