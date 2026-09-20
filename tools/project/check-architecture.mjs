@@ -733,6 +733,35 @@ try {
   failures.push('missing deterministic adversarial fail-closed hardening suite');
 }
 
+
+try {
+  const dependencyChecker = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'dependency-boundaries.mjs'),
+    'utf8',
+  );
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  if (!dependencyChecker.includes('internal workspace dependency cycle')) {
+    failures.push('dependency boundary checker must reject internal workspace cycles');
+  }
+  if (!dependencyChecker.includes('must not depend on app workspace')) {
+    failures.push('dependency boundary checker must reject packages depending on apps');
+  }
+  if (!dependencyChecker.includes('without declaring it')) {
+    failures.push('dependency boundary checker must enforce internal import declarations');
+  }
+  if (!dependencyChecker.includes('imports unknown internal package')) {
+    failures.push('dependency boundary checker must reject unknown internal imports');
+  }
+  if (rootPackage.scripts?.['check:dependencies'] !== 'node tools/project/check-dependencies.mjs') {
+    failures.push('root package must expose check:dependencies');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:dependencies')) {
+    failures.push('npm run verify must include dependency boundary enforcement');
+  }
+} catch {
+  failures.push('missing workspace dependency-boundary enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
