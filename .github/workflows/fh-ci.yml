@@ -30,5 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Diagnose FH-37A formatting
+        run: |
+          npx prettier --write packages/lineage/src/index.ts packages/lineage/test/lineage.test.mjs tools/project/check-architecture.mjs
+          git diff -- packages/lineage/src/index.ts packages/lineage/test/lineage.test.mjs tools/project/check-architecture.mjs
+          exit 1
