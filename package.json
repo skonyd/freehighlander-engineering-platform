@@ -25,8 +25,9 @@
     "project:context": "node tools/project/context.mjs",
     "project:architecture": "node tools/project/architecture.mjs",
     "dashboard:start": "npm run start -w @freehighlander/web",
-    "verify": "npm run format && npm run typecheck && npm run build && npm run test && npm run check:dependencies && npm run check:architecture && npm run project:doctor",
-    "check:dependencies": "node tools/project/check-dependencies.mjs"
+    "verify": "npm run format && npm run typecheck && npm run build && npm run test && npm run check:dependencies && npm run check:docs && npm run check:architecture && npm run project:doctor",
+    "check:dependencies": "node tools/project/check-dependencies.mjs",
+    "check:docs": "node tools/project/check-doc-drift.mjs"
   },
   "dependencies": {
     "yaml": "2.9.1"
