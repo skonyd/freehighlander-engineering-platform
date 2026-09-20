@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-19 COMPLETE / PROJECT STATE TOOLING IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-19 COMPLETE / EVIDENCE POLICY IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -201,19 +201,26 @@ missing evidence != parity
 
 V2 remains PROVISIONAL and V3 remains SHADOW_ONLY.
 
-## Project-state tooling active work
+## Project-state tooling completed
 
-Issue **#10** is active on `feat/project-checkpoint-reconciliation`.
+Issue **#10** was implemented through PR **#60** and merged as `b46ae26f18de50a5c6182e2147c7441c4728069f`.
 
-The tooling now:
-- validates canonical state before resume/checkpoint;
-- compares local branch/HEAD with remote branch HEAD;
-- verifies active PR number/state/head binding;
-- reports stale pointers instead of guessing;
-- rejects dirty checkpoint worktrees and forbidden runtime/secret-like paths;
-- supports explicit `project:checkpoint -- --write` history commit + push + remote SHA verification;
-- never infers semantic gate PASS from checkpoint state.
+Resume/checkpoint tooling now validates remote branch and PR pointers, detects stale state, rejects unsafe checkpoint paths, writes explicit handoff history only on feature branches and verifies the pushed remote SHA. Checkpoints never infer semantic gate PASS.
+
+## Evidence policy active work
+
+Issue **#61** is active on `feat/evidence-policy-validator`.
+
+The validator enforces required evidence IDs/kinds, exact revision binding, trusted provenance and authoritative relation verification. Summary evidence cannot substitute a required raw/diff/test/relation artifact and token budget cannot authorize dropping required evidence.
+
+Hard invariant:
+
+```text
+evidence validation != authority grant
+summary != required raw evidence
+token budget != permission to remove required evidence
+```
 
 ## Next action
 
-Verify issue #10 through protected-main CI, then complete the remaining evidence-policy validator. FH-20 authority cutover remains blocked until FH-01B2 has a final accepted Creator Marketplace #207 reference and explicit human/policy promotion review.
+Verify issue #61 through protected-main CI. After that, only the FH-01B2/FH-20 authority-cutover path remains, blocked on Creator Marketplace #207 acceptance, merge, post-merge smoke and explicit human/policy promotion review.

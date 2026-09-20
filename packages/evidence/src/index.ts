@@ -1,4 +1,16 @@
 export {
+  evidenceBudgetCanTruncateRequiredEvidence,
+  evidencePolicyCanGrantAuthority,
+  validateEvidencePolicy,
+  type EvidenceCandidate,
+  type EvidenceKind,
+  type EvidencePolicy,
+  type EvidenceRequirement,
+  type EvidenceValidationContext,
+  type EvidenceValidationResult,
+} from './evidence-policy.js';
+
+export {
   artifactLineageCanGrantAuthority,
   createArtifactEnvelope,
   isLineageArtifactCurrent,

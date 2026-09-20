@@ -16,10 +16,10 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] Context packet builder + manifest validation — FH-07 / PR #33
 - [x] Prompt contract/version registry — FH-07 / PR #33
 - [x] Semantic model-call reuse key — FH-07 / PR #33
-- [ ] Evidence policy validator
+- [ ] Evidence policy validator — issue #61 (active)
 - [x] Provider token-count capability contract/preflight — FH-07 / PR #33
 - [x] Token-budget diagnostics — FH-07 / PR #33
-- [ ] canonical project checkpoint / remote reconciliation — issue #10 (active)
+- [x] canonical project checkpoint / remote reconciliation — issue #10 / PR #60
 - [x] token/cache/context packet tooling — issue #11 / PR #33
 
 ## Qwen / model economics
