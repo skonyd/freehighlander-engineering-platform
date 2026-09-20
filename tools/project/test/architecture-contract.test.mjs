@@ -18,10 +18,11 @@ test('repository V3 architecture contract validates and hashes deterministically
 
   assert.match(first, /^[a-f0-9]{64}$/);
   assert.equal(first, second);
-  assert.equal(contract.contract_version, '1.2.0');
+  assert.equal(contract.contract_version, '1.3.0');
   assert.equal(contract.status, 'FROZEN_BASELINE');
   assert.equal(contract.bounded_contexts.packages.includes('planning'), true);
   assert.equal(contract.bounded_contexts.packages.includes('development'), true);
+  assert.equal(contract.bounded_contexts.packages.includes('testing'), true);
   assert.equal(contract.migration.v3_authority, 'SHADOW_ONLY');
 });
 
@@ -61,6 +62,12 @@ test('architecture freeze rejects missing accepted ADRs, module contexts and unb
   missingDevelopment.bounded_contexts.packages =
     missingDevelopment.bounded_contexts.packages.filter((entry) => entry !== 'development');
   assert.throws(() => assertArchitectureContract(missingDevelopment), /bounded contexts/);
+
+  const missingTesting = structuredClone(await loadArchitectureContract(root));
+  missingTesting.bounded_contexts.packages = missingTesting.bounded_contexts.packages.filter(
+    (entry) => entry !== 'testing',
+  );
+  assert.throws(() => assertArchitectureContract(missingTesting), /bounded contexts/);
 
   const unbounded = structuredClone(await loadArchitectureContract(root));
   unbounded.workflows.loops_must_be_bounded = false;

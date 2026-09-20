@@ -19,6 +19,7 @@ const expectedPackages = new Map([
   ['packages/evaluation', '@freehighlander/evaluation'],
   ['packages/planning', '@freehighlander/planning'],
   ['packages/development', '@freehighlander/development'],
+  ['packages/testing', '@freehighlander/testing'],
 ]);
 
 const failures = [];
@@ -394,6 +395,30 @@ try {
   }
 } catch {
   failures.push('missing FH-31A development authority guards');
+}
+
+try {
+  const testingSource = await fs.readFile(
+    path.join(root, 'packages', 'testing', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!testingSource.includes('export function testingCanGrantAuthority(): false')) {
+    failures.push('FH-32A testing must remain authority-neutral');
+  }
+  if (!testingSource.includes('export function testPassCanAuthorizeMerge(): false')) {
+    failures.push('FH-32A test PASS must not authorize merge');
+  }
+  if (!testingSource.includes('export function testPassCanAuthorizeRelease(): false')) {
+    failures.push('FH-32A test PASS must not authorize release');
+  }
+  if (!testingSource.includes('export function testingCanExecuteProductionMutation(): false')) {
+    failures.push('FH-32A testing must not execute production mutation');
+  }
+  if (!testingSource.includes("readonly authority: 'NONE'")) {
+    failures.push('FH-32A shadow test gate authority must remain NONE');
+  }
+} catch {
+  failures.push('missing FH-32A testing authority guards');
 }
 
 if (failures.length > 0) {
