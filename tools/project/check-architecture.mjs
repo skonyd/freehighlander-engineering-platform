@@ -761,6 +761,19 @@ try {
   failures.push('missing workspace dependency-boundary enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  await fs.access(path.join(root, 'tools', 'project', 'check-doc-drift.mjs'));
+  if (rootPackage.scripts?.['check:docs'] !== 'node tools/project/check-doc-drift.mjs') {
+    failures.push('root package must expose check:docs');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:docs')) {
+    failures.push('npm run verify must include documentation drift enforcement');
+  }
+} catch {
+  failures.push('missing documentation drift enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
