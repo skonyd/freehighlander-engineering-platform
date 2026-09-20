@@ -278,7 +278,7 @@ With FH-30A complete, these A-lane packages remain available without Creator
 Marketplace #207:
 
 - FH-31A Development — complete via issue #72 / PR #73;
-- FH-32A Testing — active as issue #75;
+- FH-32A Testing — complete via issue #75 / PR #76;
 - FH-33A Security;
 - FH-34A Release readiness (after Development/Testing/Security inputs);
 - FH-35A Operations;
@@ -316,10 +316,12 @@ Next sequential module: **FH-32A Testing**. FH-33A Security, FH-35A Operations a
 FH-37A engineering lineage remain independently available in parallel.
 
 
-## FH-32A active
+## FH-32A completed
 
-Issue **#75** introduces the Testing bounded context under ADR-0015 and
-architecture contract 1.3.0.
+Issue **#75** was implemented through PR **#76** and merged as `2f8e04d7be3928e42312654056ac2474837bf505`.
+
+The Testing bounded context is governed by ADR-0015 and architecture contract
+1.3.0.
 
 Testing binds plans and results to exact repository revision and environment
 fingerprint, maps required acceptance criteria to required tests and evaluates
@@ -333,3 +335,13 @@ test PASS != release/deploy authority
 test PASS != authority promotion
 V3 authority remains SHADOW_ONLY
 ```
+
+
+## FH-32A closeout
+
+FH-32A is complete and remains authority-neutral. Exact revision/environment
+binding, acceptance coverage and digest-bound test evidence are now available to
+later Release readiness.
+
+Next sequential independent module: **FH-33A Security**. FH-35A Operations and
+FH-37A engineering lineage also remain available without #207.
