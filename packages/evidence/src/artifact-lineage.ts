@@ -93,7 +93,9 @@ export async function verifyArtifactEnvelope(
     parentArtifactHashes: artifact.parentArtifactHashes,
   });
 
-  return rebuilt.contentHash === artifact.contentHash && rebuilt.artifactHash === artifact.artifactHash;
+  return (
+    rebuilt.contentHash === artifact.contentHash && rebuilt.artifactHash === artifact.artifactHash
+  );
 }
 
 export function verifyArtifactLineage(
@@ -156,13 +158,17 @@ function validateBinding(binding: ArtifactLineageBinding): void {
 function assertUniqueParents(parents: readonly string[]): void {
   const seen = new Set<string>();
   for (const parent of parents) {
-    if (seen.has(parent)) throw new Error(`duplicate parent artifact hash: ${parent}`);
+    if (seen.has(parent)) {
+      throw new Error(`duplicate parent artifact hash: ${parent}`);
+    }
     seen.add(parent);
   }
 }
 
 function requireHash(value: string, name: string): void {
-  if (!/^[a-f0-9]{64}$/.test(value)) throw new Error(`${name} must be a SHA-256 hex hash`);
+  if (!/^[a-f0-9]{64}$/.test(value)) {
+    throw new Error(`${name} must be a SHA-256 hex hash`);
+  }
 }
 
 function requireText(value: string, name: string): void {
@@ -171,7 +177,9 @@ function requireText(value: string, name: string): void {
 
 function canonicalJson(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map((entry) => canonicalJson(entry)).join(',')}]`;
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => canonicalJson(entry)).join(',')}]`;
+  }
 
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record)
@@ -181,11 +189,6 @@ function canonicalJson(value: unknown): string {
 }
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await globalThis.crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
