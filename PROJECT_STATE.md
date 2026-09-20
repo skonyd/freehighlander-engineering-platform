@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-12 COMPLETE / FH-01B2 BLOCKED  
+**State status:** FH-13 COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -128,6 +128,21 @@ AUTHORITY         = DISABLED
 
 FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, merge and smoke.
 
+## FH-13 completed
+
+Issue **#45** is implemented through PR **#46**.
+
+The implementation adds:
+- immutable semantic-versioned workflow DAG publication;
+- deterministic workflow hashing;
+- explicit bounded LOOP validation;
+- fail-closed edge/duplicate/cycle validation;
+- explicit node states and legal transitions;
+- deterministic readiness and block propagation;
+- run snapshots binding workflow/role/policy/binding/provider capability identity.
+
+Authority remains unchanged and V3 remains `SHADOW_ONLY`.
+
 ## Next action
 
-Start FH-13 workflow DAG + explicit state machine while FH-01B2 remains blocked by Creator Marketplace #207.
+Start FH-14 debate/council + disagreement escalation while FH-01B2 remains blocked by Creator Marketplace #207.

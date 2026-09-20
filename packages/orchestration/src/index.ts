@@ -1,4 +1,22 @@
 export {
+  buildRunSnapshot,
+  createInitialNodeStates,
+  propagateWorkflowStates,
+  publishWorkflow,
+  transitionNodeState,
+  validateWorkflow,
+  workflowConfigurationCanGrantAuthority,
+  type PublishedWorkflow,
+  type RunSnapshot,
+  type RunSnapshotInput,
+  type WorkflowDefinition,
+  type WorkflowDefinitionNode,
+  type WorkflowEdge,
+  type WorkflowNodeKind,
+  type WorkflowNodeState,
+} from './workflow-engine.js';
+
+export {
   buildContextPacket,
   buildContractFingerprint,
   buildSemanticReuseKey,

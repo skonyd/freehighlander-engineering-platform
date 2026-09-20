@@ -171,6 +171,25 @@ try {
   failures.push('missing FH-08 provider circuit-breaker authority guards');
 }
 
+try {
+  const workflowEngineSource = await fs.readFile(
+    path.join(root, 'packages', 'orchestration', 'src', 'workflow-engine.ts'),
+    'utf8',
+  );
+  if (
+    !workflowEngineSource.includes(
+      'export function workflowConfigurationCanGrantAuthority(): false',
+    )
+  ) {
+    failures.push('FH-13 workflow configuration must remain authority-neutral');
+  }
+  if (!workflowEngineSource.includes("throw new Error('workflow graph must be acyclic')")) {
+    failures.push('FH-13 workflow graph cycles must fail closed');
+  }
+} catch {
+  failures.push('missing FH-13 workflow engine authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
