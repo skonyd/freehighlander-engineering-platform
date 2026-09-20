@@ -33,7 +33,9 @@ export async function discoverWorkspacePackages(root) {
       throw error;
     }
 
-    for (const entry of entries.filter((item) => item.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
+    for (const entry of entries
+      .filter((item) => item.isDirectory())
+      .sort((a, b) => a.name.localeCompare(b.name))) {
       const directory = path.join(basePath, entry.name);
       const manifestPath = path.join(directory, 'package.json');
       try {
@@ -52,7 +54,9 @@ export async function discoverWorkspacePackages(root) {
     }
   }
 
-  return workspaces.sort((left, right) => left.relativeDirectory.localeCompare(right.relativeDirectory));
+  return workspaces.sort((left, right) =>
+    left.relativeDirectory.localeCompare(right.relativeDirectory),
+  );
 }
 
 export async function analyzeWorkspaceDependencyBoundaries(root, workspaces) {
@@ -209,10 +213,7 @@ function canonicalCycle(cycle) {
   const nodes = cycle.slice(0, -1);
   if (nodes.length === 0) return cycle;
 
-  const rotations = nodes.map((_, index) => [
-    ...nodes.slice(index),
-    ...nodes.slice(0, index),
-  ]);
+  const rotations = nodes.map((_, index) => [...nodes.slice(index), ...nodes.slice(0, index)]);
   rotations.sort((left, right) => left.join('\u0000').localeCompare(right.join('\u0000')));
   return [...rotations[0], rotations[0][0]];
 }
