@@ -171,7 +171,6 @@ try {
   failures.push('missing FH-08 provider circuit-breaker authority guards');
 }
 
-
 try {
   const workflowEngineSource = await fs.readFile(
     path.join(root, 'packages', 'orchestration', 'src', 'workflow-engine.ts'),
