@@ -1,4 +1,18 @@
 export {
+  buildManagementSnapshot,
+  createManagementIntent,
+  parseManagementIntent,
+  uiDisconnectCanChangeWorkflowExecution,
+  webCanExecuteManagementIntent,
+  type HumanApprovalView,
+  type ManagementIntent,
+  type ManagementIntentKind,
+  type ManagementReadSource,
+  type ManagementRunView,
+  type ManagementSnapshot,
+} from './management.js';
+
+export {
   DashboardReadModel,
   MissingDashboardDatabaseError,
   type DashboardArtifact,
