@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T13:28:00+03:00"
+updated_at: "2026-09-20T13:36:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -14,11 +14,11 @@ phase:
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
-  pull_request: null
-  issue: null
-  objective: wait for final accepted Creator Marketplace #207 and execute FH-01B2/FH-20 only after all promotion prerequisites pass
-  next_action: monitor Creator Marketplace #207; when accepted and merged, reconcile final V2 SHA, rerun parity/smoke, verify human+policy approval, then apply FH-20 cutover
+  branch: docs/precutover-module-lane
+  pull_request: 68
+  issue: 67
+  objective: unblock FH-30A..FH-37A authority-neutral preparation while FH-20 cutover remains blocked
+  next_action: establish the pre-cutover module lane, then start FH-30A and continue through independent A-lane modules
 
 fh01a:
   issue: 15
@@ -223,6 +223,21 @@ fh20:
   cutover_allowed: false
   v3_authority: SHADOW_ONLY
   blocker: creator-marketplace-pr-207-not-fully-accepted
+
+module_preparation_lane:
+  issue: 67
+  status: in_progress
+  authority_effect: none
+  activation_blocked_by: FH-01B2/FH-20
+  planned:
+    - FH-30A
+    - FH-31A
+    - FH-32A
+    - FH-33A
+    - FH-34A
+    - FH-35A
+    - FH-36A
+    - FH-37A
 
 external_dependency:
   repository: skonyd/creator-marketplace

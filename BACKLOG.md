@@ -40,3 +40,16 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-18 UI control plane — issue #56 / PR #57
 - [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
 - [ ] FH-20 V3 authority cutover + legacy shell retirement plan — readiness gate complete via issue #64 / PR #65; cutover blocked by Creator Marketplace #207
+
+
+## Modules — pre-cutover preparation lane
+- [ ] FH-30A Planning module contracts/read-only preparation
+- [ ] FH-31A Development module contracts/shadow preparation
+- [ ] FH-32A Testing module evidence/read-only preparation
+- [ ] FH-33A Security module evidence/read-only preparation
+- [ ] FH-34A Release module readiness/read-only preparation
+- [ ] FH-35A Operations module inventory/health/read-only preparation
+- [ ] FH-36A Incident module lifecycle/read-only preparation
+- [ ] FH-37A Project knowledge graph / engineering lineage preparation
+
+Activation lane FH-30B..FH-37B remains blocked by FH-01B2/FH-20 final authority cutover.

@@ -31,14 +31,18 @@ FH kimlikleri planlanan çalışma paketidir; gerçek GitHub PR numarası değil
 - **FH-20** V3 authority cutover
 
 ## Modules
-- **FH-30** Planning module MVP
-- **FH-31** Development module
-- **FH-32** Testing module
-- **FH-33** Security module
-- **FH-34** Release module
-- **FH-35** Operations module
-- **FH-36** Incident module
-- **FH-37** Project knowledge graph / engineering lineage
+Each module has an authority-neutral **A** preparation lane that may proceed before final FH-20 cutover, and an authority-bearing **B** activation lane that remains post-cutover.
+
+- **FH-30A/B** Planning module MVP
+- **FH-31A/B** Development module
+- **FH-32A/B** Testing module
+- **FH-33A/B** Security module
+- **FH-34A/B** Release module
+- **FH-35A/B** Operations module
+- **FH-36A/B** Incident module
+- **FH-37A/B** Project knowledge graph / engineering lineage
+
+Canonical split and authority boundaries: [FH-30-37-PRECUTOVER.md](FH-30-37-PRECUTOVER.md).
 
 ## PR intent details
 
@@ -106,7 +110,15 @@ FH-01 → FH-02 → FH-03 → FH-04
                                       ↓
                                   FH-17/18
                                       ↓
-                                  FH-19 → FH-20
-                                              ↓
-                                         FH-30+
+                                  FH-19 → FH-20 readiness
+                                      │
+               ┌──────────────────────┴──────────────────────┐
+               ↓                                             ↓
+        FH-30A..FH-37A                               #207 → FH-01B2
+     authority-neutral prep                                  ↓
+               │                                      FH-20 final cutover
+               └──────────────────────┬──────────────────────┘
+                                      ↓
+                               FH-30B..FH-37B
+                           authority-bearing activation
 ```
