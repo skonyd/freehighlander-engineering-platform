@@ -15,6 +15,7 @@ const backlog = await fs.readFile(path.join(root, 'BACKLOG.md'), 'utf8');
 const projectState = await fs.readFile(path.join(root, 'PROJECT_STATE.md'), 'utf8');
 const roadmap = await fs.readFile(path.join(root, 'docs', 'ROADMAP.md'), 'utf8');
 const prRoadmap = await fs.readFile(path.join(root, 'docs', 'planning', 'PR-ROADMAP.md'), 'utf8');
+const securityPolicy = await fs.readFile(path.join(root, 'SECURITY.md'), 'utf8');
 
 expect(state.phase?.id, 'PRE-CUTOVER', 'state phase');
 expect(state.phase?.status, 'blocked_on_external_dependency', 'state phase status');
@@ -127,6 +128,19 @@ for (const [documentName, content, stalePhrases] of [
   for (const phrase of stalePhrases) {
     if (content.includes(phrase)) failures.push(`${documentName} contains stale phrase: ${phrase}`);
   }
+}
+
+for (const marker of [
+  'Security → Report a vulnerability',
+  'A normal issue in a public repository must be treated as public.',
+  'Do not include live production credentials.',
+]) {
+  if (!securityPolicy.includes(marker)) {
+    failures.push(`SECURITY.md missing safe disclosure marker: ${marker}`);
+  }
+}
+if (securityPolicy.includes('create a private GitHub issue')) {
+  failures.push('SECURITY.md must not suggest a private GitHub issue as a disclosure channel');
 }
 
 if (failures.length > 0) {
