@@ -122,6 +122,23 @@ test('ephemeral injection requires explicit positive TTL and target-specific met
       .allowed,
     false,
   );
+  assert.equal(planSecretInjection(request({ target: 'UNKNOWN_TARGET' })).decision.allowed, false);
+});
+
+test('request metadata fails closed when role or sandbox authority binding is invalid', () => {
+  assert.equal(planSecretInjection(request({ logicalRole: '   ' })).decision.allowed, false);
+  assert.equal(
+    planSecretInjection(
+      request({
+        sandboxDecision: {
+          allowed: true,
+          reason: 'invalid elevated decision',
+          authority: 'ELEVATED',
+        },
+      }),
+    ).decision.allowed,
+    false,
+  );
 });
 
 test('invalid handles fail closed before injection planning', () => {
@@ -162,6 +179,39 @@ test('receipt validation binds handle target TTL and no-persistence evidence', (
   assert.equal(invalid.valid, false);
   assert.equal(
     invalid.errors.includes('secret injection receipt cannot exceed the planned ttlMs'),
+    true,
+  );
+
+  const malformed = validateSecretInjectionReceipt(result.plan, {
+    ...validReceipt,
+    receiptId: 'x',
+    handleId: 'different-handle',
+    target: 'TOOL_AUTH',
+    valuePersisted: true,
+    authority: 'ELEVATED',
+    injectedAt: 'not-a-date',
+    expiresAt: 'also-not-a-date',
+  });
+  assert.equal(malformed.valid, false);
+  for (const expected of [
+    'secret injection receipt id is invalid',
+    'secret injection receipt handle does not match plan',
+    'secret injection receipt target does not match plan',
+    'secret injection receipt must prove valuePersisted=false',
+    'secret injection receipt must remain authority-neutral',
+    'secret injection receipt timestamps must be valid ISO timestamps',
+  ]) {
+    assert.equal(malformed.errors.includes(expected), true);
+  }
+
+  const nonIncreasing = validateSecretInjectionReceipt(result.plan, {
+    ...validReceipt,
+    injectedAt: '2026-09-20T14:00:30.000Z',
+    expiresAt: '2026-09-20T14:00:30.000Z',
+  });
+  assert.equal(nonIncreasing.valid, false);
+  assert.equal(
+    nonIncreasing.errors.includes('secret injection receipt must expire after injection'),
     true,
   );
 });
