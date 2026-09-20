@@ -69,6 +69,7 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #109 / PR #110 — reproducible CI: lockfile, npm ci, immutable Action SHAs and pinned runner family
 - #111 / PR #112 — checkout credential isolation, bounded Dependabot updates and reconciled CODEOWNERS
 - #114 / PR #117 — deterministic git-tracked secret leakage gate
+- #118 / PR #119 — reviewed current-main refresh to pinned checkout v7.0.1 and setup-node v7.0.0; Node type majors remain aligned to Node 24 runtime
 
 Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority. Dependency update PRs remain review-only and do not gain merge authority.
 
