@@ -51,7 +51,10 @@ const snapshot = {
 test('healthy inventory produces deterministic read-only projection', async () => {
   const projection = operationsProjection(service, snapshot);
   const first = await buildOperationsSnapshot(service, snapshot);
-  const second = await buildOperationsSnapshot(structuredClone(service), structuredClone(snapshot));
+  const second = await buildOperationsSnapshot(
+    structuredClone(service),
+    structuredClone(snapshot),
+  );
 
   assert.equal(projection.status, 'HEALTHY');
   assert.equal(projection.authority, 'NONE');
@@ -95,7 +98,10 @@ test('missing resource health fails closed', () => {
 test('non-unknown health requires evidence', () => {
   const result = validateHealthSnapshot(service, {
     ...snapshot,
-    resources: [{ ...snapshot.resources[0], evidenceIds: [] }, snapshot.resources[1]],
+    resources: [
+      { ...snapshot.resources[0], evidenceIds: [] },
+      snapshot.resources[1],
+    ],
   });
   assert.equal(result.valid, false);
   assert.match(result.errors.join('\n'), /requires evidence/);
@@ -128,7 +134,10 @@ test('operational intents are data only and cannot claim side effects', () => {
   };
   assert.equal(validateOperationalIntent(service, intent).valid, true);
 
-  const invalid = validateOperationalIntent(service, { ...intent, sideEffects: 'ALLOWED' });
+  const invalid = validateOperationalIntent(service, {
+    ...intent,
+    sideEffects: 'ALLOWED',
+  });
   assert.equal(invalid.valid, false);
   assert.match(invalid.errors.join('\n'), /sideEffects must be FORBIDDEN/);
 });
