@@ -397,7 +397,6 @@ try {
   failures.push('missing FH-31A development authority guards');
 }
 
-
 try {
   const testingSource = await fs.readFile(
     path.join(root, 'packages', 'testing', 'src', 'index.ts'),
@@ -412,9 +411,7 @@ try {
   if (!testingSource.includes('export function testPassCanAuthorizeRelease(): false')) {
     failures.push('FH-32A test PASS must not authorize release');
   }
-  if (
-    !testingSource.includes('export function testingCanExecuteProductionMutation(): false')
-  ) {
+  if (!testingSource.includes('export function testingCanExecuteProductionMutation(): false')) {
     failures.push('FH-32A testing must not execute production mutation');
   }
   if (!testingSource.includes("readonly authority: 'NONE'")) {
