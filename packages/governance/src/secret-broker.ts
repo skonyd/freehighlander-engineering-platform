@@ -127,6 +127,9 @@ export function evaluateSecretAccess(request: SecretAccessRequest): SecretAccess
   if (!Number.isInteger(request.ttlMs) || request.ttlMs <= 0) {
     return deny('ephemeral secret injection requires an explicit positive ttlMs');
   }
+  if (!['COMMAND_ENV', 'PROVIDER_AUTH', 'TOOL_AUTH'].includes(request.target)) {
+    return deny('secret injection target is unsupported');
+  }
 
   if (request.target === 'COMMAND_ENV') {
     if (!request.envName || !ENV_NAME_PATTERN.test(request.envName)) {
