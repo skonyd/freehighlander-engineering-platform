@@ -34,15 +34,19 @@ export {
 export interface WebFoundationInfo {
   readonly name: 'freehighlander-web';
   readonly mode: 'read-only-dashboard';
+  readonly managementMode: 'client-only-management';
   readonly executionOwnership: 'control-plane';
   readonly mutationAuthority: 'none';
+  readonly v3Authority: 'SHADOW_ONLY';
 }
 
 export function getWebFoundationInfo(): WebFoundationInfo {
   return {
     name: 'freehighlander-web',
     mode: 'read-only-dashboard',
+    managementMode: 'client-only-management',
     executionOwnership: 'control-plane',
     mutationAuthority: 'none',
+    v3Authority: 'SHADOW_ONLY',
   };
 }
