@@ -710,7 +710,6 @@ try {
   failures.push('missing hardening observability event contracts');
 }
 
-
 try {
   const adversarialSuite = await fs.readFile(
     path.join(root, 'tools', 'project', 'test', 'adversarial-hardening.test.mjs'),
