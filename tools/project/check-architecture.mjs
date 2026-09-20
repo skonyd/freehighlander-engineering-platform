@@ -980,7 +980,6 @@ try {
   failures.push('missing deterministic build-output integrity enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   const publishSafety = await fs.readFile(
@@ -1001,8 +1000,7 @@ try {
   }
 
   if (
-    rootPackage.scripts?.['check:publish-safety'] !==
-    'node tools/project/check-publish-safety.mjs'
+    rootPackage.scripts?.['check:publish-safety'] !== 'node tools/project/check-publish-safety.mjs'
   ) {
     failures.push('root package must expose check:publish-safety');
   }
