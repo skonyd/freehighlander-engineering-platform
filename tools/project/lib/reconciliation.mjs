@@ -123,7 +123,7 @@ export function isForbiddenCheckpointPath(file) {
     file.startsWith('.freehighlander/runtime/') ||
     /(^|\/)(node_modules|dist|coverage)(\/|$)/.test(file) ||
     /\.(?:log|db|sqlite)$/i.test(file) ||
-    /(?:secret|credential|token)(?:\.|-|_|$)/i.test(file)
+    /(?:secrets?|credentials?|tokens?)(?:\.|-|_|$)/i.test(file)
   );
 }
 
