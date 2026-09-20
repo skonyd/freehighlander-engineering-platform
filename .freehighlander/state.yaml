@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T09:50:00+03:00"
+updated_at: "2026-09-20T09:55:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -10,15 +10,15 @@ mode:
 phase:
   id: FH-13
   name: workflow-dag-state-machine
-  status: in_progress
+  status: complete
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-13-workflow-state-machine
+  branch: main
   pull_request: null
-  issue: 45
-  objective: implement immutable workflow DAG and explicit run state machine while FH-01B2 waits for Creator Marketplace #207
-  next_action: verify FH-13 workflow DAG/state-machine implementation and protected-main CI
+  issue: null
+  objective: implement debate/council and disagreement escalation while FH-01B2 waits for Creator Marketplace #207
+  next_action: start FH-14 debate/council + disagreement escalation
 
 fh01a:
   issue: 15
@@ -127,8 +127,8 @@ fh12:
 
 fh13:
   issue: 45
-  status: in_progress
-  branch: feat/fh-13-workflow-state-machine
+  pull_request: 46
+  status: complete
   authority_effect: none
   graph: DAG
   bounded_loops: true
