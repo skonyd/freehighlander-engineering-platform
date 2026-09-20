@@ -31,7 +31,4 @@ jobs:
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: |
-          npx prettier --write tools/project/checkpoint.mjs tools/project/test/reconciliation.test.mjs
-          git diff -- tools/project/checkpoint.mjs tools/project/test/reconciliation.test.mjs
-          exit 1
+        run: npm run verify
