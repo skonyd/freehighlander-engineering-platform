@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { DASHBOARD_HTML } from './ui.js';
+import { buildManagementSnapshot } from './management.js';
 import { DashboardReadModel, MissingDashboardDatabaseError } from './read-model.js';
 
 export interface DashboardServerOptions {
@@ -97,6 +98,11 @@ async function handleRequest(
 
     if (url.pathname === '/api/models') {
       json(response, 200, { models: readModel.modelAggregates(readLimit(url, 100)) });
+      return;
+    }
+
+    if (url.pathname === '/api/management') {
+      json(response, 200, buildManagementSnapshot(readModel, readLimit(url, 50)));
       return;
     }
 
