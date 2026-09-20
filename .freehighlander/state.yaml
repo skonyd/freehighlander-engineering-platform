@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: feat/fh-32a-testing
-  pull_request: null
+  pull_request: 76
   issue: 75
   objective: implement authority-neutral Testing bounded context
   next_action: verify exact revision/environment binding, acceptance coverage, evidence completeness and PASS authority guards through protected-main CI
@@ -265,7 +265,7 @@ fh31a:
 
 fh32a:
   issue: 75
-  pull_request: null
+  pull_request: 76
   status: in_progress
   branch: feat/fh-32a-testing
   authority_effect: none
