@@ -53,3 +53,16 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-37A Project knowledge graph / engineering lineage preparation — issue #86
 
 Activation lane FH-30B..FH-37B remains blocked by FH-01B2/FH-20 final authority cutover.
+
+
+## Pre-cutover hardening — independent of Creator Marketplace #207
+- [ ] Executable data-policy/redaction/provider-egress enforcement — issue #89
+- [ ] Executable sandbox permission evaluator
+- [ ] Retention/privacy lifecycle
+- [ ] SQLite backup/restore/integrity hardening
+- [ ] FH-30A..FH-37A cross-module read-only integration
+- [ ] Hardening observability + adversarial/fail-closed tests
+- [ ] Architecture dependency-boundary enforcement
+- [ ] Roadmap/documentation drift cleanup
+
+Umbrella: #88. This lane must not enable V3 authority or assume final #207 behavior.
