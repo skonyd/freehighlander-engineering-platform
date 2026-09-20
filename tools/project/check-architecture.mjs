@@ -557,7 +557,6 @@ try {
   failures.push('missing FH-37A lineage authority guards');
 }
 
-
 try {
   const dataPolicySource = await fs.readFile(
     path.join(root, 'packages', 'governance', 'src', 'data-policy.ts'),
@@ -566,11 +565,7 @@ try {
   if (!dataPolicySource.includes('export function dataPolicyCanGrantAuthority(): false')) {
     failures.push('data-policy enforcement must remain authority-neutral');
   }
-  if (
-    !dataPolicySource.includes(
-      'export function dataPolicyCanAllowSecretRemoteEgress(): false',
-    )
-  ) {
+  if (!dataPolicySource.includes('export function dataPolicyCanAllowSecretRemoteEgress(): false')) {
     failures.push('SECRET remote egress must remain impossible');
   }
   if (!dataPolicySource.includes("case 'SECRET':")) {
