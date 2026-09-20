@@ -229,9 +229,6 @@ export function evaluateSandboxPermission(
       return request.humanApproved === true
         ? allow('destructive action has explicit human approval')
         : deny('destructive action requires explicit human approval');
-
-    case 'UNKNOWN':
-      return deny('unknown sandbox capability is denied');
   }
 }
 
