@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: feat/fh-30a-planning
-  pull_request: null
+  pull_request: 70
   issue: 69
   objective: implement authority-neutral Planning bounded context
   next_action: verify Planning contracts, dependency DAG and authority guards through protected-main CI
@@ -243,6 +243,7 @@ module_preparation_lane:
 
 fh30a:
   issue: 69
+  pull_request: 70
   status: in_progress
   branch: feat/fh-30a-planning
   authority_effect: none
