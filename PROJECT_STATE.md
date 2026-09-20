@@ -279,7 +279,7 @@ Marketplace #207:
 
 - FH-31A Development — complete via issue #72 / PR #73;
 - FH-32A Testing — complete via issue #75 / PR #76;
-- FH-33A Security;
+- FH-33A Security — active as issue #78;
 - FH-34A Release readiness (after Development/Testing/Security inputs);
 - FH-35A Operations;
 - FH-36A Incident (after Operations contract);
@@ -345,3 +345,22 @@ later Release readiness.
 
 Next sequential independent module: **FH-33A Security**. FH-35A Operations and
 FH-37A engineering lineage also remain available without #207.
+
+
+## FH-33A active
+
+Issue **#78** introduces the Security bounded context under ADR-0016 and
+architecture contract 1.4.0.
+
+Security binds required scanner identities/versions, repository revision and
+policy hash to trusted scan evidence. HIGH/CRITICAL open findings block readiness;
+missing trusted scanner evidence remains insufficient.
+
+Hard invariant:
+
+```text
+security CLEAR != release authority
+security finding != self-waivable
+security readiness != merge/deploy authority
+V3 authority remains SHADOW_ONLY
+```
