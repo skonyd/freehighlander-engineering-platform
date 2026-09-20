@@ -64,7 +64,9 @@ test('mismatch identifies exact dimensions and remains non-authoritative', async
 
   assert.equal(report.status, 'MISMATCH');
   assert.deepEqual(
-    report.dimensions.filter((entry) => entry.status === 'MISMATCH').map((entry) => entry.dimension),
+    report.dimensions
+      .filter((entry) => entry.status === 'MISMATCH')
+      .map((entry) => entry.dimension),
     ['route', 'outcome'],
   );
   assert.equal(report.cutoverAllowed, false);
