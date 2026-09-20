@@ -20,9 +20,7 @@ export interface DataPolicy {
       readonly retention_class: 'SHORT';
     };
   };
-  readonly retention_classes: Readonly<
-    Record<RetentionClass, { readonly purpose: string }>
-  >;
+  readonly retention_classes: Readonly<Record<RetentionClass, { readonly purpose: string }>>;
   readonly redaction: {
     readonly categories: readonly string[];
   };
@@ -144,7 +142,8 @@ export function validateDataPolicy(value: unknown): ValidationResult {
   const redaction = recordValue(value, 'redaction');
   const categories = arrayValue(redaction, 'categories');
   for (const category of REQUIRED_REDACTION_CATEGORIES) {
-    if (!categories.includes(category)) errors.push(`missing required redaction category: ${category}`);
+    if (!categories.includes(category))
+      errors.push(`missing required redaction category: ${category}`);
   }
 
   const rules = recordValue(value, 'rules');
