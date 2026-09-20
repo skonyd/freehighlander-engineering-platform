@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: feat/fh-33a-security
-  pull_request: null
+  pull_request: 79
   issue: 78
   objective: implement authority-neutral Security bounded context
   next_action: verify scanner/revision/policy evidence binding, fail-closed readiness and no-waiver/release authority guards through protected-main CI
@@ -277,7 +277,7 @@ fh32a:
 
 fh33a:
   issue: 78
-  pull_request: null
+  pull_request: 79
   status: in_progress
   branch: feat/fh-33a-security
   authority_effect: none
