@@ -22,6 +22,7 @@ accepted_adrs:
   - ADR-0011
   - ADR-0012
   - ADR-0013
+  - ADR-0014
 
 product:
   mode: local-first-single-user
@@ -57,6 +58,7 @@ bounded_contexts:
     - persistence
     - contracts
     - planning
+    - development
   forbidden:
     - packages/core
   contracts_rule: shared serialization contracts only, not shared business-domain dumping
