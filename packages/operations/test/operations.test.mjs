@@ -51,10 +51,7 @@ const snapshot = {
 test('healthy inventory produces deterministic read-only projection', async () => {
   const projection = operationsProjection(service, snapshot);
   const first = await buildOperationsSnapshot(service, snapshot);
-  const second = await buildOperationsSnapshot(
-    structuredClone(service),
-    structuredClone(snapshot),
-  );
+  const second = await buildOperationsSnapshot(structuredClone(service), structuredClone(snapshot));
 
   assert.equal(projection.status, 'HEALTHY');
   assert.equal(projection.authority, 'NONE');
@@ -69,10 +66,7 @@ test('healthy inventory produces deterministic read-only projection', async () =
 test('worst health state is projected deterministically', () => {
   const degraded = {
     ...snapshot,
-    resources: [
-      snapshot.resources[0],
-      { ...snapshot.resources[1], status: 'DEGRADED' },
-    ],
+    resources: [snapshot.resources[0], { ...snapshot.resources[1], status: 'DEGRADED' }],
   };
   assert.equal(operationsProjection(service, degraded).status, 'DEGRADED');
 
@@ -98,10 +92,7 @@ test('missing resource health fails closed', () => {
 test('non-unknown health requires evidence', () => {
   const result = validateHealthSnapshot(service, {
     ...snapshot,
-    resources: [
-      { ...snapshot.resources[0], evidenceIds: [] },
-      snapshot.resources[1],
-    ],
+    resources: [{ ...snapshot.resources[0], evidenceIds: [] }, snapshot.resources[1]],
   });
   assert.equal(result.valid, false);
   assert.match(result.errors.join('\n'), /requires evidence/);
