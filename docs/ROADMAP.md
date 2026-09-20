@@ -103,7 +103,7 @@ Authority-neutral preparation is complete:
 
 FH-30B..FH-37B activation remains blocked by FH-01B2/FH-20.
 
-## Pre-cutover hardening — COMPLETE THROUGH SECRET-HANDLE CONTRACT
+## Pre-cutover hardening — COMPLETE THROUGH LOCKFILE PROVENANCE GATE
 
 Independent of #207, the repository now includes:
 - executable data-policy and remote-egress enforcement;
@@ -122,7 +122,8 @@ Independent of #207, the repository now includes:
 - deterministic git-tracked high-confidence secret leakage gate;
 - measured per-workspace Node 24 native line/branch/function coverage regression floors;
 - control-plane contract tests, closing the final untested workspace so coverage inventory is 19/19;
-- opaque SecretHandle + role/workflow/sandbox-gated EPHEMERAL injection planning, with persistence/remote-model egress forbidden and real backend adapters deferred.
+- opaque SecretHandle + role/workflow/sandbox-gated EPHEMERAL injection planning, with persistence/remote-model egress forbidden and real backend adapters deferred;
+- deterministic npm lockfile provenance/integrity validation, rejecting non-registry sources, missing sha512 integrity and install-script-bearing external packages.
 
 ## Phase 10 — Full lifecycle
 

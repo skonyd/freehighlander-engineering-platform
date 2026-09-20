@@ -73,6 +73,7 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #120 / PR #121 — Node 24 native per-workspace coverage regression floors from measured baseline
 - #122 / PR #123 — control-plane contract tests; coverage inventory is now 19/19 workspaces with no untested exception
 - #124 / PR #125 — opaque SecretHandle + fail-closed EPHEMERAL injection contract; real credential backend resolution remains intentionally unimplemented
+- #126 / PR #127 — deterministic npm lockfile provenance/integrity/install-script gate
 
 Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority.
 

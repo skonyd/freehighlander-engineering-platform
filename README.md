@@ -14,7 +14,7 @@ Bu repository **FreeHighlander'ın ana ürün repository'sidir** ve ürün kodu 
 - FH-20 cutover-readiness gate tamamlandı ancak final authority cutover **Creator Marketplace #207 / FH-01B2** tamamlanana kadar bloklu.
 - FH-30A..FH-37A authority-neutral SDLC preparation lane tamamlandı.
 - FH-30B..FH-37B authority-bearing activation lane FH-01B2/FH-20 sonrasına bloklu.
-- Pre-cutover hardening hattında data policy, sandbox, retention, SQLite backup/restore, cross-module digital thread, privacy-safe observability, adversarial fail-closed coverage, workspace dependency boundaries, reproducible CI, repository credential/dependency hygiene, tracked-secret leakage gate, 19/19 workspace için ölçülmüş native coverage regression gate ve opaque SecretHandle/EPHEMERAL injection kontratı tamamlandı.
+- Pre-cutover hardening hattında data policy, sandbox, retention, SQLite backup/restore, cross-module digital thread, privacy-safe observability, adversarial fail-closed coverage, workspace dependency boundaries, reproducible CI, repository credential/dependency hygiene, tracked-secret leakage gate, 19/19 workspace için ölçülmüş native coverage regression gate ve opaque SecretHandle/EPHEMERAL injection kontratı ve npm lockfile provenance/integrity/install-script gate tamamlandı.
 
 Current authority state:
 
@@ -44,6 +44,7 @@ Completed/prepared:
 9. Reproducible CI + repository credential/dependency hygiene
 10. Native Node test coverage regression enforcement (19/19 workspaces)
 11. Opaque SecretHandle + EPHEMERAL injection governance contract
+12. Deterministic lockfile provenance/integrity/install-script enforcement
 
 Remaining authority-bearing sequence:
 
