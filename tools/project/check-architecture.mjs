@@ -422,7 +422,6 @@ try {
   failures.push('missing FH-32A testing authority guards');
 }
 
-
 try {
   const securitySource = await fs.readFile(
     path.join(root, 'packages', 'security', 'src', 'index.ts'),
@@ -437,9 +436,7 @@ try {
   if (!securitySource.includes('export function securityClearCanAuthorizeRelease(): false')) {
     failures.push('FH-33A security CLEAR must not authorize release');
   }
-  if (
-    !securitySource.includes('export function securityCanExecuteProductionMutation(): false')
-  ) {
+  if (!securitySource.includes('export function securityCanExecuteProductionMutation(): false')) {
     failures.push('FH-33A security must not execute production mutation');
   }
   if (!securitySource.includes("readonly authority: 'NONE'")) {
