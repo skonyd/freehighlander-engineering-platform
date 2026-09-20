@@ -31,7 +31,4 @@ jobs:
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: |
-          npx prettier --write packages/development/src/index.ts tools/project/check-architecture.mjs tools/project/test/architecture-contract.test.mjs
-          git diff -- packages/development/src/index.ts tools/project/check-architecture.mjs tools/project/test/architecture-contract.test.mjs
-          exit 1
+        run: npm run verify
