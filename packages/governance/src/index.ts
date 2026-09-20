@@ -1,4 +1,15 @@
 export {
+  buildRetentionPlan,
+  retentionPlanCanDeleteAuditData,
+  retentionPlanCanDeleteData,
+  validateRetentionRecords,
+  type RetentionAction,
+  type RetentionDecision,
+  type RetentionPlan,
+  type RetentionRecord,
+} from './retention-policy.js';
+
+export {
   evaluateSandboxPermission,
   isWithinRepository,
   modelIdentityCanExpandSandboxPermissions,

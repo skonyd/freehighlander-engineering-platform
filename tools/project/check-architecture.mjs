@@ -606,6 +606,27 @@ try {
   failures.push('missing executable sandbox-policy enforcement');
 }
 
+try {
+  const retentionSource = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'retention-policy.ts'),
+    'utf8',
+  );
+  if (!retentionSource.includes('export function retentionPlanCanDeleteData(): false')) {
+    failures.push('retention planner must not grant deletion authority');
+  }
+  if (!retentionSource.includes('export function retentionPlanCanDeleteAuditData(): false')) {
+    failures.push('retention planner must never auto-delete AUDIT data');
+  }
+  if (!retentionSource.includes("'REVIEW_ORPHAN'")) {
+    failures.push('retention planner must review orphans before deletion');
+  }
+  if (!retentionSource.includes("'PURGE_CANDIDATE'")) {
+    failures.push('retention planner must remain dry-run candidate planning');
+  }
+} catch {
+  failures.push('missing retention/privacy dry-run planner');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
