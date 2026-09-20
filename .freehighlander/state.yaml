@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T10:05:00+03:00"
+updated_at: "2026-09-20T10:10:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-14
-  name: debate-council
-  status: complete
+  id: FH-15
+  name: policy-human-approval
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-15-policy-human-approval
   pull_request: null
-  issue: null
-  objective: implement human approval and policy-as-code while FH-01B2 waits for Creator Marketplace #207
-  next_action: start FH-15 human approval + policy-as-code
+  issue: 49
+  objective: implement policy-as-code and exact-bound human approval gates while FH-01B2 waits for Creator Marketplace #207
+  next_action: verify FH-15 policy/human approval implementation and protected-main CI
 
 fh01a:
   issue: 15
@@ -143,6 +143,15 @@ fh14:
   bounded_rounds: true
   consensus_authority: false
   unresolved_disagreement: HUMAN_REQUIRED
+
+fh15:
+  issue: 49
+  status: in_progress
+  branch: feat/fh-15-policy-human-approval
+  default_policy: DENY
+  decision_precedence: DENY>HUMAN_REQUIRED>ALLOW
+  exact_approval_binding: true
+  model_human_approver: false
 
 external_dependency:
   repository: skonyd/creator-marketplace
