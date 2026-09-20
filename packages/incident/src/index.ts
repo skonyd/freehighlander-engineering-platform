@@ -153,7 +153,9 @@ export function validateIncident(
 
   const derived = deriveStatus(incident.timeline, errors);
   if (derived !== incident.status) {
-    errors.push(`incident status ${incident.status} does not match timeline-derived status ${derived}`);
+    errors.push(
+      `incident status ${incident.status} does not match timeline-derived status ${derived}`,
+    );
   }
 
   return { valid: errors.length === 0, errors };
