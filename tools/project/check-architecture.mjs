@@ -710,6 +710,30 @@ try {
   failures.push('missing hardening observability event contracts');
 }
 
+
+try {
+  const adversarialSuite = await fs.readFile(
+    path.join(root, 'tools', 'project', 'test', 'adversarial-hardening.test.mjs'),
+    'utf8',
+  );
+  for (const requiredCase of [
+    'SECRET remote egress stays denied across all approval permutations',
+    'sandbox escape and privilege-expansion mutation matrix fails closed',
+    'hardening telemetry payload injection matrix rejects raw or arbitrary fields',
+    'lineage mutation matrix rejects missing endpoints, untrusted evidence and bad revisions',
+    'SQLite restore and inspection fail closed on unsafe targets and corrupt inputs',
+  ]) {
+    if (!adversarialSuite.includes(requiredCase)) {
+      failures.push(`adversarial hardening suite is missing case: ${requiredCase}`);
+    }
+  }
+  if (adversarialSuite.includes('Math.random')) {
+    failures.push('adversarial hardening suite must remain deterministic');
+  }
+} catch {
+  failures.push('missing deterministic adversarial hardening suite');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
