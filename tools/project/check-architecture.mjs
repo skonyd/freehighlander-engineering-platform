@@ -290,7 +290,6 @@ try {
   failures.push('missing FH-18 management UI authority guards');
 }
 
-
 try {
   const paritySource = await fs.readFile(
     path.join(root, 'packages', 'evaluation', 'src', 'parity.ts'),
