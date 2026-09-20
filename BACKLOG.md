@@ -60,6 +60,7 @@ Umbrella: #88.
 - [x] Reproducible CI / npm lockfile / immutable Action SHA pinning — issue #109 / PR #110
 - [x] Checkout credential isolation + bounded dependency-update hygiene — issue #111 / PR #112
 - [x] Deterministic tracked-secret leakage gate — issue #114 / PR #117
+- [x] Pinned GitHub Actions v7 current-main refresh — issue #118 / PR #119
 
 ## Current blocker
 
