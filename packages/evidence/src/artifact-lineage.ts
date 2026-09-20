@@ -93,7 +93,10 @@ export async function verifyArtifactEnvelope(
     parentArtifactHashes: artifact.parentArtifactHashes,
   });
 
-  return (\n    rebuilt.contentHash === artifact.contentHash &&\n    rebuilt.artifactHash === artifact.artifactHash\n  );
+  return (
+    rebuilt.contentHash === artifact.contentHash &&
+    rebuilt.artifactHash === artifact.artifactHash
+  );
 }
 
 export function verifyArtifactLineage(
@@ -156,13 +159,17 @@ function validateBinding(binding: ArtifactLineageBinding): void {
 function assertUniqueParents(parents: readonly string[]): void {
   const seen = new Set<string>();
   for (const parent of parents) {
-    if (seen.has(parent)) {\n      throw new Error(`duplicate parent artifact hash: ${parent}`);\n    }
+    if (seen.has(parent)) {
+      throw new Error(`duplicate parent artifact hash: ${parent}`);
+    }
     seen.add(parent);
   }
 }
 
 function requireHash(value: string, name: string): void {
-  if (!/^[a-f0-9]{64}$/.test(value)) {\n    throw new Error(`${name} must be a SHA-256 hex hash`);\n  }
+  if (!/^[a-f0-9]{64}$/.test(value)) {
+    throw new Error(`${name} must be a SHA-256 hex hash`);
+  }
 }
 
 function requireText(value: string, name: string): void {
@@ -171,7 +178,9 @@ function requireText(value: string, name: string): void {
 
 function canonicalJson(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map((entry) => canonicalJson(entry)).join(',')}]`;
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => canonicalJson(entry)).join(',')}]`;
+  }
 
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record)
