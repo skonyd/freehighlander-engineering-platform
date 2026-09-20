@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T12:53:00+03:00"
+updated_at: "2026-09-20T13:15:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -14,11 +14,11 @@ phase:
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/evidence-policy-validator
-  pull_request: 62
-  issue: 61
-  objective: enforce exact revision, trusted provenance and non-substitutable required evidence
-  next_action: verify evidence policy validator through protected-main CI
+  branch: main
+  pull_request: null
+  issue: null
+  objective: wait for final accepted Creator Marketplace #207 before authority cutover
+  next_action: prepare FH-20 cutover gate without enabling authority; execute promotion only after FH-01B2 prerequisites pass
 
 fh01a:
   issue: 15
@@ -206,8 +206,8 @@ project_state_tooling:
 evidence_policy:
   issue: 61
   pull_request: 62
-  status: in_progress
-  branch: feat/evidence-policy-validator
+  status: complete
+  merge_sha: 790093f17dad16344b0541e86675b7f2576b7676
   authority_effect: none
   exact_revision_binding: required
   trusted_provenance: required_for_authority
