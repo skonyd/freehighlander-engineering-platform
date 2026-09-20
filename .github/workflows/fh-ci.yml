@@ -17,22 +17,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.21.0
 
       - name: Pin npm
-        run: npm install --global npm@11.19.1
+        run: npm install --global npm@11.19.1 --ignore-scripts --no-audit --no-fund
 
-      - name: Generate canonical lockfile
-        run: |
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-          echo "LOCKFILE_BASE64_BEGIN"
-          node -e "process.stdout.write(require('fs').readFileSync('package-lock.json').toString('base64'))"
-          echo
-          echo "LOCKFILE_BASE64_END"
-          sha256sum package-lock.json
-          exit 1
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify
+        run: npm run verify
