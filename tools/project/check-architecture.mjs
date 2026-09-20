@@ -337,21 +337,15 @@ try {
     path.join(root, 'packages', 'governance', 'src', 'cutover-readiness.ts'),
     'utf8',
   );
-  if (
-    !cutoverSource.includes('export function cutoverReadinessCanEnableAuthority(): false')
-  ) {
+  if (!cutoverSource.includes('export function cutoverReadinessCanEnableAuthority(): false')) {
     failures.push('FH-20 readiness evaluation must not enable authority');
   }
   if (
-    !cutoverSource.includes(
-      'export function cutoverCanBypassFinalReferenceAcceptance(): false',
-    )
+    !cutoverSource.includes('export function cutoverCanBypassFinalReferenceAcceptance(): false')
   ) {
     failures.push('FH-20 cutover must not bypass final V2 reference acceptance');
   }
-  if (
-    !cutoverSource.includes("status: reasons.length === 0 ? 'READY' : 'BLOCKED'")
-  ) {
+  if (!cutoverSource.includes("status: reasons.length === 0 ? 'READY' : 'BLOCKED'")) {
     failures.push('FH-20 cutover readiness must fail closed');
   }
 } catch {
