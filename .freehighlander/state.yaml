@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: docs/precutover-module-lane
-  pull_request: null
+  pull_request: 68
   issue: 67
   objective: unblock FH-30A..FH-37A authority-neutral preparation while FH-20 cutover remains blocked
   next_action: establish the pre-cutover module lane, then start FH-30A and continue through independent A-lane modules
