@@ -105,59 +105,64 @@ test('currentness is exact revision/workflow/role/policy bound', async () => {
   );
 });
 
-test(\n  'lineage traversal is deterministic and fails closed on missing parents',\n  async () => {
-  const rootParent = await createArtifactEnvelope({
-    artifactId: 'root-parent',
-    artifactKind: 'evidence',
-    content: 'root',
-    binding,
-  });
-  const child = await createArtifactEnvelope({
-    artifactId: 'child',
-    artifactKind: 'review',
-    content: 'child',
-    binding,
-    parentArtifactHashes: [rootParent.artifactHash],
-  });
+test(
+  'lineage traversal is deterministic and fails closed on missing parents',
+  async () => {
+    const rootParent = await createArtifactEnvelope({
+      artifactId: 'root-parent',
+      artifactKind: 'evidence',
+      content: 'root',
+      binding,
+    });
+    const child = await createArtifactEnvelope({
+      artifactId: 'child',
+      artifactKind: 'review',
+      content: 'child',
+      binding,
+      parentArtifactHashes: [rootParent.artifactHash],
+    });
 
-  const artifacts = new Map([
-    [rootParent.artifactHash, rootParent],
-    [child.artifactHash, child],
-  ]);
-  const valid = verifyArtifactLineage(child.artifactHash, artifacts);
-  assert.equal(valid.valid, true);
-  assert.deepEqual(valid.ancestry, [rootParent.artifactHash, child.artifactHash]);
+    const artifacts = new Map([
+      [rootParent.artifactHash, rootParent],
+      [child.artifactHash, child],
+    ]);
+    const valid = verifyArtifactLineage(child.artifactHash, artifacts);
+    assert.equal(valid.valid, true);
+    assert.deepEqual(valid.ancestry, [rootParent.artifactHash, child.artifactHash]);
 
-  const missing = verifyArtifactLineage(
-    child.artifactHash,
-    new Map([[child.artifactHash, child]]),
-  );
-  assert.equal(missing.valid, false);
-  assert.match(missing.errors[0], /missing lineage artifact/);
-});
+    const missing = verifyArtifactLineage(
+      child.artifactHash,
+      new Map([[child.artifactHash, child]]),
+    );
+    assert.equal(missing.valid, false);
+    assert.match(missing.errors[0], /missing lineage artifact/);
+  },
+);
 
-test(\n  'duplicate parent hashes are rejected and lineage cannot grant authority',\n  async () => {
-  const parent = await createArtifactEnvelope({
-    artifactId: 'parent',
-    artifactKind: 'evidence',
-    content: 'parent',
-    binding,
-  });
+test(
+  'duplicate parent hashes are rejected and lineage cannot grant authority',
+  async () => {
+    const parent = await createArtifactEnvelope({
+      artifactId: 'parent',
+      artifactKind: 'evidence',
+      content: 'parent',
+      binding,
+    });
 
-  await assert.rejects(
-    () =>
-      createArtifactEnvelope({
-        artifactId: 'child',
-        artifactKind: 'review',
-        content: 'child',
-        binding,
-        parentArtifactHashes: [parent.artifactHash, parent.artifactHash],
-      }),
-    /duplicate parent artifact hash/,
-  );
-  assert.equal(artifactLineageCanGrantAuthority(), false);
-});
-
+    await assert.rejects(
+      () =>
+        createArtifactEnvelope({
+          artifactId: 'child',
+          artifactKind: 'review',
+          content: 'child',
+          binding,
+          parentArtifactHashes: [parent.artifactHash, parent.artifactHash],
+        }),
+      /duplicate parent artifact hash/,
+    );
+    assert.equal(artifactLineageCanGrantAuthority(), false);
+  },
+);
 
 test('lineage cycles fail closed', () => {
   const aHash = 'a'.repeat(64);
