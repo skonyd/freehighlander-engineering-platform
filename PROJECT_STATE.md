@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-19 COMPLETE / EVIDENCE POLICY IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-19 COMPLETE / EVIDENCE POLICY COMPLETE / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -207,11 +207,11 @@ Issue **#10** was implemented through PR **#60** and merged as `b46ae26f18de50a5
 
 Resume/checkpoint tooling now validates remote branch and PR pointers, detects stale state, rejects unsafe checkpoint paths, writes explicit handoff history only on feature branches and verifies the pushed remote SHA. Checkpoints never infer semantic gate PASS.
 
-## Evidence policy active work
+## Evidence policy completed
 
-Issue **#61** is active on `feat/evidence-policy-validator`.
+Issue **#61** was implemented through PR **#62** and merged as `790093f17dad16344b0541e86675b7f2576b7676`.
 
-The validator enforces required evidence IDs/kinds, exact revision binding, trusted provenance and authoritative relation verification. Summary evidence cannot substitute a required raw/diff/test/relation artifact and token budget cannot authorize dropping required evidence.
+The validator now enforces required evidence IDs/kinds, exact revision binding, trusted provenance and authoritative relation verification. Summary evidence cannot substitute required raw/diff/test/relation evidence, and token budget cannot authorize removal of required evidence.
 
 Hard invariant:
 
