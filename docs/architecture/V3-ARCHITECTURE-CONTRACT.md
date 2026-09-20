@@ -2,12 +2,12 @@
 
 **Status:** FROZEN BASELINE  
 **Machine-readable source:** `.freehighlander/architecture.yaml`  
-**Contract version:** 1.5.0  
+**Contract version:** 1.6.0  
 **Freeze phase:** FH-10
 
 ## Purpose
 
-This document records the accepted architecture direction from ADR-0001 through ADR-0017. Version 1.5.0 adds the Release module alongside Planning, Development, Testing and Security while preserving all V3 foundation authority constraints.
+This document records the accepted architecture direction from ADR-0001 through ADR-0018. Version 1.6.0 adds the Operations module alongside the existing pre-cutover module contexts while preserving all V3 foundation authority constraints.
 
 The machine-readable contract is normative for automated drift checks. Existing ADRs remain the decision rationale.
 
@@ -92,7 +92,7 @@ Planning readiness is domain state only. It cannot authorize execution, merge,
 release, deployment or policy bypass. Later module packages follow the same
 coherent-boundary rule and require normal contract evolution.
 
-Version 1.5.0 also adds `packages/release`. Release readiness is a read-only evidence projection; it cannot deploy, publish tags/releases, execute rollback, or grant authority.
+Version 1.5.0 adds `packages/release`. Release readiness is a read-only evidence projection; it cannot deploy, publish tags/releases, execute rollback, or grant authority.\n\nVersion 1.6.0 adds `packages/operations`. Service inventory, health snapshots, runbooks and operational intents are read-only/shadow domain state; they cannot mutate live infrastructure or execute operational intents.
 
 ### Migration
 

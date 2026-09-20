@@ -46,9 +46,9 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-30A Planning module contracts/read-only preparation — issue #69 / PR #70
 - [x] FH-31A Development module contracts/shadow preparation — issue #72 / PR #73
 - [x] FH-32A Testing module evidence/read-only preparation — issue #75 / PR #76
-- [ ] FH-33A Security module evidence/read-only preparation — issue #78 / PR #79 active
-- [ ] FH-34A Release module readiness/read-only preparation
-- [ ] FH-35A Operations module inventory/health/read-only preparation
+- [x] FH-33A Security module evidence/read-only preparation — issue #78 / PR #79 — issue #78 / PR #79 active
+- [x] FH-34A Release module readiness/read-only preparation — issue #80 / PR #81
+- [x] FH-35A Operations module inventory/health/read-only preparation — issue #82
 - [ ] FH-36A Incident module lifecycle/read-only preparation
 - [ ] FH-37A Project knowledge graph / engineering lineage preparation
 
