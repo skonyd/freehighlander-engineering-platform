@@ -525,7 +525,6 @@ try {
   failures.push('missing FH-36A incident authority guards');
 }
 
-
 try {
   const lineageSource = await fs.readFile(
     path.join(root, 'packages', 'lineage', 'src', 'index.ts'),
@@ -538,9 +537,7 @@ try {
     failures.push('FH-37A lineage must remain read-only pre-cutover');
   }
   if (
-    !lineageSource.includes(
-      'export function semanticSearchCanEstablishLineageAuthority(): false',
-    )
+    !lineageSource.includes('export function semanticSearchCanEstablishLineageAuthority(): false')
   ) {
     failures.push('FH-37A semantic search must never establish lineage authority');
   }
