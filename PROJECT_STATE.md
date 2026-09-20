@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-18 IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-19 IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -179,12 +179,28 @@ Issue **#54** was implemented through PR **#55** and merged as `142cee242af367b0
 
 Replay/simulation now binds exact revision, workflow, snapshot, policy and artifact roots. Recovery checkpoints are tamper checked and replay-manifest bound; divergence is explicit and neither replay nor simulation grants authority.
 
-## FH-18 active work
+## FH-18 completed
 
-Issue **#56** is active on `feat/fh-18-management-ui`.
+Issue **#56** was implemented through PR **#57** and merged as `722a7137930e37167ab93e7cab4d763226ee5984`.
 
-The web layer remains client-only. Management snapshots expose runs, human-required events, artifacts and model calls. Management actions are represented as explicit control-plane-required intents; web cannot execute them or self-approve human gates.
+The web layer remains client-only. Management snapshots expose runs, human-required events, artifacts and model calls. Management actions remain explicit control-plane-required intents; web cannot execute them or self-approve human gates.
+
+## FH-19 active work
+
+Issue **#58** is active on `feat/fh-19-shadow-parity`.
+
+Parity evidence compares V2 and V3 shadow observations across route, gate, artifact, state, failure and outcome dimensions. Every case binds exact revision/workflow/policy/artifact/input identity and the exact V2 reference SHA/status.
+
+Hard invariant:
+
+```text
+parity PASS != authority
+parity PASS != cutover
+missing evidence != parity
+```
+
+V2 remains PROVISIONAL and V3 remains SHADOW_ONLY.
 
 ## Next action
 
-Verify FH-18 through protected-main CI, then advance to FH-19 V2/V3 shadow dual-run parity.
+Verify FH-19 through protected-main CI. FH-20 authority cutover remains blocked until FH-01B2 has a final accepted Creator Marketplace #207 reference and explicit human/policy promotion review.
