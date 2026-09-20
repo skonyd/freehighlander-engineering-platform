@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T13:15:00+03:00"
+updated_at: "2026-09-20T13:20:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -14,11 +14,11 @@ phase:
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
-  pull_request: null
-  issue: null
-  objective: wait for final accepted Creator Marketplace #207 before authority cutover
-  next_action: prepare FH-20 cutover gate without enabling authority; execute promotion only after FH-01B2 prerequisites pass
+  branch: feat/fh-20-cutover-readiness
+  pull_request: 65
+  issue: 64
+  objective: prepare deterministic FH-20 cutover readiness without enabling V3 authority
+  next_action: verify fail-closed cutover readiness through protected-main CI; actual cutover remains blocked by Creator Marketplace #207
 
 fh01a:
   issue: 15
@@ -213,6 +213,16 @@ evidence_policy:
   trusted_provenance: required_for_authority
   summary_substitution: forbidden
   budget_truncation: forbidden
+
+fh20:
+  issue: 64
+  pull_request: 65
+  status: preparation_in_progress
+  branch: feat/fh-20-cutover-readiness
+  readiness_gate: implementing
+  cutover_allowed: false
+  v3_authority: SHADOW_ONLY
+  blocker: creator-marketplace-pr-207-not-fully-accepted
 
 external_dependency:
   repository: skonyd/creator-marketplace

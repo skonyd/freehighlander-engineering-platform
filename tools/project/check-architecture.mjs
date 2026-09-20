@@ -332,6 +332,26 @@ try {
   failures.push('missing executable evidence policy guards');
 }
 
+try {
+  const cutoverSource = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'cutover-readiness.ts'),
+    'utf8',
+  );
+  if (!cutoverSource.includes('export function cutoverReadinessCanEnableAuthority(): false')) {
+    failures.push('FH-20 readiness evaluation must not enable authority');
+  }
+  if (
+    !cutoverSource.includes('export function cutoverCanBypassFinalReferenceAcceptance(): false')
+  ) {
+    failures.push('FH-20 cutover must not bypass final V2 reference acceptance');
+  }
+  if (!cutoverSource.includes("status: reasons.length === 0 ? 'READY' : 'BLOCKED'")) {
+    failures.push('FH-20 cutover readiness must fail closed');
+  }
+} catch {
+  failures.push('missing FH-20 cutover readiness guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
