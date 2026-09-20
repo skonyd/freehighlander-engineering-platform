@@ -270,7 +270,6 @@ try {
   failures.push('missing FH-17 replay/recovery authority guards');
 }
 
-
 try {
   const webManagementSource = await fs.readFile(
     path.join(root, 'apps', 'web', 'src', 'management.ts'),
@@ -279,7 +278,9 @@ try {
   if (!webManagementSource.includes('export function webCanExecuteManagementIntent(): false')) {
     failures.push('FH-18 web management UI must not own mutation authority');
   }
-  if (!webManagementSource.includes('export function uiDisconnectCanChangeWorkflowExecution(): false')) {
+  if (
+    !webManagementSource.includes('export function uiDisconnectCanChangeWorkflowExecution(): false')
+  ) {
     failures.push('FH-18 UI disconnect must not change workflow execution');
   }
   if (!webManagementSource.includes("authority: 'CONTROL_PLANE_REQUIRED'")) {
