@@ -32,5 +32,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Diagnose secret-handle formatting
+        run: |
+          npx prettier --write packages/governance/src/secret-broker.ts packages/governance/test/secret-broker.test.mjs tools/project/check-architecture.mjs
+          git diff -- packages/governance/src/secret-broker.ts packages/governance/test/secret-broker.test.mjs tools/project/check-architecture.mjs
+          exit 1
