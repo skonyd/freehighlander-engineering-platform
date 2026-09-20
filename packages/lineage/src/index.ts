@@ -229,7 +229,8 @@ export function lineageProjection(graph: LineageGraph): LineageProjection {
     discoveryRelationCount: graph.relations.filter(
       (relation) => relation.relationClass === 'DISCOVERY',
     ).length,
-    revisionBoundEntityCount: graph.entities.filter((entity) => entity.revision !== undefined).length,
+    revisionBoundEntityCount: graph.entities.filter((entity) => entity.revision !== undefined)
+      .length,
     authority: 'NONE',
     semanticSearchCanEstablishAuthority: false,
     graphDatabaseRequired: false,
@@ -328,10 +329,7 @@ function validateRelationClass(relation: LineageRelation, errors: string[]): voi
     return;
   }
 
-  if (
-    authoritativeRelationKinds.has(relation.kind) &&
-    relation.relationClass !== 'AUTHORITATIVE'
-  ) {
+  if (authoritativeRelationKinds.has(relation.kind) && relation.relationClass !== 'AUTHORITATIVE') {
     errors.push(`relation ${relation.id} ${relation.kind} must be AUTHORITATIVE`);
   }
 }
@@ -340,7 +338,11 @@ function validateRelationEvidence(relation: LineageRelation, errors: string[]): 
   const evidenceIds = new Set<string>();
   for (const evidence of relation.evidence) {
     requireText(evidence.id, `relation ${relation.id} evidence id`, errors);
-    requireSha256(evidence.digest, `relation ${relation.id} evidence ${evidence.id} digest`, errors);
+    requireSha256(
+      evidence.digest,
+      `relation ${relation.id} evidence ${evidence.id} digest`,
+      errors,
+    );
     if (evidenceIds.has(evidence.id)) {
       errors.push(`duplicate relation evidence id: ${relation.id}/${evidence.id}`);
     }
