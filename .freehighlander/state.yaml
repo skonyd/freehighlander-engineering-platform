@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: feat/fh-19-shadow-parity
-  pull_request: null
+  pull_request: 59
   issue: 58
   objective: produce deterministic V2/V3 shadow parity evidence without granting V3 authority
   next_action: verify FH-19 parity evidence and protected-main CI
@@ -186,6 +186,7 @@ fh18:
 
 fh19:
   issue: 58
+  pull_request: 59
   status: in_progress
   branch: feat/fh-19-shadow-parity
   authority_effect: none
