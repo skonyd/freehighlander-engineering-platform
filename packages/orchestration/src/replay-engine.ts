@@ -103,7 +103,8 @@ export function validateReplayContext(
   const errors: string[] = [];
   if (manifest.exactRevision !== context.exactRevision) errors.push('exact revision mismatch');
   if (manifest.workflowHash !== context.workflowHash) errors.push('workflow hash mismatch');
-  if (manifest.runSnapshotHash !== context.runSnapshotHash) errors.push('run snapshot hash mismatch');
+  if (manifest.runSnapshotHash !== context.runSnapshotHash)
+    errors.push('run snapshot hash mismatch');
   if (manifest.policyHash !== context.policyHash) errors.push('policy hash mismatch');
 
   const expectedRoots = [...manifest.artifactRootHashes].sort();
@@ -168,8 +169,10 @@ export function validateRecoveryCheckpoint(
 ): ReplayValidation {
   const errors: string[] = [];
   if (checkpoint.runId !== manifest.runId) errors.push('checkpoint run mismatch');
-  if (checkpoint.exactRevision !== manifest.exactRevision) errors.push('checkpoint revision mismatch');
-  if (checkpoint.workflowHash !== manifest.workflowHash) errors.push('checkpoint workflow mismatch');
+  if (checkpoint.exactRevision !== manifest.exactRevision)
+    errors.push('checkpoint revision mismatch');
+  if (checkpoint.workflowHash !== manifest.workflowHash)
+    errors.push('checkpoint workflow mismatch');
   if (checkpoint.runSnapshotHash !== manifest.runSnapshotHash) {
     errors.push('checkpoint snapshot mismatch');
   }
@@ -214,7 +217,9 @@ export function replayOrSimulationCanGrantAuthority(_mode: ReplayMode): false {
   return false;
 }
 
-function normalizeOutcomes(outcomes: readonly RecordedNodeOutcome[]): readonly RecordedNodeOutcome[] {
+function normalizeOutcomes(
+  outcomes: readonly RecordedNodeOutcome[],
+): readonly RecordedNodeOutcome[] {
   const sorted = [...outcomes].sort((left, right) => left.sequence - right.sequence);
   const sequences = new Set<number>();
   for (const [index, outcome] of sorted.entries()) {
