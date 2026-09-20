@@ -68,20 +68,14 @@ test('missing empty or symlinked dist outputs fail closed', async () => {
     );
 
     await mkdir(path.join(root, 'packages', 'empty', 'dist'), { recursive: true });
-    await assert.rejects(
-      () => buildOutputManifest(root, ['packages/empty']),
-      /empty dist output/,
-    );
+    await assert.rejects(() => buildOutputManifest(root, ['packages/empty']), /empty dist output/);
 
     await mkdir(path.join(root, 'packages', 'linked'), { recursive: true });
     await symlink(
       path.join(root, 'packages', 'empty', 'dist'),
       path.join(root, 'packages', 'linked', 'dist'),
     );
-    await assert.rejects(
-      () => buildOutputManifest(root, ['packages/linked']),
-      /real directory/,
-    );
+    await assert.rejects(() => buildOutputManifest(root, ['packages/linked']), /real directory/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
