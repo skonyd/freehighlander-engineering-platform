@@ -103,7 +103,7 @@ Authority-neutral preparation is complete:
 
 FH-30B..FH-37B activation remains blocked by FH-01B2/FH-20.
 
-## Pre-cutover hardening — COMPLETE THROUGH NATIVE COVERAGE GATE
+## Pre-cutover hardening — COMPLETE THROUGH FULL WORKSPACE COVERAGE
 
 Independent of #207, the repository now includes:
 - executable data-policy and remote-egress enforcement;
@@ -120,7 +120,8 @@ Independent of #207, the repository now includes:
 - bounded weekly Dependabot PRs for npm/GitHub Actions;
 - reconciled sensitive-path CODEOWNERS;
 - deterministic git-tracked high-confidence secret leakage gate;
-- measured per-workspace Node 24 native line/branch/function coverage regression floors.
+- measured per-workspace Node 24 native line/branch/function coverage regression floors;
+- control-plane contract tests, closing the final untested workspace so coverage inventory is 19/19.
 
 ## Phase 10 — Full lifecycle
 
