@@ -125,7 +125,9 @@ export function validateTestPlan(plan: TestPlan): ValidationResult {
     );
     for (const criterionId of mappedCriteria) {
       if (!criterionIds.has(criterionId)) {
-        errors.push(`test case ${testCase.id} references unknown acceptance criterion ${criterionId}`);
+        errors.push(
+          `test case ${testCase.id} references unknown acceptance criterion ${criterionId}`,
+        );
       } else if (testCase.required) {
         coveredCriteria.add(criterionId);
       }
@@ -183,7 +185,10 @@ export function validateTestRun(plan: TestPlan, run: TestRun): ValidationResult 
     if (result.environmentFingerprint !== plan.environment.fingerprint) {
       errors.push(`test result ${result.caseId} environment must match test plan environment`);
     }
-    if (result.durationMs !== undefined && (!Number.isFinite(result.durationMs) || result.durationMs < 0)) {
+    if (
+      result.durationMs !== undefined &&
+      (!Number.isFinite(result.durationMs) || result.durationMs < 0)
+    ) {
       errors.push(`test result ${result.caseId} durationMs must be non-negative`);
     }
 
@@ -205,10 +210,7 @@ export function validateTestRun(plan: TestPlan, run: TestRun): ValidationResult 
   return { valid: errors.length === 0, errors };
 }
 
-export function evaluateShadowTestGate(
-  plan: TestPlan,
-  run: TestRun,
-): ShadowTestGateEvaluation {
+export function evaluateShadowTestGate(plan: TestPlan, run: TestRun): ShadowTestGateEvaluation {
   const validation = validateTestRun(plan, run);
   if (!validation.valid) {
     throw new Error(`invalid test evidence: ${validation.errors.join('; ')}`);
@@ -272,10 +274,7 @@ export function evaluateShadowTestGate(
   };
 }
 
-export async function buildTestingSnapshot(
-  plan: TestPlan,
-  run: TestRun,
-): Promise<TestingSnapshot> {
+export async function buildTestingSnapshot(plan: TestPlan, run: TestRun): Promise<TestingSnapshot> {
   const evaluation = evaluateShadowTestGate(plan, run);
   const snapshotHash = await sha256Hex(canonicalJson({ plan, run }));
 
