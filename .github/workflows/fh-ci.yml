@@ -32,8 +32,5 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Diagnose native coverage formatting
-        run: |
-          npx prettier --write tools/project/check-architecture.mjs tools/project/check-coverage.mjs tools/project/coverage-baseline.json
-          git diff -- tools/project/check-architecture.mjs tools/project/check-coverage.mjs tools/project/coverage-baseline.json
-          exit 1
+      - name: Verify
+        run: npm run verify
