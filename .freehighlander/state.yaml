@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: feat/fh-31a-development
-  pull_request: null
+  pull_request: 73
   issue: 72
   objective: implement authority-neutral Development bounded context
   next_action: verify exact revision binding, shadow-only execution intents and mutation authority guards through protected-main CI
@@ -253,7 +253,7 @@ fh30a:
 
 fh31a:
   issue: 72
-  pull_request: null
+  pull_request: 73
   status: in_progress
   branch: feat/fh-31a-development
   authority_effect: none
