@@ -30,5 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Diagnose SQLite hardening formatting
+        run: |
+          npx prettier --write packages/persistence/src/sqlite-telemetry-store.ts packages/persistence/test/sqlite-maintenance.test.mjs tools/project/check-architecture.mjs
+          git diff -- packages/persistence/src/sqlite-telemetry-store.ts packages/persistence/test/sqlite-maintenance.test.mjs tools/project/check-architecture.mjs
+          exit 1
