@@ -46,7 +46,8 @@ export function validateEvidencePolicy(
   const candidateMap = new Map<string, EvidenceCandidate>();
   for (const candidate of candidates) {
     requireText(candidate.id, 'candidate id');
-    if (candidateMap.has(candidate.id)) throw new Error(`duplicate evidence candidate id: ${candidate.id}`);
+    if (candidateMap.has(candidate.id))
+      throw new Error(`duplicate evidence candidate id: ${candidate.id}`);
     candidateMap.set(candidate.id, candidate);
   }
 
@@ -62,7 +63,9 @@ export function validateEvidencePolicy(
 
     if (candidate.kind !== requirement.kind) {
       const summarySubstitution =
-        candidate.kind === 'SUMMARY' && requirement.kind !== 'SUMMARY' && !policy.allowSummarySubstitution;
+        candidate.kind === 'SUMMARY' &&
+        requirement.kind !== 'SUMMARY' &&
+        !policy.allowSummarySubstitution;
       errors.push(
         summarySubstitution
           ? `summary cannot substitute required ${requirement.kind} evidence: ${requirement.id}`
