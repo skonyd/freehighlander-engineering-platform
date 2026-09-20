@@ -7,6 +7,7 @@ model prompts/responses, provider credentials, repository filesystem, command ex
 
 ## Minimum controls
 - secrets prompt/config repo'ya yazılmaz
+- opaque `SecretHandle` + role/workflow/sandbox-gated EPHEMERAL injection contract; raw secret persistence and remote-model egress forbidden
 - role/tool permission model
 - filesystem/network scope
 - command sandbox
