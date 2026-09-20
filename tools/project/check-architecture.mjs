@@ -308,7 +308,6 @@ try {
   failures.push('missing FH-19 V2/V3 parity authority guards');
 }
 
-
 try {
   const evidencePolicySource = await fs.readFile(
     path.join(root, 'packages', 'evidence', 'src', 'evidence-policy.ts'),
@@ -324,7 +323,9 @@ try {
   ) {
     failures.push('required evidence must not be truncatable for token budget');
   }
-  if (!evidencePolicySource.includes("throw new Error('summary substitution must remain disabled')")) {
+  if (
+    !evidencePolicySource.includes("throw new Error('summary substitution must remain disabled')")
+  ) {
     failures.push('summary evidence must not replace required raw evidence');
   }
 } catch {
