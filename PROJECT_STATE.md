@@ -169,4 +169,4 @@ Policy evaluation is deterministic and fail-closed:
 
 ## Next action
 
-Verify FH-15 through protected-main CI, close canonical state, then automatically start FH-16 artifact lineage + hashes.
+Start FH-16 artifact lineage and hash-bound provenance while FH-01B2 remains blocked by Creator Marketplace #207.
