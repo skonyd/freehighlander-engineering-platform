@@ -360,6 +360,7 @@ pre_cutover_hardening:
       pull_request: 106
       area: dependency-boundaries
     - issue: 107
+      pull_request: 108
       area: roadmap-state-documentation-drift
 
 external_dependency:
