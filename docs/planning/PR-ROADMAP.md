@@ -13,7 +13,7 @@ FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 - FH-20 readiness gate complete; authority cutover blocked.
 - FH-30A..FH-37A complete and authority-neutral.
 - FH-30B..FH-37B remain post-cutover.
-- Pre-cutover hardening through reproducible CI, repository hygiene, tracked-secret enforcement, 19/19 measured native coverage and the opaque SecretHandle/EPHEMERAL injection contract is complete.
+- Pre-cutover hardening through reproducible CI, repository hygiene, tracked-secret enforcement, 19/19 measured native coverage, opaque SecretHandle/EPHEMERAL injection and lockfile provenance enforcement is complete.
 
 ```text
 V2 reference = PROVISIONAL
