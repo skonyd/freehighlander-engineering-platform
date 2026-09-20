@@ -16,7 +16,7 @@ active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: main
   pull_request: null
-  issue: 88
+  issue: 19
   objective: preserve the completed authority-neutral pre-cutover baseline until final V2 reference acceptance
   next_action: await Creator Marketplace #207 final acceptance/merge/smoke, then execute FH-01B2 exact reconciliation before FH-20 authority cutover
 
