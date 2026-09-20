@@ -190,6 +190,27 @@ try {
   failures.push('missing FH-13 workflow engine authority guards');
 }
 
+
+try {
+  const debateEngineSource = await fs.readFile(
+    path.join(root, 'packages', 'orchestration', 'src', 'debate-engine.ts'),
+    'utf8',
+  );
+  if (!debateEngineSource.includes('export function debateConsensusCanGrantAuthority(): false')) {
+    failures.push('FH-14 debate consensus must remain non-authoritative');
+  }
+  if (
+    !debateEngineSource.includes('export function debateConfigurationCanGrantAuthority(): false')
+  ) {
+    failures.push('FH-14 debate configuration must remain authority-neutral');
+  }
+  if (!debateEngineSource.includes("status: 'HUMAN_REQUIRED'")) {
+    failures.push('FH-14 unresolved bounded disagreement must escalate to human');
+  }
+} catch {
+  failures.push('missing FH-14 debate/council authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
