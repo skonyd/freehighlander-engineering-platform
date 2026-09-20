@@ -935,6 +935,51 @@ try {
   failures.push('missing lockfile provenance/install-script enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const buildIntegrity = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'build-integrity.mjs'),
+    'utf8',
+  );
+  const buildCheck = await fs.readFile(
+    path.join(root, 'tools', 'project', 'check-build-integrity.mjs'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    "createHash('sha256')",
+    'build output must not contain symlinks',
+    'missing after rebuild',
+    'unexpected after rebuild',
+  ]) {
+    if (!buildIntegrity.includes(invariant)) {
+      failures.push(`build integrity library missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const invariant of [
+    "execFileSync('git', ['ls-files', '-z']",
+    "spawnSync(npmCommand, ['run', 'build']",
+    "gitignore.split(/\\r?\\n/).includes('dist/')",
+  ]) {
+    if (!buildCheck.includes(invariant)) {
+      failures.push(`build integrity gate missing invariant: ${invariant}`);
+    }
+  }
+
+  if (
+    rootPackage.scripts?.['check:build-integrity'] !==
+    'node tools/project/check-build-integrity.mjs'
+  ) {
+    failures.push('root package must expose check:build-integrity');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:build-integrity')) {
+    failures.push('npm run verify must include deterministic build-output enforcement');
+  }
+} catch {
+  failures.push('missing deterministic build-output integrity enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
