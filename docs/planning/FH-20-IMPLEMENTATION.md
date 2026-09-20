@@ -1,7 +1,7 @@
 # FH-20 — V3 authority cutover readiness
 
 **Issue:** #64  
-**Status:** PREPARATION  
+**Status:** READINESS COMPLETE / CUTOVER BLOCKED  
 **Authority effect:** NONE
 
 ## Objective
@@ -32,7 +32,7 @@ reference/parity SHA mismatch => BLOCKED
 missing prerequisite => BLOCKED
 ```
 
-The current Creator Marketplace #207 reference remains provisional, therefore actual cutover remains blocked and V3 remains `SHADOW_ONLY`.
+The readiness gate was implemented through PR #65 and merged as `1193d572ff2c0323a79ea2b44eac3df2ccfaebaf`. Creator Marketplace #207 remains provisional/open, therefore actual cutover remains blocked and V3 remains `SHADOW_ONLY`.
 
 ## Verification
 

@@ -39,4 +39,4 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-17 Replay/simulation + crash recovery — issue #54 / PR #55
 - [x] FH-18 UI control plane — issue #56 / PR #57
 - [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
-- [ ] FH-20 V3 authority cutover + legacy shell retirement plan — readiness gate issue #64 active; authority blocked by Creator Marketplace #207
+- [ ] FH-20 V3 authority cutover + legacy shell retirement plan — readiness gate complete via issue #64 / PR #65; cutover blocked by Creator Marketplace #207
