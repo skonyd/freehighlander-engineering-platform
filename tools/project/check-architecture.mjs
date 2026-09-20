@@ -861,7 +861,6 @@ try {
   failures.push('missing native coverage regression enforcement');
 }
 
-
 try {
   const secretBrokerSource = await fs.readFile(
     path.join(root, 'packages', 'governance', 'src', 'secret-broker.ts'),
@@ -874,8 +873,8 @@ try {
 
   for (const invariant of [
     "readonly classification: 'SECRET'",
-    "readonly persistValue: false",
-    "readonly remoteModelEgress: false",
+    'readonly persistValue: false',
+    'readonly remoteModelEgress: false',
     "readonly retentionClass: 'EPHEMERAL'",
     'readonly sandboxDecision: SandboxPermissionDecision',
     'export function secretBrokerCanGrantAuthority(): false',
