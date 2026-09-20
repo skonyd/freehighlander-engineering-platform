@@ -935,7 +935,6 @@ try {
   failures.push('missing lockfile provenance/install-script enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   const buildIntegrity = await fs.readFile(
