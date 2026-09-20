@@ -25,14 +25,15 @@
     "project:context": "node tools/project/context.mjs",
     "project:architecture": "node tools/project/architecture.mjs",
     "dashboard:start": "npm run start -w @freehighlander/web",
-    "verify": "npm run format && npm run typecheck && npm run build && npm run test && npm run check:coverage && npm run check:build-integrity && npm run check:dependencies && npm run check:docs && npm run check:ci && npm run check:lockfile && npm run check:secrets && npm run check:architecture && npm run project:doctor",
+    "verify": "npm run format && npm run typecheck && npm run build && npm run test && npm run check:coverage && npm run check:build-integrity && npm run check:dependencies && npm run check:docs && npm run check:ci && npm run check:lockfile && npm run check:publish-safety && npm run check:secrets && npm run check:architecture && npm run project:doctor",
     "check:dependencies": "node tools/project/check-dependencies.mjs",
     "check:docs": "node tools/project/check-doc-drift.mjs",
     "check:ci": "node tools/project/check-ci-supply-chain.mjs",
     "check:secrets": "node tools/project/check-secrets.mjs",
     "check:coverage": "node tools/project/check-coverage.mjs",
     "check:lockfile": "node tools/project/check-lockfile.mjs",
-    "check:build-integrity": "node tools/project/check-build-integrity.mjs"
+    "check:build-integrity": "node tools/project/check-build-integrity.mjs",
+    "check:publish-safety": "node tools/project/check-publish-safety.mjs"
   },
   "dependencies": {
     "yaml": "2.9.1"
