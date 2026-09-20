@@ -25,7 +25,8 @@ test('repository V3 architecture contract validates and hashes deterministically
   assert.equal(contract.bounded_contexts.packages.includes('testing'), true);
   assert.equal(contract.bounded_contexts.packages.includes('security'), true);
   assert.equal(contract.bounded_contexts.packages.includes('release'), true);
-  assert.equal(contract.bounded_contexts.packages.includes('operations'), true);\n  assert.equal(contract.bounded_contexts.packages.includes('incident'), true);
+  assert.equal(contract.bounded_contexts.packages.includes('operations'), true);
+  assert.equal(contract.bounded_contexts.packages.includes('incident'), true);
   assert.equal(contract.migration.v3_authority, 'SHADOW_ONLY');
 });
 
