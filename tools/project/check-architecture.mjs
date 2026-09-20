@@ -21,6 +21,7 @@ const expectedPackages = new Map([
   ['packages/development', '@freehighlander/development'],
   ['packages/testing', '@freehighlander/testing'],
   ['packages/security', '@freehighlander/security'],
+  ['packages/release', '@freehighlander/release'],
 ]);
 
 const failures = [];
@@ -444,6 +445,30 @@ try {
   }
 } catch {
   failures.push('missing FH-33A security authority guards');
+}
+
+try {
+  const releaseSource = await fs.readFile(
+    path.join(root, 'packages', 'release', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!releaseSource.includes('export function releaseCanGrantAuthority(): false')) {
+    failures.push('FH-34A release must remain authority-neutral');
+  }
+  if (!releaseSource.includes('export function releaseReadyCanAuthorizeDeployment(): false')) {
+    failures.push('FH-34A release readiness must not authorize deployment');
+  }
+  if (!releaseSource.includes('export function releaseCanPublishTagOrRelease(): false')) {
+    failures.push('FH-34A release must not publish tags/releases pre-cutover');
+  }
+  if (!releaseSource.includes('export function releaseCanExecuteRollback(): false')) {
+    failures.push('FH-34A release must not execute rollback pre-cutover');
+  }
+  if (!releaseSource.includes("readonly authority: 'NONE'")) {
+    failures.push('FH-34A release readiness authority must remain NONE');
+  }
+} catch {
+  failures.push('missing FH-34A release authority guards');
 }
 
 if (failures.length > 0) {
