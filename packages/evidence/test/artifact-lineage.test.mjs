@@ -157,3 +157,40 @@ test('duplicate parent hashes are rejected and lineage cannot grant authority', 
   );
   assert.equal(artifactLineageCanGrantAuthority(), false);
 });
+
+
+test('lineage cycles fail closed', () => {
+  const aHash = 'a'.repeat(64);
+  const bHash = 'b'.repeat(64);
+  const fakeBase = {
+    schemaVersion: 1,
+    artifactId: 'fake',
+    artifactKind: 'test',
+    contentHash: 'c'.repeat(64),
+    binding,
+  };
+  const artifacts = new Map([
+    [
+      aHash,
+      {
+        ...fakeBase,
+        artifactId: 'a',
+        artifactHash: aHash,
+        parentArtifactHashes: [bHash],
+      },
+    ],
+    [
+      bHash,
+      {
+        ...fakeBase,
+        artifactId: 'b',
+        artifactHash: bHash,
+        parentArtifactHashes: [aHash],
+      },
+    ],
+  ]);
+
+  const result = verifyArtifactLineage(aHash, artifacts);
+  assert.equal(result.valid, false);
+  assert.match(result.errors[0], /lineage cycle detected/);
+});
