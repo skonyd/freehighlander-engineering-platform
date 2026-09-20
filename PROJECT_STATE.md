@@ -75,6 +75,7 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #124 / PR #125 — opaque SecretHandle + fail-closed EPHEMERAL injection contract; real credential backend resolution remains intentionally unimplemented
 - #126 / PR #127 — deterministic npm lockfile provenance/integrity/install-script gate
 - #128 / PR #129 — safe private vulnerability reporting guidance; public issues explicitly treated as public
+- #130 / PR #131 — deterministic clean-rebuild output integrity; workspace dist manifests must match byte-for-byte
 
 Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority.
 
