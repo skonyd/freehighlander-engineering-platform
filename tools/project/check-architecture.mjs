@@ -308,6 +308,29 @@ try {
   failures.push('missing FH-19 V2/V3 parity authority guards');
 }
 
+
+try {
+  const evidencePolicySource = await fs.readFile(
+    path.join(root, 'packages', 'evidence', 'src', 'evidence-policy.ts'),
+    'utf8',
+  );
+  if (!evidencePolicySource.includes('export function evidencePolicyCanGrantAuthority(): false')) {
+    failures.push('evidence policy validation must remain authority-neutral');
+  }
+  if (
+    !evidencePolicySource.includes(
+      'export function evidenceBudgetCanTruncateRequiredEvidence(): false',
+    )
+  ) {
+    failures.push('required evidence must not be truncatable for token budget');
+  }
+  if (!evidencePolicySource.includes("throw new Error('summary substitution must remain disabled')")) {
+    failures.push('summary evidence must not replace required raw evidence');
+  }
+} catch {
+  failures.push('missing executable evidence policy guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
