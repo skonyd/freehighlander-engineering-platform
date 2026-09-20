@@ -96,7 +96,12 @@ export function validateSandboxPolicy(value: unknown): ValidationResult {
 
   const defaults = recordValue(value, 'default');
   const filesystem = recordValue(defaults, 'filesystem');
-  assertExactStringSet(arrayValue(filesystem, 'read'), ['repository'], 'filesystem read scope', errors);
+  assertExactStringSet(
+    arrayValue(filesystem, 'read'),
+    ['repository'],
+    'filesystem read scope',
+    errors,
+  );
   assertExactStringSet(
     arrayValue(filesystem, 'write'),
     ['repository_worktree'],
@@ -239,7 +244,10 @@ export function isWithinRepository(repositoryRoot: string, candidatePath: string
     : path.resolve(root, candidatePath);
   const relative = path.relative(root, candidate);
 
-  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
+  return (
+    relative === '' ||
+    (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative))
+  );
 }
 
 export function sandboxPolicyCanGrantAuthority(): false {
