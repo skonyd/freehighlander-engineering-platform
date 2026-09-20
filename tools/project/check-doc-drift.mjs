@@ -32,7 +32,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_repository_hygiene',
+  'complete_through_tracked_secret_gate',
   'pre-cutover hardening state',
 );
 
@@ -54,6 +54,7 @@ for (const [documentName, content, required] of [
       'Roadmap/state/documentation drift cleanup — issue #107 / PR #108',
       'Reproducible CI / npm lockfile / immutable Action SHA pinning — issue #109 / PR #110',
       'Checkout credential isolation + bounded dependency-update hygiene — issue #111 / PR #112',
+      'Deterministic tracked-secret leakage gate — issue #114 / PR #117',
       'FH-30B..FH-37B',
     ],
   ],
@@ -66,6 +67,7 @@ for (const [documentName, content, required] of [
       'workspace dependency-boundary enforcement',
       '#109 / PR #110 — reproducible CI',
       '#111 / PR #112 — checkout credential isolation',
+      '#114 / PR #117 — deterministic git-tracked secret leakage gate',
     ],
   ],
   [
@@ -84,6 +86,7 @@ for (const [documentName, content, required] of [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
       'repository credential/dependency hygiene',
+      'tracked-secret leakage enforcement',
       'Creator Marketplace #207',
     ],
   ],
