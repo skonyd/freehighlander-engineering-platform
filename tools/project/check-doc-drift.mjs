@@ -7,22 +7,17 @@ import YAML from 'yaml';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const failures = [];
 
-const state = YAML.parse(await fs.readFile(path.join(root, '.freehighlander', 'state.yaml'), 'utf8'));
+const state = YAML.parse(
+  await fs.readFile(path.join(root, '.freehighlander', 'state.yaml'), 'utf8'),
+);
 const readme = await fs.readFile(path.join(root, 'README.md'), 'utf8');
 const backlog = await fs.readFile(path.join(root, 'BACKLOG.md'), 'utf8');
 const projectState = await fs.readFile(path.join(root, 'PROJECT_STATE.md'), 'utf8');
 const roadmap = await fs.readFile(path.join(root, 'docs', 'ROADMAP.md'), 'utf8');
-const prRoadmap = await fs.readFile(
-  path.join(root, 'docs', 'planning', 'PR-ROADMAP.md'),
-  'utf8',
-);
+const prRoadmap = await fs.readFile(path.join(root, 'docs', 'planning', 'PR-ROADMAP.md'), 'utf8');
 
 expect(state.phase?.id, 'PRE-CUTOVER', 'state phase');
-expect(
-  state.phase?.status,
-  'blocked_on_external_dependency',
-  'state phase status',
-);
+expect(state.phase?.status, 'blocked_on_external_dependency', 'state phase status');
 expect(state.active_work?.branch, 'main', 'state active branch');
 if (state.active_work?.pull_request !== null) {
   failures.push('state active_work.pull_request must be null while waiting on external dependency');
@@ -56,7 +51,7 @@ for (const [documentName, content, required] of [
     backlog,
     [
       '[x] Architecture dependency-boundary enforcement — issue #105 / PR #106',
-      '[ ] Roadmap/state/documentation drift cleanup — issue #107',
+      'Roadmap/state/documentation drift cleanup — issue #107 / PR #108',
       'FH-30B..FH-37B',
     ],
   ],
@@ -89,7 +84,8 @@ for (const [documentName, content, required] of [
   ],
 ]) {
   for (const marker of required) {
-    if (!content.includes(marker)) failures.push(`${documentName} missing current-state marker: ${marker}`);
+    if (!content.includes(marker))
+      failures.push(`${documentName} missing current-state marker: ${marker}`);
   }
 }
 
@@ -102,16 +98,8 @@ for (const [documentName, content, stalePhrases] of [
       'FH-01, #207 final acceptance + merge + post-merge smoke sonrasında başlar.',
     ],
   ],
-  [
-    'BACKLOG.md',
-    backlog,
-    ['issue #78 / PR #79 active'],
-  ],
-  [
-    'PROJECT_STATE.md',
-    projectState,
-    ['## FH-33A active', 'FH-33A Security — active as issue #78'],
-  ],
+  ['BACKLOG.md', backlog, ['issue #78 / PR #79 active']],
+  ['PROJECT_STATE.md', projectState, ['## FH-33A active', 'FH-33A Security — active as issue #78']],
   [
     'docs/planning/PR-ROADMAP.md',
     prRoadmap,
