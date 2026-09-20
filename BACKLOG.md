@@ -33,7 +33,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-11 Provider adapter implementations + binding registry — issue #40 / PR #42
 - [x] FH-12 Role registry + role packages — issue #43 / PR #44
 - [x] FH-13 Workflow DAG + explicit state machine — issue #45 / PR #46
-- [ ] FH-14 Debate/council + disagreement escalation
+- [x] FH-14 Debate/council + disagreement escalation — issue #47 / PR #48
 - [ ] FH-15 Human approval + policy-as-code
 - [ ] FH-16 Artifact lineage + hashes
 - [ ] FH-17 Replay/simulation + crash recovery
