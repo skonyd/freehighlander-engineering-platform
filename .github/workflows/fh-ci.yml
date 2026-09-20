@@ -12,23 +12,23 @@ permissions:
 jobs:
   verify:
     name: FreeHighlander CI / verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.21.0
 
       - name: Pin npm
-        run: npm install --global npm@11.19.1
+        run: npm install --global npm@11.19.1 --ignore-scripts --no-audit --no-fund
 
       - name: Install dependencies
-        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
         run: npm run verify

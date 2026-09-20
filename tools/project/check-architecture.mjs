@@ -774,6 +774,20 @@ try {
   failures.push('missing documentation drift enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  await fs.access(path.join(root, 'package-lock.json'));
+  await fs.access(path.join(root, 'tools', 'project', 'check-ci-supply-chain.mjs'));
+  if (rootPackage.scripts?.['check:ci'] !== 'node tools/project/check-ci-supply-chain.mjs') {
+    failures.push('root package must expose check:ci');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:ci')) {
+    failures.push('npm run verify must include CI supply-chain enforcement');
+  }
+} catch {
+  failures.push('missing deterministic CI supply-chain enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
