@@ -906,7 +906,6 @@ try {
   failures.push('missing secret-handle / ephemeral-injection hardening contract');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   const lockfileCheck = await fs.readFile(
