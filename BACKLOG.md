@@ -49,7 +49,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-33A Security module evidence/read-only preparation — issue #78 / PR #79 — issue #78 / PR #79 active
 - [x] FH-34A Release module readiness/read-only preparation — issue #80 / PR #81
 - [x] FH-35A Operations module inventory/health/read-only preparation — issue #82
-- [ ] FH-36A Incident module lifecycle/read-only preparation
+- [x] FH-36A Incident module lifecycle/read-only preparation — issue #84
 - [ ] FH-37A Project knowledge graph / engineering lineage preparation
 
 Activation lane FH-30B..FH-37B remains blocked by FH-01B2/FH-20 final authority cutover.
