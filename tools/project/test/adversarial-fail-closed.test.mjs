@@ -9,15 +9,9 @@ import {
   parseSandboxPolicyYaml,
 } from '@freehighlander/governance';
 import { validateEngineeringPlan } from '@freehighlander/planning';
-import {
-  validateChangeCandidate,
-  validateTaskCandidateBinding,
-} from '@freehighlander/development';
+import { validateChangeCandidate, validateTaskCandidateBinding } from '@freehighlander/development';
 import { traverseLineage, validateLineageGraph } from '@freehighlander/lineage';
-import {
-  createHardeningEvent,
-  parseEvent,
-} from '@freehighlander/telemetry';
+import { createHardeningEvent, parseEvent } from '@freehighlander/telemetry';
 
 const repository = 'skonyd/freehighlander-engineering-platform';
 const baseRevision = '1'.repeat(40);
@@ -316,10 +310,7 @@ test('lineage rejects multiple simultaneous provenance and identity corruptions'
   const graph = validLineage();
   const invalid = {
     ...graph,
-    entities: [
-      ...graph.entities,
-      { ...graph.entities[2] },
-    ],
+    entities: [...graph.entities, { ...graph.entities[2] }],
     relations: [
       {
         ...graph.relations[0],
