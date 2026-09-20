@@ -15,7 +15,7 @@ phase:
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: feat/project-checkpoint-reconciliation
-  pull_request: null
+  pull_request: 60
   issue: 10
   objective: make repository-native resume/checkpoint state remotely verifiable and safe for machine handoff
   next_action: verify remote reconciliation and checkpoint tooling through protected-main CI
@@ -197,6 +197,7 @@ fh19:
 
 project_state_tooling:
   issue: 10
+  pull_request: 60
   status: in_progress
   branch: feat/project-checkpoint-reconciliation
   remote_reconciliation: required
