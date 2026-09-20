@@ -38,7 +38,108 @@ export type EventType =
   | 'benchmark.sample.recorded'
   | 'context.packet.built'
   | 'cache.diagnostic'
-  | 'reuse.diagnostic';
+  | 'reuse.diagnostic'
+  | 'policy.decision'
+  | 'data.redaction'
+  | 'provider.egress.decision'
+  | 'sandbox.decision'
+  | 'retention.plan.action'
+  | 'persistence.integrity.checked'
+  | 'persistence.backup.completed'
+  | 'persistence.restore.completed'
+  | 'lineage.validation.failed';
+
+export type HardeningEventType =
+  | 'policy.decision'
+  | 'data.redaction'
+  | 'provider.egress.decision'
+  | 'sandbox.decision'
+  | 'retention.plan.action'
+  | 'persistence.integrity.checked'
+  | 'persistence.backup.completed'
+  | 'persistence.restore.completed'
+  | 'lineage.validation.failed';
+
+export type HardeningEventOutcome = 'ALLOW' | 'DENY' | 'PASS' | 'FAIL' | 'PLANNED' | 'SKIPPED';
+
+export interface HardeningEventPayload extends Record<string, unknown> {
+  readonly category: string;
+  readonly action: string;
+  readonly outcome: HardeningEventOutcome;
+  readonly reasonCode: string;
+  readonly subjectId?: string;
+  readonly resourceId?: string;
+  readonly policyHash?: string;
+  readonly contentHash?: string;
+  readonly itemCount?: number;
+}
+
+const hardeningPayloadKeys = new Set([
+  'category',
+  'action',
+  'outcome',
+  'reasonCode',
+  'subjectId',
+  'resourceId',
+  'policyHash',
+  'contentHash',
+  'itemCount',
+]);
+
+export function createHardeningEvent(
+  input: Omit<EngineeringEventInput<HardeningEventPayload>, 'type'> & {
+    readonly type: HardeningEventType;
+  },
+): EngineeringEvent<HardeningEventPayload> {
+  validateHardeningPayload(input.payload);
+  return createEvent(input);
+}
+
+function validateHardeningPayload(payload: HardeningEventPayload): void {
+  const record = payload as unknown as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (!hardeningPayloadKeys.has(key)) {
+      throw new Error(`hardening telemetry payload field is not allowed: ${key}`);
+    }
+  }
+
+  for (const [name, value] of [
+    ['category', payload.category],
+    ['action', payload.action],
+    ['reasonCode', payload.reasonCode],
+  ] as const) {
+    if (!value.trim()) throw new Error(`hardening telemetry ${name} is required`);
+  }
+
+  if (!['ALLOW', 'DENY', 'PASS', 'FAIL', 'PLANNED', 'SKIPPED'].includes(payload.outcome)) {
+    throw new Error('hardening telemetry outcome is invalid');
+  }
+
+  for (const [name, value] of [
+    ['subjectId', payload.subjectId],
+    ['resourceId', payload.resourceId],
+  ] as const) {
+    if (value !== undefined && !value.trim()) {
+      throw new Error(`hardening telemetry ${name} must not be empty`);
+    }
+  }
+
+  for (const [name, value] of [
+    ['policyHash', payload.policyHash],
+    ['contentHash', payload.contentHash],
+  ] as const) {
+    if (value !== undefined && !/^[a-f0-9]{64}$/.test(value)) {
+      throw new Error(`hardening telemetry ${name} must be lowercase sha256`);
+    }
+  }
+
+  if (
+    payload.itemCount !== undefined &&
+    (!Number.isInteger(payload.itemCount) || payload.itemCount < 0)
+  ) {
+    throw new Error('hardening telemetry itemCount must be a non-negative integer');
+  }
+}
 
 export type FailureClass =
   | 'quota'

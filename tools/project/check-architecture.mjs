@@ -680,6 +680,36 @@ try {
   failures.push('missing FH-30A..FH-37A cross-module digital-thread integration suite');
 }
 
+try {
+  const telemetrySource = await fs.readFile(
+    path.join(root, 'packages', 'telemetry', 'src', 'index.ts'),
+    'utf8',
+  );
+  for (const eventType of [
+    'policy.decision',
+    'data.redaction',
+    'provider.egress.decision',
+    'sandbox.decision',
+    'retention.plan.action',
+    'persistence.integrity.checked',
+    'persistence.backup.completed',
+    'persistence.restore.completed',
+    'lineage.validation.failed',
+  ]) {
+    if (!telemetrySource.includes(`'${eventType}'`)) {
+      failures.push(`hardening telemetry event is missing: ${eventType}`);
+    }
+  }
+  if (!telemetrySource.includes('hardeningPayloadKeys')) {
+    failures.push('hardening telemetry must use a bounded metadata allowlist');
+  }
+  if (!telemetrySource.includes('hardening telemetry payload field is not allowed')) {
+    failures.push('hardening telemetry must reject arbitrary payload fields');
+  }
+} catch {
+  failures.push('missing hardening observability event contracts');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
