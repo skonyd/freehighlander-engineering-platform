@@ -27,6 +27,7 @@ accepted_adrs:
   - ADR-0016
   - ADR-0017
   - ADR-0018
+  - ADR-0019
 
 product:
   mode: local-first-single-user
@@ -67,6 +68,7 @@ bounded_contexts:
     - security
     - release
     - operations
+    - incident
   forbidden:
     - packages/core
   contracts_rule: shared serialization contracts only, not shared business-domain dumping
