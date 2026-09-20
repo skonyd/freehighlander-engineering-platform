@@ -60,8 +60,9 @@ Activation lane FH-30B..FH-37B remains blocked by FH-01B2/FH-20 final authority 
 - [x] Executable sandbox permission evaluator — issue #91 / PR #92
 - [x] Retention/privacy lifecycle — issue #93 / PR #94
 - [ ] SQLite backup/restore/integrity hardening — issue #95
-- [ ] FH-30A..FH-37A cross-module read-only integration
-- [ ] Hardening observability + adversarial/fail-closed tests
+- [x] FH-30A..FH-37A cross-module read-only integration — issue #97 / PR #99
+- [x] Hardening observability — issue #100 / PR #101
+- [ ] Adversarial/property/fail-closed test expansion — issue #102
 - [ ] Architecture dependency-boundary enforcement
 - [ ] Roadmap/documentation drift cleanup
 
