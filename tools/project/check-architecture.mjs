@@ -818,7 +818,6 @@ try {
   failures.push('missing deterministic tracked-secret enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   const coverageBaseline = JSON.parse(
