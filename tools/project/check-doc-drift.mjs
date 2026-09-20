@@ -78,7 +78,7 @@ for (const [documentName, content, required] of [
     prRoadmap,
     [
       'FH-01B2 final accepted-V2 reconciliation',
-      'FH-30A..FH-37A — complete',
+      'FH-30A..FH-37A complete and authority-neutral.',
       'Creator Marketplace #207',
     ],
   ],
