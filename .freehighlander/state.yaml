@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T10:44:00+03:00"
+updated_at: "2026-09-20T10:47:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-17
-  name: replay-recovery
+  id: FH-18
+  name: management-ui
   status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-17-replay-recovery
+  branch: feat/fh-18-management-ui
   pull_request: null
-  issue: 54
-  objective: implement deterministic replay, simulation and crash recovery while FH-01B2 waits for Creator Marketplace #207
-  next_action: verify FH-17 replay/recovery and protected-main CI
+  issue: 56
+  objective: implement client-only V3 management UI without moving execution or authority into web
+  next_action: verify FH-18 management UI and protected-main CI
 
 fh01a:
   issue: 15
@@ -166,12 +166,22 @@ fh16:
 
 fh17:
   issue: 54
-  status: in_progress
-  branch: feat/fh-17-replay-recovery
+  pull_request: 55
+  status: complete
+  merge_sha: 142cee242af367b0b4b5f94741d7b3532533b29a
   authority_effect: none
   simulation_authority: none
   checkpoint_policy: exact_binding
   divergence_policy: explicit
+
+fh18:
+  issue: 56
+  status: in_progress
+  branch: feat/fh-18-management-ui
+  authority_effect: none
+  web_execution_authority: none
+  execution_owner: control-plane
+  v3_authority: SHADOW_ONLY
 
 external_dependency:
   repository: skonyd/creator-marketplace

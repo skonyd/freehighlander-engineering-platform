@@ -270,6 +270,26 @@ try {
   failures.push('missing FH-17 replay/recovery authority guards');
 }
 
+try {
+  const webManagementSource = await fs.readFile(
+    path.join(root, 'apps', 'web', 'src', 'management.ts'),
+    'utf8',
+  );
+  if (!webManagementSource.includes('export function webCanExecuteManagementIntent(): false')) {
+    failures.push('FH-18 web management UI must not own mutation authority');
+  }
+  if (
+    !webManagementSource.includes('export function uiDisconnectCanChangeWorkflowExecution(): false')
+  ) {
+    failures.push('FH-18 UI disconnect must not change workflow execution');
+  }
+  if (!webManagementSource.includes("authority: 'CONTROL_PLANE_REQUIRED'")) {
+    failures.push('FH-18 management intents must require control-plane authority');
+  }
+} catch {
+  failures.push('missing FH-18 management UI authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

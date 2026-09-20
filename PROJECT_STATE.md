@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-17 IN PROGRESS / FH-01B2 BLOCKED  
+**State status:** FH-18 IN PROGRESS / FH-01B2 BLOCKED  
 **Canonical pointer:** `.freehighlander/state.yaml`
 
 ## Completed
@@ -173,12 +173,18 @@ Issue **#52** was implemented through PR **#53** and merged as `50ec6776e9553216
 
 Delivered deterministic hash-bound artifact envelopes, exact semantic binding, parent lineage, tamper checks and fail-closed missing-parent/cycle verification. Lineage remains authority-neutral.
 
-## FH-17 active work
+## FH-17 completed
 
-Issue **#54** is active on `feat/fh-17-replay-recovery`.
+Issue **#54** was implemented through PR **#55** and merged as `142cee242af367b0b4b5f94741d7b3532533b29a`.
 
-Replay manifests bind exact revision/workflow/run-snapshot/policy/artifact roots. Recovery checkpoints are replay-manifest bound, tamper checked and resume only from a validated sequence. Divergent replay input is surfaced explicitly; replay/simulation cannot grant authority.
+Replay/simulation now binds exact revision, workflow, snapshot, policy and artifact roots. Recovery checkpoints are tamper checked and replay-manifest bound; divergence is explicit and neither replay nor simulation grants authority.
+
+## FH-18 active work
+
+Issue **#56** is active on `feat/fh-18-management-ui`.
+
+The web layer remains client-only. Management snapshots expose runs, human-required events, artifacts and model calls. Management actions are represented as explicit control-plane-required intents; web cannot execute them or self-approve human gates.
 
 ## Next action
 
-Verify FH-17 through protected-main CI, then advance to FH-18 management UI.
+Verify FH-18 through protected-main CI, then advance to FH-19 V2/V3 shadow dual-run parity.
