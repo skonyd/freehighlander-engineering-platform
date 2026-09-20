@@ -557,6 +557,27 @@ try {
   failures.push('missing FH-37A lineage authority guards');
 }
 
+try {
+  const dataPolicySource = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'data-policy.ts'),
+    'utf8',
+  );
+  if (!dataPolicySource.includes('export function dataPolicyCanGrantAuthority(): false')) {
+    failures.push('data-policy enforcement must remain authority-neutral');
+  }
+  if (!dataPolicySource.includes('export function dataPolicyCanAllowSecretRemoteEgress(): false')) {
+    failures.push('SECRET remote egress must remain impossible');
+  }
+  if (!dataPolicySource.includes("case 'SECRET':")) {
+    failures.push('data-policy egress evaluator must explicitly handle SECRET');
+  }
+  if (!dataPolicySource.includes('redactSensitive')) {
+    failures.push('data-policy persistence path must include deterministic redaction');
+  }
+} catch {
+  failures.push('missing executable data-policy enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
