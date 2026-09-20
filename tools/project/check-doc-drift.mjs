@@ -33,7 +33,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_build_integrity_gate',
+  'complete_through_publish_safety_gate',
   'pre-cutover hardening state',
 );
 
@@ -63,6 +63,7 @@ for (const [documentName, content, required] of [
       'Lockfile provenance + integrity + install-script gate — issue #126 / PR #127',
       'Private vulnerability reporting policy correction — issue #128 / PR #129',
       'Deterministic clean-build output integrity gate — issue #130 / PR #131',
+      'Monorepo accidental-publish safety gate — issue #132 / PR #133',
       'FH-30B..FH-37B',
     ],
   ],
@@ -83,6 +84,7 @@ for (const [documentName, content, required] of [
       '#126 / PR #127 — deterministic npm lockfile provenance',
       '#128 / PR #129 — safe private vulnerability reporting guidance',
       '#130 / PR #131 — deterministic clean-rebuild output integrity',
+      '#132 / PR #133 — monorepo accidental-publish safety',
     ],
   ],
   [
@@ -91,7 +93,7 @@ for (const [documentName, content, required] of [
     [
       'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
       'READINESS COMPLETE / CUTOVER BLOCKED',
-      'Pre-cutover hardening — COMPLETE THROUGH BUILD INTEGRITY GATE',
+      'Pre-cutover hardening — COMPLETE THROUGH PUBLISH SAFETY GATE',
     ],
   ],
   [
@@ -101,7 +103,7 @@ for (const [documentName, content, required] of [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
       'repository hygiene',
-      'deterministic build-output integrity is complete',
+      'accidental-publish safety is complete',
       'Creator Marketplace #207',
     ],
   ],
