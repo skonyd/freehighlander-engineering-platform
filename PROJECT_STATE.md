@@ -221,6 +221,28 @@ summary != required raw evidence
 token budget != permission to remove required evidence
 ```
 
+## FH-20 cutover readiness active
+
+Issue **#64** prepares the fail-closed cutover gate without enabling V3 authority.
+
+The readiness gate requires:
+- final V2 reference status = ACCEPTED;
+- final accepted reference SHA recorded;
+- parity evidence bound to that exact SHA;
+- provisional-to-final delta reviewed;
+- parity suite PASS;
+- post-port smoke PASS;
+- explicit authority-promotion review;
+- exact human approval verification;
+- system policy ALLOW.
+
+The readiness evaluator never enables authority itself. Until all prerequisites are present:
+
+```text
+FH-20 readiness = BLOCKED
+V3 authority = SHADOW_ONLY
+```
+
 ## Next action
 
-Verify issue #61 through protected-main CI. After that, only the FH-01B2/FH-20 authority-cutover path remains, blocked on Creator Marketplace #207 acceptance, merge, post-merge smoke and explicit human/policy promotion review.
+Verify issue #64 through protected-main CI. Actual FH-01B2/FH-20 authority promotion remains blocked on Creator Marketplace #207 acceptance, merge and post-merge smoke.
