@@ -125,7 +125,9 @@ export function validateSecurityAssessment(
     errors.push('assessment policyHash must match security plan policyHash');
   }
 
-  const requiredScannerById = new Map(plan.requiredScanners.map((scanner) => [scanner.id, scanner]));
+  const requiredScannerById = new Map(
+    plan.requiredScanners.map((scanner) => [scanner.id, scanner]),
+  );
   uniqueNonEmpty(
     assessment.scannerEvidence.map((evidence) => evidence.id),
     'scanner evidence id',
@@ -135,7 +137,9 @@ export function validateSecurityAssessment(
   for (const evidence of assessment.scannerEvidence) {
     const required = requiredScannerById.get(evidence.scannerId);
     if (!required) {
-      errors.push(`scanner evidence ${evidence.id} references unknown scanner ${evidence.scannerId}`);
+      errors.push(
+        `scanner evidence ${evidence.id} references unknown scanner ${evidence.scannerId}`,
+      );
     } else if (evidence.scannerVersion !== required.version) {
       errors.push(`scanner evidence ${evidence.id} version must match required scanner version`);
     }
@@ -215,8 +219,7 @@ export function evaluateSecurityReadiness(
   if (openHighFindings > 0) reasons.push('open HIGH security findings remain');
 
   const hasBlockingFinding = openCriticalFindings > 0 || openHighFindings > 0;
-  const hasCompleteTrustedEvidence =
-    trustedEvidenceByScanner.size === plan.requiredScanners.length;
+  const hasCompleteTrustedEvidence = trustedEvidenceByScanner.size === plan.requiredScanners.length;
 
   return {
     status: hasBlockingFinding
