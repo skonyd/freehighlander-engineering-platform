@@ -94,8 +94,7 @@ export async function verifyArtifactEnvelope(
   });
 
   return (
-    rebuilt.contentHash === artifact.contentHash &&
-    rebuilt.artifactHash === artifact.artifactHash
+    rebuilt.contentHash === artifact.contentHash && rebuilt.artifactHash === artifact.artifactHash
   );
 }
 
@@ -190,11 +189,6 @@ function canonicalJson(value: unknown): string {
 }
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await globalThis.crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(value),
-  );
-  return [...new Uint8Array(digest)]
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
