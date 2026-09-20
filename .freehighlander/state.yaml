@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T10:47:00+03:00"
+updated_at: "2026-09-20T12:41:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-18
-  name: management-ui
+  id: FH-19
+  name: v2-v3-shadow-parity
   status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: feat/fh-18-management-ui
+  branch: feat/fh-19-shadow-parity
   pull_request: null
-  issue: 56
-  objective: implement client-only V3 management UI without moving execution or authority into web
-  next_action: verify FH-18 management UI and protected-main CI
+  issue: 58
+  objective: produce deterministic V2/V3 shadow parity evidence without granting V3 authority
+  next_action: verify FH-19 parity evidence and protected-main CI
 
 fh01a:
   issue: 15
@@ -176,11 +176,22 @@ fh17:
 
 fh18:
   issue: 56
-  status: in_progress
-  branch: feat/fh-18-management-ui
+  pull_request: 57
+  status: complete
+  merge_sha: 722a7137930e37167ab93e7cab4d763226ee5984
   authority_effect: none
   web_execution_authority: none
   execution_owner: control-plane
+  v3_authority: SHADOW_ONLY
+
+fh19:
+  issue: 58
+  status: in_progress
+  branch: feat/fh-19-shadow-parity
+  authority_effect: none
+  reference_status: PROVISIONAL
+  parity_authority: none
+  cutover_allowed: false
   v3_authority: SHADOW_ONLY
 
 external_dependency:
