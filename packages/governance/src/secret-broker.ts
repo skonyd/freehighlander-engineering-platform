@@ -139,9 +139,7 @@ export function evaluateSecretAccess(request: SecretAccessRequest): SecretAccess
   return allow('secret handle satisfies role, workflow, sandbox and ephemeral-use constraints');
 }
 
-export function planSecretInjection(
-  request: SecretAccessRequest,
-): SecretInjectionPlanningResult {
+export function planSecretInjection(request: SecretAccessRequest): SecretInjectionPlanningResult {
   const decision = evaluateSecretAccess(request);
   if (!decision.allowed) return { decision, plan: null };
 
