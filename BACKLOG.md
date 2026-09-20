@@ -12,16 +12,6 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-03 SQLite run/event/artifact metadata store — issue #24 / PR #25
 - [x] FH-04 Read-only metrics dashboard — issue #26 / PR #27
 
-## FH-01/FH-02 enabling contracts
-- [x] Context packet builder + manifest validation — FH-07 / PR #33
-- [x] Prompt contract/version registry — FH-07 / PR #33
-- [x] Semantic model-call reuse key — FH-07 / PR #33
-- [x] Evidence policy validator — issue #61 / PR #62
-- [x] Provider token-count capability contract/preflight — FH-07 / PR #33
-- [x] Token-budget diagnostics — FH-07 / PR #33
-- [x] canonical project checkpoint / remote reconciliation — issue #10 / PR #60
-- [x] token/cache/context packet tooling — issue #11 / PR #33
-
 ## Qwen / model economics
 - [x] FH-05 Qwen specialist shadow roles — issue #29 / PR #30
 - [x] FH-06 Benchmark reconciliation + role promotion reports — issue #31 / PR #32
@@ -39,30 +29,35 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-17 Replay/simulation + crash recovery — issue #54 / PR #55
 - [x] FH-18 UI control plane — issue #56 / PR #57
 - [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
-- [ ] FH-20 V3 authority cutover + legacy shell retirement plan — readiness gate complete via issue #64 / PR #65; cutover blocked by Creator Marketplace #207
-
+- [ ] FH-20 V3 authority cutover — readiness gate issue #64 / PR #65 complete; final cutover blocked by Creator Marketplace #207 / FH-01B2
 
 ## Modules — pre-cutover preparation lane
-- [x] FH-30A Planning module contracts/read-only preparation — issue #69 / PR #70
-- [x] FH-31A Development module contracts/shadow preparation — issue #72 / PR #73
-- [x] FH-32A Testing module evidence/read-only preparation — issue #75 / PR #76
-- [x] FH-33A Security module evidence/read-only preparation — issue #78 / PR #79 — issue #78 / PR #79 active
-- [x] FH-34A Release module readiness/read-only preparation — issue #80 / PR #81
-- [x] FH-35A Operations module inventory/health/read-only preparation — issue #82
-- [x] FH-36A Incident module lifecycle/read-only preparation — issue #84
-- [x] FH-37A Project knowledge graph / engineering lineage preparation — issue #86
+- [x] FH-30A Planning — issue #69 / PR #70
+- [x] FH-31A Development — issue #72 / PR #73
+- [x] FH-32A Testing — issue #75 / PR #76
+- [x] FH-33A Security — issue #78 / PR #79
+- [x] FH-34A Release — issue #80 / PR #81
+- [x] FH-35A Operations — issue #82 / PR #83
+- [x] FH-36A Incident — issue #84 / PR #85
+- [x] FH-37A Engineering Lineage / Knowledge Graph — issue #86 / PR #87
 
-Activation lane FH-30B..FH-37B remains blocked by FH-01B2/FH-20 final authority cutover.
-
+Activation lane **FH-30B..FH-37B** remains blocked by FH-01B2/FH-20 final authority cutover.
 
 ## Pre-cutover hardening — independent of Creator Marketplace #207
 - [x] Executable data-policy/redaction/provider-egress enforcement — issue #89 / PR #90
 - [x] Executable sandbox permission evaluator — issue #91 / PR #92
 - [x] Retention/privacy lifecycle — issue #93 / PR #94
-- [ ] SQLite backup/restore/integrity hardening — issue #95
-- [ ] FH-30A..FH-37A cross-module read-only integration
-- [ ] Hardening observability + adversarial/fail-closed tests
-- [ ] Architecture dependency-boundary enforcement — issue #105
-- [ ] Roadmap/documentation drift cleanup
+- [x] SQLite backup/restore/integrity hardening — issue #95 / PR #96
+- [x] FH-30A..FH-37A cross-module read-only integration — issue #97 / PR #99
+- [x] Privacy-safe hardening observability — issue #100 / PR #101
+- [x] Adversarial/property/fail-closed test expansion — issue #102 / PR #103
+- [x] Architecture dependency-boundary enforcement — issue #105 / PR #106
+- [ ] Roadmap/state/documentation drift cleanup — issue #107
 
-Umbrella: #88. This lane must not enable V3 authority or assume final #207 behavior.
+Umbrella: #88.
+
+## Current blocker
+
+No authority-bearing migration or B-lane activation may proceed until Creator Marketplace #207 provides the final accepted reference needed by FH-01B2/FH-20.
+
+This does **not** invalidate or roll back the completed authority-neutral A-lane/hardening work.
