@@ -129,8 +129,14 @@ test('illegal and unknown transitions fail closed', () => {
   const workflow = publishWorkflow(definition);
   const states = createInitialNodeStates(workflow);
 
-  assert.throws(() => transitionNodeState(states, 'collect', 'PASSED'), /illegal workflow transition/);
-  assert.throws(() => transitionNodeState(states, 'missing', 'READY'), /unknown workflow node state/);
+  assert.throws(
+    () => transitionNodeState(states, 'collect', 'PASSED'),
+    /illegal workflow transition/,
+  );
+  assert.throws(
+    () => transitionNodeState(states, 'missing', 'READY'),
+    /unknown workflow node state/,
+  );
 });
 
 test('run snapshot binds workflow, roles, policy, bindings and provider capabilities', () => {
