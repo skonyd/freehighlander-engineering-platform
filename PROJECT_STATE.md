@@ -1,366 +1,115 @@
 # FreeHighlander — Current Project State
 
-**State status:** FH-19 COMPLETE / EVIDENCE POLICY COMPLETE / FH-01B2 BLOCKED  
-**Canonical pointer:** `.freehighlander/state.yaml`
+**State status:** PRE-CUTOVER PREPARATION COMPLETE / FH-01B2 + FH-20 CUTOVER BLOCKED  
+**Canonical pointer:** `.freehighlander/state.yaml`  
+**Architecture contract:** 1.8.0
 
-## Completed
+## Authority snapshot
+
+```text
+V2 reference = PROVISIONAL
+V2 authority promotion = BLOCKED
+V3 authority = SHADOW_ONLY
+FH-20 cutover = BLOCKED
+FH-30B..FH-37B activation = BLOCKED
+```
+
+The external blocker is `skonyd/creator-marketplace#207`. Final acceptance, merge and post-merge smoke are required before FH-01B2 can reconcile the provisional V2 port against the final accepted reference.
+
+## Completed platform foundation
 
 - FH-00 planning foundation
-- FH-01A executable TypeScript platform bootstrap
+- FH-01A TypeScript platform bootstrap
 - FH-01B1 provisional V2 compatibility port
-- FH-02 append-only telemetry event history
-- FH-03 SQLite telemetry read model
-- FH-04 read-only local observability dashboard
-- FH-05 independent Qwen/local shadow evaluation framework
-- FH-06 benchmark reconciliation and promotion-candidate reporting
-- FH-07 token/context optimization foundation
-- FH-08 provider health/quota/circuit-breaker telemetry
-- FH-11 provider adapters and binding registry
-- FH-12 logical role registry and immutable role packages
-
-FH-06 can aggregate only adjudicated real samples into quality/economics reports:
-
-- agreement
-- precision
-- confirmed / false-positive / missed findings
-- P0/P1 and P2 misses
-- malformed candidate rate inputs
-- candidate/reference latency p50/p95
-- token totals
-- cost totals
-- projected cost-saving ratio
-
-Screening outputs are limited to:
-
-```text
-INSUFFICIENT_DATA
-BLOCKED
-PROMOTION_CANDIDATE
-HUMAN_POLICY_REQUIRED
-```
-
-There is deliberately no PROMOTED state.
-
-## FH-07 completed
-
-Issue **#11** was implemented through PR **#33** and merged as:
-
-```text
-b1698795b6a2ce529a1886d02cd5181c12f217bf
-```
-
-Delivered:
-- deterministic context packet manifests and semantic reuse identity;
-- stale-context trimming that preserves gate-required evidence;
-- provider-aware token-budget preflight without guessed token counts;
-- stable prompt-prefix assembly and cache identity;
-- executable token-policy/context-profile loading and validation;
-- cache/reuse telemetry metadata and diagnostics;
-- architecture guards that prevent authority changes or required-evidence removal;
-- required-status-check naming aligned with the `main-protection` ruleset.
-
-Hard invariant remains:
-
-```text
-token/context optimization != authority reduction
-cache/reuse != correctness evidence
-```
-
-## FH-08 completed
-
-Issue **#36** is implemented through PR **#37**.
-
-Current implementation adds deterministic availability-only circuit breaking, quota/rate cooldown handling, provider health snapshots and resilience telemetry. Semantic or malformed model output never trips the availability circuit and never enables semantic fallback/model-shopping.
-
-Hard invariant:
-
-```text
-provider resilience != authority change
-semantic failure != availability failure
-```
-
-## FH-10 completed
-
-Issue **#38** / PR **#39** freezes the accepted ADR baseline into `.freehighlander/architecture.yaml`.
-
-The contract pins platform boundaries, authority, provider fallback, role/workflow versioning, evidence, telemetry, security, evaluation and migration semantics. V3 authority remains `SHADOW_ONLY` until FH-20.
-
-Architecture drift is now validated by `project:doctor` and deterministic tests.
-
-## Promotion remains human/policy controlled
-
-```text
-promotionCanApplyAutomatically() = false
-authorityGranted = false
-```
-
-No role is considered ready for promotion merely because FH-06 exists. Real benchmark samples are still
-required: NORMAL >= 50 eligible samples and HIGH >= 100, with their respective quality floors.
-
-## FH-11 completed
-
-Provider and versioned model-binding resolution is now deterministic and authority-neutral:
-
-- duplicate and unknown registrations fail closed;
-- capability, risk-tier and independence constraints are enforced before selection;
-- ordered fallback is availability-only;
-- semantic/malformed failures cannot model-shop;
-- identical binding inputs produce a stable plan hash;
-- binding configuration cannot grant authority.
-
-## FH-12 completed
-
-Logical role packages are now YAML-backed, semantically versioned and immutable by exact `id@version`.
-
-- manifest authority is bounded by registration policy;
-- model principals cannot self-grant human/system authority;
-- unknown tool/action permission defaults to DENY;
-- explicit forbidden actions win;
-- exact-version snapshots have deterministic hashes;
-- risk-tier and independence requirements are preserved.
-
-## V2 authority remains blocked
-
-```text
-REFERENCE_STATUS = PROVISIONAL
-AUTHORITY         = DISABLED
-```
-
-FH-01B2 issue **#19** still requires Creator Marketplace #207 final acceptance, merge and smoke.
-
-## FH-13 completed
-
-Issue **#45** is implemented through PR **#46**.
-
-The implementation adds:
-- immutable semantic-versioned workflow DAG publication;
-- deterministic workflow hashing;
-- explicit bounded LOOP validation;
-- fail-closed edge/duplicate/cycle validation;
-- explicit node states and legal transitions;
-- deterministic readiness and block propagation;
-- run snapshots binding workflow/role/policy/binding/provider capability identity.
-
-Authority remains unchanged and V3 remains `SHADOW_ONLY`.
-
-## FH-14 completed
-
-Issue **#47** is implemented through PR **#48**.
-
-The implementation adds bounded council rounds, strict round-zero independence, deterministic consensus/disagreement evaluation and human escalation when bounded disagreement remains unresolved.
-
-Consensus is advisory only:
-
-```text
-consensus != authority
-unresolved final-round disagreement => HUMAN_REQUIRED
-```
-
-## FH-15 completed
-
-Issue **#49** was implemented through PR **#50**.
-
-Policy evaluation is deterministic and fail-closed:
-- no match => DENY;
-- precedence: DENY > HUMAN_REQUIRED > ALLOW;
-- human requests bind exact policy/run/revision/action/risk/evidence identity;
-- only HUMAN principals may record approval/denial;
-- request mismatch/replay does not verify.
-
-## FH-16 completed
-
-Issue **#52** was implemented through PR **#53** and merged as `50ec6776e95532167567e1022f03d071dd1fdb41`.
-
-Delivered deterministic hash-bound artifact envelopes, exact semantic binding, parent lineage, tamper checks and fail-closed missing-parent/cycle verification. Lineage remains authority-neutral.
-
-## FH-17 completed
-
-Issue **#54** was implemented through PR **#55** and merged as `142cee242af367b0b4b5f94741d7b3532533b29a`.
-
-Replay/simulation now binds exact revision, workflow, snapshot, policy and artifact roots. Recovery checkpoints are tamper checked and replay-manifest bound; divergence is explicit and neither replay nor simulation grants authority.
-
-## FH-18 completed
-
-Issue **#56** was implemented through PR **#57** and merged as `722a7137930e37167ab93e7cab4d763226ee5984`.
-
-The web layer remains client-only. Management snapshots expose runs, human-required events, artifacts and model calls. Management actions remain explicit control-plane-required intents; web cannot execute them or self-approve human gates.
-
-## FH-19 completed
-
-Issue **#58** was implemented through PR **#59** and merged as `102e508288c3caa76e59008ed0cfdd425056ccdb`.
-
-Parity evidence now compares V2 and V3 shadow observations across route, gate, artifact, state, failure and outcome dimensions with exact revision/workflow/policy/artifact/input binding.
-
-Hard invariant remains:
-
-```text
-parity PASS != authority
-parity PASS != cutover
-missing evidence != parity
-```
-
-V2 remains PROVISIONAL and V3 remains SHADOW_ONLY.
-
-## Project-state tooling completed
-
-Issue **#10** was implemented through PR **#60** and merged as `b46ae26f18de50a5c6182e2147c7441c4728069f`.
-
-Resume/checkpoint tooling now validates remote branch and PR pointers, detects stale state, rejects unsafe checkpoint paths, writes explicit handoff history only on feature branches and verifies the pushed remote SHA. Checkpoints never infer semantic gate PASS.
-
-## Evidence policy completed
-
-Issue **#61** was implemented through PR **#62** and merged as `790093f17dad16344b0541e86675b7f2576b7676`.
-
-The validator now enforces required evidence IDs/kinds, exact revision binding, trusted provenance and authoritative relation verification. Summary evidence cannot substitute required raw/diff/test/relation evidence, and token budget cannot authorize removal of required evidence.
-
-Hard invariant:
-
-```text
-evidence validation != authority grant
-summary != required raw evidence
-token budget != permission to remove required evidence
-```
-
-## FH-20 cutover readiness complete
-
-Issue **#64** was implemented through PR **#65** and merged as `1193d572ff2c0323a79ea2b44eac3df2ccfaebaf`.
-
-The readiness gate requires:
-- final V2 reference status = ACCEPTED;
-- final accepted reference SHA recorded;
-- parity evidence bound to that exact SHA;
-- provisional-to-final delta reviewed;
-- parity suite PASS;
-- post-port smoke PASS;
-- explicit authority-promotion review;
-- exact human approval verification;
-- system policy ALLOW.
-
-The readiness evaluator never enables authority itself. Until all prerequisites are present:
-
-```text
-FH-20 readiness = BLOCKED
-V3 authority = SHADOW_ONLY
-```
+- FH-02 append-only telemetry
+- FH-03 SQLite state/read model
+- FH-04 read-only dashboard
+- FH-05/FH-06 Qwen shadow benchmark + reconciliation
+- FH-07 token/context optimization
+- FH-08 provider health/quota/circuit breaker
+- FH-10 architecture freeze
+- FH-11 provider adapters/bindings
+- FH-12 logical role registry/packages
+- FH-13 workflow DAG/state machine
+- FH-14 debate/council
+- FH-15 policy-as-code + human approval
+- FH-16 artifact lineage
+- FH-17 replay/recovery
+- FH-18 management UI
+- FH-19 V2/V3 shadow parity
+- FH-20 deterministic cutover-readiness evaluator
+
+FH-20 readiness evidence exists; readiness does not itself grant authority.
+
+## Completed authority-neutral SDLC A-lane
+
+| Work item | Issue / PR | Merge SHA | Contract |
+| --- | --- | --- | --- |
+| FH-30A Planning | #69 / #70 | `6136d736f1db7ca7e121c497f9a99bdc8d2894e9` | 1.1.0 |
+| FH-31A Development | #72 / #73 | `2e713fdc4cd3472aeb7d10d08121499f7c2d425e` | 1.2.0 |
+| FH-32A Testing | #75 / #76 | `2f8e04d7be3928e42312654056ac2474837bf505` | 1.3.0 |
+| FH-33A Security | #78 / #79 | `702df5a77b989b28cec87d81da5a5e53b801e2a2` | 1.4.0 |
+| FH-34A Release | #80 / #81 | `654b55a7ee0020d76d07aaf68e5623b17d710541` | 1.5.0 |
+| FH-35A Operations | #82 / #83 | `0ba195ba63c104a85b78d3b4ae43dc819459eb06` | 1.6.0 |
+| FH-36A Incident | #84 / #85 | `b4250db148537af31ce8d3812890f51f45da447f` | 1.7.0 |
+| FH-37A Engineering Lineage | #86 / #87 | `7fa533eeb92b540892375fe64fd46cf027c46c7f` | 1.8.0 |
+
+All A-lane outputs remain evidence/readiness/domain state only. They do not authorize merge, release, deployment, infrastructure mutation or automatic remediation.
+
+## Completed pre-cutover hardening
+
+- #89 / PR #90 — executable data-policy, redaction and provider-egress enforcement
+- #91 / PR #92 — executable sandbox permission evaluator
+- #93 / PR #94 — retention/privacy dry-run lifecycle
+- #95 / PR #96 — verified SQLite backup/restore/integrity
+- #97 / PR #99 — FH-30A..FH-37A cross-module read-only digital thread
+- #100 / PR #101 — privacy-safe hardening observability
+- #102 / PR #103 — deterministic adversarial/fail-closed test matrix
+- #105 / PR #106 — workspace dependency-boundary enforcement
+
+Hardening does not change authority.
+
+## What remains blocked
+
+### FH-01B2 — issue #19
+
+After Creator Marketplace #207 completes:
+1. record final accepted reference SHA;
+2. compare it with provisional reference SHA `0e70f4a9680fcc5c287b7926f2aa20170c79f47d`;
+3. port/reconcile any exact delta;
+4. rerun parity/regression;
+5. verify authority/provenance/fail-closed invariants;
+6. run post-port smoke.
+
+### FH-20 final cutover
+
+Only after FH-01B2 and the existing readiness requirements are satisfied:
+- verify final-reference-bound parity;
+- verify explicit human approval;
+- verify system policy ALLOW;
+- perform explicit authority-promotion review.
+
+### FH-30B..FH-37B
+
+Authority-bearing module activation is post-cutover only.
 
 ## Next action
 
-No further authority-bearing migration step is safe until Creator Marketplace #207 is accepted and merged. When that dependency clears: record the final accepted V2 SHA, review the provisional-to-final delta, rerun parity and smoke, verify exact human approval + system policy ALLOW, then execute FH-01B2/FH-20 cutover.
+No currently planned authority-bearing step is safe without Creator Marketplace #207.
 
+Until that external dependency clears:
+- keep V2 reference `PROVISIONAL`;
+- keep V3 authority `SHADOW_ONLY`;
+- do not activate FH-30B..FH-37B;
+- use `npm run verify` for repository integrity;
+- revalidate GitHub state before resuming any authority migration.
 
-## Pre-cutover module lane
+## Canonical sources
 
-Issue **#67** / PR **#68** split FH-30..FH-37 into authority-neutral preparation
-(A) and post-cutover activation (B). The A-lane may proceed while Creator
-Marketplace #207 blocks FH-01B2/FH-20.
-
-## FH-30A completed
-
-Issue **#69** was implemented through PR **#70** and merged as `6136d736f1db7ca7e121c497f9a99bdc8d2894e9`.
-
-The Planning bounded context is governed by ADR-0013 and architecture contract 1.1.0.
-
-Planning owns versioned engineering plans, acceptance criteria, work-item
-dependencies, blockers/readiness and exact repository/base-revision binding.
-
-Hard invariant:
-
-```text
-planning READY != execution authority
-planning READY != merge/release/deploy authority
-V3 authority remains SHADOW_ONLY
-```
-
-
-## Next authority-neutral module work
-
-With FH-30A complete, these A-lane packages remain available without Creator
-Marketplace #207:
-
-- FH-31A Development — complete via issue #72 / PR #73;
-- FH-32A Testing — complete via issue #75 / PR #76;
-- FH-33A Security — active as issue #78;
-- FH-34A Release readiness (after Development/Testing/Security inputs);
-- FH-35A Operations;
-- FH-36A Incident (after Operations contract);
-- FH-37A engineering lineage / knowledge graph.
-
-Only B-lane activation remains blocked by FH-01B2/FH-20.
-
-## FH-31A completed
-
-Issue **#72** was implemented through PR **#73** and merged as `2e713fdc4cd3472aeb7d10d08121499f7c2d425e`.
-
-The Development bounded context is governed by ADR-0014 and architecture contract
-1.2.0.
-
-Development binds implementation tasks and change candidates to exact repository
-base/head revisions, scope paths, result evidence and shadow-only execution intents.
-
-Hard invariant:
-
-```text
-development review-ready != execution authority
-development review-ready != Git mutation/merge authority
-shadow intent sideEffects = FORBIDDEN
-V3 authority remains SHADOW_ONLY
-```
-
-
-## FH-31A closeout
-
-FH-31A is complete and remains authority-neutral. Exact revision binding, path
-scope, evidence hashing and shadow-intent validation are now available to FH-32A.
-
-Next sequential module: **FH-32A Testing**. FH-33A Security, FH-35A Operations and
-FH-37A engineering lineage remain independently available in parallel.
-
-
-## FH-32A completed
-
-Issue **#75** was implemented through PR **#76** and merged as `2f8e04d7be3928e42312654056ac2474837bf505`.
-
-The Testing bounded context is governed by ADR-0015 and architecture contract
-1.3.0.
-
-Testing binds plans and results to exact repository revision and environment
-fingerprint, maps required acceptance criteria to required tests and evaluates
-digest-bound result evidence through a read-only shadow gate.
-
-Hard invariant:
-
-```text
-test PASS != merge authority
-test PASS != release/deploy authority
-test PASS != authority promotion
-V3 authority remains SHADOW_ONLY
-```
-
-
-## FH-32A closeout
-
-FH-32A is complete and remains authority-neutral. Exact revision/environment
-binding, acceptance coverage and digest-bound test evidence are now available to
-later Release readiness.
-
-Next sequential independent module: **FH-33A Security**. FH-35A Operations and
-FH-37A engineering lineage also remain available without #207.
-
-
-## FH-33A active
-
-Issue **#78** introduces the Security bounded context under ADR-0016 and
-architecture contract 1.4.0.
-
-Security binds required scanner identities/versions, repository revision and
-policy hash to trusted scan evidence. HIGH/CRITICAL open findings block readiness;
-missing trusted scanner evidence remains insufficient.
-
-Hard invariant:
-
-```text
-security CLEAR != release authority
-security finding != self-waivable
-security readiness != merge/deploy authority
-V3 authority remains SHADOW_ONLY
-```
+Precedence remains:
+1. accepted ADRs;
+2. `.freehighlander/state.yaml`;
+3. this file;
+4. active GitHub issue/PR;
+5. `docs/planning/PR-ROADMAP.md`;
+6. `BACKLOG.md`.
