@@ -46,6 +46,7 @@ const REQUIRED_CONTEXTS = [
   'security',
   'release',
   'operations',
+  'incident',
 ];
 
 export async function loadArchitectureContract(root) {
