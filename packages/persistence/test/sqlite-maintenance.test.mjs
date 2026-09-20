@@ -113,7 +113,10 @@ test('corrupt or non-FreeHighlander SQLite backups fail closed', async () => {
   try {
     await writeFile(corruptPath, 'not-a-sqlite-database', 'utf8');
 
-    assert.throws(() => inspectSqliteTelemetryFile(corruptPath), /invalid SQLite telemetry database/);
+    assert.throws(
+      () => inspectSqliteTelemetryFile(corruptPath),
+      /invalid SQLite telemetry database/,
+    );
     assert.throws(
       () => restoreSqliteTelemetryBackupToNewFile(corruptPath, restoredPath),
       /invalid SQLite telemetry database/,
