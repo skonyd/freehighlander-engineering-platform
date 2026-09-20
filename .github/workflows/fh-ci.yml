@@ -31,4 +31,7 @@ jobs:
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: npm run verify
+        run: |
+          npx prettier --write packages/operations/src/index.ts packages/operations/test/operations.test.mjs
+          git diff -- packages/operations/src/index.ts packages/operations/test/operations.test.mjs
+          exit 1
