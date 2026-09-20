@@ -35,7 +35,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-13 Workflow DAG + explicit state machine — issue #45 / PR #46
 - [x] FH-14 Debate/council + disagreement escalation — issue #47 / PR #48
 - [x] FH-15 Human approval + policy-as-code — issue #49 / PR #50
-- [ ] FH-16 Artifact lineage + hashes
+- [x] FH-16 Artifact lineage + hashes — issue #52 / PR #53
 - [ ] FH-17 Replay/simulation + crash recovery
 - [ ] FH-18 UI control plane
 - [ ] FH-19 V2/V3 shadow dual-run + parity
