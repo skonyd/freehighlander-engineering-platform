@@ -1,7 +1,7 @@
 # FH-14 — Debate/council and disagreement escalation
 
 **Issue:** #47  
-**Status:** IN PROGRESS  
+**Status:** COMPLETE  
 **Authority effect:** NONE
 
 ## Objective
