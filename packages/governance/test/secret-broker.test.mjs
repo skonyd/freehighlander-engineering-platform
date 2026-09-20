@@ -160,7 +160,10 @@ test('receipt validation binds handle target TTL and no-persistence evidence', (
     expiresAt: '2026-09-20T14:02:00.000Z',
   });
   assert.equal(invalid.valid, false);
-  assert.equal(invalid.errors.includes('secret injection receipt cannot exceed the planned ttlMs'), true);
+  assert.equal(
+    invalid.errors.includes('secret injection receipt cannot exceed the planned ttlMs'),
+    true,
+  );
 });
 
 test('secret broker contract cannot grant authority persist values or reach remote models', () => {
