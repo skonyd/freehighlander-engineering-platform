@@ -980,6 +980,37 @@ try {
   failures.push('missing deterministic build-output integrity enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const publishSafety = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'publish-safety.mjs'),
+    'utf8',
+  );
+  await fs.access(path.join(root, 'tools', 'project', 'check-publish-safety.mjs'));
+
+  for (const invariant of [
+    'must remain private=true',
+    'version must remain 0.0.0 while pre-release',
+    'must not declare publishConfig',
+    'must not invoke npm publish/pack',
+  ]) {
+    if (!publishSafety.includes(invariant)) {
+      failures.push(`publish-safety gate missing invariant: ${invariant}`);
+    }
+  }
+
+  if (
+    rootPackage.scripts?.['check:publish-safety'] !== 'node tools/project/check-publish-safety.mjs'
+  ) {
+    failures.push('root package must expose check:publish-safety');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:publish-safety')) {
+    failures.push('npm run verify must include accidental-publish enforcement');
+  }
+} catch {
+  failures.push('missing monorepo accidental-publish safety enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

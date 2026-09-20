@@ -103,7 +103,7 @@ Authority-neutral preparation is complete:
 
 FH-30B..FH-37B activation remains blocked by FH-01B2/FH-20.
 
-## Pre-cutover hardening — COMPLETE THROUGH BUILD INTEGRITY GATE
+## Pre-cutover hardening — COMPLETE THROUGH PUBLISH SAFETY GATE
 
 Independent of #207, the repository now includes:
 - executable data-policy and remote-egress enforcement;
@@ -125,7 +125,8 @@ Independent of #207, the repository now includes:
 - opaque SecretHandle + role/workflow/sandbox-gated EPHEMERAL injection planning, with persistence/remote-model egress forbidden and real backend adapters deferred;
 - deterministic npm lockfile provenance/integrity validation, rejecting non-registry sources, missing sha512 integrity and install-script-bearing external packages;
 - safe vulnerability disclosure guidance that treats normal issues in a public repository as public and prefers private vulnerability reporting/security advisories for sensitive details;
-- deterministic clean-rebuild output manifests using relative paths, sizes and SHA-256 digests, rejecting symlinked/tracked/missing/extra/changed dist artifacts.
+- deterministic clean-rebuild output manifests using relative paths, sizes and SHA-256 digests, rejecting symlinked/tracked/missing/extra/changed dist artifacts;
+- monorepo accidental-publish enforcement requiring all 19 workspaces to remain private, version 0.0.0 and free of publishConfig/publish lifecycle hooks.
 
 ## Phase 10 — Full lifecycle
 

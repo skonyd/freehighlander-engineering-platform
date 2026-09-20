@@ -76,6 +76,7 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #126 / PR #127 — deterministic npm lockfile provenance/integrity/install-script gate
 - #128 / PR #129 — safe private vulnerability reporting guidance; public issues explicitly treated as public
 - #130 / PR #131 — deterministic clean-rebuild output integrity; workspace dist manifests must match byte-for-byte
+- #132 / PR #133 — monorepo accidental-publish safety; all 19 workspaces remain private pre-release packages
 
 Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority.
 
