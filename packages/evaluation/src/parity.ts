@@ -72,7 +72,9 @@ const dimensions: readonly ParityDimension[] = [
   'outcome',
 ];
 
-export async function buildShadowParityReport(input: ShadowParityCase): Promise<ShadowParityReport> {
+export async function buildShadowParityReport(
+  input: ShadowParityCase,
+): Promise<ShadowParityReport> {
   validateCase(input);
 
   const caseHash = await sha256Hex(
@@ -99,7 +101,8 @@ export async function buildShadowParityReport(input: ShadowParityCase): Promise<
     const v3 = normalize(input.v3[dimension]);
     return {
       dimension,
-      status: v2 === null || v3 === null ? 'MISSING_EVIDENCE' : v2 === v3 ? 'MATCH' : 'MISMATCH',
+      status:
+        v2 === null || v3 === null ? 'MISSING_EVIDENCE' : v2 === v3 ? 'MATCH' : 'MISMATCH',
       v2,
       v3,
     };
@@ -180,6 +183,9 @@ function canonicalJson(value: unknown): string {
 }
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  const digest = await globalThis.crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(value),
+  );
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
