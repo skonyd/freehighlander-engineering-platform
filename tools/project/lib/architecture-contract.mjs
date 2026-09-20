@@ -41,6 +41,7 @@ const REQUIRED_CONTEXTS = [
   'persistence',
   'contracts',
   'planning',
+  'development',
 ];
 
 export async function loadArchitectureContract(root) {
