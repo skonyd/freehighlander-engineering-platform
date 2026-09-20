@@ -89,7 +89,7 @@ for (const [documentName, content, required] of [
     [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
-      'repository credential/dependency hygiene',
+      'repository hygiene',
       'tracked-secret enforcement and measured native coverage regression floors',
       'Creator Marketplace #207',
     ],
