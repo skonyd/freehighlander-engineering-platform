@@ -115,11 +115,7 @@ export function validateServiceDefinition(service: ServiceDefinition): Validatio
   requireText(service.name, 'service name', errors);
   requireText(service.environment, 'service environment', errors);
 
-  uniqueNonEmpty(
-    service.resources.map((resource) => resource.id),
-    'resource id',
-    errors,
-  );
+  uniqueNonEmpty(service.resources.map((resource) => resource.id), 'resource id', errors);
   if (service.resources.length === 0) errors.push('service requires at least one resource');
 
   for (const resource of service.resources) {
@@ -197,25 +193,17 @@ export function validateHealthSnapshot(
   );
   for (const evidence of snapshot.evidence) {
     if (!knownResources.has(evidence.resourceId)) {
-      errors.push(
-        `health evidence ${evidence.id} references unknown resource ${evidence.resourceId}`,
-      );
+      errors.push(`health evidence ${evidence.id} references unknown resource ${evidence.resourceId}`);
     }
     requireTimestamp(evidence.observedAt, `health evidence ${evidence.id} observedAt`, errors);
     requireSha256(evidence.digest, `health evidence ${evidence.id} digest`, errors);
   }
 
   for (const resource of snapshot.resources) {
-    requireTimestamp(
-      resource.observedAt,
-      `resource health ${resource.resourceId} observedAt`,
-      errors,
-    );
+    requireTimestamp(resource.observedAt, `resource health ${resource.resourceId} observedAt`, errors);
     for (const evidenceId of resource.evidenceIds) {
       if (!evidenceIds.has(evidenceId)) {
-        errors.push(
-          `resource health ${resource.resourceId} references unknown evidence ${evidenceId}`,
-        );
+        errors.push(`resource health ${resource.resourceId} references unknown evidence ${evidenceId}`);
       }
     }
     if (resource.status !== 'UNKNOWN' && resource.evidenceIds.length === 0) {
@@ -249,11 +237,7 @@ export function validateOperationalIntent(
   if (intent.authority !== 'NONE') errors.push('operational intent authority must be NONE');
 
   const knownResources = new Set(service.resources.map((resource) => resource.id));
-  const targets = uniqueNonEmpty(
-    intent.targetResourceIds,
-    'operational intent target',
-    errors,
-  );
+  const targets = uniqueNonEmpty(intent.targetResourceIds, 'operational intent target', errors);
   if (targets.size === 0) errors.push('operational intent requires at least one target');
   for (const target of targets) {
     if (!knownResources.has(target)) {
@@ -296,8 +280,7 @@ export function operationsProjection(
     degradedResources,
     unhealthyResources,
     unknownResources,
-    trustedEvidenceItems: snapshot.evidence.filter((item) => item.provenance === 'TRUSTED')
-      .length,
+    trustedEvidenceItems: snapshot.evidence.filter((item) => item.provenance === 'TRUSTED').length,
     authority: 'NONE',
     mutationAuthorized: false,
     operationalIntentExecutionAuthorized: false,
