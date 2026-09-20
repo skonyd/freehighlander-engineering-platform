@@ -290,6 +290,25 @@ try {
   failures.push('missing FH-18 management UI authority guards');
 }
 
+
+try {
+  const paritySource = await fs.readFile(
+    path.join(root, 'packages', 'evaluation', 'src', 'parity.ts'),
+    'utf8',
+  );
+  if (!paritySource.includes('export function parityCanGrantAuthority(): false')) {
+    failures.push('FH-19 parity evidence must not grant authority');
+  }
+  if (!paritySource.includes('export function parityCanCutOverV3(): false')) {
+    failures.push('FH-19 parity PASS must not cut over V3 authority');
+  }
+  if (!paritySource.includes("'INSUFFICIENT_EVIDENCE'")) {
+    failures.push('FH-19 missing evidence must not be treated as parity');
+  }
+} catch {
+  failures.push('missing FH-19 V2/V3 parity authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
