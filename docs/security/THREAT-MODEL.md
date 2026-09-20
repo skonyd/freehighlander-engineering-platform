@@ -38,7 +38,7 @@ Mitigation:
 Model/tool may expose credentials to provider/log/artifact.
 
 Mitigation:
-- secret broker/injection
+- opaque `SecretHandle` + EPHEMERAL injection contract; real backend adapters intentionally pending
 - redaction
 - data egress policy
 - default-deny tool/network access
