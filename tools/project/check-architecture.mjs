@@ -818,6 +818,52 @@ try {
   failures.push('missing deterministic tracked-secret enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const coverageBaseline = JSON.parse(
+    await fs.readFile(path.join(root, 'tools', 'project', 'coverage-baseline.json'), 'utf8'),
+  );
+  const coverageCheck = await fs.readFile(
+    path.join(root, 'tools', 'project', 'check-coverage.mjs'),
+    'utf8',
+  );
+
+  if (coverageBaseline.schemaVersion !== 1) {
+    failures.push('coverage baseline schema must remain version 1');
+  }
+  if (coverageBaseline.nodeVersion !== '24.21.0') {
+    failures.push('coverage baseline must remain bound to Node 24.21.0');
+  }
+  if (Object.keys(coverageBaseline.workspaces ?? {}).length !== 18) {
+    failures.push('coverage baseline must inventory all 18 currently tested workspaces');
+  }
+  if (
+    JSON.stringify(coverageBaseline.explicitlyUntested ?? []) !==
+    JSON.stringify(['apps/control-plane'])
+  ) {
+    failures.push('coverage baseline must explicitly inventory apps/control-plane as untested');
+  }
+  for (const invariant of [
+    '--experimental-test-coverage',
+    '--test-coverage-lines=',
+    '--test-coverage-branches=',
+    '--test-coverage-functions=',
+    'Math.floor(observed)',
+  ]) {
+    if (!coverageCheck.includes(invariant)) {
+      failures.push(`native coverage gate missing invariant: ${invariant}`);
+    }
+  }
+  if (rootPackage.scripts?.['check:coverage'] !== 'node tools/project/check-coverage.mjs') {
+    failures.push('root package must expose check:coverage');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:coverage')) {
+    failures.push('npm run verify must include native coverage enforcement');
+  }
+} catch {
+  failures.push('missing native coverage regression enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

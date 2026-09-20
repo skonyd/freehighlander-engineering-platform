@@ -32,7 +32,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_actions_v7_refresh',
+  'complete_through_native_coverage_gate',
   'pre-cutover hardening state',
 );
 
@@ -56,6 +56,7 @@ for (const [documentName, content, required] of [
       'Checkout credential isolation + bounded dependency-update hygiene — issue #111 / PR #112',
       'Deterministic tracked-secret leakage gate — issue #114 / PR #117',
       'Pinned GitHub Actions v7 current-main refresh — issue #118 / PR #119',
+      'Native Node per-workspace coverage regression gate — issue #120 / PR #121',
       'FH-30B..FH-37B',
     ],
   ],
@@ -70,6 +71,7 @@ for (const [documentName, content, required] of [
       '#111 / PR #112 — checkout credential isolation',
       '#114 / PR #117 — deterministic git-tracked secret leakage gate',
       '#118 / PR #119 — reviewed current-main refresh',
+      '#120 / PR #121 — Node 24 native per-workspace coverage regression floors',
     ],
   ],
   [
@@ -78,7 +80,7 @@ for (const [documentName, content, required] of [
     [
       'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
       'READINESS COMPLETE / CUTOVER BLOCKED',
-      'Pre-cutover hardening — COMPLETE THROUGH REPOSITORY HYGIENE',
+      'Pre-cutover hardening — COMPLETE THROUGH NATIVE COVERAGE GATE',
     ],
   ],
   [
@@ -87,8 +89,8 @@ for (const [documentName, content, required] of [
     [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
-      'repository credential/dependency hygiene',
-      'tracked-secret leakage enforcement',
+      'repository hygiene',
+      'tracked-secret enforcement and measured native coverage regression floors',
       'Creator Marketplace #207',
     ],
   ],
