@@ -1,4 +1,23 @@
 export {
+  buildDebateSnapshot,
+  createDebateSession,
+  debateConfigurationCanGrantAuthority,
+  debateConsensusCanGrantAuthority,
+  evaluateDebate,
+  publishDebate,
+  recordDebateOpinion,
+  validateDebateDefinition,
+  type DebateDefinition,
+  type DebateOpinion,
+  type DebateOutcome,
+  type DebateOutcomeStatus,
+  type DebateParticipant,
+  type DebateSession,
+  type DebateSnapshot,
+  type PublishedDebate,
+} from './debate-engine.js';
+
+export {
   buildRunSnapshot,
   createInitialNodeStates,
   propagateWorkflowStates,
