@@ -132,10 +132,7 @@ test('PASS is read-only evidence and grants no authority', async () => {
 test('required failure produces FAIL without merge or release authority', () => {
   const failed = {
     ...run,
-    results: [
-      { ...run.results[0], status: 'FAIL' },
-      run.results[1],
-    ],
+    results: [{ ...run.results[0], status: 'FAIL' }, run.results[1]],
   };
 
   const evaluation = evaluateShadowTestGate(plan, failed);
@@ -151,10 +148,7 @@ test('missing or skipped required result is insufficient evidence', () => {
   };
   const skipped = {
     ...run,
-    results: [
-      run.results[0],
-      { ...run.results[1], status: 'SKIPPED', evidence: [] },
-    ],
+    results: [run.results[0], { ...run.results[1], status: 'SKIPPED', evidence: [] }],
   };
 
   assert.equal(evaluateShadowTestGate(plan, missing).status, 'INSUFFICIENT_EVIDENCE');
@@ -164,10 +158,7 @@ test('missing or skipped required result is insufficient evidence', () => {
 test('non-skipped results require digest-bound evidence', () => {
   const result = validateTestRun(plan, {
     ...run,
-    results: [
-      { ...run.results[0], evidence: [] },
-      run.results[1],
-    ],
+    results: [{ ...run.results[0], evidence: [] }, run.results[1]],
   });
 
   assert.equal(result.valid, false);
