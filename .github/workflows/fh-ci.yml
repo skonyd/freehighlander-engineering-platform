@@ -30,5 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: FreeHighlander CI / verify
+        run: |
+          npx prettier --write packages/evaluation/src/parity.ts packages/evaluation/test/parity.test.mjs
+          git diff -- packages/evaluation/src/parity.ts packages/evaluation/test/parity.test.mjs
+          exit 1
