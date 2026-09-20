@@ -93,7 +93,7 @@ export async function verifyArtifactEnvelope(
     parentArtifactHashes: artifact.parentArtifactHashes,
   });
 
-  return rebuilt.contentHash === artifact.contentHash && rebuilt.artifactHash === artifact.artifactHash;
+  return (\n    rebuilt.contentHash === artifact.contentHash &&\n    rebuilt.artifactHash === artifact.artifactHash\n  );
 }
 
 export function verifyArtifactLineage(
@@ -156,13 +156,13 @@ function validateBinding(binding: ArtifactLineageBinding): void {
 function assertUniqueParents(parents: readonly string[]): void {
   const seen = new Set<string>();
   for (const parent of parents) {
-    if (seen.has(parent)) throw new Error(`duplicate parent artifact hash: ${parent}`);
+    if (seen.has(parent)) {\n      throw new Error(`duplicate parent artifact hash: ${parent}`);\n    }
     seen.add(parent);
   }
 }
 
 function requireHash(value: string, name: string): void {
-  if (!/^[a-f0-9]{64}$/.test(value)) throw new Error(`${name} must be a SHA-256 hex hash`);
+  if (!/^[a-f0-9]{64}$/.test(value)) {\n    throw new Error(`${name} must be a SHA-256 hex hash`);\n  }
 }
 
 function requireText(value: string, name: string): void {
