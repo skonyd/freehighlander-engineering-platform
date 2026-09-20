@@ -148,11 +148,9 @@ test('duplicate requirements and candidates fail closed', () => {
 test('summary substitution cannot be enabled by policy input', () => {
   assert.throws(
     () =>
-      validateEvidencePolicy(
-        { ...policy, allowSummarySubstitution: true },
-        candidates,
-        { exactRevision: 'abc' },
-      ),
+      validateEvidencePolicy({ ...policy, allowSummarySubstitution: true }, candidates, {
+        exactRevision: 'abc',
+      }),
     /summary substitution must remain disabled/,
   );
 });
