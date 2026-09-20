@@ -91,10 +91,7 @@ export function createDebateSession(debate: PublishedDebate): DebateSession {
   return { debate, opinions: [] };
 }
 
-export function recordDebateOpinion(
-  session: DebateSession,
-  opinion: DebateOpinion,
-): DebateSession {
+export function recordDebateOpinion(session: DebateSession, opinion: DebateOpinion): DebateSession {
   const participant = session.debate.definition.participants.find(
     (candidate) => candidate.id === opinion.participantId,
   );
@@ -118,12 +115,13 @@ export function recordDebateOpinion(
         existing.participantId === opinion.participantId && existing.round === opinion.round,
     )
   ) {
-    throw new Error(
-      `duplicate debate opinion: ${opinion.participantId} round ${opinion.round}`,
-    );
+    throw new Error(`duplicate debate opinion: ${opinion.participantId} round ${opinion.round}`);
   }
 
-  const highestRound = session.opinions.reduce((max, existing) => Math.max(max, existing.round), -1);
+  const highestRound = session.opinions.reduce(
+    (max, existing) => Math.max(max, existing.round),
+    -1,
+  );
   if (opinion.round > highestRound + 1) {
     throw new Error('debate rounds cannot be skipped');
   }
