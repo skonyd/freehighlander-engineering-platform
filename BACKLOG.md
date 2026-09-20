@@ -52,7 +52,7 @@ Activation lane **FH-30B..FH-37B** remains blocked by FH-01B2/FH-20 final author
 - [x] Privacy-safe hardening observability — issue #100 / PR #101
 - [x] Adversarial/property/fail-closed test expansion — issue #102 / PR #103
 - [x] Architecture dependency-boundary enforcement — issue #105 / PR #106
-- [ ] Roadmap/state/documentation drift cleanup — issue #107
+- [ ] Roadmap/state/documentation drift cleanup — issue #107 / PR #108
 
 Umbrella: #88.
 
