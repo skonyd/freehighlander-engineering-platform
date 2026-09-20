@@ -139,9 +139,7 @@ export function evaluatePolicy(policy: PublishedPolicy, input: PolicyInput): Pol
   };
 }
 
-export function createHumanApprovalRequest(
-  input: HumanApprovalRequestInput,
-): HumanApprovalRequest {
+export function createHumanApprovalRequest(input: HumanApprovalRequestInput): HumanApprovalRequest {
   if (input.policyDecision.effect !== 'HUMAN_REQUIRED') {
     throw new Error('human approval request requires HUMAN_REQUIRED policy decision');
   }
@@ -222,10 +220,7 @@ function ruleMatches(rule: PolicyRule, input: PolicyInput): boolean {
   if (!rule.actions.includes(input.action)) return false;
   if (rule.riskTiers && !rule.riskTiers.includes(input.riskTier)) return false;
   if (rule.principalKinds && !rule.principalKinds.includes(input.principalKind)) return false;
-  if (
-    rule.dataClassifications &&
-    !rule.dataClassifications.includes(input.dataClassification)
-  ) {
+  if (rule.dataClassifications && !rule.dataClassifications.includes(input.dataClassification)) {
     return false;
   }
   return true;
