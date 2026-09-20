@@ -4,6 +4,18 @@
   "method": "node --test --experimental-test-coverage --test-coverage-include=dist/**/*.js",
   "measuredAt": "2026-09-20",
   "workspaces": {
+    "apps/control-plane": {
+      "observed": {
+        "lines": 100,
+        "branches": 100,
+        "functions": 100
+      },
+      "minimum": {
+        "lines": 100,
+        "branches": 100,
+        "functions": 100
+      }
+    },
     "apps/web": {
       "observed": {
         "lines": 89.29,
@@ -221,5 +233,5 @@
       }
     }
   },
-  "explicitlyUntested": ["apps/control-plane"]
+  "explicitlyUntested": []
 }
