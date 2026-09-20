@@ -5,10 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const failures = [];
 
-const workflow = await fs.readFile(
-  path.join(root, '.github', 'workflows', 'fh-ci.yml'),
-  'utf8',
-);
+const workflow = await fs.readFile(path.join(root, '.github', 'workflows', 'fh-ci.yml'), 'utf8');
 const packageJson = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
 const lockfile = JSON.parse(await fs.readFile(path.join(root, 'package-lock.json'), 'utf8'));
 
