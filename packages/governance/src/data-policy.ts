@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 
-export type DataClassification = 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'SECRET';
+import type { DataClassification } from './policy-engine.js';
 export type RetentionClass = 'EPHEMERAL' | 'SHORT' | 'PROJECT' | 'AUDIT';
 export type RemoteAllowance = true | false | 'policy' | 'approved_bindings_only';
 
