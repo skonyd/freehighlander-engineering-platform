@@ -75,10 +75,7 @@ test('expired SHORT data becomes purge candidate only', () => {
 test('AUDIT and audit-referenced data stay protected', () => {
   const plan = buildRetentionPlan(records, now);
   assert.equal(plan.decisions.find((item) => item.id === 'audit-old')?.action, 'KEEP');
-  assert.equal(
-    plan.decisions.find((item) => item.id === 'audit-protected-short')?.action,
-    'KEEP',
-  );
+  assert.equal(plan.decisions.find((item) => item.id === 'audit-protected-short')?.action, 'KEEP');
 });
 
 test('active PROJECT data remains retained even after a deadline', () => {
