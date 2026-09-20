@@ -48,12 +48,20 @@ export function evaluateV3CutoverReadiness(
     reasons.push('parity reference SHA must match final accepted V2 reference SHA');
   }
 
-  if (!input.deltaReviewed) reasons.push('provisional-to-final reference delta must be reviewed');
-  if (!input.paritySuitePassed) reasons.push('parity suite must pass against final accepted reference');
+  if (!input.deltaReviewed) {
+    reasons.push('provisional-to-final reference delta must be reviewed');
+  }
+  if (!input.paritySuitePassed) {
+    reasons.push('parity suite must pass against final accepted reference');
+  }
   if (input.parityStatus !== 'PASS') reasons.push('V2/V3 parity status must be PASS');
   if (!input.postPortSmokePassed) reasons.push('post-port smoke must pass');
-  if (!input.authorityPromotionReviewed) reasons.push('authority promotion must be explicitly reviewed');
-  if (!input.humanApprovalVerified) reasons.push('exact human approval must be verified');
+  if (!input.authorityPromotionReviewed) {
+    reasons.push('authority promotion must be explicitly reviewed');
+  }
+  if (!input.humanApprovalVerified) {
+    reasons.push('exact human approval must be verified');
+  }
   if (input.policyDecision !== 'ALLOW') reasons.push('system policy decision must be ALLOW');
 
   return {
