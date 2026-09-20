@@ -62,10 +62,22 @@ test('branch, remote and PR mismatches are stale and fail closed', () => {
   });
 
   assert.equal(result.canonical, false);
-  assert.equal(result.errors.some((entry) => entry.includes('local branch')), true);
-  assert.equal(result.errors.some((entry) => entry.includes('local HEAD')), true);
-  assert.equal(result.errors.some((entry) => entry.includes('not open')), true);
-  assert.equal(result.errors.some((entry) => entry.includes('head branch mismatch')), true);
+  assert.equal(
+    result.errors.some((entry) => entry.includes('local branch')),
+    true,
+  );
+  assert.equal(
+    result.errors.some((entry) => entry.includes('local HEAD')),
+    true,
+  );
+  assert.equal(
+    result.errors.some((entry) => entry.includes('not open')),
+    true,
+  );
+  assert.equal(
+    result.errors.some((entry) => entry.includes('head branch mismatch')),
+    true,
+  );
 });
 
 test('external dependency head drift is visible without fabricating gate failure', () => {
