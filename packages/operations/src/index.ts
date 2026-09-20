@@ -1,21 +1,10 @@
 export type ServiceCriticality = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type ResourceKind =
-  | 'SERVICE'
-  | 'DATABASE'
-  | 'QUEUE'
-  | 'CACHE'
-  | 'STORAGE'
-  | 'CLUSTER'
-  | 'EXTERNAL';
+  'SERVICE' | 'DATABASE' | 'QUEUE' | 'CACHE' | 'STORAGE' | 'CLUSTER' | 'EXTERNAL';
 export type HealthStatus = 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' | 'UNKNOWN';
 export type HealthEvidenceProvenance = 'TRUSTED' | 'UNTRUSTED';
 export type OperationalIntentKind =
-  | 'RESTART'
-  | 'SCALE'
-  | 'DEPLOY'
-  | 'ROLLBACK'
-  | 'CONFIGURE'
-  | 'DIAGNOSE';
+  'RESTART' | 'SCALE' | 'DEPLOY' | 'ROLLBACK' | 'CONFIGURE' | 'DIAGNOSE';
 
 export interface ResourceIdentity {
   readonly id: string;
@@ -115,7 +104,11 @@ export function validateServiceDefinition(service: ServiceDefinition): Validatio
   requireText(service.name, 'service name', errors);
   requireText(service.environment, 'service environment', errors);
 
-  uniqueNonEmpty(service.resources.map((resource) => resource.id), 'resource id', errors);
+  uniqueNonEmpty(
+    service.resources.map((resource) => resource.id),
+    'resource id',
+    errors,
+  );
   if (service.resources.length === 0) errors.push('service requires at least one resource');
 
   for (const resource of service.resources) {
@@ -193,17 +186,25 @@ export function validateHealthSnapshot(
   );
   for (const evidence of snapshot.evidence) {
     if (!knownResources.has(evidence.resourceId)) {
-      errors.push(`health evidence ${evidence.id} references unknown resource ${evidence.resourceId}`);
+      errors.push(
+        `health evidence ${evidence.id} references unknown resource ${evidence.resourceId}`,
+      );
     }
     requireTimestamp(evidence.observedAt, `health evidence ${evidence.id} observedAt`, errors);
     requireSha256(evidence.digest, `health evidence ${evidence.id} digest`, errors);
   }
 
   for (const resource of snapshot.resources) {
-    requireTimestamp(resource.observedAt, `resource health ${resource.resourceId} observedAt`, errors);
+    requireTimestamp(
+      resource.observedAt,
+      `resource health ${resource.resourceId} observedAt`,
+      errors,
+    );
     for (const evidenceId of resource.evidenceIds) {
       if (!evidenceIds.has(evidenceId)) {
-        errors.push(`resource health ${resource.resourceId} references unknown evidence ${evidenceId}`);
+        errors.push(
+          `resource health ${resource.resourceId} references unknown evidence ${evidenceId}`,
+        );
       }
     }
     if (resource.status !== 'UNKNOWN' && resource.evidenceIds.length === 0) {
@@ -313,11 +314,7 @@ export function operationsCanExecuteIntent(): false {
   return false;
 }
 
-function uniqueNonEmpty(
-  values: readonly string[],
-  kind: string,
-  errors: string[],
-): Set<string> {
+function uniqueNonEmpty(values: readonly string[], kind: string, errors: string[]): Set<string> {
   const seen = new Set<string>();
   for (const value of values) {
     if (!value.trim()) {
@@ -357,9 +354,6 @@ function canonicalJson(value: unknown): string {
 }
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await globalThis.crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(value),
-  );
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
