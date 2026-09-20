@@ -651,6 +651,35 @@ try {
   failures.push('missing SQLite backup/restore/integrity hardening');
 }
 
+try {
+  const digitalThreadIntegration = await fs.readFile(
+    path.join(root, 'tools', 'project', 'test', 'digital-thread-integration.test.mjs'),
+    'utf8',
+  );
+  for (const packageName of [
+    '@freehighlander/planning',
+    '@freehighlander/development',
+    '@freehighlander/testing',
+    '@freehighlander/security',
+    '@freehighlander/release',
+    '@freehighlander/operations',
+    '@freehighlander/incident',
+    '@freehighlander/lineage',
+  ]) {
+    if (!digitalThreadIntegration.includes(packageName)) {
+      failures.push(`digital-thread integration must cover ${packageName}`);
+    }
+  }
+  if (!digitalThreadIntegration.includes('cross-module revision mismatches fail closed')) {
+    failures.push('digital-thread integration must fail closed on revision mismatch');
+  }
+  if (!digitalThreadIntegration.includes("snapshot.authority, 'NONE'")) {
+    failures.push('digital-thread integration must assert authority NONE across module snapshots');
+  }
+} catch {
+  failures.push('missing FH-30A..FH-37A cross-module digital-thread integration suite');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
