@@ -410,10 +410,7 @@ test('lineage mutation matrix rejects missing endpoints, untrusted evidence and 
 test('lineage traversal rejects depth abuse and unknown start nodes', () => {
   const graph = validLineageGraph();
 
-  assert.throws(
-    () => traverseLineage(graph, { id: 'requirement-1', version: 1 }, 11),
-    /maxDepth/,
-  );
+  assert.throws(() => traverseLineage(graph, { id: 'requirement-1', version: 1 }, 11), /maxDepth/);
   assert.throws(
     () => traverseLineage(graph, { id: 'missing', version: 1 }, 1),
     /unknown lineage start entity/,
