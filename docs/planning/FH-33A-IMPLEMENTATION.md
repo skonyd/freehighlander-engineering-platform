@@ -1,6 +1,7 @@
 # FH-33A — Security module pre-cutover implementation
 
 **Issue:** #78  
+**PR:** #79  
 **Status:** IN PROGRESS  
 **Architecture contract:** 1.4.0  
 **Authority effect:** NONE
