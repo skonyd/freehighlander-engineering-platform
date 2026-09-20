@@ -59,10 +59,7 @@ test('invalid participants and unbounded rounds fail closed', () => {
         id: 'duplicate',
         version: '1.0.0',
         maxRounds: 1,
-        participants: [
-          debate.definition.participants[0],
-          debate.definition.participants[0],
-        ],
+        participants: [debate.definition.participants[0], debate.definition.participants[0]],
       }),
     /duplicate debate participant/,
   );
