@@ -733,7 +733,6 @@ try {
   failures.push('missing deterministic adversarial fail-closed hardening suite');
 }
 
-
 try {
   const dependencyChecker = await fs.readFile(
     path.join(root, 'tools', 'project', 'lib', 'dependency-boundaries.mjs'),
