@@ -43,7 +43,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 
 
 ## Modules — pre-cutover preparation lane
-- [ ] FH-30A Planning module contracts/read-only preparation — issue #69 active
+- [x] FH-30A Planning module contracts/read-only preparation — issue #69 / PR #70
 - [ ] FH-31A Development module contracts/shadow preparation
 - [ ] FH-32A Testing module evidence/read-only preparation
 - [ ] FH-33A Security module evidence/read-only preparation

@@ -254,10 +254,11 @@ Issue **#67** / PR **#68** split FH-30..FH-37 into authority-neutral preparation
 (A) and post-cutover activation (B). The A-lane may proceed while Creator
 Marketplace #207 blocks FH-01B2/FH-20.
 
-## FH-30A active
+## FH-30A completed
 
-Issue **#69** introduces the Planning bounded context under ADR-0013 and
-architecture contract 1.1.0.
+Issue **#69** was implemented through PR **#70** and merged as `6136d736f1db7ca7e121c497f9a99bdc8d2894e9`.
+
+The Planning bounded context is governed by ADR-0013 and architecture contract 1.1.0.
 
 Planning owns versioned engineering plans, acceptance criteria, work-item
 dependencies, blockers/readiness and exact repository/base-revision binding.
@@ -269,3 +270,19 @@ planning READY != execution authority
 planning READY != merge/release/deploy authority
 V3 authority remains SHADOW_ONLY
 ```
+
+
+## Next authority-neutral module work
+
+With FH-30A complete, these A-lane packages remain available without Creator
+Marketplace #207:
+
+- FH-31A Development;
+- FH-32A Testing (after Development contracts);
+- FH-33A Security;
+- FH-34A Release readiness (after Development/Testing/Security inputs);
+- FH-35A Operations;
+- FH-36A Incident (after Operations contract);
+- FH-37A engineering lineage / knowledge graph.
+
+Only B-lane activation remains blocked by FH-01B2/FH-20.
