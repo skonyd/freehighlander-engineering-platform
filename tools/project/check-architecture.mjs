@@ -210,7 +210,6 @@ try {
   failures.push('missing FH-14 debate/council authority guards');
 }
 
-
 try {
   const policyEngineSource = await fs.readFile(
     path.join(root, 'packages', 'governance', 'src', 'policy-engine.ts'),
@@ -222,7 +221,11 @@ try {
   if (!policyEngineSource.includes('export function modelCanActAsHumanApprover(): false')) {
     failures.push('FH-15 model principals must not act as human approvers');
   }
-  if (!policyEngineSource.includes("throw new Error('human approval decision requires HUMAN principal')")) {
+  if (
+    !policyEngineSource.includes(
+      "throw new Error('human approval decision requires HUMAN principal')",
+    )
+  ) {
     failures.push('FH-15 human approval must require a HUMAN principal');
   }
 } catch {
