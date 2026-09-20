@@ -578,6 +578,34 @@ try {
   failures.push('missing executable data-policy enforcement');
 }
 
+try {
+  const sandboxPolicySource = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'sandbox-policy.ts'),
+    'utf8',
+  );
+  if (!sandboxPolicySource.includes('export function sandboxPolicyCanGrantAuthority(): false')) {
+    failures.push('sandbox policy enforcement must remain authority-neutral');
+  }
+  if (!sandboxPolicySource.includes('export function promptCanExpandSandboxPermissions(): false')) {
+    failures.push('prompt text must not expand sandbox permissions');
+  }
+  if (
+    !sandboxPolicySource.includes(
+      'export function modelIdentityCanExpandSandboxPermissions(): false',
+    )
+  ) {
+    failures.push('model identity must not expand sandbox permissions');
+  }
+  if (!sandboxPolicySource.includes("request.capability === 'UNKNOWN'")) {
+    failures.push('unknown sandbox capability must fail closed');
+  }
+  if (!sandboxPolicySource.includes('isWithinRepository')) {
+    failures.push('sandbox filesystem access must enforce repository boundary');
+  }
+} catch {
+  failures.push('missing executable sandbox-policy enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

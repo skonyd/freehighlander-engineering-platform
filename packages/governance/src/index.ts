@@ -1,4 +1,18 @@
 export {
+  evaluateSandboxPermission,
+  isWithinRepository,
+  modelIdentityCanExpandSandboxPermissions,
+  parseSandboxPolicyYaml,
+  promptCanExpandSandboxPermissions,
+  sandboxPolicyCanGrantAuthority,
+  validateSandboxPolicy,
+  type SandboxCapability,
+  type SandboxPermissionDecision,
+  type SandboxPermissionRequest,
+  type SandboxPolicy,
+} from './sandbox-policy.js';
+
+export {
   dataPolicyCanAllowSecretRemoteEgress,
   dataPolicyCanGrantAuthority,
   evaluateProviderEgress,
