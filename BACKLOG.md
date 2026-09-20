@@ -19,7 +19,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [ ] Evidence policy validator
 - [x] Provider token-count capability contract/preflight — FH-07 / PR #33
 - [x] Token-budget diagnostics — FH-07 / PR #33
-- [ ] canonical project checkpoint / remote reconciliation — issue #10
+- [ ] canonical project checkpoint / remote reconciliation — issue #10 (active)
 - [x] token/cache/context packet tooling — issue #11 / PR #33
 
 ## Qwen / model economics
@@ -38,5 +38,5 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-16 Artifact lineage + hashes — issue #52 / PR #53
 - [x] FH-17 Replay/simulation + crash recovery — issue #54 / PR #55
 - [x] FH-18 UI control plane — issue #56 / PR #57
-- [ ] FH-19 V2/V3 shadow dual-run + parity — issue #58
+- [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
 - [ ] FH-20 V3 authority cutover + legacy shell retirement plan
