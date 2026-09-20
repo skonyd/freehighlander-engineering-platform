@@ -251,6 +251,25 @@ try {
   failures.push('missing FH-16 artifact-lineage authority guards');
 }
 
+
+try {
+  const replaySource = await fs.readFile(
+    path.join(root, 'packages', 'orchestration', 'src', 'replay-engine.ts'),
+    'utf8',
+  );
+  if (!replaySource.includes('export function replayOrSimulationCanGrantAuthority')) {
+    failures.push('FH-17 replay/simulation authority guard is missing');
+  }
+  if (!replaySource.includes('checkpoint replay manifest mismatch')) {
+    failures.push('FH-17 recovery checkpoint must be replay-manifest bound');
+  }
+  if (!replaySource.includes('divergent: observedInputHash !== outcome.inputHash')) {
+    failures.push('FH-17 replay divergence must be explicit');
+  }
+} catch {
+  failures.push('missing FH-17 replay/recovery authority guards');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
