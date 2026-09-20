@@ -30,5 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Diagnose sandbox formatting
+        run: |
+          npx prettier --write packages/governance/src/sandbox-policy.ts tools/project/check-architecture.mjs
+          git diff -- packages/governance/src/sandbox-policy.ts tools/project/check-architecture.mjs
+          exit 1
