@@ -2,16 +2,16 @@
 
 **Status:** FROZEN BASELINE  
 **Machine-readable source:** `.freehighlander/architecture.yaml`  
-**Contract version:** 1.0.0  
+**Contract version:** 1.1.0  
 **Freeze phase:** FH-10
 
 ## Purpose
 
-This document freezes the accepted architecture direction from ADR-0001 through ADR-0012 before V3 implementation expands into provider bindings, role registry, workflow state machine, governance and artifact lineage.
+This document records the accepted architecture direction from ADR-0001 through ADR-0013. Version 1.1.0 adds the Planning module as the first authority-neutral module bounded context while preserving all V3 foundation authority constraints.
 
 The machine-readable contract is normative for automated drift checks. Existing ADRs remain the decision rationale.
 
-## Frozen surfaces
+## Contract surfaces
 
 ### Product and boundaries
 
@@ -76,6 +76,21 @@ Provider health is operational state, not semantic quality.
 - no automatic authority promotion;
 - required evidence is not truncated to satisfy budget;
 - no semantic model-shopping after verdict.
+
+### Module bounded contexts
+
+ADR-0013 permits coherent module packages to be introduced incrementally before
+final authority cutover, provided they remain authority-neutral.
+
+Version 1.1.0 adds:
+
+```text
+packages/planning
+```
+
+Planning readiness is domain state only. It cannot authorize execution, merge,
+release, deployment or policy bypass. Later module packages follow the same
+coherent-boundary rule and require normal contract evolution.
 
 ### Migration
 

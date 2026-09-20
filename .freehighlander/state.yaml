@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T13:36:00+03:00"
+updated_at: "2026-09-20T13:43:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-19
-  name: v2-v3-shadow-parity
-  status: complete
+  id: FH-30A
+  name: planning-module-precutover
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: docs/precutover-module-lane
-  pull_request: 68
-  issue: 67
-  objective: unblock FH-30A..FH-37A authority-neutral preparation while FH-20 cutover remains blocked
-  next_action: establish the pre-cutover module lane, then start FH-30A and continue through independent A-lane modules
+  branch: feat/fh-30a-planning
+  pull_request: 70
+  issue: 69
+  objective: implement authority-neutral Planning bounded context
+  next_action: verify Planning contracts, dependency DAG and authority guards through protected-main CI
 
 fh01a:
   issue: 15
@@ -226,7 +226,9 @@ fh20:
 
 module_preparation_lane:
   issue: 67
-  status: in_progress
+  pull_request: 68
+  status: complete
+  merge_sha: 262173216860ea30a63324d7e5f962db3cf6abbe
   authority_effect: none
   activation_blocked_by: FH-01B2/FH-20
   planned:
@@ -238,6 +240,16 @@ module_preparation_lane:
     - FH-35A
     - FH-36A
     - FH-37A
+
+fh30a:
+  issue: 69
+  pull_request: 70
+  status: in_progress
+  branch: feat/fh-30a-planning
+  authority_effect: none
+  execution_authority: none
+  architecture_contract: 1.1.0
+  adr: ADR-0013
 
 external_dependency:
   repository: skonyd/creator-marketplace

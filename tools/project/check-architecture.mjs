@@ -17,6 +17,7 @@ const expectedPackages = new Map([
   ['packages/contracts', '@freehighlander/contracts'],
   ['packages/v2-compat', '@freehighlander/v2-compat'],
   ['packages/evaluation', '@freehighlander/evaluation'],
+  ['packages/planning', '@freehighlander/planning'],
 ]);
 
 const failures = [];
@@ -350,6 +351,24 @@ try {
   }
 } catch {
   failures.push('missing FH-20 cutover readiness guards');
+}
+
+try {
+  const planningSource = await fs.readFile(
+    path.join(root, 'packages', 'planning', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!planningSource.includes('export function planningCanGrantAuthority(): false')) {
+    failures.push('FH-30A planning must remain authority-neutral');
+  }
+  if (!planningSource.includes('export function planningCanAuthorizeExecution(): false')) {
+    failures.push('FH-30A planning readiness must not authorize execution');
+  }
+  if (!planningSource.includes("errors.push('work item dependency graph must be acyclic')")) {
+    failures.push('FH-30A planning dependency graph must fail closed on cycles');
+  }
+} catch {
+  failures.push('missing FH-30A planning authority guards');
 }
 
 if (failures.length > 0) {
