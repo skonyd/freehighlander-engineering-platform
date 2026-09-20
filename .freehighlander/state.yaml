@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T19:06:00+03:00"
+updated_at: "2026-09-20T19:12:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -332,7 +332,7 @@ fh37a:
 
 pre_cutover_hardening:
   umbrella_issue: 88
-  status: complete_through_build_integrity_gate
+  status: complete_through_publish_safety_gate
   authority_effect: none
   completed:
     - issue: 89
@@ -392,6 +392,9 @@ pre_cutover_hardening:
     - issue: 130
       pull_request: 131
       area: deterministic-build-output-integrity
+    - issue: 132
+      pull_request: 133
+      area: monorepo-accidental-publish-safety
 
 external_dependency:
   repository: skonyd/creator-marketplace
