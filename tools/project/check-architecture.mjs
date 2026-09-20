@@ -834,14 +834,11 @@ try {
   if (coverageBaseline.nodeVersion !== '24.21.0') {
     failures.push('coverage baseline must remain bound to Node 24.21.0');
   }
-  if (Object.keys(coverageBaseline.workspaces ?? {}).length !== 18) {
-    failures.push('coverage baseline must inventory all 18 currently tested workspaces');
+  if (Object.keys(coverageBaseline.workspaces ?? {}).length !== 19) {
+    failures.push('coverage baseline must inventory all 19 workspaces');
   }
-  if (
-    JSON.stringify(coverageBaseline.explicitlyUntested ?? []) !==
-    JSON.stringify(['apps/control-plane'])
-  ) {
-    failures.push('coverage baseline must explicitly inventory apps/control-plane as untested');
+  if ((coverageBaseline.explicitlyUntested ?? []).length !== 0) {
+    failures.push('coverage baseline must not contain explicitly untested workspaces');
   }
   for (const invariant of [
     '--experimental-test-coverage',
