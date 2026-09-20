@@ -18,9 +18,10 @@ test('repository V3 architecture contract validates and hashes deterministically
 
   assert.match(first, /^[a-f0-9]{64}$/);
   assert.equal(first, second);
-  assert.equal(contract.contract_version, '1.1.0');
+  assert.equal(contract.contract_version, '1.2.0');
   assert.equal(contract.status, 'FROZEN_BASELINE');
   assert.equal(contract.bounded_contexts.packages.includes('planning'), true);
+  assert.equal(contract.bounded_contexts.packages.includes('development'), true);
   assert.equal(contract.migration.v3_authority, 'SHADOW_ONLY');
 });
 
@@ -45,7 +46,7 @@ test('architecture freeze rejects permissive unknown tool permissions', async ()
   assert.throws(() => assertArchitectureContract(contract), /unknown tool permission must be DENY/);
 });
 
-test('architecture freeze rejects missing accepted ADRs, Planning context and unbounded loops', async () => {
+test('architecture freeze rejects missing accepted ADRs, module contexts and unbounded loops', async () => {
   const missingAdr = structuredClone(await loadArchitectureContract(root));
   missingAdr.accepted_adrs.pop();
   assert.throws(() => assertArchitectureContract(missingAdr), /accepted ADRs/);
@@ -55,6 +56,11 @@ test('architecture freeze rejects missing accepted ADRs, Planning context and un
     (entry) => entry !== 'planning',
   );
   assert.throws(() => assertArchitectureContract(missingPlanning), /bounded contexts/);
+
+  const missingDevelopment = structuredClone(await loadArchitectureContract(root));
+  missingDevelopment.bounded_contexts.packages =
+    missingDevelopment.bounded_contexts.packages.filter((entry) => entry !== 'development');
+  assert.throws(() => assertArchitectureContract(missingDevelopment), /bounded contexts/);
 
   const unbounded = structuredClone(await loadArchitectureContract(root));
   unbounded.workflows.loops_must_be_bounded = false;

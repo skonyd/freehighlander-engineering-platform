@@ -18,6 +18,7 @@ const expectedPackages = new Map([
   ['packages/v2-compat', '@freehighlander/v2-compat'],
   ['packages/evaluation', '@freehighlander/evaluation'],
   ['packages/planning', '@freehighlander/planning'],
+  ['packages/development', '@freehighlander/development'],
 ]);
 
 const failures = [];
@@ -369,6 +370,30 @@ try {
   }
 } catch {
   failures.push('missing FH-30A planning authority guards');
+}
+
+try {
+  const developmentSource = await fs.readFile(
+    path.join(root, 'packages', 'development', 'src', 'index.ts'),
+    'utf8',
+  );
+  if (!developmentSource.includes('export function developmentCanGrantAuthority(): false')) {
+    failures.push('FH-31A development must remain authority-neutral');
+  }
+  if (!developmentSource.includes('export function developmentCanExecuteCommands(): false')) {
+    failures.push('FH-31A development must not execute commands pre-cutover');
+  }
+  if (!developmentSource.includes('export function developmentCanMutateGit(): false')) {
+    failures.push('FH-31A development must not mutate Git pre-cutover');
+  }
+  if (!developmentSource.includes('export function developmentCanMergePullRequests(): false')) {
+    failures.push('FH-31A development must not merge pull requests pre-cutover');
+  }
+  if (!developmentSource.includes("readonly sideEffects: 'FORBIDDEN'")) {
+    failures.push('FH-31A shadow intents must forbid side effects');
+  }
+} catch {
+  failures.push('missing FH-31A development authority guards');
 }
 
 if (failures.length > 0) {
