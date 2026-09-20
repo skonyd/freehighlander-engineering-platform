@@ -578,7 +578,6 @@ try {
   failures.push('missing executable data-policy enforcement');
 }
 
-
 try {
   const sandboxPolicySource = await fs.readFile(
     path.join(root, 'packages', 'governance', 'src', 'sandbox-policy.ts'),
@@ -587,11 +586,7 @@ try {
   if (!sandboxPolicySource.includes('export function sandboxPolicyCanGrantAuthority(): false')) {
     failures.push('sandbox policy enforcement must remain authority-neutral');
   }
-  if (
-    !sandboxPolicySource.includes(
-      'export function promptCanExpandSandboxPermissions(): false',
-    )
-  ) {
+  if (!sandboxPolicySource.includes('export function promptCanExpandSandboxPermissions(): false')) {
     failures.push('prompt text must not expand sandbox permissions');
   }
   if (
