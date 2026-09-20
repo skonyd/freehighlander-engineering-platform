@@ -58,9 +58,8 @@ test('architecture freeze rejects missing accepted ADRs, module contexts and unb
   assert.throws(() => assertArchitectureContract(missingPlanning), /bounded contexts/);
 
   const missingDevelopment = structuredClone(await loadArchitectureContract(root));
-  missingDevelopment.bounded_contexts.packages = missingDevelopment.bounded_contexts.packages.filter(
-    (entry) => entry !== 'development',
-  );
+  missingDevelopment.bounded_contexts.packages =
+    missingDevelopment.bounded_contexts.packages.filter((entry) => entry !== 'development');
   assert.throws(() => assertArchitectureContract(missingDevelopment), /bounded contexts/);
 
   const unbounded = structuredClone(await loadArchitectureContract(root));
