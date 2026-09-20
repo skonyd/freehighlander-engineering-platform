@@ -696,8 +696,8 @@ try {
     'persistence.restore.completed',
     'lineage.validation.failed',
   ]) {
-    if (!telemetrySource.includes(`'\${eventType}'`)) {
-      failures.push(`hardening telemetry event is missing: \${eventType}`);
+    if (!telemetrySource.includes(`'${eventType}'`)) {
+      failures.push(`hardening telemetry event is missing: ${eventType}`);
     }
   }
   if (!telemetrySource.includes('hardeningPayloadKeys')) {
