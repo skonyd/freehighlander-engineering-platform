@@ -1,24 +1,24 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-20T13:50:00+03:00"
+updated_at: "2026-09-20T14:08:00+03:00"
 
 mode:
   default_working_mode: triple
   contract: docs/state/TRIPLE-MODE.md
 
 phase:
-  id: FH-30A
-  name: planning-module-precutover
-  status: complete
+  id: FH-31A
+  name: development-module-precutover
+  status: in_progress
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
-  branch: main
+  branch: feat/fh-31a-development
   pull_request: null
-  issue: null
-  objective: continue authority-neutral module preparation while FH-20 remains blocked
-  next_action: start FH-31A Development module; FH-33A/FH-35A/FH-37A are also independently unblocked
+  issue: 72
+  objective: implement authority-neutral Development bounded context
+  next_action: verify exact revision binding, shadow-only execution intents and mutation authority guards through protected-main CI
 
 fh01a:
   issue: 15
@@ -250,6 +250,18 @@ fh30a:
   execution_authority: none
   architecture_contract: 1.1.0
   adr: ADR-0013
+
+fh31a:
+  issue: 72
+  pull_request: null
+  status: in_progress
+  branch: feat/fh-31a-development
+  authority_effect: none
+  execution_authority: none
+  git_mutation_authority: none
+  merge_authority: none
+  architecture_contract: 1.2.0
+  adr: ADR-0014
 
 external_dependency:
   repository: skonyd/creator-marketplace
