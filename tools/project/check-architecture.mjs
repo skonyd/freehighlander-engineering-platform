@@ -238,9 +238,7 @@ try {
     'utf8',
   );
   if (
-    !artifactLineageSource.includes(
-      'export function artifactLineageCanGrantAuthority(): false',
-    )
+    !artifactLineageSource.includes('export function artifactLineageCanGrantAuthority(): false')
   ) {
     failures.push('FH-16 artifact lineage must remain authority-neutral');
   }
