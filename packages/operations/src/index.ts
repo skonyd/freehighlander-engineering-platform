@@ -1,8 +1,21 @@
 export type ServiceCriticality = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-export type ResourceKind = 'SERVICE' | 'DATABASE' | 'QUEUE' | 'CACHE' | 'STORAGE' | 'CLUSTER' | 'EXTERNAL';
+export type ResourceKind =
+  | 'SERVICE'
+  | 'DATABASE'
+  | 'QUEUE'
+  | 'CACHE'
+  | 'STORAGE'
+  | 'CLUSTER'
+  | 'EXTERNAL';
 export type HealthStatus = 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY' | 'UNKNOWN';
 export type HealthEvidenceProvenance = 'TRUSTED' | 'UNTRUSTED';
-export type OperationalIntentKind = 'RESTART' | 'SCALE' | 'DEPLOY' | 'ROLLBACK' | 'CONFIGURE' | 'DIAGNOSE';
+export type OperationalIntentKind =
+  | 'RESTART'
+  | 'SCALE'
+  | 'DEPLOY'
+  | 'ROLLBACK'
+  | 'CONFIGURE'
+  | 'DIAGNOSE';
 
 export interface ResourceIdentity {
   readonly id: string;
@@ -153,7 +166,9 @@ export function validateHealthSnapshot(
 
   if (snapshot.schemaVersion !== 1) errors.push('unsupported health snapshot schemaVersion');
   requireText(snapshot.id, 'health snapshot id', errors);
-  if (snapshot.serviceId !== service.id) errors.push('health snapshot serviceId must match service id');
+  if (snapshot.serviceId !== service.id) {
+    errors.push('health snapshot serviceId must match service id');
+  }
   if (snapshot.environment !== service.environment) {
     errors.push('health snapshot environment must match service environment');
   }
@@ -182,17 +197,25 @@ export function validateHealthSnapshot(
   );
   for (const evidence of snapshot.evidence) {
     if (!knownResources.has(evidence.resourceId)) {
-      errors.push(`health evidence ${evidence.id} references unknown resource ${evidence.resourceId}`);
+      errors.push(
+        `health evidence ${evidence.id} references unknown resource ${evidence.resourceId}`,
+      );
     }
     requireTimestamp(evidence.observedAt, `health evidence ${evidence.id} observedAt`, errors);
     requireSha256(evidence.digest, `health evidence ${evidence.id} digest`, errors);
   }
 
   for (const resource of snapshot.resources) {
-    requireTimestamp(resource.observedAt, `resource health ${resource.resourceId} observedAt`, errors);
+    requireTimestamp(
+      resource.observedAt,
+      `resource health ${resource.resourceId} observedAt`,
+      errors,
+    );
     for (const evidenceId of resource.evidenceIds) {
       if (!evidenceIds.has(evidenceId)) {
-        errors.push(`resource health ${resource.resourceId} references unknown evidence ${evidenceId}`);
+        errors.push(
+          `resource health ${resource.resourceId} references unknown evidence ${evidenceId}`,
+        );
       }
     }
     if (resource.status !== 'UNKNOWN' && resource.evidenceIds.length === 0) {
@@ -209,10 +232,14 @@ export function validateOperationalIntent(
 ): ValidationResult {
   const errors = [...validateServiceDefinition(service).errors];
 
-  if (intent.schemaVersion !== 1) errors.push('unsupported operational intent schemaVersion');
+  if (intent.schemaVersion !== 1) {
+    errors.push('unsupported operational intent schemaVersion');
+  }
   requireText(intent.id, 'operational intent id', errors);
   requireText(intent.reason, 'operational intent reason', errors);
-  if (intent.serviceId !== service.id) errors.push('operational intent serviceId must match service id');
+  if (intent.serviceId !== service.id) {
+    errors.push('operational intent serviceId must match service id');
+  }
   if (intent.environment !== service.environment) {
     errors.push('operational intent environment must match service environment');
   }
@@ -222,10 +249,16 @@ export function validateOperationalIntent(
   if (intent.authority !== 'NONE') errors.push('operational intent authority must be NONE');
 
   const knownResources = new Set(service.resources.map((resource) => resource.id));
-  const targets = uniqueNonEmpty(intent.targetResourceIds, 'operational intent target', errors);
+  const targets = uniqueNonEmpty(
+    intent.targetResourceIds,
+    'operational intent target',
+    errors,
+  );
   if (targets.size === 0) errors.push('operational intent requires at least one target');
   for (const target of targets) {
-    if (!knownResources.has(target)) errors.push(`operational intent references unknown resource ${target}`);
+    if (!knownResources.has(target)) {
+      errors.push(`operational intent references unknown resource ${target}`);
+    }
   }
 
   return { valid: errors.length === 0, errors };
@@ -263,7 +296,8 @@ export function operationsProjection(
     degradedResources,
     unhealthyResources,
     unknownResources,
-    trustedEvidenceItems: snapshot.evidence.filter((item) => item.provenance === 'TRUSTED').length,
+    trustedEvidenceItems: snapshot.evidence.filter((item) => item.provenance === 'TRUSTED')
+      .length,
     authority: 'NONE',
     mutationAuthorized: false,
     operationalIntentExecutionAuthorized: false,
@@ -296,7 +330,11 @@ export function operationsCanExecuteIntent(): false {
   return false;
 }
 
-function uniqueNonEmpty(values: readonly string[], kind: string, errors: string[]): Set<string> {
+function uniqueNonEmpty(
+  values: readonly string[],
+  kind: string,
+  errors: string[],
+): Set<string> {
   const seen = new Set<string>();
   for (const value of values) {
     if (!value.trim()) {
@@ -318,12 +356,16 @@ function requireSha256(value: string, name: string, errors: string[]): void {
 }
 
 function requireTimestamp(value: string, name: string, errors: string[]): void {
-  if (!value.trim() || Number.isNaN(Date.parse(value))) errors.push(`${name} must be an ISO timestamp`);
+  if (!value.trim() || Number.isNaN(Date.parse(value))) {
+    errors.push(`${name} must be an ISO timestamp`);
+  }
 }
 
 function canonicalJson(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map((item) => canonicalJson(item)).join(',')}]`;
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => canonicalJson(item)).join(',')}]`;
+  }
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record)
     .sort()
@@ -332,6 +374,9 @@ function canonicalJson(value: unknown): string {
 }
 
 async function sha256Hex(value: string): Promise<string> {
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  const digest = await globalThis.crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(value),
+  );
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
