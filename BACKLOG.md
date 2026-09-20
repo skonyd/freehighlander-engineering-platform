@@ -66,6 +66,7 @@ Umbrella: #88.
 - [x] Secret-handle + EPHEMERAL injection contract — issue #124 / PR #125
 - [x] Lockfile provenance + integrity + install-script gate — issue #126 / PR #127
 - [x] Private vulnerability reporting policy correction — issue #128 / PR #129
+- [x] Deterministic clean-build output integrity gate — issue #130 / PR #131
 
 ## Current blocker
 
