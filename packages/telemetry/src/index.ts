@@ -49,7 +49,6 @@ export type EventType =
   | 'persistence.restore.completed'
   | 'lineage.validation.failed';
 
-
 export type HardeningEventType =
   | 'policy.decision'
   | 'data.redaction'
@@ -61,13 +60,7 @@ export type HardeningEventType =
   | 'persistence.restore.completed'
   | 'lineage.validation.failed';
 
-export type HardeningEventOutcome =
-  | 'ALLOW'
-  | 'DENY'
-  | 'PASS'
-  | 'FAIL'
-  | 'PLANNED'
-  | 'SKIPPED';
+export type HardeningEventOutcome = 'ALLOW' | 'DENY' | 'PASS' | 'FAIL' | 'PLANNED' | 'SKIPPED';
 
 export interface HardeningEventPayload {
   readonly category: string;
@@ -118,11 +111,7 @@ function validateHardeningPayload(payload: HardeningEventPayload): void {
     if (!value.trim()) throw new Error(`hardening telemetry ${name} is required`);
   }
 
-  if (
-    !['ALLOW', 'DENY', 'PASS', 'FAIL', 'PLANNED', 'SKIPPED'].includes(
-      payload.outcome,
-    )
-  ) {
+  if (!['ALLOW', 'DENY', 'PASS', 'FAIL', 'PLANNED', 'SKIPPED'].includes(payload.outcome)) {
     throw new Error('hardening telemetry outcome is invalid');
   }
 
