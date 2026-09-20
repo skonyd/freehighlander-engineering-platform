@@ -1,3 +1,18 @@
+export {
+  buildShadowParityReport,
+  parityCanCutOverV3,
+  parityCanGrantAuthority,
+  type ParityBinding,
+  type ParityDimension,
+  type ParityDimensionResult,
+  type ParityDimensionStatus,
+  type ParityObservation,
+  type ShadowParityCase,
+  type ShadowParityReport,
+  type ShadowParityStatus,
+  type V2ReferenceStatus,
+} from './parity.js';
+
 export type ShadowRoleId =
   | 'repo-analysis'
   | 'test-candidate-reviewer'
