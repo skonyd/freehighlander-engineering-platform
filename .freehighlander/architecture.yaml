@@ -1,5 +1,5 @@
 schema_version: 1
-contract_version: "1.0.0"
+contract_version: "1.1.0"
 status: FROZEN_BASELINE
 phase: FH-10
 
@@ -21,6 +21,7 @@ accepted_adrs:
   - ADR-0010
   - ADR-0011
   - ADR-0012
+  - ADR-0013
 
 product:
   mode: local-first-single-user
@@ -55,6 +56,7 @@ bounded_contexts:
     - telemetry
     - persistence
     - contracts
+    - planning
   forbidden:
     - packages/core
   contracts_rule: shared serialization contracts only, not shared business-domain dumping
