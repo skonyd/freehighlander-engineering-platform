@@ -69,6 +69,7 @@ Umbrella: #88.
 - [x] Deterministic clean-build output integrity gate — issue #130 / PR #131
 - [x] Monorepo accidental-publish safety gate — issue #132 / PR #133
 - [x] Internal workspace dependency-confusion gate — issue #134 / PR #135
+- [ ] Workspace package entrypoint integrity gate — issue #136
 
 ## Current blocker
 
