@@ -70,6 +70,7 @@ Umbrella: #88.
 - [x] Monorepo accidental-publish safety gate — issue #132 / PR #133
 - [x] Internal workspace dependency-confusion gate — issue #134 / PR #135
 - [x] Workspace package entrypoint integrity gate — issue #136 / PR #137
+- [ ] Source-to-dist build completeness gate — issue #138
 
 ## Current blocker
 
