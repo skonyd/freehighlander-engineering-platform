@@ -44,7 +44,11 @@ export function collectEntrypoints(manifest) {
 
   if (typeof manifest.exports === 'string') {
     runtime.add(manifest.exports);
-  } else if (manifest.exports && typeof manifest.exports === 'object' && !Array.isArray(manifest.exports)) {
+  } else if (
+    manifest.exports &&
+    typeof manifest.exports === 'object' &&
+    !Array.isArray(manifest.exports)
+  ) {
     collectExportObject(manifest.exports, runtime, types);
   }
 
@@ -60,7 +64,8 @@ function collectExportObject(value, runtime, types) {
   for (const [key, child] of Object.entries(value)) {
     if (typeof child === 'string') {
       if (key === 'types') types.add(child);
-      else if (key === 'default' || key === 'import' || key === '.' || key.startsWith('.')) runtime.add(child);
+      else if (key === 'default' || key === 'import' || key === '.' || key.startsWith('.'))
+        runtime.add(child);
       continue;
     }
     if (child && typeof child === 'object' && !Array.isArray(child)) {
