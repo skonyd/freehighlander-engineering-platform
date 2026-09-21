@@ -72,6 +72,7 @@ Umbrella: #88.
 - [x] Workspace package entrypoint integrity gate — issue #136 / PR #137
 - [x] Source-to-dist build completeness gate — issue #138 / PR #139
 - [x] Privacy export/delete manifest planning — issue #140 / PR #141
+- [x] Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143
 
 ## Current blocker
 
