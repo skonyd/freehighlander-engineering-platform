@@ -1042,7 +1042,6 @@ try {
   failures.push('missing internal workspace dependency-confusion enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   const entrypointGate = await fs.readFile(
