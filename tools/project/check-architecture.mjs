@@ -1070,7 +1070,6 @@ try {
   failures.push('missing workspace package entrypoint integrity enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   const buildCompleteness = await fs.readFile(
