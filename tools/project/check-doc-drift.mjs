@@ -64,7 +64,7 @@ for (const [documentName, content, required] of [
       'Private vulnerability reporting policy correction — issue #128 / PR #129',
       'Deterministic clean-build output integrity gate — issue #130 / PR #131',
       'Monorepo accidental-publish safety gate — issue #132 / PR #133',
-      'Internal workspace dependency-confusion gate — issue #134',
+      'Internal workspace dependency-confusion gate — issue #134 / PR #135',
       'FH-30B..FH-37B',
     ],
   ],
@@ -86,7 +86,7 @@ for (const [documentName, content, required] of [
       '#128 / PR #129 — safe private vulnerability reporting guidance',
       '#130 / PR #131 — deterministic clean-rebuild output integrity',
       '#132 / PR #133 — monorepo accidental-publish safety',
-      '#134 — internal workspace dependency-confusion gate',
+      '#134 / PR #135 — internal workspace dependency-confusion gate',
     ],
   ],
   [
