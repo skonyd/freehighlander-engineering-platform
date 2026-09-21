@@ -1042,6 +1042,34 @@ try {
   failures.push('missing internal workspace dependency-confusion enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const entrypointGate = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'workspace-entrypoints.mjs'),
+    'utf8',
+  );
+  await fs.access(path.join(root, 'tools', 'project', 'check-entrypoints.mjs'));
+
+  for (const invariant of [
+    'runtime entrypoint must resolve under dist/',
+    'entrypoint escapes workspace boundary',
+    'entrypoint target does not exist',
+    'entrypoint target must be a file',
+  ]) {
+    if (!entrypointGate.includes(invariant)) {
+      failures.push(`workspace entrypoint gate missing invariant: ${invariant}`);
+    }
+  }
+  if (rootPackage.scripts?.['check:entrypoints'] !== 'node tools/project/check-entrypoints.mjs') {
+    failures.push('root package must expose check:entrypoints');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:entrypoints')) {
+    failures.push('npm run verify must include workspace entrypoint enforcement');
+  }
+} catch {
+  failures.push('missing workspace package entrypoint integrity enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
