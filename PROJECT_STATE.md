@@ -77,7 +77,7 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #128 / PR #129 — safe private vulnerability reporting guidance; public issues explicitly treated as public
 - #130 / PR #131 — deterministic clean-rebuild output integrity; workspace dist manifests must match byte-for-byte
 - #132 / PR #133 — monorepo accidental-publish safety; all 19 workspaces remain private pre-release packages
-- #134 — internal workspace dependency-confusion gate; every @freehighlander/* identity must resolve to its local monorepo workspace link
+- #134 / PR #135 — internal workspace dependency-confusion gate; every @freehighlander/* identity must resolve to its local monorepo workspace link
 
 Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority.
 
