@@ -99,12 +99,21 @@ The manifest is planning/evidence only. It does not perform data export, databas
 
 ## Data egress
 
-Before remote-model invocation:
-1. classify packet data,
-2. evaluate provider/binding policy,
-3. redact forbidden fields,
-4. record egress decision,
-5. invoke provider.
+The pre-invocation portion of the egress sequence is now implemented in `packages/governance/src/provider-egress-preparation.ts`.
+
+Before any provider invocation candidate is produced:
+1. validate bounded packet/provider/binding identity and JSON-compatible payload shape,
+2. classify packet data,
+3. evaluate canonical provider/binding policy,
+4. fail closed on unknown runtime classification,
+5. redact forbidden fields,
+6. hash only the sanitized payload deterministically,
+7. produce metadata-only `provider.egress.decision` telemetry payload,
+8. return an authority-neutral candidate packet only when policy allows.
+
+The preparation contract cannot invoke a provider and cannot grant authority. SECRET remote egress returns no candidate packet and no content hash.
+
+Actual provider invocation remains a separate runtime action and must not infer authority from a successful preparation result.
 
 ## Logging rule
 
