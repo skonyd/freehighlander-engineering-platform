@@ -9,10 +9,7 @@ import {
 
 export type PrivacyManifestKind = 'EXPORT' | 'DELETE';
 export type PrivacyManifestDisposition =
-  | 'EXPORT_CANDIDATE'
-  | 'DELETE_CANDIDATE'
-  | 'RETAIN'
-  | 'PROTECTED_AUDIT';
+  'EXPORT_CANDIDATE' | 'DELETE_CANDIDATE' | 'RETAIN' | 'PROTECTED_AUDIT';
 
 export interface PrivacyLifecycleRecord extends RetentionRecord {
   readonly ownerKey?: string;
@@ -178,7 +175,8 @@ function buildDeleteEntries(
         recordId: record.id,
         retentionClass: record.retentionClass,
         disposition: 'DELETE_CANDIDATE',
-        reason: 'canonical retention plan marks record as purge candidate; deletion remains unauthorized',
+        reason:
+          'canonical retention plan marks record as purge candidate; deletion remains unauthorized',
         executionAuthorized: false,
       };
     }
