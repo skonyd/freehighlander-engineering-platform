@@ -32,8 +32,5 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Diagnose privacy lifecycle formatting
-        run: |
-          npx prettier --write packages/governance/src/privacy-lifecycle.ts packages/governance/test/privacy-lifecycle.test.mjs tools/project/check-architecture.mjs
-          git diff -- packages/governance/src/privacy-lifecycle.ts packages/governance/test/privacy-lifecycle.test.mjs tools/project/check-architecture.mjs
-          exit 1
+      - name: Verify
+        run: npm run verify
