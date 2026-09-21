@@ -402,6 +402,7 @@ pre_cutover_hardening:
       pull_request: 137
       area: workspace-package-entrypoint-integrity-gate
     - issue: 138
+      pull_request: 139
       area: source-to-dist-build-completeness-gate
 
 external_dependency:
