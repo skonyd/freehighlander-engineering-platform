@@ -1,7 +1,12 @@
 import path from 'node:path';
 
 const INTERNAL_PREFIX = '@freehighlander/';
-const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
+const DEPENDENCY_FIELDS = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+];
 
 export function analyzeWorkspaceResolution(workspaces, lockfile) {
   const errors = [];
@@ -9,7 +14,9 @@ export function analyzeWorkspaceResolution(workspaces, lockfile) {
 
   for (const workspace of workspaces) {
     if (typeof workspace.name !== 'string' || !workspace.name.startsWith(INTERNAL_PREFIX)) {
-      errors.push(`workspace ${workspace.relativeDirectory} must use ${INTERNAL_PREFIX} package identity`);
+      errors.push(
+        `workspace ${workspace.relativeDirectory} must use ${INTERNAL_PREFIX} package identity`,
+      );
       continue;
     }
     if (byName.has(workspace.name)) {
@@ -54,7 +61,9 @@ export function analyzeWorkspaceResolution(workspaces, lockfile) {
       }
       for (const forbidden of ['version', 'integrity']) {
         if (forbidden in linkEntry) {
-          errors.push(`internal workspace link must not carry registry field ${forbidden}: ${name}`);
+          errors.push(
+            `internal workspace link must not carry registry field ${forbidden}: ${name}`,
+          );
         }
       }
     }
