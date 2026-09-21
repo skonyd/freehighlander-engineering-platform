@@ -1102,7 +1102,6 @@ try {
   failures.push('missing source-to-dist build completeness enforcement');
 }
 
-
 try {
   const privacyLifecycle = await fs.readFile(
     path.join(root, 'packages', 'governance', 'src', 'privacy-lifecycle.ts'),
