@@ -399,6 +399,7 @@ pre_cutover_hardening:
       pull_request: 135
       area: internal-workspace-dependency-confusion-gate
     - issue: 136
+      pull_request: 137
       area: workspace-package-entrypoint-integrity-gate
 
 external_dependency:
