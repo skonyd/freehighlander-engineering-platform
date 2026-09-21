@@ -33,7 +33,7 @@ for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a'
 
 expect(
   state.pre_cutover_hardening?.status,
-  'complete_through_build_completeness_gate',
+  'complete_through_privacy_lifecycle_manifest',
   'pre-cutover hardening state',
 );
 
@@ -67,6 +67,7 @@ for (const [documentName, content, required] of [
       'Internal workspace dependency-confusion gate — issue #134 / PR #135',
       'Workspace package entrypoint integrity gate — issue #136 / PR #137',
       'Source-to-dist build completeness gate — issue #138 / PR #139',
+      'Privacy export/delete manifest planning — issue #140 / PR #141',
       'FH-30B..FH-37B',
     ],
   ],
@@ -91,6 +92,7 @@ for (const [documentName, content, required] of [
       '#134 / PR #135 — internal workspace dependency-confusion gate',
       '#136 / PR #137 — workspace package entrypoint integrity gate',
       '#138 / PR #139 — source-to-dist build completeness gate',
+      '#140 / PR #141 — metadata-only privacy EXPORT/DELETE manifest planning',
     ],
   ],
   [
@@ -99,7 +101,7 @@ for (const [documentName, content, required] of [
     [
       'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
       'READINESS COMPLETE / CUTOVER BLOCKED',
-      'Pre-cutover hardening — COMPLETE THROUGH BUILD COMPLETENESS GATE',
+      'Pre-cutover hardening — COMPLETE THROUGH PRIVACY LIFECYCLE MANIFEST',
     ],
   ],
   [
@@ -109,7 +111,7 @@ for (const [documentName, content, required] of [
       'FH-01B2 final accepted-V2 reconciliation',
       'FH-30A..FH-37A complete and authority-neutral.',
       'repository hygiene',
-      'source-to-dist build completeness enforcement are complete',
+      'privacy export/delete manifest planning are complete',
       'Creator Marketplace #207',
     ],
   ],

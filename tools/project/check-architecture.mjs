@@ -1102,6 +1102,39 @@ try {
   failures.push('missing source-to-dist build completeness enforcement');
 }
 
+try {
+  const privacyLifecycle = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'privacy-lifecycle.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function privacyManifestCanExportData(): false',
+    'export function privacyManifestCanDeleteData(): false',
+    'export function privacyManifestCanDeleteAuditData(): false',
+    "readonly authority: 'NONE'",
+    'readonly executionAuthorized: false',
+    'readonly exportExecutionAuthorized: false',
+    'readonly deletionAuthorized: false',
+    'readonly auditDeletionAuthorized: false',
+    "disposition: 'PROTECTED_AUDIT'",
+    "decision.action === 'PURGE_CANDIDATE'",
+    "createHash('sha256')",
+  ]) {
+    if (!privacyLifecycle.includes(invariant)) {
+      failures.push(`privacy lifecycle manifest missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const forbidden of ['readonly payload:', 'readonly rawData:', 'readonly exportedData:']) {
+    if (privacyLifecycle.includes(forbidden)) {
+      failures.push(`privacy lifecycle manifest must remain metadata-only: ${forbidden}`);
+    }
+  }
+} catch {
+  failures.push('missing privacy export/delete manifest planning contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

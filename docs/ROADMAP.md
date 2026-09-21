@@ -103,7 +103,7 @@ Authority-neutral preparation is complete:
 
 FH-30B..FH-37B activation remains blocked by FH-01B2/FH-20.
 
-## Pre-cutover hardening — COMPLETE THROUGH BUILD COMPLETENESS GATE
+## Pre-cutover hardening — COMPLETE THROUGH PRIVACY LIFECYCLE MANIFEST
 
 Independent of #207, the repository now includes:
 - executable data-policy and remote-egress enforcement;
@@ -129,7 +129,8 @@ Independent of #207, the repository now includes:
 - monorepo accidental-publish enforcement requiring all 19 workspaces to remain private, version 0.0.0 and free of publishConfig/publish lifecycle hooks;
 - internal @freehighlander/* dependency-confusion enforcement requiring every package identity to resolve as link=true to its exact local workspace path with exact 0.0.0 internal dependency specs;
 - workspace package entrypoint integrity enforcement requiring runtime exports to resolve under dist/, type entrypoints to exist, and all targets to remain inside their workspace boundary;
-- source-to-dist completeness enforcement requiring every compiled src/**/*.ts module to emit JavaScript, declaration and source-map artifacts under dist/.
+- source-to-dist completeness enforcement requiring every compiled src/**/*.ts module to emit JavaScript, declaration and source-map artifacts under dist/;
+- metadata-only privacy EXPORT/DELETE manifest planning derived from canonical retention policy, with raw owner scope hashed and export/deletion/AUDIT deletion authority disabled.
 
 ## Phase 10 — Full lifecycle
 
