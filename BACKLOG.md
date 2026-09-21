@@ -68,6 +68,7 @@ Umbrella: #88.
 - [x] Private vulnerability reporting policy correction — issue #128 / PR #129
 - [x] Deterministic clean-build output integrity gate — issue #130 / PR #131
 - [x] Monorepo accidental-publish safety gate — issue #132 / PR #133
+- [ ] Internal workspace dependency-confusion gate — issue #134
 
 ## Current blocker
 
