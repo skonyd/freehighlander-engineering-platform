@@ -1,4 +1,20 @@
 export {
+  buildPrivacyLifecycleManifest,
+  privacyManifestCanDeleteAuditData,
+  privacyManifestCanDeleteData,
+  privacyManifestCanExportData,
+  validatePrivacyLifecycleRecords,
+  validatePrivacyLifecycleRequest,
+  type PrivacyLifecycleManifest,
+  type PrivacyLifecycleRecord,
+  type PrivacyLifecycleRequest,
+  type PrivacyManifestDisposition,
+  type PrivacyManifestEntry,
+  type PrivacyManifestKind,
+  type PrivacyValidationResult,
+} from './privacy-lifecycle.js';
+
+export {
   evaluateSecretAccess,
   planSecretInjection,
   promptCanRequestRawSecretValue,
