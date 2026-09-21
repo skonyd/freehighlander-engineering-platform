@@ -96,9 +96,7 @@ test('export manifest is deterministic metadata-only owner-bound planning', () =
 
 test('delete manifest is derived from canonical retention decisions and never authorizes deletion', () => {
   const manifest = buildPrivacyLifecycleManifest(records, request('DELETE'));
-  const entries = Object.fromEntries(
-    manifest.entries.map((entry) => [entry.recordId, entry]),
-  );
+  const entries = Object.fromEntries(manifest.entries.map((entry) => [entry.recordId, entry]));
 
   assert.equal(entries['expired-short'].disposition, 'DELETE_CANDIDATE');
   assert.equal(entries['future-short'].disposition, 'RETAIN');
@@ -124,7 +122,10 @@ test('privacy export planning never grants data-export authority', () => {
 test('owner mismatch records are excluded from both manifest kinds', () => {
   for (const kind of ['EXPORT', 'DELETE']) {
     const manifest = buildPrivacyLifecycleManifest(records, request(kind));
-    assert.equal(manifest.entries.some((entry) => entry.recordId === 'other-owner'), false);
+    assert.equal(
+      manifest.entries.some((entry) => entry.recordId === 'other-owner'),
+      false,
+    );
   }
 });
 
