@@ -88,6 +88,17 @@ Mitigation:
 - version pinning
 - review/signing policy later
 
+### Privacy over-export / over-delete
+A privacy request or lifecycle tool may export/delete records outside the intended owner scope, bypass retention, or remove AUDIT evidence.
+
+Mitigation:
+- metadata-only owner-bound privacy manifests
+- SHA-256 owner-scope hashing in persisted manifest output
+- DELETE planning derived from canonical retention decisions
+- AUDIT/audit-referenced records remain protected
+- export/deletion/AUDIT deletion authority always false in planning
+- actual export/delete execution remains a separate future authority surface
+
 ## Future work
 
 Threat model must be revisited before:
