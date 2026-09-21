@@ -103,7 +103,7 @@ Authority-neutral preparation is complete:
 
 FH-30B..FH-37B activation remains blocked by FH-01B2/FH-20.
 
-## Pre-cutover hardening — COMPLETE THROUGH PUBLISH SAFETY GATE
+## Pre-cutover hardening — COMPLETE THROUGH WORKSPACE RESOLUTION GATE
 
 Independent of #207, the repository now includes:
 - executable data-policy and remote-egress enforcement;
@@ -126,7 +126,8 @@ Independent of #207, the repository now includes:
 - deterministic npm lockfile provenance/integrity validation, rejecting non-registry sources, missing sha512 integrity and install-script-bearing external packages;
 - safe vulnerability disclosure guidance that treats normal issues in a public repository as public and prefers private vulnerability reporting/security advisories for sensitive details;
 - deterministic clean-rebuild output manifests using relative paths, sizes and SHA-256 digests, rejecting symlinked/tracked/missing/extra/changed dist artifacts;
-- monorepo accidental-publish enforcement requiring all 19 workspaces to remain private, version 0.0.0 and free of publishConfig/publish lifecycle hooks.
+- monorepo accidental-publish enforcement requiring all 19 workspaces to remain private, version 0.0.0 and free of publishConfig/publish lifecycle hooks;
+- internal @freehighlander/* dependency-confusion enforcement requiring every package identity to resolve as link=true to its exact local workspace path with exact 0.0.0 internal dependency specs.
 
 ## Phase 10 — Full lifecycle
 

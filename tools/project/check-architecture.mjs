@@ -1011,6 +1011,37 @@ try {
   failures.push('missing monorepo accidental-publish safety enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const workspaceResolution = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'workspace-resolution.mjs'),
+    'utf8',
+  );
+  await fs.access(path.join(root, 'tools', 'project', 'check-workspace-resolution.mjs'));
+
+  for (const invariant of [
+    'internal workspace must resolve as link=true',
+    'internal workspace resolved path mismatch',
+    'internal dependency spec must be exact 0.0.0',
+    'lockfile contains unknown internal package identity',
+  ]) {
+    if (!workspaceResolution.includes(invariant)) {
+      failures.push(`workspace resolution gate missing invariant: ${invariant}`);
+    }
+  }
+  if (
+    rootPackage.scripts?.['check:workspace-resolution'] !==
+    'node tools/project/check-workspace-resolution.mjs'
+  ) {
+    failures.push('root package must expose check:workspace-resolution');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:workspace-resolution')) {
+    failures.push('npm run verify must include workspace resolution enforcement');
+  }
+} catch {
+  failures.push('missing internal workspace dependency-confusion enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
