@@ -1011,7 +1011,6 @@ try {
   failures.push('missing monorepo accidental-publish safety enforcement');
 }
 
-
 try {
   const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
   const workspaceResolution = await fs.readFile(
