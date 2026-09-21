@@ -1070,6 +1070,38 @@ try {
   failures.push('missing workspace package entrypoint integrity enforcement');
 }
 
+try {
+  const rootPackage = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
+  const buildCompleteness = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'build-completeness.mjs'),
+    'utf8',
+  );
+  await fs.access(path.join(root, 'tools', 'project', 'check-build-completeness.mjs'));
+
+  for (const invariant of [
+    'base tsconfig must keep declaration=true',
+    'base tsconfig must keep sourceMap=true',
+    'tsconfig rootDir must remain src',
+    'tsconfig outDir must remain dist',
+    'missing build artifact for',
+  ]) {
+    if (!buildCompleteness.includes(invariant)) {
+      failures.push(`build completeness gate missing invariant: ${invariant}`);
+    }
+  }
+  if (
+    rootPackage.scripts?.['check:build-completeness'] !==
+    'node tools/project/check-build-completeness.mjs'
+  ) {
+    failures.push('root package must expose check:build-completeness');
+  }
+  if (!rootPackage.scripts?.verify?.includes('npm run check:build-completeness')) {
+    failures.push('npm run verify must include source-to-dist completeness enforcement');
+  }
+} catch {
+  failures.push('missing source-to-dist build completeness enforcement');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
