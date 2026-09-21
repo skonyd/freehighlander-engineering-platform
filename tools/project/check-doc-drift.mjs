@@ -66,7 +66,7 @@ for (const [documentName, content, required] of [
       'Monorepo accidental-publish safety gate — issue #132 / PR #133',
       'Internal workspace dependency-confusion gate — issue #134 / PR #135',
       'Workspace package entrypoint integrity gate — issue #136 / PR #137',
-      'Source-to-dist build completeness gate — issue #138',
+      'Source-to-dist build completeness gate — issue #138 / PR #139',
       'FH-30B..FH-37B',
     ],
   ],
@@ -90,7 +90,7 @@ for (const [documentName, content, required] of [
       '#132 / PR #133 — monorepo accidental-publish safety',
       '#134 / PR #135 — internal workspace dependency-confusion gate',
       '#136 / PR #137 — workspace package entrypoint integrity gate',
-      '#138 — source-to-dist build completeness gate',
+      '#138 / PR #139 — source-to-dist build completeness gate',
     ],
   ],
   [
