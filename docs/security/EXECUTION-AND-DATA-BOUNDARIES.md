@@ -82,6 +82,21 @@ Current invariants:
 
 A future backend adapter may consume an approved opaque plan and return a metadata-only receipt, but the resolved value must remain outside persisted domain state.
 
+## Privacy lifecycle manifests
+
+Privacy EXPORT/DELETE requests are represented as metadata-only planning manifests in `packages/governance/src/privacy-lifecycle.ts`.
+
+Current invariants:
+- raw data payloads are never embedded in the manifest;
+- owner scope is matched in-memory and persisted only as a SHA-256 scope hash;
+- DELETE planning is derived from the canonical retention plan;
+- AUDIT and audit-referenced records remain protected;
+- non-expired/active records remain retained;
+- purge candidates remain candidates only;
+- export execution, deletion and AUDIT deletion are always unauthorized by the manifest itself.
+
+The manifest is planning/evidence only. It does not perform data export, database/file deletion or retention-policy bypass.
+
 ## Data egress
 
 Before remote-model invocation:
