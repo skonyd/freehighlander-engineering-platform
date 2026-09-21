@@ -41,7 +41,9 @@ export async function analyzeBuildCompleteness(root, workspaces, baseConfig) {
     const srcRoot = path.join(workspace.directory, 'src');
     const sourceFiles = await listSourceModules(srcRoot);
     if (sourceFiles.length === 0) {
-      errors.push(`${workspace.name}: build workspace must contain at least one src/**/*.ts module`);
+      errors.push(
+        `${workspace.name}: build workspace must contain at least one src/**/*.ts module`,
+      );
       continue;
     }
 
@@ -100,11 +102,7 @@ async function listSourceModules(directory) {
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) {
       files.push(...(await listSourceModules(absolute)));
-    } else if (
-      entry.isFile() &&
-      entry.name.endsWith('.ts') &&
-      !entry.name.endsWith('.d.ts')
-    ) {
+    } else if (entry.isFile() && entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts')) {
       files.push(absolute);
     }
   }
