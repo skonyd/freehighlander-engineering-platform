@@ -122,11 +122,9 @@ test('base declaration and sourceMap compiler guarantees are required', async ()
   const { root, workspace } = await fixture();
 
   try {
-    const result = await analyzeBuildCompleteness(
-      root,
-      [workspace],
-      { compilerOptions: { declaration: false, sourceMap: false } },
-    );
+    const result = await analyzeBuildCompleteness(root, [workspace], {
+      compilerOptions: { declaration: false, sourceMap: false },
+    });
     assert.equal(result.valid, false);
     assert.match(result.errors.join('\n'), /declaration=true/);
     assert.match(result.errors.join('\n'), /sourceMap=true/);
