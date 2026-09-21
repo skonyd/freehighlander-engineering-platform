@@ -75,6 +75,18 @@ test('provider egress is fail-closed by classification', () => {
   assert.match(secret.reason, /must never be sent/);
 });
 
+test('unknown runtime classification fails closed', () => {
+  const decision = evaluateProviderEgress(policy, {
+    classification: 'UNCLASSIFIED',
+    remote: true,
+    policyApproved: true,
+    providerBindingApproved: true,
+  });
+
+  assert.equal(decision.allowed, false);
+  assert.match(decision.reason, /unknown data classification fails closed/);
+});
+
 test('persistence sanitization redacts structured and inline secrets', () => {
   const sanitized = sanitizeForPersistence(policy, {
     apiKey: 'example-key',
