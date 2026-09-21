@@ -4,10 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import {
-  analyzeWorkspaceEntrypoints,
-  collectEntrypoints,
-} from '../lib/workspace-entrypoints.mjs';
+import { analyzeWorkspaceEntrypoints, collectEntrypoints } from '../lib/workspace-entrypoints.mjs';
 
 async function fixture(manifest, files = []) {
   const root = await mkdtemp(path.join(tmpdir(), 'freehighlander-entrypoints-'));
@@ -116,12 +113,15 @@ test('absolute parent traversal and node_modules targets fail closed', async () 
   const cases = ['/tmp/escape.js', '../escape.js', './node_modules/pkg/index.js'];
 
   for (const target of cases) {
-    const { root, workspace } = await fixture({
-      name: '@freehighlander/fixture',
-      type: 'module',
-      exports: target,
-      types: './src/index.ts',
-    }, ['src/index.ts']);
+    const { root, workspace } = await fixture(
+      {
+        name: '@freehighlander/fixture',
+        type: 'module',
+        exports: target,
+        types: './src/index.ts',
+      },
+      ['src/index.ts'],
+    );
 
     try {
       const result = await analyzeWorkspaceEntrypoints([workspace]);
