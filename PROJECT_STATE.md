@@ -79,6 +79,7 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #132 / PR #133 — monorepo accidental-publish safety; all 19 workspaces remain private pre-release packages
 - #134 / PR #135 — internal workspace dependency-confusion gate; every @freehighlander/* identity must resolve to its local monorepo workspace link
 - #136 / PR #137 — workspace package entrypoint integrity gate; runtime/type entrypoints must exist after build and stay inside workspace boundaries
+- #138 — source-to-dist build completeness gate; every src/**/*.ts module must emit js, declaration and source-map artifacts
 
 Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority.
 
