@@ -396,6 +396,7 @@ pre_cutover_hardening:
       pull_request: 133
       area: monorepo-accidental-publish-safety
     - issue: 134
+      pull_request: 135
       area: internal-workspace-dependency-confusion-gate
 
 external_dependency:
