@@ -14,7 +14,9 @@ try {
   lockfile = JSON.parse(await fs.readFile(path.join(root, 'package-lock.json'), 'utf8'));
 } catch (error) {
   console.error('Workspace resolution check FAIL');
-  console.error(`- unable to load workspace resolution inputs: ${error instanceof Error ? error.message : String(error)}`);
+  console.error(
+    `- unable to load workspace resolution inputs: ${error instanceof Error ? error.message : String(error)}`,
+  );
   process.exit(1);
 }
 
