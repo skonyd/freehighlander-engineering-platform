@@ -71,6 +71,7 @@ Umbrella: #88.
 - [x] Internal workspace dependency-confusion gate — issue #134 / PR #135
 - [x] Workspace package entrypoint integrity gate — issue #136 / PR #137
 - [x] Source-to-dist build completeness gate — issue #138 / PR #139
+- [x] Privacy export/delete manifest planning — issue #140 / PR #141
 
 ## Current blocker
 
