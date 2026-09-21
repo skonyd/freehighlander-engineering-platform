@@ -81,6 +81,7 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #136 / PR #137 — workspace package entrypoint integrity gate; runtime/type entrypoints must exist after build and stay inside workspace boundaries
 - #138 / PR #139 — source-to-dist build completeness gate; every src/**/*.ts module must emit js, declaration and source-map artifacts
 - #140 / PR #141 — metadata-only privacy EXPORT/DELETE manifest planning derived from canonical retention policy; export/deletion/AUDIT deletion authority remain disabled
+- #142 / PR #143 — fail-closed provider-egress preparation binds classification, policy, redaction, sanitized hash and metadata-only telemetry; provider invocation authority remains disabled
 
 Hardening does not change authority. Dependency update PRs remain review-only and do not gain merge authority.
 
