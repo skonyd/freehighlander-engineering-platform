@@ -64,7 +64,9 @@ export function validateModelManagementStateV1(value: unknown): ModelManagementS
   ]);
   if (value.schemaVersion !== 1) throw new Error('model management state schemaVersion must be 1');
   if (value.authority !== 'NONE') throw new Error('model management state authority must be NONE');
-  if (!Array.isArray(value.providers)) throw new Error('model management providers must be an array');
+  if (!Array.isArray(value.providers)) {
+    throw new Error('model management providers must be an array');
+  }
   if (!Array.isArray(value.catalogs)) throw new Error('model management catalogs must be an array');
   if (!Array.isArray(value.qualifications)) {
     throw new Error('model management qualifications must be an array');
@@ -126,7 +128,15 @@ export function validateModelManagementStateV1(value: unknown): ModelManagementS
 
 export function validateManagedProviderConfigV1(value: unknown): ManagedProviderConfigV1 {
   if (!isRecord(value)) throw new Error('managed provider config must be an object');
-  assertExactKeys(value, ['schemaVersion', 'id', 'kind', 'baseUrl', 'locality', 'credential', 'authority']);
+  assertExactKeys(value, [
+    'schemaVersion',
+    'id',
+    'kind',
+    'baseUrl',
+    'locality',
+    'credential',
+    'authority',
+  ]);
   if (value.schemaVersion !== 1) throw new Error('managed provider schemaVersion must be 1');
   if (value.authority !== 'NONE') throw new Error('managed provider authority must be NONE');
   const id = requireId(value.id, 'managed provider id');
