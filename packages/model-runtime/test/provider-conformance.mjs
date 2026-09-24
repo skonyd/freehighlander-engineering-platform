@@ -112,20 +112,23 @@ export async function runProviderAdapterConformance(t, profile) {
     await expectFailureKind(profile.malformedFailure, 'malformed_output');
   });
 
-  await t.test('optional adapter features run conformance hooks only when implemented', async () => {
-    await withHarness(profile.healthy, async ({ adapter }) => {
-      const capabilities = adapter.capabilities();
+  await t.test(
+    'optional adapter features run conformance hooks only when implemented',
+    async () => {
+      await withHarness(profile.healthy, async ({ adapter }) => {
+        const capabilities = adapter.capabilities();
 
-      if (capabilities.has('cancellation')) {
-        assert.equal(typeof profile.assertCancellation, 'function');
-        await profile.assertCancellation(adapter);
-      } else {
-        assert.equal(profile.assertCancellation, undefined);
-      }
+        if (capabilities.has('cancellation')) {
+          assert.equal(typeof profile.assertCancellation, 'function');
+          await profile.assertCancellation(adapter);
+        } else {
+          assert.equal(profile.assertCancellation, undefined);
+        }
 
-      if (typeof adapter.discoverModels === 'function') {
-        await profile.assertModelDiscovery(adapter);
-      }
-    });
-  });
+        if (typeof adapter.discoverModels === 'function') {
+          await profile.assertModelDiscovery(adapter);
+        }
+      });
+    },
+  );
 }
