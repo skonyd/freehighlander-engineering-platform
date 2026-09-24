@@ -174,6 +174,7 @@ test('corrupt JSON schema generation and hashes fail closed on read', async (t) 
   await writeFile(filePath, '[]\n', 'utf8');
   assert.throws(() => store.read(), /root must be an object/);
 
+  await rm(filePath, { force: true });
   const valid = store.write(0, {
     kind: 'catalog',
     models: ['model-a'],
