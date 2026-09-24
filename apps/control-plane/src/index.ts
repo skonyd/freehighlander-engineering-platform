@@ -1,4 +1,19 @@
 export {
+  LocalGitWorktreeBackend,
+  createLocalCommandActivityExecutor,
+  createLocalFilesystemActivityExecutor,
+  createLocalGitActivityExecutor,
+  localCommandExecutorUsesShell,
+  localWorkspaceDestroyRequiresLeaseGuard,
+  localWorktreeBackendCanGrantAuthority,
+  type LocalCommandExecutorOptions,
+  type LocalGitWorktreeBackendOptions,
+  type LocalWorkspaceHandle,
+  type WorkspaceSnapshotV1,
+  type WorkspaceUntrackedEntry,
+} from './local-worktree-backend.js';
+
+export {
   ActivityRunner,
   activityRunnerCanExecuteDuringReplay,
   createExecutionWorkspaceDescriptor,
