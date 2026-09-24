@@ -237,6 +237,18 @@ function validateSnapshot(snapshot: ModelQualificationSnapshotV1): void {
   if (snapshot.schemaVersion !== 1) throw new Error('qualification schemaVersion must be 1');
   if (snapshot.authority !== 'NONE') throw new Error('qualification authority must be NONE');
 
+  if (snapshot.regression !== undefined) {
+    validateEvidenceHash(snapshot.regression.corpusHash, 'regression corpusHash');
+    validateEvidenceHash(snapshot.regression.reportHash, 'regression reportHash');
+    normalizeTimestamp(snapshot.regression.verifiedAt, 'regression verifiedAt');
+  }
+  if (snapshot.eligibility?.requiredRegressionCorpusHash !== undefined) {
+    validateEvidenceHash(
+      snapshot.eligibility.requiredRegressionCorpusHash,
+      'required regression corpusHash',
+    );
+  }
+
   const expected = finalize({
     schemaVersion: 1,
     providerId: snapshot.providerId,
