@@ -52,7 +52,6 @@ export type EventType =
   | 'persistence.restore.completed'
   | 'lineage.validation.failed';
 
-
 export type ModelCatalogEventType =
   | 'model.catalog.refreshed'
   | 'model.binding.changed'
