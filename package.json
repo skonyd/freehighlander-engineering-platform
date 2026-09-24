@@ -30,7 +30,7 @@
     "check:docs": "node tools/project/check-doc-drift.mjs",
     "check:ci": "node tools/project/check-ci-supply-chain.mjs",
     "check:secrets": "node tools/project/check-secrets.mjs",
-    "check:coverage": "rm -rf .tmp-v8 && mkdir .tmp-v8 && NODE_V8_COVERAGE=.tmp-v8 node tools/project/check-coverage.mjs; code=$?; node tools/project/diagnose-v8-coverage.mjs; rm -rf .tmp-v8; exit $code",
+    "check:coverage": "node tools/project/check-coverage.mjs",
     "check:lockfile": "node tools/project/check-lockfile.mjs",
     "check:build-integrity": "node tools/project/check-build-integrity.mjs",
     "check:publish-safety": "node tools/project/check-publish-safety.mjs",
