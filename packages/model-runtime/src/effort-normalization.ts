@@ -30,9 +30,14 @@ export function resolveProviderEffort(
   }
 
   const mapping = options.nativeMapping ?? {};
-  const mapped = Object.prototype.hasOwnProperty.call(mapping, normalized)
-    ? mapping[normalized]
-    : normalized;
+  let mapped: string | null = normalized;
+  if (Object.prototype.hasOwnProperty.call(mapping, normalized)) {
+    const configured = mapping[normalized];
+    if (configured === undefined) {
+      throw new Error(`native effort mapping for ${normalized} is undefined`);
+    }
+    mapped = configured;
+  }
 
   if (mapped === null || normalized === 'default' || normalized === 'none') {
     return { requested, normalized, omitted: true };
