@@ -1366,6 +1366,27 @@ try {
   failures.push('missing runtime stability guard contract');
 }
 
+try {
+  const persistenceSource = await fs.readFile(
+    path.join(root, 'packages', 'persistence', 'src', 'sqlite-telemetry-store.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function inspectTelemetryJsonlFile',
+    "status: 'TORN_TAIL'",
+    'importJsonlRecovering(filePath: string)',
+    'export function jsonlTornTailCanBecomeEvent(): false',
+    "index === rawLines.length - 1 && !endsWithNewline",
+  ]) {
+    if (!persistenceSource.includes(invariant)) {
+      failures.push(`JSONL torn-tail recovery missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing fail-closed JSONL torn-tail recovery contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
