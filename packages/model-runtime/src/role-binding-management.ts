@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import {
   BindingRegistry,
   resolveBindingPlan,
+  validateBindingPlan,
   type BindingPlan,
   type BindingRiskTier,
   type ModelBindingDefinition,
@@ -63,7 +64,20 @@ export class RoleBindingManagementService {
     readonly providers: ProviderRegistry,
     readonly catalogs: ModelCatalogManagementService,
     readonly auditSink: RoleBindingManagementAuditSink,
-  ) {}
+    initialPublications: readonly RoleBindingPublicationV1[] = [],
+  ) {
+    for (const publication of initialPublications) {
+      validateRoleBindingPublicationV1(publication);
+      const key = publicationKey(publication.logicalRole, publication.riskTier);
+      if (this.#published.has(key)) {
+        throw new Error(
+          `duplicate initial role binding publication ${publication.logicalRole}/` +
+            publication.riskTier,
+        );
+      }
+      this.#published.set(key, publication);
+    }
+  }
 
   preview(input: RoleBindingPreviewInput): BindingPlan {
     const logicalRole = requireId(input.logicalRole, 'logicalRole');
@@ -172,6 +186,67 @@ export class RoleBindingManagementService {
       const roleOrder = left.logicalRole.localeCompare(right.logicalRole);
       return roleOrder !== 0 ? roleOrder : left.riskTier.localeCompare(right.riskTier);
     });
+  }
+}
+
+export function validateRoleBindingPublicationV1(publication: RoleBindingPublicationV1): void {
+  if (publication.schemaVersion !== 1) {
+    throw new Error('role binding publication schemaVersion must be 1');
+  }
+  if (publication.authority !== 'NONE') {
+    throw new Error('role binding publication authority must be NONE');
+  }
+  const logicalRole = requireId(publication.logicalRole, 'logicalRole');
+  if (!['NORMAL', 'HIGH', 'CRITICAL'].includes(publication.riskTier)) {
+    throw new Error('role binding publication riskTier is invalid');
+  }
+  const publishedAt = normalizeTimestamp(publication.publishedAt, 'publishedAt');
+  if (publishedAt !== publication.publishedAt) {
+    throw new Error('role binding publication publishedAt must be canonical ISO');
+  }
+
+  validateBindingPlan(publication.plan);
+  if (
+    publication.plan.logicalRole !== logicalRole ||
+    publication.plan.riskTier !== publication.riskTier
+  ) {
+    throw new Error('role binding publication plan identity mismatch');
+  }
+
+  const definitions = [publication.primary, ...publication.fallbacks];
+  const registry = new BindingRegistry();
+  for (const definition of definitions) registry.register(cloneBinding(definition));
+
+  if (publication.plan.bindings.length !== definitions.length) {
+    throw new Error('role binding publication plan binding count mismatch');
+  }
+  for (const [index, definition] of definitions.entries()) {
+    const resolved = publication.plan.bindings[index];
+    if (
+      resolved === undefined ||
+      resolved.bindingId !== definition.id ||
+      resolved.bindingVersion !== definition.version ||
+      resolved.providerId !== definition.providerId ||
+      resolved.model !== definition.model ||
+      resolved.effort !== definition.effort ||
+      resolved.independenceGroup !== definition.independenceGroup
+    ) {
+      throw new Error('role binding publication plan binding identity mismatch');
+    }
+  }
+
+  const identity = {
+    schemaVersion: 1 as const,
+    logicalRole,
+    riskTier: publication.riskTier,
+    publishedAt,
+    primary: cloneBinding(publication.primary),
+    fallbacks: publication.fallbacks.map(cloneBinding),
+    plan: publication.plan,
+    authority: 'NONE' as const,
+  };
+  if (sha256Canonical(identity) !== publication.hash) {
+    throw new Error('role binding publication hash mismatch');
   }
 }
 

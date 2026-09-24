@@ -10,6 +10,8 @@ import {
   recordCapabilityProbe,
   recordShadowVerification,
   roleBindingManagementCanGrantAuthority,
+  validateBindingPlan,
+  validateRoleBindingPublicationV1,
 } from '../dist/index.js';
 
 function provider(id, models) {
@@ -348,5 +350,119 @@ test('preview fails closed without managed catalog and publish validates managem
         publishedAt: 'not-a-date',
       }),
     /operationId is required/,
+  );
+});
+
+test('validated role binding publication rehydrates without emitting audit', async () => {
+  const { providers, catalogs, snapshot } = await setupCatalog([
+    {
+      modelId: 'model-a',
+      locality: 'REMOTE',
+      capabilities: ['structured_output'],
+      supportedEfforts: ['medium'],
+    },
+  ]);
+  const primary = binding('controller-primary', '1.0.0', 'model-a');
+  const qualification = qualify(snapshot, 'model-a', 'controller', 'NORMAL');
+  const firstAudit = new AuditSink();
+  const first = new RoleBindingManagementService(providers, catalogs, firstAudit);
+  const publication = await first.publish({
+    logicalRole: 'controller',
+    riskTier: 'NORMAL',
+    primary,
+    qualifications: { [primary.id]: qualification },
+    operationId: 'publish',
+    publishedAt: '2026-09-24T21:30:00.000Z',
+  });
+
+  validateBindingPlan(publication.plan);
+  validateRoleBindingPublicationV1(publication);
+
+  const restoredAudit = new AuditSink();
+  const restored = new RoleBindingManagementService(providers, catalogs, restoredAudit, [
+    publication,
+  ]);
+
+  assert.equal(restored.getPublished('controller', 'NORMAL').hash, publication.hash);
+  assert.deepEqual(restored.listPublished(), [publication]);
+  assert.equal(restoredAudit.events.length, 0);
+});
+
+test('role binding publication rehydration fails closed on plan and publication tamper', async () => {
+  const { providers, catalogs, snapshot } = await setupCatalog([
+    {
+      modelId: 'model-a',
+      locality: 'REMOTE',
+      capabilities: ['structured_output'],
+      supportedEfforts: ['medium'],
+    },
+  ]);
+  const primary = binding('controller-primary', '1.0.0', 'model-a');
+  const qualification = qualify(snapshot, 'model-a', 'controller', 'NORMAL');
+  const service = new RoleBindingManagementService(providers, catalogs, new AuditSink());
+  const publication = await service.publish({
+    logicalRole: 'controller',
+    riskTier: 'NORMAL',
+    primary,
+    qualifications: { [primary.id]: qualification },
+    operationId: 'publish',
+    publishedAt: '2026-09-24T21:30:00.000Z',
+  });
+
+  const tamperedPlan = {
+    ...publication.plan,
+    bindings: publication.plan.bindings.map((item) => ({ ...item, model: 'model-b' })),
+  };
+  assert.throws(() => validateBindingPlan(tamperedPlan), /hash mismatch/);
+
+  const tamperedPublication = { ...publication, hash: 'f'.repeat(64) };
+  assert.throws(
+    () => validateRoleBindingPublicationV1(tamperedPublication),
+    /publication hash mismatch/,
+  );
+  assert.throws(
+    () =>
+      new RoleBindingManagementService(providers, catalogs, new AuditSink(), [tamperedPublication]),
+    /publication hash mismatch/,
+  );
+});
+
+test('role binding publication rehydration rejects duplicate role-risk state and identity mismatch', async () => {
+  const { providers, catalogs, snapshot } = await setupCatalog([
+    {
+      modelId: 'model-a',
+      locality: 'REMOTE',
+      capabilities: ['structured_output'],
+      supportedEfforts: ['medium'],
+    },
+  ]);
+  const primary = binding('controller-primary', '1.0.0', 'model-a');
+  const qualification = qualify(snapshot, 'model-a', 'controller', 'NORMAL');
+  const service = new RoleBindingManagementService(providers, catalogs, new AuditSink());
+  const publication = await service.publish({
+    logicalRole: 'controller',
+    riskTier: 'NORMAL',
+    primary,
+    qualifications: { [primary.id]: qualification },
+    operationId: 'publish',
+    publishedAt: '2026-09-24T21:30:00.000Z',
+  });
+
+  assert.throws(
+    () =>
+      new RoleBindingManagementService(providers, catalogs, new AuditSink(), [
+        publication,
+        publication,
+      ]),
+    /duplicate initial role binding publication/,
+  );
+
+  assert.throws(
+    () =>
+      validateRoleBindingPublicationV1({
+        ...publication,
+        logicalRole: 'other-role',
+      }),
+    /plan identity mismatch/,
   );
 });
