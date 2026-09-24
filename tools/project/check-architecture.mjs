@@ -1219,6 +1219,30 @@ try {
   failures.push('missing execution-runtime side-effect boundary contract');
 }
 
+try {
+  const structuredResults = await fs.readFile(
+    path.join(root, 'packages', 'contracts', 'src', 'runtime-results.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    "kind: z.literal('REVIEW')",
+    "kind: z.literal('TEST_ADEQUACY')",
+    "kind: z.literal('CANDIDATE_ADJUDICATION')",
+    "kind: z.literal('AUTONOMOUS_MERGE_REVIEW')",
+    "status: 'MALFORMED'",
+    'export function structuredRoleResultIsSemanticNegative',
+    'export function structuredRoleResultCanGrantAuthority(): false',
+    'export function malformedOutputCanBecomeSemanticApproval(): false',
+  ]) {
+    if (!structuredResults.includes(invariant)) {
+      failures.push(`structured specialist output contract missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing structured specialist output contracts');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
