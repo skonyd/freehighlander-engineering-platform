@@ -1312,6 +1312,34 @@ try {
   failures.push('missing local Git worktree execution backend');
 }
 
+try {
+  const nodeResultSource = await fs.readFile(
+    path.join(root, 'packages', 'orchestration', 'src', 'node-result.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function buildCanonicalExecutionScope',
+    'export function buildNodeExecutionIdentity',
+    'export function createNodeResultV1',
+    'export function evaluateNodeResultReuse',
+    'export function evaluateMandatoryJoin',
+    "status: 'REUSABLE'",
+    "status: 'STALE'",
+    "status: 'NOT_REUSABLE'",
+    'side-effecting result requires idempotency evidence',
+    'only successful node results may be reused',
+    'export function nodeResultReuseCanGrantAuthority(): false',
+    'export function semanticNegativeCanTriggerModelShopping(): false',
+  ]) {
+    if (!nodeResultSource.includes(invariant)) {
+      failures.push(`exact node-result reuse contract missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing exact node-result reuse and join contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
