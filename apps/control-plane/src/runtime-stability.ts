@@ -46,12 +46,14 @@ export interface AcquireRunLeaseDecision {
 export interface BulkheadPolicy {
   readonly maxGlobalActive: number;
   readonly maxPerProviderActive: number;
+  readonly maxPerEndpointActive: number | null;
   readonly maxQueued: number;
 }
 
 export interface BulkheadRequest {
   readonly requestId: string;
   readonly providerId: string;
+  readonly endpointId: string | null;
   readonly enqueuedMonoMs: number;
 }
 
@@ -59,6 +61,7 @@ export interface BulkheadPermit {
   readonly permitId: string;
   readonly requestId: string;
   readonly providerId: string;
+  readonly endpointId: string | null;
   readonly acquiredMonoMs: number;
   readonly queueWaitMs: number;
 }
@@ -80,6 +83,14 @@ export interface BulkheadReleaseDecision {
   readonly promotedPermit: BulkheadPermit | null;
   readonly snapshot: BulkheadSnapshot;
   readonly authority: 'NONE';
+}
+
+export type BulkheadTerminalOutcome = 'SUCCESS' | 'FAILURE' | 'TIMEOUT' | 'CANCELLED';
+
+export interface BulkheadTerminalReleaseDecision extends BulkheadReleaseDecision {
+  readonly outcome: BulkheadTerminalOutcome;
+  readonly permitReleased: true;
+  readonly semanticRetry: false;
 }
 
 export interface MonotonicDeadline {
@@ -227,7 +238,7 @@ export function requestBulkheadPermit(
 
   assertUniqueBulkheadRequest(snapshot, request.requestId);
 
-  if (bulkheadHasCapacity(snapshot, policy, request.providerId)) {
+  if (bulkheadHasCapacity(snapshot, policy, request)) {
     const permit = createPermit(request, nowMonoMs);
     return {
       status: 'ACQUIRED',
@@ -279,7 +290,7 @@ export function releaseBulkheadPermit(
   let promotedPermit: BulkheadPermit | null = null;
 
   const candidateIndex = queued.findIndex((request) =>
-    bulkheadHasCapacity({ active, queued }, policy, request.providerId),
+    bulkheadHasCapacity({ active, queued }, policy, request),
   );
   if (candidateIndex >= 0) {
     const candidate = queued[candidateIndex] as BulkheadRequest;
@@ -295,6 +306,31 @@ export function releaseBulkheadPermit(
     snapshot: { active, queued },
     authority: 'NONE',
   };
+}
+
+export function releaseBulkheadPermitAfterOutcome(
+  snapshot: BulkheadSnapshot,
+  policy: BulkheadPolicy,
+  permitId: string,
+  nowMonoMs: number,
+  outcome: BulkheadTerminalOutcome,
+): BulkheadTerminalReleaseDecision {
+  validateBulkheadTerminalOutcome(outcome);
+  const released = releaseBulkheadPermit(snapshot, policy, permitId, nowMonoMs);
+  return {
+    ...released,
+    outcome,
+    permitReleased: true,
+    semanticRetry: false,
+  };
+}
+
+export function bulkheadTerminalOutcomeCanSkipPermitRelease(): false {
+  return false;
+}
+
+export function bulkheadTerminalOutcomeCountsAsSemanticRetry(): false {
+  return false;
 }
 
 export function createMonotonicDeadline(
@@ -376,12 +412,16 @@ function validateRunLease(lease: RunLeaseV1): void {
 function validateBulkheadPolicy(policy: BulkheadPolicy): void {
   requirePositiveInteger(policy.maxGlobalActive, 'maxGlobalActive');
   requirePositiveInteger(policy.maxPerProviderActive, 'maxPerProviderActive');
+  if (policy.maxPerEndpointActive !== null) {
+    requirePositiveInteger(policy.maxPerEndpointActive, 'maxPerEndpointActive');
+  }
   requireNonNegativeInteger(policy.maxQueued, 'maxQueued');
 }
 
 function validateBulkheadRequest(request: BulkheadRequest): void {
   requireIdentifier(request.requestId, 'requestId');
   requireIdentifier(request.providerId, 'providerId');
+  if (request.endpointId !== null) requireIdentifier(request.endpointId, 'endpointId');
   requireNonNegativeFinite(request.enqueuedMonoMs, 'enqueuedMonoMs');
 }
 
@@ -391,6 +431,7 @@ function validateBulkheadSnapshot(snapshot: BulkheadSnapshot): void {
     requireIdentifier(permit.permitId, 'permitId');
     requireIdentifier(permit.requestId, 'requestId');
     requireIdentifier(permit.providerId, 'providerId');
+    if (permit.endpointId !== null) requireIdentifier(permit.endpointId, 'endpointId');
     requireNonNegativeFinite(permit.acquiredMonoMs, 'acquiredMonoMs');
     requireNonNegativeFinite(permit.queueWaitMs, 'queueWaitMs');
     if (ids.has(permit.requestId)) throw new Error('duplicate bulkhead requestId');
@@ -415,13 +456,23 @@ function assertUniqueBulkheadRequest(snapshot: BulkheadSnapshot, requestId: stri
 function bulkheadHasCapacity(
   snapshot: BulkheadSnapshot,
   policy: BulkheadPolicy,
-  providerId: string,
+  request: BulkheadRequest,
 ): boolean {
   if (snapshot.active.length >= policy.maxGlobalActive) return false;
+
   const providerActive = snapshot.active.filter(
-    (permit) => permit.providerId === providerId,
+    (permit) => permit.providerId === request.providerId,
   ).length;
-  return providerActive < policy.maxPerProviderActive;
+  if (providerActive >= policy.maxPerProviderActive) return false;
+
+  if (request.endpointId !== null && policy.maxPerEndpointActive !== null) {
+    const endpointActive = snapshot.active.filter(
+      (permit) => permit.endpointId === request.endpointId,
+    ).length;
+    if (endpointActive >= policy.maxPerEndpointActive) return false;
+  }
+
+  return true;
 }
 
 function createPermit(request: BulkheadRequest, nowMonoMs: number): BulkheadPermit {
@@ -429,9 +480,21 @@ function createPermit(request: BulkheadRequest, nowMonoMs: number): BulkheadPerm
     permitId: 'permit:' + request.requestId,
     requestId: request.requestId,
     providerId: request.providerId,
+    endpointId: request.endpointId,
     acquiredMonoMs: nowMonoMs,
     queueWaitMs: nowMonoMs - request.enqueuedMonoMs,
   };
+}
+
+function validateBulkheadTerminalOutcome(outcome: BulkheadTerminalOutcome): void {
+  if (
+    outcome !== 'SUCCESS' &&
+    outcome !== 'FAILURE' &&
+    outcome !== 'TIMEOUT' &&
+    outcome !== 'CANCELLED'
+  ) {
+    throw new Error('unsupported bulkhead terminal outcome');
+  }
 }
 
 function validateMonotonicDeadline(deadline: MonotonicDeadline): void {
