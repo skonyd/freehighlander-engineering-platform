@@ -1340,6 +1340,32 @@ try {
   failures.push('missing exact node-result reuse and join contract');
 }
 
+try {
+  const stabilitySource = await fs.readFile(
+    path.join(root, 'apps', 'control-plane', 'src', 'runtime-stability.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function buildRunIntentIdentity',
+    'export function acquireRunLease',
+    "status: 'ATTACHED_EXISTING'",
+    'export function requestBulkheadPermit',
+    'export function releaseBulkheadPermit',
+    'export function createMonotonicDeadline',
+    'export function runtimeStabilityCanGrantAuthority(): false',
+    'export function waitingCountsAsSemanticRetry(): false',
+    'export function expiredLeaseCanRepeatSideEffects(): false',
+    "readonly authority: 'NONE'",
+  ]) {
+    if (!stabilitySource.includes(invariant)) {
+      failures.push(`runtime stability contract missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing runtime stability guard contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
