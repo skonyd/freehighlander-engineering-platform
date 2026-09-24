@@ -1,4 +1,8 @@
-import { refreshModelCatalogFromProvider, type ModelCatalogSnapshotV1 } from './model-catalog.js';
+import {
+  refreshModelCatalogFromProvider,
+  validateModelCatalogSnapshotV1,
+  type ModelCatalogSnapshotV1,
+} from './model-catalog.js';
 import type { ProviderRegistry } from './binding-registry.js';
 
 export interface ModelCatalogManagementAuditEvent {
@@ -37,7 +41,19 @@ export class ModelCatalogManagementService {
   constructor(
     readonly providers: ProviderRegistry,
     readonly auditSink: ModelCatalogManagementAuditSink,
-  ) {}
+    initialCatalogs: readonly ModelCatalogSnapshotV1[] = [],
+  ) {
+    for (const snapshot of initialCatalogs) {
+      validateModelCatalogSnapshotV1(snapshot);
+      if (!this.providers.has(snapshot.providerId)) {
+        throw new Error(`cannot rehydrate catalog for unknown provider ${snapshot.providerId}`);
+      }
+      if (this.#catalogs.has(snapshot.providerId)) {
+        throw new Error(`duplicate initial catalog provider ${snapshot.providerId}`);
+      }
+      this.#catalogs.set(snapshot.providerId, snapshot);
+    }
+  }
 
   getCatalog(providerId: string): ModelCatalogSnapshotV1 | undefined {
     return this.#catalogs.get(requireId(providerId, 'providerId'));
