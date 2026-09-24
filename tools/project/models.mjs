@@ -83,9 +83,7 @@ async function execute(parsed, current, store) {
     const baseUrl = requireOption(options, 'base-url');
     const locality = requireOption(options, 'locality');
     const credentialEnv =
-      options['credential-env'] === undefined
-        ? null
-        : requireOption(options, 'credential-env');
+      options['credential-env'] === undefined ? null : requireOption(options, 'credential-env');
 
     const mutation = setManagedProvider(current.state, {
       id,
@@ -130,14 +128,8 @@ async function execute(parsed, current, store) {
 
   if (command === 'refresh') {
     const id = requireOption(options, 'provider');
-    const refreshedAt =
-      typeof options.at === 'string' ? options.at : new Date().toISOString();
-    const refreshed = await refreshManagedProvider(
-      current.state,
-      id,
-      refreshedAt,
-      process.env,
-    );
+    const refreshedAt = typeof options.at === 'string' ? options.at : new Date().toISOString();
+    const refreshed = await refreshManagedProvider(current.state, id, refreshedAt, process.env);
     const written = writeModelManagementState(store, current.generation, refreshed.state);
     return {
       status: 'WRITTEN',
@@ -155,8 +147,7 @@ async function execute(parsed, current, store) {
   }
 
   if (command === 'catalog') {
-    const providerId =
-      typeof options.provider === 'string' ? options.provider : undefined;
+    const providerId = typeof options.provider === 'string' ? options.provider : undefined;
     return {
       status: 'OK',
       generation: current.generation,
@@ -189,11 +180,7 @@ async function execute(parsed, current, store) {
   }
 
   if (command === 'binding' && subcommand === 'preview') {
-    const preview = previewManagedBinding(
-      current.state,
-      bindingArgs(options),
-      process.env,
-    );
+    const preview = previewManagedBinding(current.state, bindingArgs(options), process.env);
     return {
       status: 'OK',
       plan: preview.plan,
@@ -203,8 +190,7 @@ async function execute(parsed, current, store) {
   }
 
   if (command === 'binding' && subcommand === 'publish') {
-    const publishedAt =
-      typeof options.at === 'string' ? options.at : new Date().toISOString();
+    const publishedAt = typeof options.at === 'string' ? options.at : new Date().toISOString();
     const result = await publishManagedBinding(
       current.state,
       bindingArgs(options),
@@ -232,8 +218,7 @@ function bindingArgs(options) {
     role: requireOption(options, 'role'),
     risk: requireOption(options, 'risk'),
     bindingId: requireOption(options, 'binding-id'),
-    version:
-      typeof options.version === 'string' ? options.version : '1.0.0',
+    version: typeof options.version === 'string' ? options.version : '1.0.0',
     provider: requireOption(options, 'provider'),
     model: requireOption(options, 'model'),
     ...(typeof options.effort === 'string' ? { effort: options.effort } : {}),
