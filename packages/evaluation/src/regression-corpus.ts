@@ -132,7 +132,7 @@ export async function promoteConfirmedMissToRegressionCase(
 
   const sourceFindingKeyHash = await sha256Hex(input.sourceFindingKey);
   const identity = {
-    schemaVersion: 1,
+    schemaVersion: 1 as const,
     caseId: input.caseId,
     role: input.source.role,
     riskTier: input.riskTier,
@@ -174,7 +174,7 @@ export async function buildRegressionCorpus(input: {
   }
 
   const identity = {
-    schemaVersion: 1,
+    schemaVersion: 1 as const,
     version: input.version,
     createdAt,
     cases,
@@ -232,7 +232,7 @@ export async function runRegressionCorpus(input: {
 
   const passedCases = results.filter((item) => item.status === 'PASS').length;
   const identity = {
-    schemaVersion: 1,
+    schemaVersion: 1 as const,
     corpusHash: input.corpus.hash,
     role: input.role,
     bindingId: input.worker.binding.id,
@@ -266,7 +266,7 @@ async function validateRegressionCorpus(corpus: RegressionCorpusV1): Promise<voi
   requireTimestamp(corpus.createdAt, 'createdAt');
   for (const regressionCase of corpus.cases) await validateRegressionCase(regressionCase);
   const identity = {
-    schemaVersion: 1,
+    schemaVersion: 1 as const,
     version: corpus.version,
     createdAt: corpus.createdAt,
     cases: corpus.cases,
