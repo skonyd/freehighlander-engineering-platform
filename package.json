@@ -30,7 +30,7 @@
     "check:docs": "node tools/project/check-doc-drift.mjs",
     "check:ci": "node tools/project/check-ci-supply-chain.mjs",
     "check:secrets": "node tools/project/check-secrets.mjs",
-    "check:coverage": "node tools/project/check-coverage.mjs; code=$?; echo \"--- local-worktree-backend dist diagnostic ---\"; nl -ba apps/control-plane/dist/local-worktree-backend.js | sed -n \"35,90p;120,145p;375,435p;465,510p;525,545p;610,635p\"; exit $code",
+    "check:coverage": "node tools/project/check-coverage.mjs",
     "check:lockfile": "node tools/project/check-lockfile.mjs",
     "check:build-integrity": "node tools/project/check-build-integrity.mjs",
     "check:publish-safety": "node tools/project/check-publish-safety.mjs",
