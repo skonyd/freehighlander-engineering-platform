@@ -1,13 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import {
-  mkdir,
-  mkdtemp,
-  readFile,
-  rm,
-  symlink,
-  writeFile,
-} from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -126,8 +119,12 @@ test('local worktree backend validates configuration and exact repository identi
   });
   await assert.rejects(() => backend.create(shortRevision, fixture.repositoryRoot), /full Git SHA/);
 
-  await assert.rejects(() => backend.create(descriptor(fixture.revision, { workspaceId: 'bad/id' }), fixture.repositoryRoot));
-  await assert.rejects(() => backend.create(descriptor(fixture.revision, { workspaceId: 'workspace-004' }), 'relative'));
+  await assert.rejects(() =>
+    backend.create(descriptor(fixture.revision, { workspaceId: 'bad/id' }), fixture.repositoryRoot),
+  );
+  await assert.rejects(() =>
+    backend.create(descriptor(fixture.revision, { workspaceId: 'workspace-004' }), 'relative'),
+  );
   await assert.rejects(
     () =>
       backend.create(
@@ -203,7 +200,10 @@ test('filesystem backend contains reads and writes and snapshots tracked plus un
   await assert.rejects(() => backend.writeText(handle, 'new.txt', 'too long', 2), /maxBytes/);
   await assert.rejects(() => backend.writeText(handle, 'new.txt', 'x', -1), /non-negative/);
   await assert.rejects(() => backend.readText(handle, '../tracked.txt'), /traversal/);
-  await assert.rejects(() => backend.readText(handle, path.resolve(handle.workspacePath, 'tracked.txt')), /relative/);
+  await assert.rejects(
+    () => backend.readText(handle, path.resolve(handle.workspacePath, 'tracked.txt')),
+    /relative/,
+  );
   await assert.rejects(() => backend.readText(handle, '.git'), /.git/);
   await assert.rejects(() => backend.readText(handle, 'missing.txt'));
 
@@ -236,7 +236,9 @@ test('immutable review workspace cannot be written or execute registered command
   );
 
   const command = createLocalCommandActivityExecutor(handle, {
-    commands: [{ id: 'node-print', executable: 'node', args: ['-e', "process.stdout.write('ok')"] }],
+    commands: [
+      { id: 'node-print', executable: 'node', args: ['-e', "process.stdout.write('ok')"] },
+    ],
   });
   const outcome = await command.execute(
     request(handle, 'COMMAND', { schemaVersion: 1, commandId: 'node-print' }),
@@ -356,12 +358,7 @@ test('registered command executor is shell-free bounded and normalizes success f
   assert.match(failed.output, /bad/);
 
   const timedOut = await executor.execute(
-    request(
-      handle,
-      'COMMAND',
-      { schemaVersion: 1, commandId: 'node-timeout' },
-      { timeoutMs: 10 },
-    ),
+    request(handle, 'COMMAND', { schemaVersion: 1, commandId: 'node-timeout' }, { timeoutMs: 10 }),
   );
   assert.equal(timedOut.status, 'FAILED');
   assert.equal(timedOut.failureKind, 'COMMAND_TIMEOUT');
@@ -516,7 +513,9 @@ test('workspace handle tampering and HEAD drift fail closed for all runtime oper
   await assert.rejects(() => backend.snapshot(handle), /HEAD drifted/);
 
   const command = createLocalCommandActivityExecutor(handle, {
-    commands: [{ id: 'node-print', executable: 'node', args: ['-e', "process.stdout.write('ok')"] }],
+    commands: [
+      { id: 'node-print', executable: 'node', args: ['-e', "process.stdout.write('ok')"] },
+    ],
   });
   const commandOutcome = await command.execute(
     request(handle, 'COMMAND', { schemaVersion: 1, commandId: 'node-print' }),
