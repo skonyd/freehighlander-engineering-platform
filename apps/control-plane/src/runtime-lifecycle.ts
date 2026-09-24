@@ -1,16 +1,8 @@
 export type RuntimeCancellationReason =
-  | 'USER_CANCEL'
-  | 'DEADLINE_EXCEEDED'
-  | 'SHUTDOWN'
-  | 'PARENT_CANCELLED';
+  'USER_CANCEL' | 'DEADLINE_EXCEEDED' | 'SHUTDOWN' | 'PARENT_CANCELLED';
 
 export type RuntimeActivityLifecycleState =
-  | 'QUEUED'
-  | 'RUNNING'
-  | 'CANCEL_REQUESTED'
-  | 'CANCELLED'
-  | 'COMPLETED'
-  | 'FAILED';
+  'QUEUED' | 'RUNNING' | 'CANCEL_REQUESTED' | 'CANCELLED' | 'COMPLETED' | 'FAILED';
 
 export interface RuntimeCancellationActivity {
   readonly id: string;
@@ -42,12 +34,7 @@ export interface RuntimeCancellationPlan {
   readonly authority: 'NONE';
 }
 
-export type RuntimeDrainState =
-  | 'RUNNING'
-  | 'DRAINING'
-  | 'CHECKPOINTED'
-  | 'RELEASING'
-  | 'STOPPED';
+export type RuntimeDrainState = 'RUNNING' | 'DRAINING' | 'CHECKPOINTED' | 'RELEASING' | 'STOPPED';
 
 export interface RuntimeDrainEvidence {
   readonly acceptingNewWork: boolean;
@@ -149,9 +136,7 @@ export function gracefulDrainCanGrantAuthority(): false {
   return false;
 }
 
-function cancellationAction(
-  activity: RuntimeCancellationActivity,
-): RuntimeCancellationAction {
+function cancellationAction(activity: RuntimeCancellationActivity): RuntimeCancellationAction {
   if (activity.state === 'QUEUED') {
     return {
       activityId: activity.id,
@@ -195,7 +180,8 @@ function validateActivities(
   const byId = new Map<string, RuntimeCancellationActivity>();
   for (const activity of activities) {
     requireId(activity.id, 'activity id');
-    if (byId.has(activity.id)) throw new Error('duplicate cancellation activity id: ' + activity.id);
+    if (byId.has(activity.id))
+      throw new Error('duplicate cancellation activity id: ' + activity.id);
     validateActivityState(activity.state);
     byId.set(activity.id, activity);
   }
