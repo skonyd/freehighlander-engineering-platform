@@ -1,4 +1,16 @@
 export {
+  createEmptyModelManagementStateV1,
+  modelManagementStateCanContainSecretValues,
+  modelManagementStateCanGrantAuthority,
+  validateManagedProviderConfigV1,
+  validateModelManagementStateV1,
+  type ManagedCredentialReferenceV1,
+  type ManagedProviderConfigV1,
+  type ManagedProviderKind,
+  type ModelManagementStateV1,
+} from './model-management-state.js';
+
+export {
   GeminiProviderAdapter,
   GeminiProviderInvocationError,
   type GeminiProviderOptions,
