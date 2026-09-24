@@ -1,7 +1,4 @@
-import {
-  refreshModelCatalogFromProvider,
-  type ModelCatalogSnapshotV1,
-} from './model-catalog.js';
+import { refreshModelCatalogFromProvider, type ModelCatalogSnapshotV1 } from './model-catalog.js';
 import type { ProviderRegistry } from './binding-registry.js';
 
 export interface ModelCatalogManagementAuditEvent {
@@ -115,10 +112,7 @@ function buildRefreshResult(
     ) {
       becameUnavailableModelIds.push(record.modelId);
     }
-    if (
-      before?.availability === 'UNAVAILABLE' &&
-      record.availability !== 'UNAVAILABLE'
-    ) {
+    if (before?.availability === 'UNAVAILABLE' && record.availability !== 'UNAVAILABLE') {
       restoredModelIds.push(record.modelId);
     }
     if (record.availability === 'DEPRECATED') {
