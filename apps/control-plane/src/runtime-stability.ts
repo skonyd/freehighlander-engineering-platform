@@ -113,7 +113,7 @@ export function buildRunIntentIdentity(input: RunIntentIdentityInput): RunIntent
 
   return {
     ...identity,
-    intentKey: sha256(canonicalJson(identity)),
+    intentKey: sha256(JSON.stringify(identity)),
     authority: 'NONE',
   };
 }
@@ -498,20 +498,6 @@ function requireNonNegativeFinite(value: number, name: string): void {
   if (!Number.isFinite(value) || value < 0) {
     throw new Error(name + ' must be a non-negative finite number');
   }
-}
-
-function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
-  const record = value as Record<string, unknown>;
-  return (
-    '{' +
-    Object.keys(record)
-      .sort()
-      .map((key) => JSON.stringify(key) + ':' + canonicalJson(record[key]))
-      .join(',') +
-    '}'
-  );
 }
 
 function sha256(value: string): string {
