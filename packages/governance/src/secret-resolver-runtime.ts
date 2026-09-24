@@ -178,7 +178,7 @@ export class ExecFileSecretCommandRunner implements SecretCommandRunner {
           }
           resolve({
             exitCode: 0,
-            stdout: typeof stdout === 'string' ? stdout : stdout.toString('utf8'),
+            stdout,
           });
         },
       );
@@ -615,9 +615,8 @@ function requireTimeout(value: number): void {
   }
 }
 
-function exitCodeFromError(error: NodeJS.ErrnoException): number {
-  const code = (error as NodeJS.ErrnoException & { code?: string | number }).code;
-  return typeof code === 'number' ? code : 1;
+function exitCodeFromError(error: { readonly code?: string | number | null }): number {
+  return typeof error.code === 'number' ? error.code : 1;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
