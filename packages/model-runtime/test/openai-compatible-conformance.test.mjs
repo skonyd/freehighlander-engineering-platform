@@ -194,39 +194,33 @@ test('OpenAI-compatible latency fails closed when monotonic clock moves backward
   }
 });
 
-test(
-  'OpenAI-compatible model discovery maps /v1/models without inventing capabilities',
-  async () => {
-    const harness = await createHarness('healthy');
+test('OpenAI-compatible model discovery maps /v1/models without inventing capabilities', async () => {
+  const harness = await createHarness('healthy');
 
-    try {
-      const models = await harness.adapter.listModels();
-      assert.deepEqual(models, [
-        {
-          modelId: 'conformance-model',
-          displayName: 'conformance-model',
-          locality: 'REMOTE',
-        },
-      ]);
-    } finally {
-      await harness.close();
-    }
-  },
-);
+  try {
+    const models = await harness.adapter.listModels();
+    assert.deepEqual(models, [
+      {
+        modelId: 'conformance-model',
+        displayName: 'conformance-model',
+        locality: 'REMOTE',
+      },
+    ]);
+  } finally {
+    await harness.close();
+  }
+});
 
-test(
-  'OpenAI-compatible model discovery supports explicit local endpoint classification',
-  async () => {
-    const harness = await createHarness('healthy', { modelLocality: 'LOCAL' });
+test('OpenAI-compatible model discovery supports explicit local endpoint classification', async () => {
+  const harness = await createHarness('healthy', { modelLocality: 'LOCAL' });
 
-    try {
-      const models = await harness.adapter.listModels();
-      assert.equal(models[0].locality, 'LOCAL');
-    } finally {
-      await harness.close();
-    }
-  },
-);
+  try {
+    const models = await harness.adapter.listModels();
+    assert.equal(models[0].locality, 'LOCAL');
+  } finally {
+    await harness.close();
+  }
+});
 
 test('OpenAI-compatible model discovery fails closed on malformed model payload', async () => {
   const timers = new Set();
