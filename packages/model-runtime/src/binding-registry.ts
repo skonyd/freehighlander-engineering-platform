@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+import { checkCatalogBinding } from './model-catalog.js';
+import type { ModelCatalogSnapshotV1 } from './model-catalog.js';
 import type { ProviderAdapter, ProviderCapability, ProviderFailureKind } from './index.js';
 
 export type BindingRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
@@ -28,6 +30,7 @@ export interface BindingPlanRequest {
   readonly requiredIndependenceGroup?: string;
   readonly primaryBindingId: string;
   readonly fallbackBindingIds?: readonly string[];
+  readonly catalogByProvider?: Readonly<Record<string, ModelCatalogSnapshotV1>>;
 }
 
 export interface ResolvedBinding {
@@ -47,6 +50,7 @@ export interface BindingPlan {
   readonly requiredCapabilities: readonly ProviderCapability[];
   readonly requiredIndependenceGroup?: string;
   readonly bindings: readonly ResolvedBinding[];
+  readonly catalogHashes?: Readonly<Record<string, string>>;
   readonly hash: string;
   readonly authorityGranted: false;
 }
@@ -123,6 +127,28 @@ export function resolveBindingPlan(
   const resolved = orderedIds.map((bindingId) => {
     const binding = bindings.get(bindingId);
     const provider = providers.get(binding.providerId);
+    const catalog = request.catalogByProvider?.[binding.providerId];
+
+    if (request.catalogByProvider !== undefined && catalog === undefined) {
+      throw new Error(`binding ${binding.id} has no catalog snapshot for provider ${binding.providerId}`);
+    }
+
+    if (catalog !== undefined) {
+      if (catalog.providerId !== binding.providerId) {
+        throw new Error(`binding ${binding.id} catalog provider mismatch`);
+      }
+      const catalogCheck = checkCatalogBinding(catalog, binding.model, binding.effort);
+      if (catalogCheck.status === 'UNKNOWN_MODEL' || catalogCheck.status === 'UNAVAILABLE') {
+        throw new Error(
+          `binding ${binding.id} model ${binding.model} is ${catalogCheck.status.toLowerCase()}`,
+        );
+      }
+      if (binding.effort !== undefined && catalogCheck.supportedEffort === false) {
+        throw new Error(
+          `binding ${binding.id} effort ${binding.effort} is unsupported by model ${binding.model}`,
+        );
+      }
+    }
 
     if (!binding.allowedRiskTiers.includes(request.riskTier)) {
       throw new Error(`binding ${binding.id} is not allowed for risk tier ${request.riskTier}`);
@@ -135,6 +161,14 @@ export function resolveBindingPlan(
     for (const capability of required) {
       if (!provider.capabilities.has(capability)) {
         throw new Error(`binding ${binding.id} requires unsupported capability ${capability}`);
+      }
+      if (catalog !== undefined) {
+        const model = catalog.records.find((record) => record.modelId === binding.model);
+        if (model !== undefined && !model.capabilities.includes(capability)) {
+          throw new Error(
+            `binding ${binding.id} model ${binding.model} lacks required capability ${capability}`,
+          );
+        }
       }
     }
 
@@ -158,6 +192,15 @@ export function resolveBindingPlan(
     } satisfies ResolvedBinding;
   });
 
+  const catalogHashes =
+    request.catalogByProvider === undefined
+      ? undefined
+      : Object.fromEntries(
+          Object.entries(request.catalogByProvider)
+            .sort(([left], [right]) => left.localeCompare(right))
+            .map(([providerId, snapshot]) => [providerId, snapshot.hash]),
+        );
+
   const identity = {
     schemaVersion: 1,
     logicalRole: request.logicalRole,
@@ -165,6 +208,7 @@ export function resolveBindingPlan(
     requiredCapabilities,
     requiredIndependenceGroup: request.requiredIndependenceGroup ?? null,
     bindings: resolved,
+    catalogHashes: catalogHashes ?? null,
   } as const;
 
   return {
@@ -176,6 +220,7 @@ export function resolveBindingPlan(
       ? { requiredIndependenceGroup: request.requiredIndependenceGroup }
       : {}),
     bindings: resolved,
+    ...(catalogHashes ? { catalogHashes } : {}),
     hash: sha256Canonical(identity),
     authorityGranted: false,
   };
