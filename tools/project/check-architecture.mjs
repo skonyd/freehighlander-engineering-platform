@@ -1274,6 +1274,40 @@ try {
   failures.push('missing structured specialist output contracts');
 }
 
+try {
+  const localRuntimeSource = await fs.readFile(
+    path.join(root, 'apps', 'control-plane', 'src', 'local-worktree-backend.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export class LocalGitWorktreeBackend',
+    "backendId !== 'local-git-worktree'",
+    "accessMode !== 'MUTABLE_IMPLEMENTATION'",
+    "failureKind: 'MALFORMED_ACTIVITY_INPUT'",
+    "failureKind: 'COMMAND_NOT_REGISTERED'",
+    'export function localWorktreeBackendCanGrantAuthority(): false',
+    'export function localCommandExecutorUsesShell(): false',
+    'export function localWorkspaceDestroyRequiresLeaseGuard(): true',
+  ]) {
+    if (!localRuntimeSource.includes(invariant)) {
+      failures.push(`local execution backend missing invariant: ${invariant}`);
+    }
+  }
+
+  if (!localRuntimeSource.includes("readonly commandId: string")) {
+    failures.push('local command activities must select registered commandId values');
+  }
+  if (localRuntimeSource.includes("readonly executable: string;\n  readonly args: readonly string[];\n  readonly cwd?: string;\n}")) {
+    failures.push('model-facing command activity input must not accept executable/args directly');
+  }
+  if (localRuntimeSource.includes('shell: true') || localRuntimeSource.includes('exec(')) {
+    failures.push('local command executor must remain shell-free');
+  }
+} catch {
+  failures.push('missing local Git worktree execution backend');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
