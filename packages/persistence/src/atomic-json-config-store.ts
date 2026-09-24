@@ -14,10 +14,7 @@ import {
 import { basename, dirname, join } from 'node:path';
 
 export type JsonScalar = string | number | boolean | null;
-export type JsonValue =
-  | JsonScalar
-  | readonly JsonValue[]
-  | Readonly<{ [key: string]: JsonValue }>;
+export type JsonValue = JsonScalar | readonly JsonValue[] | Readonly<{ [key: string]: JsonValue }>;
 
 export type AtomicConfigValidator = (value: unknown) => JsonValue;
 
@@ -29,10 +26,7 @@ export interface AtomicConfigSnapshot {
   readonly payload: JsonValue;
 }
 
-export type AtomicConfigWriteStatus =
-  | 'WRITTEN'
-  | 'GENERATION_CONFLICT'
-  | 'WRITER_CONFLICT';
+export type AtomicConfigWriteStatus = 'WRITTEN' | 'GENERATION_CONFLICT' | 'WRITER_CONFLICT';
 
 export interface AtomicConfigWriteResult {
   readonly status: AtomicConfigWriteStatus;
@@ -240,9 +234,7 @@ function freezeJson(value: JsonValue): JsonValue {
   }
   if (value !== null && typeof value === 'object') {
     return Object.freeze(
-      Object.fromEntries(
-        Object.entries(value).map(([key, entry]) => [key, freezeJson(entry)]),
-      ),
+      Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, freezeJson(entry)])),
     ) as JsonValue;
   }
   return value;
