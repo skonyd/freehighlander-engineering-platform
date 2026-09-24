@@ -16,7 +16,10 @@ function provider(id, kind = 'OPENAI_COMPATIBLE', locality = 'REMOTE') {
     schemaVersion: 1,
     id,
     kind,
-    baseUrl: kind === 'GEMINI' ? 'https://generativelanguage.googleapis.com' : 'http://127.0.0.1:11434',
+    baseUrl:
+      kind === 'GEMINI'
+        ? 'https://generativelanguage.googleapis.com'
+        : 'http://127.0.0.1:11434',
     locality,
     credential: {
       resolverKind: 'LOCAL_ENV',
@@ -34,7 +37,9 @@ test('empty model management state is canonical authority-neutral and secret-fre
 });
 
 test('managed provider config permits only bounded metadata and LOCAL_ENV references', () => {
-  const local = validateManagedProviderConfigV1(provider('local-provider', 'OPENAI_COMPATIBLE', 'LOCAL'));
+  const local = validateManagedProviderConfigV1(
+    provider('local-provider', 'OPENAI_COMPATIBLE', 'LOCAL'),
+  );
   assert.equal(local.baseUrl, 'http://127.0.0.1:11434');
   assert.equal(local.credential.reference, 'LOCAL_PROVIDER_API_KEY');
 
@@ -133,7 +138,9 @@ test('model management state validates nested catalog and qualification provenan
   );
 });
 
-test('model management state rejects nested unmanaged provider references and unknown fields', () => {
+test(
+  'model management state rejects nested unmanaged provider references and unknown fields',
+  () => {
   const catalog = reconcileModelCatalog({
     providerId: 'missing',
     refreshedAt: '2026-09-24T20:30:00.000Z',
@@ -149,12 +156,13 @@ test('model management state rejects nested unmanaged provider references and un
     /catalog references unmanaged provider/,
   );
 
-  assert.throws(
-    () =>
-      validateModelManagementStateV1({
-        ...createEmptyModelManagementStateV1(),
-        token: 'secret',
-      }),
-    /field is not allowed: token/,
-  );
-});
+    assert.throws(
+      () =>
+        validateModelManagementStateV1({
+          ...createEmptyModelManagementStateV1(),
+          token: 'secret',
+        }),
+      /field is not allowed: token/,
+    );
+  },
+);
