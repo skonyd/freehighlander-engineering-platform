@@ -195,7 +195,9 @@ test('OpenAI-compatible latency fails closed when monotonic clock moves backward
 });
 
 
-test('OpenAI-compatible model discovery maps /v1/models without inventing capabilities', async () => {
+test(
+  'OpenAI-compatible model discovery maps /v1/models without inventing capabilities',
+  async () => {
   const harness = await createHarness('healthy');
 
   try {
@@ -212,7 +214,9 @@ test('OpenAI-compatible model discovery maps /v1/models without inventing capabi
   }
 });
 
-test('OpenAI-compatible model discovery supports explicit local endpoint classification', async () => {
+test(
+  'OpenAI-compatible model discovery supports explicit local endpoint classification',
+  async () => {
   const harness = await createHarness('healthy', { modelLocality: 'LOCAL' });
 
   try {
