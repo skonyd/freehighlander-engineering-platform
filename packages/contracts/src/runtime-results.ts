@@ -149,7 +149,6 @@ export function malformedOutputCanBecomeSemanticApproval(): false {
   return false;
 }
 
-
 export const runtimeErrorClassV1Schema = z.enum([
   'VALIDATION',
   'POLICY_DENIED',
@@ -165,12 +164,7 @@ export const runtimeErrorClassV1Schema = z.enum([
   'INTERNAL',
 ]);
 
-export const runtimeErrorSeverityV1Schema = z.enum([
-  'INFO',
-  'WARNING',
-  'ERROR',
-  'CRITICAL',
-]);
+export const runtimeErrorSeverityV1Schema = z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL']);
 
 export const runtimeRetryabilityV1Schema = z.enum([
   'NEVER',
@@ -179,12 +173,7 @@ export const runtimeRetryabilityV1Schema = z.enum([
   'AFTER_USER_ACTION',
 ]);
 
-export const userImpactV1Schema = z.enum([
-  'WAITING',
-  'DEGRADED',
-  'PARTIAL',
-  'BLOCKED',
-]);
+export const userImpactV1Schema = z.enum(['WAITING', 'DEGRADED', 'PARTIAL', 'BLOCKED']);
 
 export const userActionKindV1Schema = z.enum([
   'NONE',
