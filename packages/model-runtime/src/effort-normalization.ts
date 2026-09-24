@@ -23,6 +23,10 @@ export function resolveProviderEffort(
   options: ProviderEffortResolutionOptions = {},
 ): ProviderEffortResolution {
   const normalized = normalizeEffortValue(requested);
+  if (normalized === 'default' || normalized === 'none') {
+    return { requested, normalized, omitted: true };
+  }
+
   const supported = (options.supportedEfforts ?? []).map(normalizeEffortValue);
 
   if (supported.length > 0 && !supported.includes(normalized)) {
@@ -39,7 +43,7 @@ export function resolveProviderEffort(
     mapped = configured;
   }
 
-  if (mapped === null || normalized === 'default' || normalized === 'none') {
+  if (mapped === null) {
     return { requested, normalized, omitted: true };
   }
 
