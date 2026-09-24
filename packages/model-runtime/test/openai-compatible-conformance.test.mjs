@@ -5,7 +5,7 @@ import test from 'node:test';
 import { OpenAiCompatibleProviderAdapter } from '../dist/index.js';
 import { runProviderAdapterConformance } from './provider-conformance.mjs';
 
-async function createHarness(mode) {
+async function createHarness(mode, adapterOverrides = {}) {
   const timers = new Set();
   const server = createServer((request, response) => {
     if (mode === 'transport-failure') {
@@ -98,6 +98,7 @@ async function createHarness(mode) {
   const adapter = new OpenAiCompatibleProviderAdapter('conformance-openai-compatible', {
     baseUrl: `http://127.0.0.1:${address.port}`,
     healthTimeoutMs: 250,
+    ...adapterOverrides,
   });
 
   return {
@@ -116,6 +117,7 @@ async function createHarness(mode) {
 test('OpenAI-compatible adapter satisfies shared provider conformance', async (t) => {
   await runProviderAdapterConformance(t, {
     expectedCapabilities: ['usage_token_breakdown'],
+    expectMonotonicLatency: true,
     healthy: () => createHarness('healthy'),
     unhealthy: () => createHarness('unhealthy'),
     success: () => createHarness('success'),
@@ -138,4 +140,57 @@ test('OpenAI-compatible adapter satisfies shared provider conformance', async (t
       },
     },
   });
+});
+
+
+test('OpenAI-compatible latency uses only the injected monotonic clock', async () => {
+  const ticks = [100, 145];
+  const harness = await createHarness('success', {
+    monotonicNow: () => ticks.shift(),
+  });
+
+  try {
+    const originalDateNow = Date.now;
+    let wallNow = 9_000_000;
+    Date.now = () => {
+      wallNow -= 1_000_000;
+      return wallNow;
+    };
+
+    try {
+      const result = await harness.adapter.invoke({
+        logicalRole: 'conformance-review',
+        input: 'probe',
+        model: 'conformance-model',
+        timeoutMs: 2_000,
+      });
+      assert.equal(result.latencyMs, 45);
+    } finally {
+      Date.now = originalDateNow;
+    }
+  } finally {
+    await harness.close();
+  }
+});
+
+test('OpenAI-compatible latency fails closed when monotonic clock moves backwards', async () => {
+  const ticks = [100, 99];
+  const harness = await createHarness('success', {
+    monotonicNow: () => ticks.shift(),
+  });
+
+  try {
+    await assert.rejects(
+      () =>
+        harness.adapter.invoke({
+          logicalRole: 'conformance-review',
+          input: 'probe',
+          model: 'conformance-model',
+          timeoutMs: 2_000,
+        }),
+      /monotonic clock cannot move backwards/,
+    );
+  } finally {
+    await harness.close();
+  }
 });
