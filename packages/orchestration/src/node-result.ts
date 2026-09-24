@@ -254,7 +254,9 @@ export function evaluateMandatoryJoin(
   requirements: readonly MandatoryJoinRequirement[],
   results: ReadonlyMap<string, NodeResultV1>,
 ): MandatoryJoinResult {
-  if (requirements.length === 0) throw new Error('mandatory join requires at least one predecessor');
+  if (requirements.length === 0) {
+    throw new Error('mandatory join requires at least one predecessor');
+  }
 
   const seen = new Set<string>();
   const errors: string[] = [];
