@@ -207,11 +207,7 @@ function validateJsonValue(value: unknown): ProviderEgressPreparationValidation 
   const seen = new WeakSet<object>();
 
   const visit = (candidate: unknown, currentPath: string): void => {
-    if (
-      candidate === null ||
-      typeof candidate === 'string' ||
-      typeof candidate === 'boolean'
-    ) {
+    if (candidate === null || typeof candidate === 'string' || typeof candidate === 'boolean') {
       return;
     }
 
