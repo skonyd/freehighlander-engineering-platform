@@ -275,9 +275,7 @@ test('catalog-aware binding plan rejects unavailable and unknown models for new 
     independenceGroup: 'g',
   });
 
-  const first = catalog('p1', [
-    { modelId: 'removed-model', capabilities: ['structured_output'] },
-  ]);
+  const first = catalog('p1', [{ modelId: 'removed-model', capabilities: ['structured_output'] }]);
   const refreshed = reconcileModelCatalog({
     providerId: 'p1',
     refreshedAt: '2026-09-24T19:00:00.000Z',
