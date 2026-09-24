@@ -11,6 +11,7 @@ import {
   recordCapabilityProbe,
   recordRegressionVerification,
   recordShadowVerification,
+  validateModelQualificationSnapshotV1,
 } from '../dist/index.js';
 
 const CATALOG_HASH = 'a'.repeat(64);
