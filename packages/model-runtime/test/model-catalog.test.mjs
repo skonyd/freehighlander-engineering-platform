@@ -6,6 +6,7 @@ import {
   modelCatalogCanGrantAuthority,
   modelCatalogRefreshCanRewriteBindings,
   reconcileModelCatalog,
+  refreshModelCatalogFromProvider,
 } from '../dist/index.js';
 
 const T1 = '2026-09-24T10:00:00.000Z';
@@ -258,4 +259,102 @@ test('catalog identifiers and effort metadata are normalized and validated', () 
       ),
     /modelId/,
   );
+});
+
+
+test('provider discovery refresh requires health and preserves provider-neutral metadata', async () => {
+  let listed = 0;
+  const provider = {
+    id: 'provider-a',
+    capabilities: () => new Set(['structured_output']),
+    health: async () => ({ available: true }),
+    invoke: async () => ({ output: 'ok', model: 'm' }),
+    listModels: async () => {
+      listed += 1;
+      return [
+        {
+          modelId: 'discovered',
+          displayName: 'Discovered Model',
+          capabilities: ['structured_output'],
+          supportedEfforts: ['low', 'high'],
+          contextWindowTokens: 64000,
+          maxOutputTokens: 4096,
+          locality: 'REMOTE',
+          availability: 'DEPRECATED',
+        },
+      ];
+    },
+  };
+
+  const snapshot = await refreshModelCatalogFromProvider(provider, T1);
+  assert.equal(listed, 1);
+  assert.equal(snapshot.providerId, 'provider-a');
+  assert.equal(snapshot.records[0].modelId, 'discovered');
+  assert.equal(snapshot.records[0].source, 'DISCOVERED');
+  assert.equal(snapshot.records[0].availability, 'DEPRECATED');
+  assert.deepEqual(snapshot.records[0].supportedEfforts, ['high', 'low']);
+});
+
+test('provider discovery refresh fails closed before listing when provider health is unavailable', async () => {
+  let listed = 0;
+  const provider = {
+    id: 'provider-a',
+    capabilities: () => new Set(),
+    health: async () => ({ available: false, detail: 'offline' }),
+    invoke: async () => ({ output: 'ok', model: 'm' }),
+    listModels: async () => {
+      listed += 1;
+      return [];
+    },
+  };
+
+  await assert.rejects(
+    () => refreshModelCatalogFromProvider(provider, T1),
+    /not healthy for model discovery/,
+  );
+  assert.equal(listed, 0);
+});
+
+test('provider without discovery support fails closed and existing catalog is not rewritten', async () => {
+  const previous = reconcileModelCatalog({
+    providerId: 'provider-a',
+    refreshedAt: T1,
+    discovered: [model('existing')],
+  });
+  const provider = {
+    id: 'provider-a',
+    capabilities: () => new Set(),
+    health: async () => ({ available: true }),
+    invoke: async () => ({ output: 'ok', model: 'm' }),
+  };
+
+  await assert.rejects(
+    () => refreshModelCatalogFromProvider(provider, T2, previous),
+    /does not support model discovery/,
+  );
+  assert.equal(previous.records[0].availability, 'AVAILABLE');
+  assert.equal(previous.refreshedAt, T1);
+});
+
+test('provider discovery refresh reconciles prior snapshots without silent binding migration', async () => {
+  const previous = reconcileModelCatalog({
+    providerId: 'provider-a',
+    refreshedAt: T1,
+    discovered: [model('old'), model('keep')],
+  });
+  const provider = {
+    id: 'provider-a',
+    capabilities: () => new Set(),
+    health: async () => ({ available: true }),
+    invoke: async () => ({ output: 'ok', model: 'm' }),
+    listModels: async () => [
+      { modelId: 'keep', locality: 'REMOTE' },
+      { modelId: 'new', locality: 'LOCAL' },
+    ],
+  };
+
+  const refreshed = await refreshModelCatalogFromProvider(provider, T2, previous);
+  assert.equal(checkCatalogBinding(refreshed, 'old').status, 'UNAVAILABLE');
+  assert.equal(checkCatalogBinding(refreshed, 'new').status, 'AVAILABLE');
+  assert.equal(checkCatalogBinding(refreshed, 'old').maySilentlyRewriteBinding, false);
 });
