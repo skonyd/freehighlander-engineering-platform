@@ -131,7 +131,9 @@ test('qualification transitions reject skipped stages and role-risk mismatch', (
   );
 });
 
-test('deprecated and unavailable qualification states preserve evidence but are not bindable', () => {
+test(
+  'deprecated and unavailable qualification states preserve evidence but are not bindable',
+  () => {
   const probed = recordCapabilityProbe(discovered(), {
     evidenceHash: PROBE_HASH,
     status: 'PASS',
@@ -159,8 +161,9 @@ test('deprecated and unavailable qualification states preserve evidence but are 
   assert.equal(deprecated.shadow.evidenceHash, SHADOW_HASH);
   assert.equal(unavailable.eligibility.decisionHash, DECISION_HASH);
   assert.equal(qualificationAllowsBinding(deprecated, 'controller', 'NORMAL'), false);
-  assert.equal(qualificationAllowsBinding(unavailable, 'controller', 'NORMAL'), false);
-});
+    assert.equal(qualificationAllowsBinding(unavailable, 'controller', 'NORMAL'), false);
+  },
+);
 
 test('qualification snapshot tampering and malformed hashes fail closed', () => {
   assert.throws(
