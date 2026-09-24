@@ -1605,6 +1605,50 @@ try {
   failures.push('missing portable secret binding metadata contract');
 }
 
+try {
+  const providerConformance = await fs.readFile(
+    path.join(root, 'packages', 'model-runtime', 'test', 'provider-conformance.mjs'),
+    'utf8',
+  );
+  const openAiConformance = await fs.readFile(
+    path.join(
+      root,
+      'packages',
+      'model-runtime',
+      'test',
+      'openai-compatible-conformance.test.mjs',
+    ),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export async function runProviderAdapterConformance',
+    'health success and declared capability consistency',
+    'health failure is observable without invocation',
+    'successful invocation maps output model and usage',
+    'timeout is classified as transport_failure',
+    'authentication failure is classified as auth_unavailable',
+    'quota exhaustion is classified separately from rate limiting',
+    'provider 5xx failure is classified as provider_unavailable',
+    'transport failure is classified independently from provider response',
+    'malformed provider response is classified as malformed_output',
+    'optional adapter features run conformance hooks only when implemented',
+  ]) {
+    if (!providerConformance.includes(invariant)) {
+      failures.push(`provider adapter conformance missing invariant: ${invariant}`);
+    }
+  }
+
+  if (!openAiConformance.includes('runProviderAdapterConformance(t,')) {
+    failures.push('OpenAI-compatible adapter must run the shared provider conformance suite');
+  }
+  if (!openAiConformance.includes("expectedCapabilities: ['usage_token_breakdown']")) {
+    failures.push('OpenAI-compatible conformance must bind its declared capability set');
+  }
+} catch {
+  failures.push('missing reusable provider adapter conformance suite');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
