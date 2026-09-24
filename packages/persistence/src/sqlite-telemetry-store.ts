@@ -110,6 +110,23 @@ export interface ImportResult {
   readonly duplicates: number;
 }
 
+export interface JsonlTornTailReport {
+  readonly lineNumber: number;
+  readonly byteLength: number;
+  readonly contentHash: string;
+}
+
+export interface JsonlRecoveryInspection {
+  readonly status: 'CLEAN' | 'TORN_TAIL';
+  readonly events: readonly IndexedEngineeringEvent[];
+  readonly tornTail: JsonlTornTailReport | null;
+}
+
+export interface JsonlRecoveryImportResult extends ImportResult {
+  readonly recoveryStatus: 'CLEAN' | 'TORN_TAIL';
+  readonly tornTail: JsonlTornTailReport | null;
+}
+
 export interface RunIndexRecord {
   readonly runId: string;
   readonly taskId: string | null;
@@ -280,6 +297,16 @@ export class SqliteTelemetryStore {
   importJsonl(filePath: string): ImportResult {
     const events = parseJsonlFile(filePath);
     return this.ingestMany(events);
+  }
+
+  importJsonlRecovering(filePath: string): JsonlRecoveryImportResult {
+    const inspection = inspectTelemetryJsonlFile(filePath);
+    const imported = this.ingestMany(inspection.events);
+    return {
+      ...imported,
+      recoveryStatus: inspection.status,
+      tornTail: inspection.tornTail,
+    };
   }
 
   listRuns(limit = 100): readonly RunIndexRecord[] {
@@ -781,25 +808,62 @@ function inspectDatabase(database: DatabaseSync): SqliteIntegrityResult {
   };
 }
 
+export function inspectTelemetryJsonlFile(filePath: string): JsonlRecoveryInspection {
+  const content = readFileSync(filePath, 'utf8');
+  return parseJsonlContent(content, true);
+}
+
+export function jsonlTornTailCanBecomeEvent(): false {
+  return false;
+}
+
 function parseJsonlFile(filePath: string): IndexedEngineeringEvent[] {
   const content = readFileSync(filePath, 'utf8');
-  const events: IndexedEngineeringEvent[] = [];
+  return [...parseJsonlContent(content, false).events];
+}
 
-  for (const [index, rawLine] of content.split(/\r?\n/).entries()) {
+function parseJsonlContent(content: string, recoverTornTail: boolean): JsonlRecoveryInspection {
+  const events: IndexedEngineeringEvent[] = [];
+  const rawLines = content.split(/\r?\n/);
+  const endsWithNewline = content.endsWith('\n');
+
+  for (const [index, rawLine] of rawLines.entries()) {
     const line = rawLine.trim();
     if (!line) continue;
 
+    let event: unknown;
     try {
-      const event = JSON.parse(line) as unknown;
-      assertIndexableEvent(event);
-      events.push(event);
+      event = JSON.parse(line) as unknown;
     } catch (error) {
+      if (recoverTornTail && index === rawLines.length - 1 && !endsWithNewline) {
+        return {
+          status: 'TORN_TAIL',
+          events,
+          tornTail: {
+            lineNumber: index + 1,
+            byteLength: Buffer.byteLength(rawLine, 'utf8'),
+            contentHash: sha256(rawLine),
+          },
+        };
+      }
       const message = error instanceof Error ? error.message : 'unknown parse failure';
       throw new Error(`invalid telemetry JSONL at line ${index + 1}: ${message}`);
     }
+
+    try {
+      assertIndexableEvent(event);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown validation failure';
+      throw new Error(`invalid telemetry JSONL at line ${index + 1}: ${message}`);
+    }
+    events.push(event);
   }
 
-  return events;
+  return {
+    status: 'CLEAN',
+    events,
+    tornTail: null,
+  };
 }
 
 function assertIndexableEvent(event: unknown): asserts event is IndexedEngineeringEvent {
