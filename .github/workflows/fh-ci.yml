@@ -32,5 +32,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Emit canonical Prettier diff
+        run: |
+          npx prettier --write packages/model-runtime/src/role-binding-management.ts
+          git diff -- packages/model-runtime/src/role-binding-management.ts
+          exit 1
