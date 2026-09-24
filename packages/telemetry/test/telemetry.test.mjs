@@ -326,7 +326,6 @@ test('model catalog telemetry rejects secret-like extra fields and malformed met
   );
 });
 
-
 test('model catalog telemetry validates bounded optional metadata branches', () => {
   const base = {
     type: 'model.binding.changed',
