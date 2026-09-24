@@ -274,9 +274,7 @@ export function releaseBulkheadPermit(
   const permitIndex = snapshot.active.findIndex((permit) => permit.permitId === permitId);
   if (permitIndex < 0) throw new Error('unknown bulkhead permit');
 
-  const active = snapshot.active
-    .filter((_, index) => index !== permitIndex)
-    .map(clonePermit);
+  const active = snapshot.active.filter((_, index) => index !== permitIndex).map(clonePermit);
   const queued = snapshot.queued.map(cloneRequest);
   let promotedPermit: BulkheadPermit | null = null;
 
@@ -326,10 +324,7 @@ export function createMonotonicDeadline(
   };
 }
 
-export function remainingMonotonicBudgetMs(
-  deadline: MonotonicDeadline,
-  nowMonoMs: number,
-): number {
+export function remainingMonotonicBudgetMs(deadline: MonotonicDeadline, nowMonoMs: number): number {
   validateMonotonicDeadline(deadline);
   requireNonNegativeFinite(nowMonoMs, 'nowMonoMs');
   return Math.max(0, deadline.deadlineMonoMs - nowMonoMs);
