@@ -1,4 +1,11 @@
 export {
+  GeminiProviderAdapter,
+  GeminiProviderInvocationError,
+  type GeminiProviderOptions,
+  type GeminiThinkingProfile,
+} from './gemini.js';
+
+export {
   canonicalEffortChoices,
   effortNormalizationCanGrantAuthority,
   normalizeEffortValue,
