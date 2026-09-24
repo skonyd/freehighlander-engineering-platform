@@ -124,6 +124,28 @@ test('required endpoint must be positively healthy while non-required endpoints 
   );
 });
 
+test('optional constraints and a positively healthy required endpoint remain eligible', () => {
+  const result = evaluateRuntimePreflight({
+    runSnapshotBuildable: true,
+    bindings: [
+      binding({
+        effort: null,
+        effortSupported: null,
+        requiredCapabilities: [],
+        availableCapabilities: [],
+        requiredIndependenceGroup: null,
+        endpointRequired: true,
+        endpointHealthy: true,
+        requiredSecretHandleIds: [],
+        resolvableSecretHandleIds: [],
+      }),
+    ],
+  });
+
+  assert.equal(result.status, 'PASS');
+  assert.deepEqual(result.failures, []);
+});
+
 test('HALF_OPEN circuit can be preflight-eligible but OPEN circuit blocks', () => {
   const halfOpen = evaluateRuntimePreflight({
     runSnapshotBuildable: true,
