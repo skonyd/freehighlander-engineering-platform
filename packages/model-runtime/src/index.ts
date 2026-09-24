@@ -18,6 +18,7 @@ export {
 export {
   RoleBindingManagementService,
   roleBindingManagementCanGrantAuthority,
+  validateRoleBindingPublicationV1,
   type RoleBindingManagementAuditEvent,
   type RoleBindingManagementAuditSink,
   type RoleBindingPreviewInput,
@@ -76,6 +77,7 @@ export {
   bindingRegistryCanGrantAuthority,
   resolveBindingPlan,
   selectBinding,
+  validateBindingPlan,
   type BindingPlan,
   type BindingPlanRequest,
   type BindingRiskTier,
