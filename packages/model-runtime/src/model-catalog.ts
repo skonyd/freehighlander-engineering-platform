@@ -232,9 +232,7 @@ export function validateModelCatalogSnapshotV1(snapshot: ModelCatalogSnapshotV1)
     if (record.supportedEfforts.length !== uniqueSorted(record.supportedEfforts).length) {
       throw new Error('catalog supported efforts must be unique');
     }
-    if (
-      record.supportedEfforts.some((effort) => normalizeEffort(effort) !== effort)
-    ) {
+    if (record.supportedEfforts.some((effort) => normalizeEffort(effort) !== effort)) {
       throw new Error('catalog supported efforts must be normalized');
     }
   }
