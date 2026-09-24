@@ -418,7 +418,8 @@ function pathMatchesPrefix(candidate: string, prefix: string): boolean {
   const normalizedCandidate = candidate.replaceAll('\\', '/').replace(/^\.\//, '');
   const normalizedPrefix = prefix.replaceAll('\\', '/').replace(/^\.\//, '').replace(/\/$/, '');
   return (
-    normalizedCandidate === normalizedPrefix || normalizedCandidate.startsWith(normalizedPrefix + '/')
+    normalizedCandidate === normalizedPrefix ||
+    normalizedCandidate.startsWith(normalizedPrefix + '/')
   );
 }
 
