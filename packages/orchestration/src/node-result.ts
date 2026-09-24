@@ -44,11 +44,7 @@ export interface NodeExecutionIdentity extends NodeExecutionIdentityInput {
   readonly authority: 'NONE';
 }
 
-export type NodeResultStatus =
-  | 'SUCCEEDED'
-  | 'SEMANTIC_NEGATIVE'
-  | 'FAILED'
-  | 'HUMAN_REQUIRED';
+export type NodeResultStatus = 'SUCCEEDED' | 'SEMANTIC_NEGATIVE' | 'FAILED' | 'HUMAN_REQUIRED';
 
 export interface NodeResultV1Input {
   readonly identity: NodeExecutionIdentity;
