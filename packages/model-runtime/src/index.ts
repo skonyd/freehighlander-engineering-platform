@@ -41,6 +41,7 @@ export {
   modelQualificationCanGrantAuthority,
   qualificationAllowsBinding,
   recordCapabilityProbe,
+  recordRegressionVerification,
   recordShadowVerification,
   type CapabilityProbeEvidence,
   type EligibilityGrant,
@@ -48,6 +49,7 @@ export {
   type ModelQualificationSnapshotV1,
   type ModelQualificationStage,
   type QualificationRiskTier,
+  type RegressionVerificationEvidence,
   type ShadowVerificationEvidence,
 } from './model-qualification.js';
 
