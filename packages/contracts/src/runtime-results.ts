@@ -197,6 +197,127 @@ export const userActionKindV1Schema = z.enum([
   'CONTACT_SUPPORT',
 ]);
 
+export interface RuntimeErrorPatternDefinitionV1 {
+  readonly patternId: string;
+  readonly errorClass: RuntimeErrorClassV1;
+  readonly defaultSeverity: RuntimeErrorSeverityV1;
+  readonly defaultRetryability: RuntimeRetryabilityV1;
+  readonly defaultImpact: UserImpactV1;
+  readonly defaultAction: UserActionKindV1;
+  readonly userTitle: string;
+}
+
+export const runtimeErrorPatternCatalogV1 = [
+  {
+    patternId: 'FH-VALIDATION-001',
+    errorClass: 'VALIDATION',
+    defaultSeverity: 'ERROR',
+    defaultRetryability: 'NEVER',
+    defaultImpact: 'BLOCKED',
+    defaultAction: 'CHECK_CONFIGURATION',
+    userTitle: 'Input or configuration is invalid',
+  },
+  {
+    patternId: 'FH-POLICY-001',
+    errorClass: 'POLICY_DENIED',
+    defaultSeverity: 'WARNING',
+    defaultRetryability: 'AFTER_USER_ACTION',
+    defaultImpact: 'BLOCKED',
+    defaultAction: 'HUMAN_DECISION',
+    userTitle: 'Policy blocked this operation',
+  },
+  {
+    patternId: 'FH-DEPENDENCY-001',
+    errorClass: 'DEPENDENCY',
+    defaultSeverity: 'WARNING',
+    defaultRetryability: 'AFTER_BACKOFF',
+    defaultImpact: 'WAITING',
+    defaultAction: 'RETRY',
+    userTitle: 'A required dependency is not ready',
+  },
+  {
+    patternId: 'FH-PROVIDER-001',
+    errorClass: 'PROVIDER',
+    defaultSeverity: 'ERROR',
+    defaultRetryability: 'AFTER_BACKOFF',
+    defaultImpact: 'DEGRADED',
+    defaultAction: 'RETRY',
+    userTitle: 'Model or tool provider is unavailable',
+  },
+  {
+    patternId: 'FH-ACTIVITY-001',
+    errorClass: 'ACTIVITY',
+    defaultSeverity: 'ERROR',
+    defaultRetryability: 'SAFE_IMMEDIATE',
+    defaultImpact: 'PARTIAL',
+    defaultAction: 'RETRY',
+    userTitle: 'An execution activity failed',
+  },
+  {
+    patternId: 'FH-WORKSPACE-001',
+    errorClass: 'WORKSPACE',
+    defaultSeverity: 'ERROR',
+    defaultRetryability: 'AFTER_USER_ACTION',
+    defaultImpact: 'BLOCKED',
+    defaultAction: 'RESOLVE_CONFLICT',
+    userTitle: 'Execution workspace cannot be used safely',
+  },
+  {
+    patternId: 'FH-CONFLICT-001',
+    errorClass: 'CONFLICT',
+    defaultSeverity: 'WARNING',
+    defaultRetryability: 'AFTER_USER_ACTION',
+    defaultImpact: 'BLOCKED',
+    defaultAction: 'RESOLVE_CONFLICT',
+    userTitle: 'Current state conflicts with the expected revision',
+  },
+  {
+    patternId: 'FH-TIMEOUT-001',
+    errorClass: 'TIMEOUT',
+    defaultSeverity: 'WARNING',
+    defaultRetryability: 'AFTER_BACKOFF',
+    defaultImpact: 'PARTIAL',
+    defaultAction: 'RETRY',
+    userTitle: 'The operation timed out',
+  },
+  {
+    patternId: 'FH-RATELIMIT-001',
+    errorClass: 'RATE_LIMIT',
+    defaultSeverity: 'WARNING',
+    defaultRetryability: 'AFTER_BACKOFF',
+    defaultImpact: 'WAITING',
+    defaultAction: 'RETRY',
+    userTitle: 'Provider rate limit reached',
+  },
+  {
+    patternId: 'FH-AUTH-001',
+    errorClass: 'AUTHENTICATION',
+    defaultSeverity: 'ERROR',
+    defaultRetryability: 'AFTER_USER_ACTION',
+    defaultImpact: 'BLOCKED',
+    defaultAction: 'REAUTHENTICATE',
+    userTitle: 'Authentication is required',
+  },
+  {
+    patternId: 'FH-HUMAN-001',
+    errorClass: 'HUMAN_REQUIRED',
+    defaultSeverity: 'WARNING',
+    defaultRetryability: 'AFTER_USER_ACTION',
+    defaultImpact: 'WAITING',
+    defaultAction: 'HUMAN_DECISION',
+    userTitle: 'A human decision is required',
+  },
+  {
+    patternId: 'FH-INTERNAL-001',
+    errorClass: 'INTERNAL',
+    defaultSeverity: 'CRITICAL',
+    defaultRetryability: 'NEVER',
+    defaultImpact: 'BLOCKED',
+    defaultAction: 'CONTACT_SUPPORT',
+    userTitle: 'FreeHighlander encountered an internal error',
+  },
+] as const satisfies readonly RuntimeErrorPatternDefinitionV1[];
+
 export const safeDetailV1Schema = z
   .object({
     label: z.string().min(1).max(80),
@@ -209,7 +330,12 @@ export const runtimeErrorReportV1Schema = z
     schemaVersion: z.literal(1),
     kind: z.literal('RUNTIME_ERROR'),
     errorId: identifierSchema,
-    patternId: z.string().regex(/^FH-[A-Z][A-Z0-9_]*-[0-9]{3}$/),
+    patternId: z.enum(
+      runtimeErrorPatternCatalogV1.map((pattern) => pattern.patternId) as [
+        (typeof runtimeErrorPatternCatalogV1)[number]['patternId'],
+        ...(typeof runtimeErrorPatternCatalogV1)[number]['patternId'][],
+      ],
+    ),
     errorClass: runtimeErrorClassV1Schema,
     severity: runtimeErrorSeverityV1Schema,
     retryability: runtimeRetryabilityV1Schema,
@@ -225,6 +351,14 @@ export const runtimeErrorReportV1Schema = z
   })
   .strict()
   .superRefine((value, ctx) => {
+    const pattern = getRuntimeErrorPatternDefinitionV1(value.patternId);
+    if (pattern.errorClass !== value.errorClass) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['errorClass'],
+        message: 'errorClass must match the registered pattern',
+      });
+    }
     if (value.errorClass === 'HUMAN_REQUIRED' && value.retryability !== 'AFTER_USER_ACTION') {
       ctx.addIssue({
         code: 'custom',
@@ -239,7 +373,12 @@ export const userFacingErrorV1Schema = z
     schemaVersion: z.literal(1),
     kind: z.literal('USER_ERROR'),
     errorId: identifierSchema,
-    patternId: z.string().regex(/^FH-[A-Z][A-Z0-9_]*-[0-9]{3}$/),
+    patternId: z.enum(
+      runtimeErrorPatternCatalogV1.map((pattern) => pattern.patternId) as [
+        (typeof runtimeErrorPatternCatalogV1)[number]['patternId'],
+        ...(typeof runtimeErrorPatternCatalogV1)[number]['patternId'][],
+      ],
+    ),
     correlationId: identifierSchema,
     severity: runtimeErrorSeverityV1Schema,
     impact: userImpactV1Schema,
@@ -281,6 +420,14 @@ export type UserActionKindV1 = z.infer<typeof userActionKindV1Schema>;
 export type SafeDetailV1 = z.infer<typeof safeDetailV1Schema>;
 export type RuntimeErrorReportV1 = z.infer<typeof runtimeErrorReportV1Schema>;
 export type UserFacingErrorV1 = z.infer<typeof userFacingErrorV1Schema>;
+
+export function getRuntimeErrorPatternDefinitionV1(
+  patternId: RuntimeErrorReportV1['patternId'] | UserFacingErrorV1['patternId'],
+): RuntimeErrorPatternDefinitionV1 {
+  const pattern = runtimeErrorPatternCatalogV1.find((candidate) => candidate.patternId === patternId);
+  if (!pattern) throw new Error('unknown runtime error pattern');
+  return pattern;
+}
 
 export function runtimeErrorPattern(error: RuntimeErrorReportV1): string {
   return [
