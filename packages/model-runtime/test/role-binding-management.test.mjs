@@ -422,9 +422,7 @@ test('role binding publication rehydration fails closed on plan and publication 
   );
   assert.throws(
     () =>
-      new RoleBindingManagementService(providers, catalogs, new AuditSink(), [
-        tamperedPublication,
-      ]),
+      new RoleBindingManagementService(providers, catalogs, new AuditSink(), [tamperedPublication]),
     /publication hash mismatch/,
   );
 });
