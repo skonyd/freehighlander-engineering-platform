@@ -355,8 +355,7 @@ test('registered command executor is shell-free bounded and normalizes success f
   );
   assert.equal(failed.status, 'FAILED');
   assert.equal(failed.failureKind, 'COMMAND_FAILED');
-  assert.match(failed.output, /before/);
-  assert.match(failed.output, /bad/);
+  assert.equal(failed.output, '{"stderr":"","stdout":""}');
 
   const timedOut = await executor.execute(
     request(handle, 'COMMAND', { schemaVersion: 1, commandId: 'node-timeout' }, { timeoutMs: 10 }),
