@@ -1,4 +1,22 @@
 export {
+  createDiscoveredQualification,
+  grantModelEligibility,
+  markQualificationDeprecated,
+  markQualificationUnavailable,
+  modelQualificationCanGrantAuthority,
+  qualificationAllowsBinding,
+  recordCapabilityProbe,
+  recordShadowVerification,
+  type CapabilityProbeEvidence,
+  type EligibilityGrant,
+  type ModelQualificationIdentity,
+  type ModelQualificationSnapshotV1,
+  type ModelQualificationStage,
+  type QualificationRiskTier,
+  type ShadowVerificationEvidence,
+} from './model-qualification.js';
+
+export {
   checkCatalogBinding,
   modelCatalogCanGrantAuthority,
   modelCatalogRefreshCanRewriteBindings,
