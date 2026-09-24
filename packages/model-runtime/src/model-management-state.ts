@@ -1,4 +1,3 @@
-import type { JsonValue } from './provider-egress-types.js';
 import {
   validateModelCatalogSnapshotV1,
   type ModelCatalogSnapshotV1,
@@ -182,12 +181,6 @@ export function modelManagementStateCanContainSecretValues(): false {
 
 export function modelManagementStateCanGrantAuthority(): false {
   return false;
-}
-
-export function modelManagementStateAsJson(
-  state: ModelManagementStateV1,
-): JsonValue {
-  return JSON.parse(JSON.stringify(state)) as JsonValue;
 }
 
 function qualificationKey(snapshot: ModelQualificationSnapshotV1): string {
