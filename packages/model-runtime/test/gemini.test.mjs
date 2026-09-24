@@ -465,14 +465,8 @@ test('Gemini countTokens and catalog management refresh compose without credenti
 });
 
 test('Gemini malformed discovery token count and constructor inputs fail closed', async () => {
-  assert.throws(
-    () => new GeminiProviderAdapter('', { apiKey: 'key' }),
-    /provider id is required/,
-  );
-  assert.throws(
-    () => new GeminiProviderAdapter('gemini', { apiKey: '   ' }),
-    /apiKey is required/,
-  );
+  assert.throws(() => new GeminiProviderAdapter('', { apiKey: 'key' }), /provider id is required/);
+  assert.throws(() => new GeminiProviderAdapter('gemini', { apiKey: '   ' }), /apiKey is required/);
 
   for (const payload of [
     {},
@@ -513,14 +507,8 @@ test('Gemini malformed discovery token count and constructor inputs fail closed'
     baseUrl: `http://127.0.0.1:${address.port}`,
   });
   try {
-    await assert.rejects(
-      () => adapter.countInputTokens('hello', 'model'),
-      /no valid totalTokens/,
-    );
-    await assert.rejects(
-      () => adapter.countInputTokens('', 'model'),
-      /input is required/,
-    );
+    await assert.rejects(() => adapter.countInputTokens('hello', 'model'), /no valid totalTokens/);
+    await assert.rejects(() => adapter.countInputTokens('', 'model'), /input is required/);
   } finally {
     server.closeAllConnections?.();
     await new Promise((resolve, reject) =>
@@ -528,7 +516,6 @@ test('Gemini malformed discovery token count and constructor inputs fail closed'
     );
   }
 });
-
 
 test('Gemini provider errors redact echoed runtime credentials', async () => {
   const secret = 'runtime-secret-value';
