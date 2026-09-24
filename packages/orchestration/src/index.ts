@@ -109,6 +109,17 @@ export {
 } from './context-packet.js';
 
 export {
+  contextEconomyCanDropRequiredEvidence,
+  contextEconomyCanGrantAuthority,
+  contextOptimizerCanReclassifyProtectedDownward,
+  evaluateContextReduction,
+  type ContextCompressionClass,
+  type ContextLifecycleState,
+  type ContextProtectionInput,
+  type ContextReductionDecision,
+} from './context-economy.js';
+
+export {
   buildStablePrompt,
   type PromptAssembly,
   type PromptCacheHint,
