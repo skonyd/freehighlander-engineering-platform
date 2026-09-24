@@ -78,6 +78,75 @@ test('runtime error report bounds details and normalizes multiline values', () =
   ]);
 });
 
+test('runtime error report covers defaults primitive details and safe user formatting', () => {
+  const report = createRuntimeErrorReport({
+    code: 'DEFAULT_PATH',
+    userMessage: 'Defaults are safe.',
+    retryable: true,
+    details: {
+      '': 'ignored-empty-key',
+      bool: true,
+      count: 7,
+      nothing: null,
+      missing: undefined,
+      bigint: 9n,
+      errorObject: new TypeError('hidden detail'),
+    },
+  });
+
+  assert.equal(report.severity, 'ERROR');
+  assert.equal(report.retryable, true);
+  assert.match(report.correlationId, /^[0-9a-f-]{36}$/);
+  assert.deepEqual(report.details, [
+    { key: 'bigint', value: '9' },
+    { key: 'bool', value: 'true' },
+    { key: 'count', value: '7' },
+    { key: 'errorObject', value: 'TypeError' },
+    { key: 'missing', value: 'undefined' },
+    { key: 'nothing', value: 'null' },
+  ]);
+
+  const rendered = formatRuntimeErrorForUser(report);
+  assert.doesNotMatch(rendered, /Operation:|Details:\n- :/);
+  assert.match(rendered, /Retryable: yes/);
+});
+
+test('runtime error report covers bounded causes and detail-count cutoff', () => {
+  const stringCause = createRuntimeErrorReport({
+    code: 'STRING_CAUSE',
+    userMessage: 'String cause is omitted.',
+    correlationId: 'corr-string01',
+    cause: 'sensitive raw cause',
+  });
+  assert.deepEqual(stringCause.details, [{ key: 'cause', value: '[cause-string-omitted]' }]);
+
+  const objectCause = createRuntimeErrorReport({
+    code: 'OBJECT_CAUSE',
+    userMessage: 'Object cause is omitted.',
+    correlationId: 'corr-object01',
+    cause: { message: 'hidden' },
+  });
+  assert.deepEqual(objectCause.details, [{ key: 'cause', value: '[cause-omitted]' }]);
+
+  const nullCause = createRuntimeErrorReport({
+    code: 'NULL_CAUSE',
+    userMessage: 'Null cause adds nothing.',
+    correlationId: 'corr-null0001',
+    cause: null,
+  });
+  assert.deepEqual(nullCause.details, []);
+
+  const capped = createRuntimeErrorReport({
+    code: 'CAPPED_CAUSE',
+    userMessage: 'Cause is omitted when detail budget is full.',
+    correlationId: 'corr-capped01',
+    maxDetailEntries: 1,
+    details: { alpha: 'kept', beta: 'not-reached' },
+    cause: new Error('hidden'),
+  });
+  assert.deepEqual(capped.details, [{ key: 'alpha', value: 'kept' }]);
+});
+
 test('runtime error report validates public identifiers and messages', () => {
   assert.throws(
     () =>
@@ -105,5 +174,35 @@ test('runtime error report validates public identifiers and messages', () => {
         correlationId: 'bad id',
       }),
     /correlationId/,
+  );
+  assert.throws(
+    () =>
+      createRuntimeErrorReport({
+        code: 'VALID_CODE',
+        userMessage: 'valid message',
+        correlationId: 'corr-12345678',
+        operation: 'bad operation!',
+      }),
+    /operation/,
+  );
+  assert.throws(
+    () =>
+      createRuntimeErrorReport({
+        code: 'VALID_CODE',
+        userMessage: 'valid message',
+        correlationId: 'corr-12345678',
+        maxDetailEntries: 0,
+      }),
+    /maxDetailEntries/,
+  );
+  assert.throws(
+    () =>
+      createRuntimeErrorReport({
+        code: 'VALID_CODE',
+        userMessage: 'valid message',
+        correlationId: 'corr-12345678',
+        maxValueChars: 0,
+      }),
+    /maxValueChars/,
   );
 });
