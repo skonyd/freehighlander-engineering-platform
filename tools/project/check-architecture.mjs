@@ -1190,7 +1190,9 @@ try {
     const source = await fs.readFile(path.join(orchestrationDir, file), 'utf8');
     for (const marker of forbiddenSideEffectMarkers) {
       if (source.includes(marker)) {
-        failures.push(`pure orchestration module ${file} must not import side-effect API ${marker}`);
+        failures.push(
+          `pure orchestration module ${file} must not import side-effect API ${marker}`,
+        );
       }
     }
   }
