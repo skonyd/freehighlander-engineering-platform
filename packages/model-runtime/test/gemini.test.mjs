@@ -189,7 +189,8 @@ test('Gemini adapter satisfies shared provider conformance', async (t) => {
             timeoutMs: 250,
           }),
         (error) =>
-          error?.kind === 'malformed_output' && /unsupported effort: extra-high/.test(error.message),
+          error?.kind === 'malformed_output' &&
+          /unsupported effort: extra-high/.test(error.message),
       );
     },
     expectedSuccess: {
@@ -519,6 +520,44 @@ test('Gemini malformed discovery token count and constructor inputs fail closed'
     await assert.rejects(
       () => adapter.countInputTokens('', 'model'),
       /input is required/,
+    );
+  } finally {
+    server.closeAllConnections?.();
+    await new Promise((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});
+
+
+test('Gemini provider errors redact echoed runtime credentials', async () => {
+  const secret = 'runtime-secret-value';
+  const server = createServer((_request, response) => {
+    response.writeHead(400, { 'content-type': 'application/json' });
+    response.end(JSON.stringify({ error: { message: `invalid key ${secret}` } }));
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== 'string');
+
+  const adapter = new GeminiProviderAdapter('gemini-redaction', {
+    apiKey: secret,
+    baseUrl: `http://127.0.0.1:${address.port}`,
+  });
+
+  try {
+    await assert.rejects(
+      () =>
+        adapter.invoke({
+          logicalRole: 'review',
+          input: 'probe',
+          model: 'model',
+          timeoutMs: 1000,
+        }),
+      (error) =>
+        error instanceof Error &&
+        error.message.includes('[REDACTED]') &&
+        !error.message.includes(secret),
     );
   } finally {
     server.closeAllConnections?.();
