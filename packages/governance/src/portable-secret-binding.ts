@@ -9,10 +9,7 @@ export type SecretResolverKind =
   | 'EXTERNAL_BROKER'
   | 'GITHUB_AUTH_CAPABILITY';
 
-export type SecretBindingStorage =
-  | 'MACHINE_LOCAL'
-  | 'PORTABLE_REFERENCE'
-  | 'PROJECT_TEMPLATE';
+export type SecretBindingStorage = 'MACHINE_LOCAL' | 'PORTABLE_REFERENCE' | 'PROJECT_TEMPLATE';
 
 export type SecretResolverHealth = 'HEALTHY' | 'UNAVAILABLE' | 'UNKNOWN';
 
@@ -54,9 +51,7 @@ export interface SecretBindingProfileV1 {
 }
 
 export type SecretRequirementStatus =
-  | 'RESOLVABLE'
-  | 'BLOCKED_CONFIGURATION'
-  | 'OPTIONAL_UNAVAILABLE';
+  'RESOLVABLE' | 'BLOCKED_CONFIGURATION' | 'OPTIONAL_UNAVAILABLE';
 
 export interface SecretRequirementResolutionV1 {
   readonly handleId: string;
@@ -89,11 +84,7 @@ const STORAGE_KINDS = new Set<SecretBindingStorage>([
   'PORTABLE_REFERENCE',
   'PROJECT_TEMPLATE',
 ]);
-const TARGETS = new Set<SecretInjectionTarget>([
-  'COMMAND_ENV',
-  'PROVIDER_AUTH',
-  'TOOL_AUTH',
-]);
+const TARGETS = new Set<SecretInjectionTarget>(['COMMAND_ENV', 'PROVIDER_AUTH', 'TOOL_AUTH']);
 
 export function createSecretRequirementV1(
   input: Omit<SecretRequirementV1, 'schemaVersion' | 'authority'>,
@@ -102,10 +93,7 @@ export function createSecretRequirementV1(
   requireText(input.purpose, 'purpose');
   const allowedTargets = uniqueSortedTargets(input.allowedTargets);
   if (allowedTargets.length === 0) throw new Error('secret requirement requires an allowed target');
-  const requiredCapabilities = uniqueSortedIds(
-    input.requiredCapabilities,
-    'required capability',
-  );
+  const requiredCapabilities = uniqueSortedIds(input.requiredCapabilities, 'required capability');
   const requiredForRoles = uniqueSortedIds(input.requiredForRoles, 'required role');
   if (requiredForRoles.length === 0) throw new Error('secret requirement requires a role');
 
@@ -272,8 +260,10 @@ export function evaluateSecretBindingStatusV1(
 }
 
 export function validateSecretRequirementV1(requirement: SecretRequirementV1): void {
-  if (requirement.schemaVersion !== 1) throw new Error('secret requirement schemaVersion must be 1');
-  if (requirement.authority !== 'NONE') throw new Error('secret requirement authority must remain NONE');
+  if (requirement.schemaVersion !== 1)
+    throw new Error('secret requirement schemaVersion must be 1');
+  if (requirement.authority !== 'NONE')
+    throw new Error('secret requirement authority must remain NONE');
   const rebuilt = createSecretRequirementV1({
     handleId: requirement.handleId,
     purpose: requirement.purpose,
@@ -305,8 +295,10 @@ export function validateSecretBindingV1(binding: SecretBindingV1): void {
 }
 
 export function validateSecretBindingProfileV1(profile: SecretBindingProfileV1): void {
-  if (profile.schemaVersion !== 1) throw new Error('secret binding profile schemaVersion must be 1');
-  if (profile.authority !== 'NONE') throw new Error('secret binding profile authority must remain NONE');
+  if (profile.schemaVersion !== 1)
+    throw new Error('secret binding profile schemaVersion must be 1');
+  if (profile.authority !== 'NONE')
+    throw new Error('secret binding profile authority must remain NONE');
   const rebuilt = createSecretBindingProfileV1(profile.profileId, profile.bindings);
   if (JSON.stringify(rebuilt) !== JSON.stringify(profile)) {
     throw new Error('secret binding profile is not canonically normalized');
@@ -340,7 +332,9 @@ function validateResolverEvidence(evidence: SecretResolverEvidenceV1): void {
   uniqueSortedIds(evidence.availableCapabilities, 'resolver capability');
 }
 
-function uniqueSortedTargets(values: readonly SecretInjectionTarget[]): readonly SecretInjectionTarget[] {
+function uniqueSortedTargets(
+  values: readonly SecretInjectionTarget[],
+): readonly SecretInjectionTarget[] {
   const seen = new Set<SecretInjectionTarget>();
   for (const value of values) {
     if (!TARGETS.has(value)) throw new Error('unsupported secret injection target');
