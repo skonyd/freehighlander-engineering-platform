@@ -141,20 +141,20 @@ test('model management state validates nested catalog and qualification provenan
 test(
   'model management state rejects nested unmanaged provider references and unknown fields',
   () => {
-  const catalog = reconcileModelCatalog({
-    providerId: 'missing',
-    refreshedAt: '2026-09-24T20:30:00.000Z',
-    discovered: [],
-  });
+    const catalog = reconcileModelCatalog({
+      providerId: 'missing',
+      refreshedAt: '2026-09-24T20:30:00.000Z',
+      discovered: [],
+    });
 
-  assert.throws(
-    () =>
-      validateModelManagementStateV1({
-        ...createEmptyModelManagementStateV1(),
-        catalogs: [catalog],
-      }),
-    /catalog references unmanaged provider/,
-  );
+    assert.throws(
+      () =>
+        validateModelManagementStateV1({
+          ...createEmptyModelManagementStateV1(),
+          catalogs: [catalog],
+        }),
+      /catalog references unmanaged provider/,
+    );
 
     assert.throws(
       () =>
