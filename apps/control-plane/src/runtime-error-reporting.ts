@@ -38,9 +38,7 @@ export interface RuntimeErrorReportV1 {
   readonly authority: 'NONE';
 }
 
-export function createRuntimeErrorReport(
-  input: RuntimeErrorReportInput,
-): RuntimeErrorReportV1 {
+export function createRuntimeErrorReport(input: RuntimeErrorReportInput): RuntimeErrorReportV1 {
   const code = normalizeCode(input.code);
   const userMessage = normalizeUserMessage(input.userMessage);
   const severity = input.severity ?? 'ERROR';
@@ -144,11 +142,7 @@ function normalizeDetailValue(value: unknown, maxValueChars: number): string {
   let rendered: string;
   if (typeof value === 'string') {
     rendered = value;
-  } else if (
-    typeof value === 'number' ||
-    typeof value === 'boolean' ||
-    typeof value === 'bigint'
-  ) {
+  } else if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
     rendered = String(value);
   } else if (value === null || value === undefined) {
     rendered = String(value);
@@ -159,9 +153,7 @@ function normalizeDetailValue(value: unknown, maxValueChars: number): string {
   }
 
   const normalized = rendered.replace(/[\r\n\t]+/g, ' ').trim();
-  return normalized.length <= maxValueChars
-    ? normalized
-    : normalized.slice(0, maxValueChars) + '…';
+  return normalized.length <= maxValueChars ? normalized : normalized.slice(0, maxValueChars) + '…';
 }
 
 function summarizeCause(cause: unknown, maxValueChars: number): string | undefined {
