@@ -89,6 +89,14 @@ export function createModelCatalogEvent(
   },
 ): EngineeringEvent<ModelCatalogEventPayload> {
   validateModelCatalogPayload(input.payload);
+  const expectedAction = {
+    'model.catalog.refreshed': 'REFRESH',
+    'model.binding.changed': 'BINDING_CHANGE',
+    'model.qualification.changed': 'QUALIFICATION_CHANGE',
+  } as const;
+  if (input.payload.action !== expectedAction[input.type]) {
+    throw new Error(`model catalog telemetry action does not match event type ${input.type}`);
+  }
   return createEvent(input);
 }
 
