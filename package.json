@@ -12,7 +12,7 @@
     "packages/*"
   ],
   "scripts": {
-    "format": "prettier --write packages/governance/src/provider-egress-preparation.ts packages/governance/test/provider-egress-preparation.test.mjs tools/project/check-architecture.mjs && git diff -- packages/governance/src/provider-egress-preparation.ts packages/governance/test/provider-egress-preparation.test.mjs tools/project/check-architecture.mjs && exit 1",
+    "format": "prettier --check package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
     "format:write": "prettier --write package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
