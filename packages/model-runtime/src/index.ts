@@ -1,4 +1,13 @@
 export {
+  RoleBindingManagementService,
+  roleBindingManagementCanGrantAuthority,
+  type RoleBindingManagementAuditEvent,
+  type RoleBindingManagementAuditSink,
+  type RoleBindingPreviewInput,
+  type RoleBindingPublicationV1,
+} from './role-binding-management.js';
+
+export {
   ModelCatalogManagementService,
   modelCatalogManagementCanGrantAuthority,
   modelCatalogManagementCanRewriteBindings,
