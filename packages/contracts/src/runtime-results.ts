@@ -299,6 +299,15 @@ export const runtimeErrorPatternCatalogV1 = [
     userTitle: 'Authentication is required',
   },
   {
+    patternId: 'FH-SECRET-001',
+    errorClass: 'AUTHENTICATION',
+    defaultSeverity: 'ERROR',
+    defaultRetryability: 'AFTER_USER_ACTION',
+    defaultImpact: 'BLOCKED',
+    defaultAction: 'PROVIDE_SECRET',
+    userTitle: 'A required secret binding is missing',
+  },
+  {
     patternId: 'FH-HUMAN-001',
     errorClass: 'HUMAN_REQUIRED',
     defaultSeverity: 'WARNING',
