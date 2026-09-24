@@ -156,7 +156,6 @@ test('structured role outputs are data and cannot grant authority', () => {
   assert.equal(malformedOutputCanBecomeSemanticApproval(), false);
 });
 
-
 function runtimeError(overrides = {}) {
   return {
     schemaVersion: 1,
@@ -201,8 +200,8 @@ test('runtime error reports use registered deterministic patterns and exact bind
       ),
     /errorClass must match the registered pattern/,
   );
-  assert.throws(
-    () => runtimeErrorReportV1Schema.parse(runtimeError({ patternId: 'FH-UNKNOWN-999' })),
+  assert.throws(() =>
+    runtimeErrorReportV1Schema.parse(runtimeError({ patternId: 'FH-UNKNOWN-999' })),
   );
   assert.throws(
     () => getRuntimeErrorPatternDefinitionV1('FH-UNKNOWN-999'),
