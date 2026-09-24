@@ -1611,6 +1611,39 @@ try {
 }
 
 try {
+  const secretResolverRuntime = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'secret-resolver-runtime.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export class SecretResolverRegistry',
+    'export class LocalEnvSecretResolverAdapter',
+    'export class OsKeychainSecretResolverAdapter',
+    'export class VaultSecretResolverAdapter',
+    'export class GitHubAuthCapabilityResolverAdapter',
+    'shell: false',
+    'validateSecretInjectionReceipt(plan, receipt)',
+    'secure OS keychain backend is unavailable',
+    'GITHUB_AUTH_CAPABILITY satisfies authentication by probe and cannot inject',
+    'export function secretResolverRuntimeCanExposeSecretValues(): false',
+    'export function secretResolverRuntimeCanPersistSecretValues(): false',
+    'export function secretResolverRuntimeUsesShell(): false',
+    'export function secretResolverRuntimeCanGrantAuthority(): false',
+  ]) {
+    if (!secretResolverRuntime.includes(invariant)) {
+      failures.push(`secret resolver runtime missing invariant: ${invariant}`);
+    }
+  }
+
+  if (secretResolverRuntime.includes('shell: true')) {
+    failures.push('secret resolver runtime must remain shell-free');
+  }
+} catch {
+  failures.push('missing portable secret resolver runtime adapters');
+}
+
+try {
   const providerConformance = await fs.readFile(
     path.join(root, 'packages', 'model-runtime', 'test', 'provider-conformance.mjs'),
     'utf8',

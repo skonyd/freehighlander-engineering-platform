@@ -38,6 +38,7 @@ export interface SecretBindingV1 {
 
 export interface SecretResolverEvidenceV1 {
   readonly resolverKind: SecretResolverKind;
+  readonly handleId?: string;
   readonly health: SecretResolverHealth;
   readonly authenticated: boolean | null;
   readonly availableCapabilities: readonly string[];
@@ -186,13 +187,14 @@ export function evaluateSecretBindingStatusV1(
     requirementMap.set(requirement.handleId, requirement);
   }
 
-  const evidenceMap = new Map<SecretResolverKind, SecretResolverEvidenceV1>();
+  const evidenceMap = new Map<string, SecretResolverEvidenceV1>();
   for (const evidence of resolverEvidence) {
     validateResolverEvidence(evidence);
-    if (evidenceMap.has(evidence.resolverKind)) {
-      throw new Error('duplicate resolver evidence kind');
+    const key = resolverEvidenceKey(evidence.resolverKind, evidence.handleId);
+    if (evidenceMap.has(key)) {
+      throw new Error('duplicate resolver evidence identity');
     }
-    evidenceMap.set(evidence.resolverKind, evidence);
+    evidenceMap.set(key, evidence);
   }
 
   const bindingMap = new Map(profile.bindings.map((binding) => [binding.handleId, binding]));
@@ -208,7 +210,10 @@ export function evaluateSecretBindingStatusV1(
       reasons.push('no machine-resolvable binding is configured');
     }
 
-    const evidence = binding ? evidenceMap.get(binding.resolverKind) : undefined;
+    const evidence = binding
+      ? (evidenceMap.get(resolverEvidenceKey(binding.resolverKind, binding.handleId)) ??
+        evidenceMap.get(resolverEvidenceKey(binding.resolverKind)))
+      : undefined;
     if (binding && binding.storage !== 'PROJECT_TEMPLATE') {
       if (!evidence) {
         reasons.push('resolver health is unverifiable');
@@ -319,6 +324,7 @@ export function secretBindingCanGrantAuthority(): false {
 
 function validateResolverEvidence(evidence: SecretResolverEvidenceV1): void {
   requireResolverKind(evidence.resolverKind);
+  if (evidence.handleId !== undefined) requireId(evidence.handleId, 'resolver evidence handleId');
   if (!['HEALTHY', 'UNAVAILABLE', 'UNKNOWN'].includes(evidence.health)) {
     throw new Error('unsupported secret resolver health');
   }
@@ -330,6 +336,10 @@ function validateResolverEvidence(evidence: SecretResolverEvidenceV1): void {
     throw new Error('resolver authenticated must be boolean or null');
   }
   uniqueSortedIds(evidence.availableCapabilities, 'resolver capability');
+}
+
+function resolverEvidenceKey(kind: SecretResolverKind, handleId?: string): string {
+  return `${kind}\u0000${handleId ?? '*'}`;
 }
 
 function uniqueSortedTargets(
