@@ -107,10 +107,7 @@ export class GeminiProviderAdapter implements ProviderAdapter {
   }
 
   capabilities(): ReadonlySet<ProviderCapability> {
-    const capabilities = new Set<ProviderCapability>([
-      'token_counting',
-      'usage_token_breakdown',
-    ]);
+    const capabilities = new Set<ProviderCapability>(['token_counting', 'usage_token_breakdown']);
     if (Object.keys(this.#thinkingProfiles).length > 0) {
       capabilities.add('reasoning_effort');
     }
