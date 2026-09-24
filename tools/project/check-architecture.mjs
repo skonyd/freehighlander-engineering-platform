@@ -1412,6 +1412,30 @@ try {
   failures.push('missing non-blocking HUMAN_REQUIRED project scheduler');
 }
 
+try {
+  const preflightSource = await fs.readFile(
+    path.join(root, 'apps', 'control-plane', 'src', 'runtime-preflight.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function evaluateRuntimePreflight',
+    "status: failures.length === 0 ? 'PASS' : 'BLOCKED'",
+    'export function runtimePreflightCanInvokeProvider(): false',
+    'export function runtimePreflightCanResolveSecretValue(): false',
+    'export function runtimePreflightCanGrantAuthority(): false',
+    'readonly invocationAuthorized: false',
+    "code: 'SECRET_UNRESOLVABLE'",
+    "code: 'CIRCUIT_OPEN'",
+  ]) {
+    if (!preflightSource.includes(invariant)) {
+      failures.push(`runtime preflight contract missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing side-effect-free runtime preflight contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
