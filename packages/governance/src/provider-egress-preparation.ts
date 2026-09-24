@@ -10,12 +10,7 @@ import {
 import type { DataClassification } from './policy-engine.js';
 
 export type JsonValue =
-  | null
-  | boolean
-  | number
-  | string
-  | JsonValue[]
-  | { readonly [key: string]: JsonValue };
+  null | boolean | number | string | JsonValue[] | { readonly [key: string]: JsonValue };
 
 export type ProviderEgressReasonCode =
   | 'LOCAL_PROCESSING_ALLOWED'
@@ -114,9 +109,7 @@ export function prepareProviderEgress(
 ): ProviderEgressPreparation {
   const validation = validateProviderEgressPreparationRequest(request);
   if (!validation.valid) {
-    throw new Error(
-      'invalid provider egress preparation request: ' + validation.errors.join('; '),
-    );
+    throw new Error('invalid provider egress preparation request: ' + validation.errors.join('; '));
   }
 
   const decision = evaluateProviderEgress(policy, request);
