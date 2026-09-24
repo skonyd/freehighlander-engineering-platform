@@ -204,7 +204,10 @@ test('runtime error reports use registered deterministic patterns and exact bind
   assert.throws(
     () => runtimeErrorReportV1Schema.parse(runtimeError({ patternId: 'FH-UNKNOWN-999' })),
   );
-  assert.throws(() => getRuntimeErrorPatternDefinitionV1('FH-UNKNOWN-999'), /unknown runtime error/);
+  assert.throws(
+    () => getRuntimeErrorPatternDefinitionV1('FH-UNKNOWN-999'),
+    /unknown runtime error/,
+  );
 });
 
 test('HUMAN_REQUIRED error pattern cannot masquerade as an automatic retry', () => {
