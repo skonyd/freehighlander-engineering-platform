@@ -4,15 +4,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import {
-  parseDataPolicyYaml,
-  prepareProviderEgress,
-} from '@freehighlander/governance';
-import {
-  createHardeningEvent,
-  parseEvent,
-  serializeEvent,
-} from '@freehighlander/telemetry';
+import { parseDataPolicyYaml, prepareProviderEgress } from '@freehighlander/governance';
+import { createHardeningEvent, parseEvent, serializeEvent } from '@freehighlander/telemetry';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const policy = parseDataPolicyYaml(
