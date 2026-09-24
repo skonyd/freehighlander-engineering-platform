@@ -97,7 +97,8 @@ test('cancellation graph validation fails closed on malformed topology and enums
     /duplicate/,
   );
   assert.throws(
-    () => planRuntimeCancellation([activity('root-001', null, 'UNKNOWN')], 'root-001', 'USER_CANCEL'),
+    () =>
+      planRuntimeCancellation([activity('root-001', null, 'UNKNOWN')], 'root-001', 'USER_CANCEL'),
     /unsupported activity lifecycle state/,
   );
   assert.throws(
