@@ -25,11 +25,19 @@ export interface ShadowVerificationEvidence {
   readonly riskTier: QualificationRiskTier;
 }
 
+export interface RegressionVerificationEvidence {
+  readonly corpusHash: string;
+  readonly reportHash: string;
+  readonly status: 'PASS' | 'FAIL';
+  readonly verifiedAt: string;
+}
+
 export interface EligibilityGrant {
   readonly role: string;
   readonly riskTier: QualificationRiskTier;
   readonly grantedAt: string;
   readonly decisionHash: string;
+  readonly requiredRegressionCorpusHash?: string;
 }
 
 export interface ModelQualificationSnapshotV1 extends ModelQualificationIdentity {
@@ -37,6 +45,7 @@ export interface ModelQualificationSnapshotV1 extends ModelQualificationIdentity
   readonly stage: ModelQualificationStage;
   readonly probe?: CapabilityProbeEvidence;
   readonly shadow?: ShadowVerificationEvidence;
+  readonly regression?: RegressionVerificationEvidence;
   readonly eligibility?: EligibilityGrant;
   readonly hash: string;
   readonly authority: 'NONE';
@@ -92,6 +101,31 @@ export function recordShadowVerification(
   });
 }
 
+export function recordRegressionVerification(
+  previous: ModelQualificationSnapshotV1,
+  evidence: RegressionVerificationEvidence,
+): ModelQualificationSnapshotV1 {
+  validateSnapshot(previous);
+  validateEvidenceHash(evidence.corpusHash, 'regression corpusHash');
+  validateEvidenceHash(evidence.reportHash, 'regression reportHash');
+  const verifiedAt = normalizeTimestamp(evidence.verifiedAt, 'regression verifiedAt');
+
+  if (previous.stage !== 'SHADOW_VERIFIED') {
+    throw new Error(`cannot record regression verification from stage ${previous.stage}`);
+  }
+  if (previous.shadow?.status !== 'PASS') {
+    throw new Error('regression verification requires passing shadow verification');
+  }
+
+  return finalize({
+    ...baseIdentity(previous),
+    stage: 'SHADOW_VERIFIED',
+    probe: previous.probe,
+    shadow: previous.shadow,
+    regression: { ...evidence, verifiedAt },
+  });
+}
+
 export function grantModelEligibility(
   previous: ModelQualificationSnapshotV1,
   grant: EligibilityGrant,
@@ -99,6 +133,9 @@ export function grantModelEligibility(
   validateSnapshot(previous);
   requireId(grant.role, 'eligibility role');
   validateEvidenceHash(grant.decisionHash, 'eligibility decisionHash');
+  if (grant.requiredRegressionCorpusHash !== undefined) {
+    validateEvidenceHash(grant.requiredRegressionCorpusHash, 'required regression corpusHash');
+  }
   const grantedAt = normalizeTimestamp(grant.grantedAt, 'grantedAt');
 
   if (previous.stage !== 'SHADOW_VERIFIED' && previous.stage !== 'ELIGIBLE') {
@@ -113,12 +150,21 @@ export function grantModelEligibility(
   if (previous.shadow.role !== grant.role || previous.shadow.riskTier !== grant.riskTier) {
     throw new Error('eligibility role/risk must match shadow verification evidence');
   }
+  if (grant.requiredRegressionCorpusHash !== undefined) {
+    if (previous.regression?.status !== 'PASS') {
+      throw new Error('eligibility requires passing regression verification');
+    }
+    if (previous.regression.corpusHash !== grant.requiredRegressionCorpusHash) {
+      throw new Error('eligibility regression corpus hash mismatch');
+    }
+  }
 
   return finalize({
     ...baseIdentity(previous),
     stage: 'ELIGIBLE',
     probe: previous.probe,
     shadow: previous.shadow,
+    ...(previous.regression ? { regression: previous.regression } : {}),
     eligibility: { ...grant, grantedAt },
   });
 }
@@ -132,6 +178,7 @@ export function markQualificationUnavailable(
     stage: 'UNAVAILABLE',
     ...(previous.probe ? { probe: previous.probe } : {}),
     ...(previous.shadow ? { shadow: previous.shadow } : {}),
+    ...(previous.regression ? { regression: previous.regression } : {}),
     ...(previous.eligibility ? { eligibility: previous.eligibility } : {}),
   });
 }
@@ -145,6 +192,7 @@ export function markQualificationDeprecated(
     stage: 'DEPRECATED',
     ...(previous.probe ? { probe: previous.probe } : {}),
     ...(previous.shadow ? { shadow: previous.shadow } : {}),
+    ...(previous.regression ? { regression: previous.regression } : {}),
     ...(previous.eligibility ? { eligibility: previous.eligibility } : {}),
   });
 }
@@ -197,6 +245,7 @@ function validateSnapshot(snapshot: ModelQualificationSnapshotV1): void {
     stage: snapshot.stage,
     ...(snapshot.probe ? { probe: snapshot.probe } : {}),
     ...(snapshot.shadow ? { shadow: snapshot.shadow } : {}),
+    ...(snapshot.regression ? { regression: snapshot.regression } : {}),
     ...(snapshot.eligibility ? { eligibility: snapshot.eligibility } : {}),
   });
   if (expected.hash !== snapshot.hash) throw new Error('qualification snapshot hash mismatch');
