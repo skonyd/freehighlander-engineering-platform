@@ -142,7 +142,6 @@ test('OpenAI-compatible adapter satisfies shared provider conformance', async (t
   });
 });
 
-
 test('OpenAI-compatible latency uses only the injected monotonic clock', async () => {
   const ticks = [100, 145];
   const harness = await createHarness('success', {
