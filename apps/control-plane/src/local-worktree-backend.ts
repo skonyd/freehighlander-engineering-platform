@@ -7,7 +7,6 @@ import {
   realpath,
   rename,
   stat,
-  unlink,
   writeFile,
 } from 'node:fs/promises';
 import path from 'node:path';
@@ -327,7 +326,16 @@ export function createLocalCommandActivityExecutor(
         };
       }
 
-      const input = parseCommandActivityInput(request.input);
+      let input: CommandActivityInputV1;
+      try {
+        input = parseCommandActivityInput(request.input);
+      } catch {
+        return {
+          status: 'FAILED',
+          output: '',
+          failureKind: 'MALFORMED_ACTIVITY_INPUT',
+        };
+      }
       if (!allowedExecutables.has(input.executable)) {
         return {
           status: 'FAILED',
@@ -372,7 +380,16 @@ export function createLocalFilesystemActivityExecutor(
   return {
     id: 'local-filesystem-v1',
     async execute(request: ActivityRequest): Promise<ActivityExecutorOutcome> {
-      const input = parseFilesystemActivityInput(request.input);
+      let input: FilesystemActivityInputV1;
+      try {
+        input = parseFilesystemActivityInput(request.input);
+      } catch {
+        return {
+          status: 'FAILED',
+          output: '',
+          failureKind: 'MALFORMED_ACTIVITY_INPUT',
+        };
+      }
       if (input.operation === 'READ_TEXT') {
         try {
           return {
@@ -415,7 +432,16 @@ export function createLocalGitActivityExecutor(
   return {
     id: 'local-git-readonly-v1',
     async execute(request: ActivityRequest): Promise<ActivityExecutorOutcome> {
-      const input = parseGitActivityInput(request.input);
+      let input: GitActivityInputV1;
+      try {
+        input = parseGitActivityInput(request.input);
+      } catch {
+        return {
+          status: 'FAILED',
+          output: '',
+          failureKind: 'MALFORMED_ACTIVITY_INPUT',
+        };
+      }
       try {
         const snapshot = await backend.snapshot(handle);
         return {
@@ -517,12 +543,7 @@ async function atomicWriteJson(target: string, value: unknown): Promise<void> {
     flag: 'wx',
     mode: 0o600,
   });
-  try {
-    await rename(temporary, target);
-  } catch (error) {
-    await unlink(temporary).catch(() => undefined);
-    throw error;
-  }
+  await rename(temporary, target);
 }
 
 async function readWorkspaceMetadata(target: string): Promise<WorkspaceMetadataV1> {
