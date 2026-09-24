@@ -5,7 +5,11 @@ import {
   BindingRegistry,
   ProviderRegistry,
   bindingRegistryCanGrantAuthority,
+  createDiscoveredQualification,
+  grantModelEligibility,
   reconcileModelCatalog,
+  recordCapabilityProbe,
+  recordShadowVerification,
   resolveBindingPlan,
   selectBinding,
 } from '../dist/index.js';
@@ -442,4 +446,255 @@ test('catalog-aware mode fails closed when a referenced provider has no catalog 
       }),
     /no catalog snapshot/,
   );
+});
+
+
+function eligibleQualification(snapshot, role, riskTier) {
+  const discovered = createDiscoveredQualification({
+    providerId: snapshot.providerId,
+    modelId: snapshot.records[0].modelId,
+    catalogHash: snapshot.hash,
+  });
+  const probed = recordCapabilityProbe(discovered, {
+    evidenceHash: '1'.repeat(64),
+    status: 'PASS',
+    probedAt: '2026-09-24T18:01:00.000Z',
+  });
+  const shadow = recordShadowVerification(probed, {
+    evidenceHash: '2'.repeat(64),
+    status: 'PASS',
+    verifiedAt: '2026-09-24T18:02:00.000Z',
+    role,
+    riskTier,
+  });
+  return grantModelEligibility(shadow, {
+    role,
+    riskTier,
+    grantedAt: '2026-09-24T18:03:00.000Z',
+    decisionHash: '3'.repeat(64),
+  });
+}
+
+test('qualification-aware binding plan accepts only eligible role-risk scoped model', () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1', ['structured_output']));
+  const bindings = new BindingRegistry();
+  bindings.register({
+    id: 'b1',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'model-a',
+    requiredCapabilities: ['structured_output'],
+    allowedRiskTiers: ['NORMAL', 'HIGH'],
+    independenceGroup: 'g',
+  });
+
+  const snapshot = catalog('p1', [
+    {
+      modelId: 'model-a',
+      capabilities: ['structured_output'],
+      supportedEfforts: [],
+    },
+  ]);
+  const qualification = eligibleQualification(snapshot, 'controller', 'NORMAL');
+
+  const plan = resolveBindingPlan(providers, bindings, {
+    logicalRole: 'controller',
+    riskTier: 'NORMAL',
+    primaryBindingId: 'b1',
+    catalogByProvider: { p1: snapshot },
+    qualificationByBinding: { b1: qualification },
+  });
+
+  assert.equal(plan.qualificationHashes.b1, qualification.hash);
+  assert.equal(plan.bindings[0].model, 'model-a');
+  assert.equal(plan.authorityGranted, false);
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'controller',
+        riskTier: 'HIGH',
+        primaryBindingId: 'b1',
+        catalogByProvider: { p1: snapshot },
+        qualificationByBinding: { b1: qualification },
+      }),
+    /not eligible for controller\/HIGH/,
+  );
+});
+
+test('qualification-aware binding plan rejects missing and non-eligible snapshots', () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1'));
+  const bindings = new BindingRegistry();
+  bindings.register({
+    id: 'b1',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'model-a',
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+
+  const snapshot = catalog('p1', [{ modelId: 'model-a' }]);
+  const discovered = createDiscoveredQualification({
+    providerId: 'p1',
+    modelId: 'model-a',
+    catalogHash: snapshot.hash,
+  });
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'controller',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'b1',
+        catalogByProvider: { p1: snapshot },
+        qualificationByBinding: {},
+      }),
+    /no qualification snapshot/,
+  );
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'controller',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'b1',
+        catalogByProvider: { p1: snapshot },
+        qualificationByBinding: { b1: discovered },
+      }),
+    /not eligible for controller\/NORMAL/,
+  );
+});
+
+test('qualification-aware binding plan rejects stale catalog qualification and identity mismatch', () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1'));
+  providers.register(provider('p2'));
+  const bindings = new BindingRegistry();
+  bindings.register({
+    id: 'b1',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'model-a',
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+
+  const first = catalog('p1', [{ modelId: 'model-a' }]);
+  const eligible = eligibleQualification(first, 'controller', 'NORMAL');
+  const refreshed = reconcileModelCatalog({
+    providerId: 'p1',
+    refreshedAt: '2026-09-24T19:00:00.000Z',
+    previous: first,
+    discovered: [
+      {
+        providerId: 'p1',
+        modelId: 'model-a',
+        locality: 'REMOTE',
+        source: 'DISCOVERED',
+      },
+    ],
+  });
+
+  assert.notEqual(refreshed.hash, first.hash);
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'controller',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'b1',
+        catalogByProvider: { p1: refreshed },
+        qualificationByBinding: { b1: eligible },
+      }),
+    /qualification catalog hash is stale/,
+  );
+
+  const wrongProvider = { ...eligible, providerId: 'p2' };
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'controller',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'b1',
+        catalogByProvider: { p1: first },
+        qualificationByBinding: { b1: wrongProvider },
+      }),
+    /qualification provider mismatch/,
+  );
+
+  const wrongModel = { ...eligible, modelId: 'model-b' };
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'controller',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'b1',
+        catalogByProvider: { p1: first },
+        qualificationByBinding: { b1: wrongModel },
+      }),
+    /qualification model mismatch/,
+  );
+});
+
+test('qualification hash changes binding plan identity without mutating prior plan', () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1'));
+  const bindings = new BindingRegistry();
+  bindings.register({
+    id: 'b1',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'model-a',
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+  const snapshot = catalog('p1', [{ modelId: 'model-a' }]);
+  const firstQualification = eligibleQualification(snapshot, 'controller', 'NORMAL');
+
+  const firstPlan = resolveBindingPlan(providers, bindings, {
+    logicalRole: 'controller',
+    riskTier: 'NORMAL',
+    primaryBindingId: 'b1',
+    catalogByProvider: { p1: snapshot },
+    qualificationByBinding: { b1: firstQualification },
+  });
+
+  const discovered = createDiscoveredQualification({
+    providerId: 'p1',
+    modelId: 'model-a',
+    catalogHash: snapshot.hash,
+  });
+  const probed = recordCapabilityProbe(discovered, {
+    evidenceHash: '4'.repeat(64),
+    status: 'PASS',
+    probedAt: '2026-09-24T19:01:00.000Z',
+  });
+  const shadow = recordShadowVerification(probed, {
+    evidenceHash: '5'.repeat(64),
+    status: 'PASS',
+    verifiedAt: '2026-09-24T19:02:00.000Z',
+    role: 'controller',
+    riskTier: 'NORMAL',
+  });
+  const secondQualification = grantModelEligibility(shadow, {
+    role: 'controller',
+    riskTier: 'NORMAL',
+    grantedAt: '2026-09-24T19:03:00.000Z',
+    decisionHash: '6'.repeat(64),
+  });
+
+  const secondPlan = resolveBindingPlan(providers, bindings, {
+    logicalRole: 'controller',
+    riskTier: 'NORMAL',
+    primaryBindingId: 'b1',
+    catalogByProvider: { p1: snapshot },
+    qualificationByBinding: { b1: secondQualification },
+  });
+
+  assert.notEqual(firstQualification.hash, secondQualification.hash);
+  assert.notEqual(firstPlan.hash, secondPlan.hash);
+  assert.equal(firstPlan.qualificationHashes.b1, firstQualification.hash);
+  assert.equal(secondPlan.qualificationHashes.b1, secondQualification.hash);
 });
