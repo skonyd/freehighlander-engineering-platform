@@ -1,4 +1,24 @@
 export {
+  cancellationCanSkipResourceRelease,
+  cancellationCanTriggerModelShopping,
+  cancellationCountsAsSemanticFailure,
+  gracefulDrainCanGrantAuthority,
+  planRuntimeCancellation,
+  queuedWaitCountsAsExecutionTime,
+  runtimeDrainAcceptsNewWork,
+  transitionRuntimeDrain,
+  type RuntimeActivityLifecycleState,
+  type RuntimeCancellationAction,
+  type RuntimeCancellationActionKind,
+  type RuntimeCancellationActivity,
+  type RuntimeCancellationPlan,
+  type RuntimeCancellationReason,
+  type RuntimeDrainEvidence,
+  type RuntimeDrainState,
+  type RuntimeDrainTransition,
+} from './runtime-lifecycle.js';
+
+export {
   reconcileStuckRun,
   recoveryCanAutoExecute,
   recoveryCanRepeatSideEffectWithoutIdempotency,
