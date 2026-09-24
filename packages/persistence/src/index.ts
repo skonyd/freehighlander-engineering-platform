@@ -1,4 +1,24 @@
 export {
+  createResumeManifestV1,
+  evaluateResumeManifestCas,
+  localResumeCacheRequiredForCorrectness,
+  resumeArtifactCanBeReconstructed,
+  resumeArtifactMustTransfer,
+  resumeManifestCanContainSecretValues,
+  resumeManifestCanGrantAuthority,
+  validateResumeManifestV1,
+  type ResumeArtifactClassification,
+  type ResumeArtifactManifestEntry,
+  type ResumeManifestCasDecision,
+  type ResumeManifestCasStatus,
+  type ResumeManifestV1,
+  type ResumeManifestV1Input,
+  type ResumeNodeResultIdentity,
+  type ResumeStore,
+  type ResumeWorkflowIdentity,
+} from './resume-manifest.js';
+
+export {
   SQLITE_SCHEMA_VERSION,
   inspectSqliteTelemetryFile,
   inspectTelemetryJsonlFile,
