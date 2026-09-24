@@ -59,6 +59,7 @@ export {
   modelCatalogRefreshCanRewriteBindings,
   reconcileModelCatalog,
   refreshModelCatalogFromProvider,
+  validateModelCatalogSnapshotV1,
   type ModelCatalogAvailability,
   type ModelCatalogBindingCheck,
   type ModelCatalogLocality,
