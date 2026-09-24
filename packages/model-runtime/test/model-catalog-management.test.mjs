@@ -6,6 +6,7 @@ import {
   ProviderRegistry,
   modelCatalogManagementCanGrantAuthority,
   modelCatalogManagementCanRewriteBindings,
+  validateModelCatalogSnapshotV1,
 } from '../dist/index.js';
 
 function provider(id, state) {
@@ -235,5 +236,89 @@ test('catalog management rejects empty identifiers and unknown providers', async
         operationId: '   ',
       }),
     /operationId is required/,
+  );
+});
+
+test('validated catalog snapshots can rehydrate management state without emitting audit', async () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1', { models: [{ modelId: 'model-a', locality: 'REMOTE' }] }));
+  const audit = new AuditSink();
+  const original = new ModelCatalogManagementService(providers, audit);
+  const refreshed = await original.refreshProvider({
+    providerId: 'p1',
+    refreshedAt: '2026-09-24T21:00:00.000Z',
+    operationId: 'seed',
+  });
+
+  validateModelCatalogSnapshotV1(refreshed.snapshot);
+
+  const restoredAudit = new AuditSink();
+  const restored = new ModelCatalogManagementService(providers, restoredAudit, [
+    refreshed.snapshot,
+  ]);
+
+  assert.equal(restored.getCatalog('p1').hash, refreshed.snapshot.hash);
+  assert.deepEqual(restored.listCatalogs(), [refreshed.snapshot]);
+  assert.equal(restoredAudit.events.length, 0);
+});
+
+test('catalog rehydration fails closed on tamper unknown provider and duplicate initial state', async () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1', { models: [{ modelId: 'model-a', locality: 'REMOTE' }] }));
+  const original = new ModelCatalogManagementService(providers, new AuditSink());
+  const refreshed = await original.refreshProvider({
+    providerId: 'p1',
+    refreshedAt: '2026-09-24T21:00:00.000Z',
+    operationId: 'seed',
+  });
+
+  const tamperedHash = { ...refreshed.snapshot, hash: 'f'.repeat(64) };
+  assert.throws(() => validateModelCatalogSnapshotV1(tamperedHash), /hash mismatch/);
+  assert.throws(
+    () => new ModelCatalogManagementService(providers, new AuditSink(), [tamperedHash]),
+    /hash mismatch/,
+  );
+
+  const unknownProvider = { ...refreshed.snapshot, providerId: 'missing' };
+  assert.throws(
+    () => new ModelCatalogManagementService(providers, new AuditSink(), [unknownProvider]),
+    /record providerId mismatch|unknown provider/,
+  );
+
+  assert.throws(
+    () =>
+      new ModelCatalogManagementService(providers, new AuditSink(), [
+        refreshed.snapshot,
+        refreshed.snapshot,
+      ]),
+    /duplicate initial catalog provider/,
+  );
+});
+
+test('catalog snapshot validator rejects authority and unavailable-state corruption', async () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1', { models: [{ modelId: 'model-a', locality: 'REMOTE' }] }));
+  const service = new ModelCatalogManagementService(providers, new AuditSink());
+  const refreshed = await service.refreshProvider({
+    providerId: 'p1',
+    refreshedAt: '2026-09-24T21:00:00.000Z',
+    operationId: 'seed',
+  });
+
+  assert.throws(
+    () => validateModelCatalogSnapshotV1({ ...refreshed.snapshot, authority: 'WRITE' }),
+    /authority must be NONE/,
+  );
+
+  const invalidUnavailable = {
+    ...refreshed.snapshot,
+    records: refreshed.snapshot.records.map((record) => ({
+      ...record,
+      availability: 'UNAVAILABLE',
+    })),
+  };
+  assert.throws(
+    () => validateModelCatalogSnapshotV1(invalidUnavailable),
+    /requires unavailableSince/,
   );
 });
