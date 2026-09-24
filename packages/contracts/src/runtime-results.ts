@@ -101,9 +101,7 @@ export type EvidenceReferenceV1 = z.infer<typeof evidenceReferenceV1Schema>;
 export type StructuredFindingV1 = z.infer<typeof structuredFindingV1Schema>;
 export type ReviewResultV1 = z.infer<typeof reviewResultV1Schema>;
 export type TestAdequacyResultV1 = z.infer<typeof testAdequacyResultV1Schema>;
-export type CandidateAdjudicationResultV1 = z.infer<
-  typeof candidateAdjudicationResultV1Schema
->;
+export type CandidateAdjudicationResultV1 = z.infer<typeof candidateAdjudicationResultV1Schema>;
 export type AutonomousMergeReviewV1 = z.infer<typeof autonomousMergeReviewV1Schema>;
 export type StructuredRoleResultV1 = z.infer<typeof structuredRoleResultV1Schema>;
 
