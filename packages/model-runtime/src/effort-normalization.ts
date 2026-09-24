@@ -1,10 +1,5 @@
 export type CanonicalEffort =
-  | 'default'
-  | 'none'
-  | 'low'
-  | 'medium'
-  | 'high'
-  | 'extra-high';
+  'default' | 'none' | 'low' | 'medium' | 'high' | 'extra-high';
 
 export interface ProviderEffortResolutionOptions {
   readonly supportedEfforts?: readonly string[];
