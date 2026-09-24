@@ -1675,6 +1675,45 @@ try {
   failures.push('missing bounded runtime heartbeat/liveness contract');
 }
 
+try {
+  const timingSource = await fs.readFile(
+    path.join(root, 'packages', 'model-runtime', 'src', 'monotonic-timing.ts'),
+    'utf8',
+  );
+  const openAiSource = await fs.readFile(
+    path.join(root, 'packages', 'model-runtime', 'src', 'openai-compatible.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function measureMonotonicDuration',
+    "throw new Error('monotonic clock cannot move backwards')",
+    'export function wallClockCanAffectMonotonicDuration(): false',
+    'export function monotonicDurationCanGrantAuthority(): false',
+  ]) {
+    if (!timingSource.includes(invariant)) {
+      failures.push(`monotonic duration contract missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const invariant of [
+    'readonly monotonicNow?: () => number',
+    'this.#monotonicNow = options.monotonicNow ?? (() => performance.now())',
+    'measureMonotonicDuration(startedAtMonoMs, this.#monotonicNow())',
+    'latencyMs: latency.durationMs',
+  ]) {
+    if (!openAiSource.includes(invariant)) {
+      failures.push(`provider monotonic latency missing invariant: ${invariant}`);
+    }
+  }
+
+  if (openAiSource.includes('Date.now()')) {
+    failures.push('provider latency must not use wall-clock Date.now()');
+  }
+} catch {
+  failures.push('missing monotonic provider latency contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
