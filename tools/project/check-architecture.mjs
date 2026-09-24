@@ -1649,6 +1649,81 @@ try {
 }
 
 try {
+  const modelManagementStateSource = await fs.readFile(
+    path.join(root, 'packages', 'model-runtime', 'src', 'model-management-state.ts'),
+    'utf8',
+  );
+  const modelManagementCliSource = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'model-management.mjs'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function validateModelManagementStateV1',
+    'export function validateManagedProviderConfigV1',
+    "readonly resolverKind: 'LOCAL_ENV'",
+    "readonly authority: 'NONE'",
+    'export function modelManagementStateCanContainSecretValues(): false',
+    'export function modelManagementStateCanGrantAuthority(): false',
+  ]) {
+    if (!modelManagementStateSource.includes(invariant)) {
+      failures.push(`model management state missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const forbiddenField of [
+    'readonly apiKey:',
+    'readonly token:',
+    'readonly password:',
+    'readonly secretValue:',
+    'readonly rawValue:',
+    'readonly privateKey:',
+  ]) {
+    if (modelManagementStateSource.includes(forbiddenField)) {
+      failures.push(`model management state must remain value-free: ${forbiddenField}`);
+    }
+  }
+
+  for (const invariant of [
+    'new AtomicJsonConfigStore',
+    'validateModelManagementStateV1',
+    "result.status !== 'WRITTEN'",
+    'credential environment variable is unavailable',
+    'expected exactly one ELIGIBLE qualification',
+  ]) {
+    if (!modelManagementCliSource.includes(invariant)) {
+      failures.push(`model management CLI missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing restart-safe value-free model management contract');
+}
+
+try {
+  const regressionCorpusSource = await fs.readFile(
+    path.join(root, 'packages', 'evaluation', 'src', 'regression-corpus.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export async function promoteConfirmedMissToRegressionCase',
+    'regression promotion requires adjudicated confirmation',
+    "finding.label !== 'MISSED_BY_CANDIDATE'",
+    'regression promotion requires P0/P1/P2 severity',
+    'sanitizationAttestationHash',
+    'export async function runRegressionCorpus',
+    'export function regressionCorpusCanGrantAuthority(): false',
+    'export function regressionCorpusStoresRawSensitiveContent(): false',
+  ]) {
+    if (!regressionCorpusSource.includes(invariant)) {
+      failures.push(`regression corpus missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing sanitized deterministic regression corpus contract');
+}
+
+try {
   const heartbeatSource = await fs.readFile(
     path.join(root, 'apps', 'control-plane', 'src', 'runtime-heartbeat.ts'),
     'utf8',
