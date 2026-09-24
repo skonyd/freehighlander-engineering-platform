@@ -119,7 +119,9 @@ test('runtime error report covers bounded causes and detail-count cutoff', () =>
     correlationId: 'corr-string01',
     cause: 'sensitive raw cause',
   });
-  assert.deepEqual(stringCause.details, [{ key: 'cause', value: '[cause-string-omitted]' }]);
+  assert.deepEqual(stringCause.details, [
+    { key: 'cause', value: '[cause-string-omitted]' },
+  ]);
 
   const objectCause = createRuntimeErrorReport({
     code: 'OBJECT_CAUSE',
