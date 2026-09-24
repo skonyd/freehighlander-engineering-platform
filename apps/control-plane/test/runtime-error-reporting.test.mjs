@@ -27,6 +27,7 @@ test('runtime error report creates stable diagnostic shape without authority', (
   assert.equal(report.correlationId, 'corr-12345678');
   assert.equal(report.authority, 'NONE');
   assert.equal(report.fingerprint.length, 64);
+  assert.match(formatRuntimeErrorForUser(report), /Operation: runtime\.reattach/);
   assert.equal(runtimeErrorReportCanGrantAuthority(), false);
   assert.equal(runtimeErrorReportCanExposeSecrets(), false);
 });
