@@ -1,14 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import {
-  lstat,
-  mkdir,
-  readFile,
-  realpath,
-  rename,
-  stat,
-  writeFile,
-} from 'node:fs/promises';
+import { lstat, mkdir, readFile, realpath, rename, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -128,7 +120,13 @@ export class LocalGitWorktreeBackend {
     await requireMissing(workspacePath, 'workspace path already exists');
     await requireMissing(metadataPath, 'workspace metadata already exists');
 
-    await runGit(repository, ['worktree', 'add', '--detach', workspacePath, descriptor.exactRevision]);
+    await runGit(repository, [
+      'worktree',
+      'add',
+      '--detach',
+      workspacePath,
+      descriptor.exactRevision,
+    ]);
     const observedHead = await gitHead(workspacePath);
     if (observedHead !== descriptor.exactRevision) {
       throw new Error('created worktree HEAD does not match exact revision');
@@ -309,7 +307,10 @@ export function createLocalCommandActivityExecutor(
   for (const command of options.commands) {
     validateCommandId(command.id);
     validateExecutableName(command.executable);
-    if (!Array.isArray(command.args) || command.args.some((argument) => typeof argument !== 'string')) {
+    if (
+      !Array.isArray(command.args) ||
+      command.args.some((argument) => typeof argument !== 'string')
+    ) {
       throw new Error('registered command args must be a string array');
     }
     if (commands.has(command.id)) throw new Error('duplicate registered command id');
@@ -392,7 +393,10 @@ export function createLocalCommandActivityExecutor(
       } catch (error) {
         return {
           status: 'FAILED',
-          output: normalizeCommandOutput(errorOutput(error, 'stdout'), errorOutput(error, 'stderr')),
+          output: normalizeCommandOutput(
+            errorOutput(error, 'stdout'),
+            errorOutput(error, 'stderr'),
+          ),
           failureKind: isKilledProcessError(error) ? 'COMMAND_TIMEOUT' : 'COMMAND_FAILED',
         };
       }
