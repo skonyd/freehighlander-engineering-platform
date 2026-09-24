@@ -278,8 +278,12 @@ async function validateRegressionCorpus(corpus: RegressionCorpusV1): Promise<voi
 }
 
 async function validateRegressionCase(regressionCase: RegressionCaseV1): Promise<void> {
-  if (regressionCase.schemaVersion !== 1) throw new Error('regression case schemaVersion must be 1');
-  if (regressionCase.authority !== 'NONE') throw new Error('regression case authority must be NONE');
+  if (regressionCase.schemaVersion !== 1) {
+    throw new Error('regression case schemaVersion must be 1');
+  }
+  if (regressionCase.authority !== 'NONE') {
+    throw new Error('regression case authority must be NONE');
+  }
   requireSafeId(regressionCase.caseId, 'caseId');
   requireSafeId(regressionCase.role, 'role');
   requireSafeId(regressionCase.sourceCaseId, 'sourceCaseId');
