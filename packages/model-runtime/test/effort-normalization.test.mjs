@@ -54,6 +54,16 @@ test('default and none efforts omit provider-native reasoning parameter', () => 
     normalized: 'none',
     omitted: true,
   });
+  assert.deepEqual(
+    resolveProviderEffort('none', {
+      supportedEfforts: ['low', 'medium', 'high'],
+    }),
+    {
+      requested: 'none',
+      normalized: 'none',
+      omitted: true,
+    },
+  );
 });
 
 test('provider-specific supported values pass through when explicitly allowed', () => {
