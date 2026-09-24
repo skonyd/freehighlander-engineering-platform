@@ -1,4 +1,19 @@
 export {
+  checkCatalogBinding,
+  modelCatalogCanGrantAuthority,
+  modelCatalogRefreshCanRewriteBindings,
+  reconcileModelCatalog,
+  type ModelCatalogAvailability,
+  type ModelCatalogBindingCheck,
+  type ModelCatalogLocality,
+  type ModelCatalogRecordInput,
+  type ModelCatalogRecordV1,
+  type ModelCatalogReconcileInput,
+  type ModelCatalogSnapshotV1,
+  type ModelCatalogSource,
+} from './model-catalog.js';
+
+export {
   BindingRegistry,
   ProviderRegistry,
   bindingRegistryCanGrantAuthority,
