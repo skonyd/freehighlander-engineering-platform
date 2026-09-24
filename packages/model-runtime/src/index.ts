@@ -1,4 +1,13 @@
 export {
+  ModelCatalogManagementService,
+  modelCatalogManagementCanGrantAuthority,
+  modelCatalogManagementCanRewriteBindings,
+  type ModelCatalogManagementAuditEvent,
+  type ModelCatalogManagementAuditSink,
+  type ModelCatalogRefreshResult,
+} from './model-catalog-management.js';
+
+export {
   createDiscoveredQualification,
   grantModelEligibility,
   markQualificationDeprecated,
