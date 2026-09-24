@@ -62,10 +62,7 @@ test('heartbeat sequence advances monotonically and preserves identity', () => {
   assert.equal(second.activityId, first.activityId);
   assert.equal(second.recordedAtMonoMs, 120);
 
-  assert.throws(
-    () => advanceRuntimeHeartbeat(first, 99, 220, progress()),
-    /cannot move backwards/,
-  );
+  assert.throws(() => advanceRuntimeHeartbeat(first, 99, 220, progress()), /cannot move backwards/);
 });
 
 test('active lease and fresh heartbeat classify as progressing', () => {
@@ -253,7 +250,10 @@ test('nullable progress counters and detail code are accepted as metadata-only s
 test('heartbeat validation catches schema authority and non-canonical tampering', () => {
   const heartbeat = createRuntimeHeartbeat(identity(), 0, 100, 200, progress());
 
-  assert.throws(() => validateRuntimeHeartbeat({ ...heartbeat, schemaVersion: 2 }), /schemaVersion/);
+  assert.throws(
+    () => validateRuntimeHeartbeat({ ...heartbeat, schemaVersion: 2 }),
+    /schemaVersion/,
+  );
   assert.throws(
     () => validateRuntimeHeartbeat({ ...heartbeat, authority: 'SYSTEM_POLICY' }),
     /authority/,
