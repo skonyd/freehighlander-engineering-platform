@@ -287,3 +287,106 @@ test('OpenAI-compatible model discovery classifies HTTP failures', async () => {
     );
   }
 });
+
+
+test('OpenAI-compatible adapter validates and maps configured model efforts', async () => {
+  const observedBodies = [];
+  const server = createServer(async (request, response) => {
+    if (request.url === '/v1/models') {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ data: [{ id: 'reasoner' }, { id: 'plain' }] }));
+      return;
+    }
+
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    observedBodies.push(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+    response.writeHead(200, { 'content-type': 'application/json' });
+    response.end(
+      JSON.stringify({
+        model: 'reasoner',
+        choices: [{ message: { content: 'ok' } }],
+      }),
+    );
+  });
+
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== 'string');
+
+  const adapter = new OpenAiCompatibleProviderAdapter('effort-openai-compatible', {
+    baseUrl: `http://127.0.0.1:${address.port}`,
+    modelSupportedEfforts: {
+      reasoner: ['low', 'medium', 'high', 'extra-high'],
+      plain: [],
+    },
+    effortMapping: {
+      'extra-high': 'xhigh',
+    },
+  });
+
+  try {
+    assert.equal(adapter.capabilities().has('reasoning_effort'), true);
+    const models = await adapter.listModels();
+    assert.deepEqual(models[0], {
+      modelId: 'plain',
+      displayName: 'plain',
+      locality: 'REMOTE',
+    });
+    assert.deepEqual(models[1], {
+      modelId: 'reasoner',
+      displayName: 'reasoner',
+      supportedEfforts: ['extra-high', 'high', 'low', 'medium'],
+      capabilities: ['reasoning_effort'],
+      locality: 'REMOTE',
+    });
+
+    await adapter.invoke({
+      logicalRole: 'final-review',
+      input: 'probe',
+      model: 'reasoner',
+      effort: 'extra-high',
+      timeoutMs: 2_000,
+    });
+    assert.equal(observedBodies[0].reasoning_effort, 'xhigh');
+
+    await adapter.invoke({
+      logicalRole: 'final-review',
+      input: 'probe',
+      model: 'reasoner',
+      effort: 'none',
+      timeoutMs: 2_000,
+    });
+    assert.equal('reasoning_effort' in observedBodies[1], false);
+
+    await assert.rejects(
+      () =>
+        adapter.invoke({
+          logicalRole: 'final-review',
+          input: 'probe',
+          model: 'reasoner',
+          effort: 'ultra',
+          timeoutMs: 2_000,
+        }),
+      (error) => error?.kind === 'malformed_output' && /unsupported effort/.test(error.message),
+    );
+
+    await assert.rejects(
+      () =>
+        adapter.invoke({
+          logicalRole: 'final-review',
+          input: 'probe',
+          model: 'unknown',
+          effort: 'high',
+          timeoutMs: 2_000,
+        }),
+      (error) =>
+        error?.kind === 'malformed_output' && /does not expose reasoning effort support/.test(error.message),
+    );
+  } finally {
+    server.closeAllConnections?.();
+    await new Promise((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});
