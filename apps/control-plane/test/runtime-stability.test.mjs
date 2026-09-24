@@ -146,9 +146,7 @@ test('lease structures reject malformed identity ownership time generation and a
   const lease = acquireRunLease(intent, leaseRequest(), null).lease;
 
   assert.throws(() => acquireRunLease({ ...intent, schemaVersion: 2 }, leaseRequest(), null));
-  assert.throws(() =>
-    acquireRunLease({ ...intent, intentKey: H1 }, leaseRequest(), null),
-  );
+  assert.throws(() => acquireRunLease({ ...intent, intentKey: H1 }, leaseRequest(), null));
   assert.throws(() =>
     acquireRunLease({ ...intent, authority: 'SYSTEM_POLICY' }, leaseRequest(), null),
   );
@@ -235,9 +233,7 @@ test('bulkhead acquires within global and per-provider capacity and measures que
   assert.deepEqual(queueFull.snapshot, globallySaturated.snapshot);
 });
 
-test(
-  'bulkhead release promotes first eligible queued request and preserves provider limits',
-  () => {
+test('bulkhead release promotes first eligible queued request and preserves provider limits', () => {
   const p = policy();
   const a = requestBulkheadPermit(
     { active: [], queued: [] },
@@ -262,12 +258,7 @@ test(
   assert.equal(releaseB.promotedPermit, null);
   assert.equal(releaseB.snapshot.queued[0].requestId, 'request-002');
 
-  const releaseA = releaseBulkheadPermit(
-    releaseB.snapshot,
-    p,
-    a.permit.permitId,
-    130,
-  );
+  const releaseA = releaseBulkheadPermit(releaseB.snapshot, p, a.permit.permitId, 130);
   assert.equal(releaseA.promotedPermit.requestId, 'request-002');
   assert.equal(releaseA.promotedPermit.queueWaitMs, 30);
   assert.equal(releaseA.snapshot.queued.length, 0);
@@ -276,8 +267,7 @@ test(
     () => releaseBulkheadPermit(releaseA.snapshot, p, 'permit:unknown', 140),
     /unknown bulkhead permit/,
   );
-  },
-);
+});
 
 test('bulkhead rejects duplicate requests malformed state and backwards monotonic time', () => {
   const p = policy();
@@ -289,12 +279,7 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
   );
 
   assert.throws(() =>
-    requestBulkheadPermit(
-      acquired.snapshot,
-      p,
-      bulkheadRequest('request-001', 'provider-b'),
-      100,
-    ),
+    requestBulkheadPermit(acquired.snapshot, p, bulkheadRequest('request-001', 'provider-b'), 100),
   );
   assert.throws(() =>
     requestBulkheadPermit(
@@ -343,9 +328,7 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
     bulkheadRequest('request-new', 'provider-a', -1),
     bulkheadRequest('request-new', 'provider-a', Number.NaN),
   ]) {
-    assert.throws(() =>
-      requestBulkheadPermit({ active: [], queued: [] }, p, invalidRequest, 100),
-    );
+    assert.throws(() => requestBulkheadPermit({ active: [], queued: [] }, p, invalidRequest, 100));
   }
 
   assert.throws(() =>
@@ -377,12 +360,7 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
     queued: [],
   };
   assert.throws(() =>
-    requestBulkheadPermit(
-      duplicateActive,
-      p,
-      bulkheadRequest('request-new', 'provider-a'),
-      100,
-    ),
+    requestBulkheadPermit(duplicateActive, p, bulkheadRequest('request-new', 'provider-a'), 100),
   );
 
   const duplicateQueued = {
@@ -390,12 +368,7 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
     queued: [bulkheadRequest('request-001', 'provider-b')],
   };
   assert.throws(() =>
-    requestBulkheadPermit(
-      duplicateQueued,
-      p,
-      bulkheadRequest('request-new', 'provider-a'),
-      100,
-    ),
+    requestBulkheadPermit(duplicateQueued, p, bulkheadRequest('request-new', 'provider-a'), 100),
   );
 
   const malformedSnapshots = [
@@ -422,12 +395,7 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
   ];
   for (const malformed of malformedSnapshots) {
     assert.throws(() =>
-      requestBulkheadPermit(
-        malformed,
-        p,
-        bulkheadRequest('request-new', 'provider-a'),
-        100,
-      ),
+      requestBulkheadPermit(malformed, p, bulkheadRequest('request-new', 'provider-a'), 100),
     );
   }
 
@@ -494,11 +462,8 @@ test('malformed deadline records fail closed on remaining-budget evaluation', ()
   assert.throws(() => remainingMonotonicBudgetMs(deadline, -1));
 });
 
-test(
-  'runtime stability guards cannot grant authority or convert waiting into semantic retry',
-  () => {
-    assert.equal(runtimeStabilityCanGrantAuthority(), false);
-    assert.equal(waitingCountsAsSemanticRetry(), false);
-    assert.equal(expiredLeaseCanRepeatSideEffects(), false);
-  },
-);
+test('runtime stability guards cannot grant authority or convert waiting into semantic retry', () => {
+  assert.equal(runtimeStabilityCanGrantAuthority(), false);
+  assert.equal(waitingCountsAsSemanticRetry(), false);
+  assert.equal(expiredLeaseCanRepeatSideEffects(), false);
+});
