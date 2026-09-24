@@ -1438,6 +1438,50 @@ try {
   failures.push('missing side-effect-free runtime preflight contract');
 }
 
+try {
+  const resumeSource = await fs.readFile(
+    path.join(root, 'packages', 'persistence', 'src', 'resume-manifest.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function createResumeManifestV1',
+    'export function validateResumeManifestV1',
+    'export function evaluateResumeManifestCas',
+    "status: reasons.length === 0 ? 'ACCEPT' : 'CONFLICT'",
+    "classification === 'PORTABLE_REQUIRED'",
+    "classification === 'RECONSTRUCTIBLE'",
+    'export function localResumeCacheRequiredForCorrectness(): false',
+    'export function resumeManifestCanContainSecretValues(): false',
+    'export function resumeManifestCanGrantAuthority(): false',
+    "readonly authority: 'NONE'",
+  ]) {
+    if (!resumeSource.includes(invariant)) {
+      failures.push(`portable resume manifest missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const forbiddenField of [
+    'readonly secretValue:',
+    'readonly token:',
+    'readonly password:',
+    'readonly privateKey:',
+    'readonly workspacePath:',
+    'readonly homePath:',
+    'readonly hostname:',
+    'readonly rawPrompt:',
+    'readonly transcript:',
+  ]) {
+    if (resumeSource.includes(forbiddenField)) {
+      failures.push(
+        `portable resume manifest must not expose machine-local/secret field: ${forbiddenField}`,
+      );
+    }
+  }
+} catch {
+  failures.push('missing portable resume manifest and CAS contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
