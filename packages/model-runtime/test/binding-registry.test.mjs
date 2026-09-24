@@ -237,7 +237,6 @@ test('unknown provider and binding references fail closed', () => {
   );
 });
 
-
 function catalog(providerId, models) {
   return reconcileModelCatalog({
     providerId,
