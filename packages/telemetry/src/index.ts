@@ -53,9 +53,7 @@ export type EventType =
   | 'lineage.validation.failed';
 
 export type ModelCatalogEventType =
-  | 'model.catalog.refreshed'
-  | 'model.binding.changed'
-  | 'model.qualification.changed';
+  'model.catalog.refreshed' | 'model.binding.changed' | 'model.qualification.changed';
 
 export interface ModelCatalogEventPayload extends Record<string, unknown> {
   readonly action: 'REFRESH' | 'BINDING_CHANGE' | 'QUALIFICATION_CHANGE';
