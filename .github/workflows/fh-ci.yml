@@ -32,8 +32,5 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Emit canonical Prettier diff
-        run: |
-          npx prettier --write packages/model-runtime/src/model-catalog.ts
-          git diff -- packages/model-runtime/src/model-catalog.ts
-          exit 1
+      - name: Verify
+        run: npm run verify
