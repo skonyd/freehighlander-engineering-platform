@@ -113,6 +113,9 @@ export function recordRegressionVerification(
   if (previous.stage !== 'SHADOW_VERIFIED') {
     throw new Error(`cannot record regression verification from stage ${previous.stage}`);
   }
+  if (previous.probe?.status !== 'PASS') {
+    throw new Error('regression verification requires a passing capability probe');
+  }
   if (previous.shadow?.status !== 'PASS') {
     throw new Error('regression verification requires passing shadow verification');
   }
