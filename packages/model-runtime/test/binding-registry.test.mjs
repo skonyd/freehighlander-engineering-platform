@@ -448,7 +448,6 @@ test('catalog-aware mode fails closed when a referenced provider has no catalog 
   );
 });
 
-
 function eligibleQualification(snapshot, role, riskTier) {
   const discovered = createDiscoveredQualification({
     providerId: snapshot.providerId,
