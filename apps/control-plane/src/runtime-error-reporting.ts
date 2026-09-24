@@ -38,7 +38,9 @@ export interface RuntimeErrorReportV1 {
   readonly authority: 'NONE';
 }
 
-export function createRuntimeErrorReport(input: RuntimeErrorReportInput): RuntimeErrorReportV1 {
+export function createRuntimeErrorReport(
+  input: RuntimeErrorReportInput,
+): RuntimeErrorReportV1 {
   const code = normalizeCode(input.code);
   const userMessage = normalizeUserMessage(input.userMessage);
   const severity = input.severity ?? 'ERROR';
