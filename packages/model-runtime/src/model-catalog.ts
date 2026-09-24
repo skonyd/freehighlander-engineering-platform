@@ -184,6 +184,72 @@ export function checkCatalogBinding(
   };
 }
 
+export function validateModelCatalogSnapshotV1(snapshot: ModelCatalogSnapshotV1): void {
+  const providerId = requireId(snapshot.providerId, 'providerId');
+  if (snapshot.schemaVersion !== 1) throw new Error('catalog schemaVersion must be 1');
+  if (snapshot.authority !== 'NONE') throw new Error('catalog authority must be NONE');
+  const refreshedAt = requireTimestamp(snapshot.refreshedAt, 'refreshedAt');
+  const seen = new Set<string>();
+  let previousModelId: string | undefined;
+
+  for (const record of snapshot.records) {
+    if (record.providerId !== providerId) throw new Error('catalog record providerId mismatch');
+    const modelId = requireId(record.modelId, 'modelId');
+    if (seen.has(modelId)) throw new Error(`duplicate catalog model: ${modelId}`);
+    seen.add(modelId);
+    if (previousModelId !== undefined && previousModelId.localeCompare(modelId) >= 0) {
+      throw new Error('catalog records must be strictly sorted by modelId');
+    }
+    previousModelId = modelId;
+
+    requireId(record.displayName, 'displayName');
+    requireTimestamp(record.discoveredAt, 'discoveredAt');
+    requireTimestamp(record.lastSeenAt, 'lastSeenAt');
+    validateOptionalLimit(record.contextWindowTokens, 'contextWindowTokens');
+    validateOptionalLimit(record.maxOutputTokens, 'maxOutputTokens');
+
+    if (!['LOCAL', 'REMOTE'].includes(record.locality)) {
+      throw new Error('catalog locality is invalid');
+    }
+    if (!['DISCOVERED', 'MANUAL'].includes(record.source)) {
+      throw new Error('catalog source is invalid');
+    }
+    if (!['AVAILABLE', 'DEPRECATED', 'UNAVAILABLE'].includes(record.availability)) {
+      throw new Error('catalog availability is invalid');
+    }
+    if (record.availability === 'UNAVAILABLE') {
+      if (record.unavailableSince === undefined) {
+        throw new Error('unavailable catalog record requires unavailableSince');
+      }
+      requireTimestamp(record.unavailableSince, 'unavailableSince');
+    } else if (record.unavailableSince !== undefined) {
+      throw new Error('available catalog record cannot retain unavailableSince');
+    }
+
+    if (record.capabilities.length !== uniqueSorted(record.capabilities).length) {
+      throw new Error('catalog capabilities must be unique');
+    }
+    if (record.supportedEfforts.length !== uniqueSorted(record.supportedEfforts).length) {
+      throw new Error('catalog supported efforts must be unique');
+    }
+    if (
+      record.supportedEfforts.some((effort) => normalizeEffort(effort) !== effort)
+    ) {
+      throw new Error('catalog supported efforts must be normalized');
+    }
+  }
+
+  const identity = {
+    schemaVersion: 1,
+    providerId,
+    refreshedAt,
+    records: snapshot.records,
+  } as const;
+  if (sha256Canonical(identity) !== snapshot.hash) {
+    throw new Error('catalog snapshot hash mismatch');
+  }
+}
+
 export function modelCatalogRefreshCanRewriteBindings(): false {
   return false;
 }
