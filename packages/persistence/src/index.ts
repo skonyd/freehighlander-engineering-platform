@@ -1,4 +1,17 @@
 export {
+  AtomicJsonConfigStore,
+  atomicConfigCanBypassGenerationCas,
+  atomicConfigCanGrantAuthority,
+  inFlightConfigSnapshotCanMutate,
+  type AtomicConfigSnapshot,
+  type AtomicConfigValidator,
+  type AtomicConfigWriteResult,
+  type AtomicConfigWriteStatus,
+  type JsonScalar,
+  type JsonValue,
+} from './atomic-json-config-store.js';
+
+export {
   createResumeManifestV1,
   evaluateResumeManifestCas,
   localResumeCacheRequiredForCorrectness,
