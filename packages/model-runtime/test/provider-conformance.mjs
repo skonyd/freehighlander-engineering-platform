@@ -84,6 +84,10 @@ export async function runProviderAdapterConformance(t, profile) {
       assert.equal(result.output, profile.expectedSuccess.output);
       assert.equal(result.model, profile.expectedSuccess.model);
       assert.deepEqual(result.usage, profile.expectedSuccess.usage);
+      if (profile.expectMonotonicLatency === true) {
+        assert.equal(Number.isFinite(result.latencyMs), true);
+        assert.ok(result.latencyMs >= 0);
+      }
     });
   });
 
