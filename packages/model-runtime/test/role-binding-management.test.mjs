@@ -353,7 +353,6 @@ test('preview fails closed without managed catalog and publish validates managem
   );
 });
 
-
 test('validated role binding publication rehydrates without emitting audit', async () => {
   const { providers, catalogs, snapshot } = await setupCatalog([
     {
