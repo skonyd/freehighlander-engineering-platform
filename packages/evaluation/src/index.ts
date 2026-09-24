@@ -1,4 +1,24 @@
 export {
+  buildRegressionCorpus,
+  promoteConfirmedMissToRegressionCase,
+  regressionCorpusCanGrantAuthority,
+  regressionCorpusStoresRawSensitiveContent,
+  runRegressionCorpus,
+  type RegressionCasePromotionInput,
+  type RegressionCaseResultV1,
+  type RegressionCaseV1,
+  type RegressionCorpusV1,
+  type RegressionMissFinding,
+  type RegressionMissSource,
+  type RegressionRiskTier,
+  type RegressionRunReportV1,
+  type RegressionSeverity,
+  type RegressionWorker,
+  type RegressionWorkerFinding,
+  type SanitizedRegressionArtifactResolver,
+} from './regression-corpus.js';
+
+export {
   buildShadowParityReport,
   parityCanCutOverV3,
   parityCanGrantAuthority,
