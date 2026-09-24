@@ -1482,6 +1482,33 @@ try {
   failures.push('missing portable resume manifest and CAS contract');
 }
 
+try {
+  const recoverySource = await fs.readFile(
+    path.join(root, 'apps', 'control-plane', 'src', 'runtime-recovery.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function reconcileStuckRun',
+    "observation.observedState !== 'RUNNING'",
+    "observation.lease === 'ACTIVE_OWNED'",
+    "observation.replayManifest !== 'VALID'",
+    "observation.checkpoint === 'INVALID'",
+    "observation.idempotencyEvidence === 'PROVEN'",
+    'export function staleRunningCanRemainRunning(): false',
+    'export function recoveryCanRepeatSideEffectWithoutIdempotency(): false',
+    'export function recoveryCanAutoExecute(): false',
+    'export function runtimeRecoveryCanGrantAuthority(): false',
+    'readonly autoExecute: false',
+  ]) {
+    if (!recoverySource.includes(invariant)) {
+      failures.push(`stuck-run recovery contract missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing fail-closed stuck-run reconciliation contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
