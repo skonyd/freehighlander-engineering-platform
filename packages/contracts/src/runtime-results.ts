@@ -368,6 +368,15 @@ export const runtimeErrorReportV1Schema = z
     }
   });
 
+export const userErrorContextV1Schema = z
+  .object({
+    runId: identifierSchema,
+    exactRevision: z.string().min(1).max(200),
+    component: identifierSchema,
+    operation: identifierSchema,
+  })
+  .strict();
+
 export const userFacingErrorV1Schema = z
   .object({
     schemaVersion: z.literal(1),
@@ -380,6 +389,7 @@ export const userFacingErrorV1Schema = z
       ],
     ),
     correlationId: identifierSchema,
+    context: userErrorContextV1Schema,
     severity: runtimeErrorSeverityV1Schema,
     impact: userImpactV1Schema,
     retryability: runtimeRetryabilityV1Schema,
@@ -418,8 +428,53 @@ export type RuntimeRetryabilityV1 = z.infer<typeof runtimeRetryabilityV1Schema>;
 export type UserImpactV1 = z.infer<typeof userImpactV1Schema>;
 export type UserActionKindV1 = z.infer<typeof userActionKindV1Schema>;
 export type SafeDetailV1 = z.infer<typeof safeDetailV1Schema>;
+export type UserErrorContextV1 = z.infer<typeof userErrorContextV1Schema>;
 export type RuntimeErrorReportV1 = z.infer<typeof runtimeErrorReportV1Schema>;
 export type UserFacingErrorV1 = z.infer<typeof userFacingErrorV1Schema>;
+
+export interface BuildUserFacingErrorV1Input {
+  readonly summary: string;
+  readonly whatHappened: string;
+  readonly nextAction: string;
+  readonly safeDetails?: readonly SafeDetailV1[];
+  readonly evidence?: readonly EvidenceReferenceV1[];
+  readonly redactionStatus: 'APPLIED' | 'NOT_REQUIRED';
+}
+
+export function buildUserFacingErrorV1(
+  error: RuntimeErrorReportV1,
+  input: BuildUserFacingErrorV1Input,
+): UserFacingErrorV1 {
+  const validatedError = runtimeErrorReportV1Schema.parse(error);
+  const pattern = getRuntimeErrorPatternDefinitionV1(validatedError.patternId);
+
+  return userFacingErrorV1Schema.parse({
+    schemaVersion: 1,
+    kind: 'USER_ERROR',
+    errorId: validatedError.errorId,
+    patternId: validatedError.patternId,
+    correlationId: validatedError.correlationId,
+    context: {
+      runId: validatedError.binding.runId,
+      exactRevision: validatedError.binding.exactRevision,
+      component: validatedError.component,
+      operation: validatedError.operation,
+    },
+    severity: validatedError.severity,
+    impact: pattern.defaultImpact,
+    retryability: validatedError.retryability,
+    action: pattern.defaultAction,
+    title: pattern.userTitle,
+    summary: input.summary,
+    whatHappened: input.whatHappened,
+    nextAction: input.nextAction,
+    safeDetails: [...(input.safeDetails ?? [])],
+    evidence: [...(input.evidence ?? validatedError.evidence)],
+    redactionStatus: input.redactionStatus,
+    safeForUserDisplay: true,
+    authority: 'NONE',
+  });
+}
 
 export function getRuntimeErrorPatternDefinitionV1(
   patternId: RuntimeErrorReportV1['patternId'] | UserFacingErrorV1['patternId'],
