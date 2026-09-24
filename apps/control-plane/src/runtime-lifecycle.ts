@@ -230,8 +230,7 @@ function collectDescendants(
   const queue = [rootActivityId];
   while (queue.length > 0) {
     const id = queue.shift() as string;
-    const activity = byId.get(id);
-    if (!activity) throw new Error('cancellation graph changed during traversal');
+    const activity = byId.get(id) as RuntimeCancellationActivity;
     ordered.push(activity);
     queue.push(...(children.get(id) ?? []));
   }
@@ -241,11 +240,11 @@ function collectDescendants(
 function assertAcyclic(byId: ReadonlyMap<string, RuntimeCancellationActivity>): void {
   for (const activity of byId.values()) {
     const seen = new Set<string>();
-    let current: RuntimeCancellationActivity | undefined = activity;
-    while (current?.parentId !== null) {
+    let current = activity;
+    while (current.parentId !== null) {
       if (seen.has(current.id)) throw new Error('cancellation activity graph must be acyclic');
       seen.add(current.id);
-      current = byId.get(current.parentId);
+      current = byId.get(current.parentId) as RuntimeCancellationActivity;
     }
   }
 }
