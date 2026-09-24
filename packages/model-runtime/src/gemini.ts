@@ -245,7 +245,10 @@ export class GeminiProviderAdapter implements ProviderAdapter {
       'Gemini generateContent',
     );
 
-    const parsed = parseJson<GeminiGenerateContentResponse>(response.body, 'Gemini generateContent');
+    const parsed = parseJson<GeminiGenerateContentResponse>(
+      response.body,
+      'Gemini generateContent',
+    );
     const output = parsed.candidates?.[0]?.content?.parts
       ?.filter((part) => part.thought !== true && typeof part.text === 'string')
       .map((part) => part.text as string)
@@ -482,7 +485,6 @@ function isAbortError(error: unknown): boolean {
 function truncate(value: string, max: number): string {
   return value.length <= max ? value : `${value.slice(0, max)}…`;
 }
-
 
 function redactSecret(value: string, secret: string): string {
   return secret ? value.split(secret).join('[REDACTED]') : value;
