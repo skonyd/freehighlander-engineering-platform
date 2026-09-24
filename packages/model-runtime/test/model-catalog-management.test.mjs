@@ -187,7 +187,9 @@ test('health/discovery and audit failures do not publish a new catalog', async (
   assert.equal(service.getCatalog('p1'), undefined);
 });
 
-test('catalog management lists providers deterministically and never grants authority', async () => {
+test(
+  'catalog management lists providers deterministically and never grants authority',
+  async () => {
   const providers = new ProviderRegistry();
   providers.register(provider('z-provider', { models: [] }));
   providers.register(provider('a-provider', { models: [] }));
@@ -210,8 +212,9 @@ test('catalog management lists providers deterministically and never grants auth
     ['a-provider', 'z-provider'],
   );
   assert.equal(modelCatalogManagementCanGrantAuthority(), false);
-  assert.equal(modelCatalogManagementCanRewriteBindings(), false);
-});
+    assert.equal(modelCatalogManagementCanRewriteBindings(), false);
+  },
+);
 
 test('catalog management rejects empty identifiers and unknown providers', async () => {
   const providers = new ProviderRegistry();
