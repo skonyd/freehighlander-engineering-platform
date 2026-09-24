@@ -1,3 +1,4 @@
+import { normalizeEffortValue, resolveProviderEffort } from './effort-normalization.js';
 import { measureMonotonicDuration } from './monotonic-timing.js';
 import type {
   ProviderAdapter,
@@ -18,6 +19,8 @@ export interface OpenAiCompatibleProviderOptions {
   readonly headers?: Readonly<Record<string, string>>;
   readonly monotonicNow?: () => number;
   readonly modelLocality?: 'LOCAL' | 'REMOTE';
+  readonly modelSupportedEfforts?: Readonly<Record<string, readonly string[]>>;
+  readonly effortMapping?: Readonly<Record<string, string | null>>;
 }
 
 export class ProviderInvocationError extends Error {
@@ -65,6 +68,8 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
   readonly #headers: Readonly<Record<string, string>>;
   readonly #monotonicNow: () => number;
   readonly #modelLocality: 'LOCAL' | 'REMOTE';
+  readonly #modelSupportedEfforts: Readonly<Record<string, readonly string[]>> | undefined;
+  readonly #effortMapping: Readonly<Record<string, string | null>>;
 
   constructor(
     readonly id: string,
@@ -79,12 +84,21 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
     this.#headers = options.headers ?? {};
     this.#monotonicNow = options.monotonicNow ?? (() => performance.now());
     this.#modelLocality = options.modelLocality ?? 'REMOTE';
+    this.#modelSupportedEfforts = options.modelSupportedEfforts;
+    this.#effortMapping = options.effortMapping ?? {};
   }
 
   capabilities(): ReadonlySet<ProviderCapability> {
     // Generic OpenAI-compatible servers do not define a standard token-count
     // endpoint. Do not advertise token_counting unless an adapter implements it.
-    return new Set<ProviderCapability>(['usage_token_breakdown']);
+    const capabilities = new Set<ProviderCapability>(['usage_token_breakdown']);
+    if (
+      this.#modelSupportedEfforts !== undefined &&
+      Object.values(this.#modelSupportedEfforts).some((values) => values.length > 0)
+    ) {
+      capabilities.add('reasoning_effort');
+    }
+    return capabilities;
   }
 
   async health(): Promise<ProviderHealth> {
@@ -171,9 +185,16 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
       }
       if (seen.has(id)) continue;
       seen.add(id);
+      const configuredEfforts = this.#modelSupportedEfforts?.[id];
+      const supportedEfforts =
+        configuredEfforts === undefined
+          ? []
+          : [...new Set(configuredEfforts.map(normalizeEffortValue))].sort();
       models.push({
         modelId: id,
         displayName: id,
+        ...(supportedEfforts.length > 0 ? { supportedEfforts } : {}),
+        ...(supportedEfforts.length > 0 ? { capabilities: ['reasoning_effort'] } : {}),
         locality: this.#modelLocality,
       });
     }
@@ -189,6 +210,36 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
       throw new ProviderInvocationError('timeoutMs must be positive', 'malformed_output');
     }
 
+    let nativeEffort: string | undefined;
+    if (request.effort !== undefined) {
+      const normalizedEffort = normalizeEffortValue(request.effort);
+      const knownEfforts = this.#modelSupportedEfforts?.[request.model];
+      if (
+        this.#modelSupportedEfforts !== undefined &&
+        knownEfforts === undefined &&
+        normalizedEffort !== 'default' &&
+        normalizedEffort !== 'none'
+      ) {
+        throw new ProviderInvocationError(
+          `model ${request.model} does not expose reasoning effort support`,
+          'malformed_output',
+        );
+      }
+
+      try {
+        const resolution = resolveProviderEffort(request.effort, {
+          ...(knownEfforts === undefined ? {} : { supportedEfforts: knownEfforts }),
+          nativeMapping: this.#effortMapping,
+        });
+        nativeEffort = resolution.nativeValue;
+      } catch (error) {
+        throw new ProviderInvocationError(
+          error instanceof Error ? error.message : 'invalid provider effort',
+          'malformed_output',
+        );
+      }
+    }
+
     const startedAtMonoMs = this.#monotonicNow();
 
     let response: Response;
@@ -202,7 +253,7 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
             model: request.model,
             messages: [{ role: 'user', content: request.input }],
             stream: false,
-            ...(request.effort ? { reasoning_effort: request.effort } : {}),
+            ...(nativeEffort ? { reasoning_effort: nativeEffort } : {}),
           }),
         },
         request.timeoutMs,
