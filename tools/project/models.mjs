@@ -6,7 +6,6 @@ import { findRepoRoot } from './lib/state.mjs';
 import {
   createModelManagementStore,
   healthManagedProvider,
-  modelManagementStateFile,
   parseCliArgs,
   previewManagedBinding,
   publishManagedBinding,
@@ -56,7 +55,7 @@ async function execute(parsed, current, store) {
   if (command === 'status') {
     return {
       status: 'OK',
-      file: modelManagementStateFile(process.cwd(), undefined),
+      file: store.filePath,
       generation: current.generation,
       snapshotHash: current.snapshotHash,
       counts: {
@@ -147,9 +146,10 @@ async function execute(parsed, current, store) {
       providerId: id,
       catalogHash: refreshed.result.snapshot.hash,
       addedModelIds: refreshed.result.addedModelIds,
-      unavailableModelIds: refreshed.result.unavailableModelIds,
+      becameUnavailableModelIds: refreshed.result.becameUnavailableModelIds,
       restoredModelIds: refreshed.result.restoredModelIds,
       deprecatedModelIds: refreshed.result.deprecatedModelIds,
+      auditEvents: refreshed.auditEvents,
       authority: 'NONE',
     };
   }
@@ -217,6 +217,7 @@ async function execute(parsed, current, store) {
       generation: written.generation,
       snapshotHash: written.snapshotHash,
       publication: result.publication,
+      auditEvents: result.auditEvents,
       authority: 'NONE',
     };
   }
