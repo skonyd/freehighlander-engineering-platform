@@ -117,7 +117,7 @@ export class RoleBindingManagementService {
     const previous = this.#published.get(key);
 
     const identity = {
-      schemaVersion: 1,
+      schemaVersion: 1 as const,
       logicalRole,
       riskTier: input.riskTier,
       publishedAt,
