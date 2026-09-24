@@ -325,3 +325,106 @@ test('model catalog telemetry rejects secret-like extra fields and malformed met
     /currentHash/,
   );
 });
+
+
+test('model catalog telemetry validates bounded optional metadata branches', () => {
+  const base = {
+    type: 'model.binding.changed',
+    timestamp: '2026-09-24T18:03:00.000Z',
+    runId: 'validation-branches',
+  };
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        ...base,
+        payload: {
+          action: 'BINDING_CHANGE',
+          providerId: '   ',
+          currentHash: 'a'.repeat(64),
+        },
+      }),
+    /providerId is required/,
+  );
+
+  for (const [field, value] of [
+    ['modelId', ''],
+    ['bindingId', ' '],
+    ['logicalRole', ''],
+    ['previousState', ' '],
+    ['currentState', ''],
+  ]) {
+    assert.throws(
+      () =>
+        createModelCatalogEvent({
+          ...base,
+          payload: {
+            action: 'BINDING_CHANGE',
+            providerId: 'provider-a',
+            currentHash: 'a'.repeat(64),
+            [field]: value,
+          },
+        }),
+      new RegExp(field),
+    );
+  }
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        ...base,
+        payload: {
+          action: 'BINDING_CHANGE',
+          providerId: 'provider-a',
+          previousHash: 'BAD',
+          currentHash: 'a'.repeat(64),
+        },
+      }),
+    /previousHash/,
+  );
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        ...base,
+        payload: {
+          action: 'BINDING_CHANGE',
+          providerId: 'provider-a',
+          riskTier: 'INVALID',
+          currentHash: 'a'.repeat(64),
+        },
+      }),
+    /riskTier is invalid/,
+  );
+
+  for (const itemCount of [-1, 1.5]) {
+    assert.throws(
+      () =>
+        createModelCatalogEvent({
+          ...base,
+          payload: {
+            action: 'BINDING_CHANGE',
+            providerId: 'provider-a',
+            currentHash: 'a'.repeat(64),
+            itemCount,
+          },
+        }),
+      /itemCount/,
+    );
+  }
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        type: 'model.catalog.refreshed',
+        timestamp: base.timestamp,
+        runId: base.runId,
+        payload: {
+          action: 'BINDING_CHANGE',
+          providerId: 'provider-a',
+          currentHash: 'a'.repeat(64),
+        },
+      }),
+    /action does not match event type/,
+  );
+});
