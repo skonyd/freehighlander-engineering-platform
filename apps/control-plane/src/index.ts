@@ -117,6 +117,17 @@ export {
 } from './local-worktree-backend.js';
 
 export {
+  createRuntimeErrorReport,
+  formatRuntimeErrorForUser,
+  runtimeErrorReportCanExposeSecrets,
+  runtimeErrorReportCanGrantAuthority,
+  type RuntimeErrorDetail,
+  type RuntimeErrorReportInput,
+  type RuntimeErrorReportV1,
+  type RuntimeErrorSeverity,
+} from './runtime-error-reporting.js';
+
+export {
   ActivityRunner,
   activityRunnerCanExecuteDuringReplay,
   createExecutionWorkspaceDescriptor,
