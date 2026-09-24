@@ -1377,7 +1377,7 @@ try {
     "status: 'TORN_TAIL'",
     'importJsonlRecovering(filePath: string)',
     'export function jsonlTornTailCanBecomeEvent(): false',
-    "index === rawLines.length - 1 && !endsWithNewline",
+    'index === rawLines.length - 1 && !endsWithNewline',
   ]) {
     if (!persistenceSource.includes(invariant)) {
       failures.push(`JSONL torn-tail recovery missing invariant: ${invariant}`);
