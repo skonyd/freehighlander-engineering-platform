@@ -79,7 +79,6 @@ export const workflowSpecSchema = z
   .strict();
 export type WorkflowSpec = z.infer<typeof workflowSpecSchema>;
 
-
 export {
   autonomousMergeReviewV1Schema,
   candidateAdjudicationResultV1Schema,
