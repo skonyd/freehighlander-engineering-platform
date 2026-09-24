@@ -2,7 +2,7 @@ export interface RuntimeProgressMetadata {
   readonly phase: string;
   readonly completedUnits: number | null;
   readonly totalUnits: number | null;
-  readonly detail: string | null;
+  readonly detailCode: string | null;
 }
 
 export interface RuntimeHeartbeatV1 {
@@ -48,7 +48,6 @@ export interface RuntimeLivenessDecision {
 }
 
 const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/;
-const MAX_DETAIL_LENGTH = 160;
 
 export function createRuntimeHeartbeat(
   identity: RuntimeHeartbeatIdentity,
@@ -131,6 +130,14 @@ export function classifyRuntimeActivityLiveness(
   requireNonNegativeFinite(observation.nowMonoMs, 'nowMonoMs');
   requirePositiveInteger(observation.maxSilenceMs, 'maxSilenceMs');
 
+  if (observation.heartbeat !== null) {
+    validateRuntimeHeartbeat(observation.heartbeat);
+    assertHeartbeatIdentity(observation.identity, observation.heartbeat);
+    if (observation.nowMonoMs < observation.heartbeat.recordedAtMonoMs) {
+      throw new Error('heartbeat monotonic time is in the future');
+    }
+  }
+
   if (observation.lease === 'UNKNOWN') {
     return decision('RECOVERY_REQUIRED', 'lease liveness is unverifiable', null);
   }
@@ -141,7 +148,9 @@ export function classifyRuntimeActivityLiveness(
       observation.lease === 'EXPIRED'
         ? 'runtime lease expired'
         : 'runtime lease is missing',
-      heartbeatAge(observation.heartbeat, observation.nowMonoMs),
+      observation.heartbeat === null
+        ? null
+        : observation.nowMonoMs - observation.heartbeat.recordedAtMonoMs,
     );
   }
 
@@ -151,13 +160,6 @@ export function classifyRuntimeActivityLiveness(
       'active lease has no heartbeat evidence',
       null,
     );
-  }
-
-  validateRuntimeHeartbeat(observation.heartbeat);
-  assertHeartbeatIdentity(observation.identity, observation.heartbeat);
-
-  if (observation.nowMonoMs < observation.heartbeat.recordedAtMonoMs) {
-    throw new Error('heartbeat monotonic time is in the future');
   }
 
   const age = observation.nowMonoMs - observation.heartbeat.recordedAtMonoMs;
@@ -216,21 +218,15 @@ function validateProgress(progress: RuntimeProgressMetadata): RuntimeProgressMet
     throw new Error('completedUnits cannot exceed totalUnits');
   }
 
-  if (progress.detail !== null) {
-    if (
-      progress.detail.length === 0 ||
-      progress.detail.length > MAX_DETAIL_LENGTH ||
-      /[\r\n\0]/.test(progress.detail)
-    ) {
-      throw new Error('progress detail must be bounded single-line metadata');
-    }
+  if (progress.detailCode !== null) {
+    requireId(progress.detailCode, 'progress detailCode');
   }
 
   return {
     phase: progress.phase,
     completedUnits: progress.completedUnits,
     totalUnits: progress.totalUnits,
-    detail: progress.detail,
+    detailCode: progress.detailCode,
   };
 }
 
@@ -245,15 +241,6 @@ function assertHeartbeatIdentity(
   ) {
     throw new Error('heartbeat identity mismatch');
   }
-}
-
-function heartbeatAge(heartbeat: RuntimeHeartbeatV1 | null, nowMonoMs: number): number | null {
-  if (heartbeat === null) return null;
-  validateRuntimeHeartbeat(heartbeat);
-  if (nowMonoMs < heartbeat.recordedAtMonoMs) {
-    throw new Error('heartbeat monotonic time is in the future');
-  }
-  return nowMonoMs - heartbeat.recordedAtMonoMs;
 }
 
 function decision(
