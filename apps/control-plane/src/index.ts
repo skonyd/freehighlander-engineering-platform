@@ -1,4 +1,21 @@
 export {
+  reconcileStuckRun,
+  recoveryCanAutoExecute,
+  recoveryCanRepeatSideEffectWithoutIdempotency,
+  runtimeRecoveryCanGrantAuthority,
+  staleRunningCanRemainRunning,
+  type RuntimeActivityEffect,
+  type RuntimeIdempotencyEvidence,
+  type RuntimeLeaseObservation,
+  type RuntimeObservedState,
+  type RuntimeRecoveryDecision,
+  type RuntimeRecoveryEvidenceStatus,
+  type RuntimeRecoveryNextAction,
+  type RuntimeRecoveryObservation,
+  type RuntimeRecoveryStatus,
+} from './runtime-recovery.js';
+
+export {
   evaluateRuntimePreflight,
   runtimePreflightCanGrantAuthority,
   runtimePreflightCanInvokeProvider,
