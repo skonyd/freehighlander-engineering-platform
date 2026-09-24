@@ -29,6 +29,12 @@ export {
 
 export { OpenAiCompatibleProviderAdapter, ProviderInvocationError } from './openai-compatible.js';
 export {
+  measureMonotonicDuration,
+  monotonicDurationCanGrantAuthority,
+  wallClockCanAffectMonotonicDuration,
+  type MonotonicDurationMeasurement,
+} from './monotonic-timing.js';
+export {
   preflightInputTokenBudget,
   tokenBudgetCanAuthorizeEvidenceRemoval,
   type InputTokenBudget,
@@ -84,6 +90,7 @@ export interface ProviderResponse {
   readonly output: string;
   readonly model: string;
   readonly usage?: ProviderUsage;
+  readonly latencyMs?: number;
 }
 
 export interface ProviderAdapter {
