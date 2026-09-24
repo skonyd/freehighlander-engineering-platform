@@ -1535,6 +1535,37 @@ try {
   failures.push('missing atomic config generation-CAS persistence contract');
 }
 
+try {
+  const lifecycleSource = await fs.readFile(
+    path.join(root, 'apps', 'control-plane', 'src', 'runtime-lifecycle.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function planRuntimeCancellation',
+    "action: 'CANCEL_BEFORE_START'",
+    "action: activity.supportsCancellation ? 'SIGNAL_CANCEL' : 'DRAIN_UNINTERRUPTIBLE'",
+    'resourceReleaseRequired: true',
+    'export function transitionRuntimeDrain',
+    "if (to === 'CHECKPOINTED' && !evidence.safeCheckpointPersisted)",
+    "if (to === 'RELEASING' && !evidence.activitiesSettled)",
+    '!evidence.permitsReleased',
+    '!evidence.leasesReleased',
+    '!evidence.secretReceiptsRevoked',
+    'export function cancellationCanTriggerModelShopping(): false',
+    'export function cancellationCountsAsSemanticFailure(): false',
+    'export function cancellationCanSkipResourceRelease(): false',
+    'export function queuedWaitCountsAsExecutionTime(): false',
+    'export function gracefulDrainCanGrantAuthority(): false',
+  ]) {
+    if (!lifecycleSource.includes(invariant)) {
+      failures.push(`runtime lifecycle contract missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing cancellation tree and graceful drain contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
