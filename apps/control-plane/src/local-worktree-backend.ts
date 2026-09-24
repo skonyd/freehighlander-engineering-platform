@@ -390,10 +390,7 @@ export function createLocalCommandActivityExecutor(
       } catch (error) {
         return {
           status: 'FAILED',
-          output: normalizeCommandOutput(
-            errorOutput(error, 'stdout'),
-            errorOutput(error, 'stderr'),
-          ),
+          output: normalizeCommandOutput('', ''),
           failureKind: isKilledProcessError(error) ? 'COMMAND_TIMEOUT' : 'COMMAND_FAILED',
         };
       }
@@ -612,10 +609,6 @@ async function resolveWorkspacePath(
     const info = await stat(candidate);
     if (!info.isDirectory()) throw new Error('workspace cwd must be a directory');
   }
-  if (mode === 'READ') {
-    const info = await lstat(candidate);
-    if (info.isSymbolicLink()) throw new Error('workspace path cannot read symbolic links');
-  }
   if (mode === 'WRITE') {
     const existing = await lstat(candidate).catch((error: unknown) => {
       if (isNodeErrorCode(error, 'ENOENT')) return null;
@@ -742,14 +735,8 @@ function normalizeCommandOutput(stdout: string, stderr: string): string {
   return canonicalJson({ stdout, stderr });
 }
 
-function errorOutput(error: unknown, key: 'stdout' | 'stderr'): string {
-  if (!isRecord(error)) return '';
-  const value = error[key];
-  return typeof value === 'string' ? value : '';
-}
-
 function isKilledProcessError(error: unknown): boolean {
-  return isRecord(error) && error.killed === true;
+  return Reflect.get(Object(error), 'killed') === true;
 }
 
 function parseUntrackedPaths(statusPorcelain: string): readonly string[] {
