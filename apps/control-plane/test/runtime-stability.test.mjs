@@ -4,9 +4,12 @@ import test from 'node:test';
 import {
   acquireRunLease,
   buildRunIntentIdentity,
+  bulkheadTerminalOutcomeCanSkipPermitRelease,
+  bulkheadTerminalOutcomeCountsAsSemanticRetry,
   createMonotonicDeadline,
   expiredLeaseCanRepeatSideEffects,
   releaseBulkheadPermit,
+  releaseBulkheadPermitAfterOutcome,
   releaseRunLease,
   remainingMonotonicBudgetMs,
   renewRunLease,
@@ -46,13 +49,14 @@ function policy(overrides = {}) {
   return {
     maxGlobalActive: 2,
     maxPerProviderActive: 1,
+    maxPerEndpointActive: null,
     maxQueued: 2,
     ...overrides,
   };
 }
 
-function bulkheadRequest(requestId, providerId, enqueuedMonoMs = 100) {
-  return { requestId, providerId, enqueuedMonoMs };
+function bulkheadRequest(requestId, providerId, enqueuedMonoMs = 100, endpointId = null) {
+  return { requestId, providerId, endpointId, enqueuedMonoMs };
 }
 
 test('run intent identity is deterministic exact-bound and authority-neutral', () => {
@@ -233,6 +237,49 @@ test('bulkhead acquires within global and per-provider capacity and measures que
   assert.deepEqual(queueFull.snapshot, globallySaturated.snapshot);
 });
 
+test('bulkhead enforces an optional per-local-endpoint limit independently of provider limits', () => {
+  const p = policy({
+    maxGlobalActive: 4,
+    maxPerProviderActive: 4,
+    maxPerEndpointActive: 1,
+  });
+
+  const first = requestBulkheadPermit(
+    { active: [], queued: [] },
+    p,
+    bulkheadRequest('request-ep-1', 'provider-a', 100, 'endpoint-local-1'),
+    100,
+  );
+  assert.equal(first.status, 'ACQUIRED');
+  assert.equal(first.permit.endpointId, 'endpoint-local-1');
+
+  const sameEndpointOtherProvider = requestBulkheadPermit(
+    first.snapshot,
+    p,
+    bulkheadRequest('request-ep-2', 'provider-b', 100, 'endpoint-local-1'),
+    100,
+  );
+  assert.equal(sameEndpointOtherProvider.status, 'QUEUED');
+
+  const differentEndpoint = requestBulkheadPermit(
+    sameEndpointOtherProvider.snapshot,
+    p,
+    bulkheadRequest('request-ep-3', 'provider-b', 100, 'endpoint-local-2'),
+    100,
+  );
+  assert.equal(differentEndpoint.status, 'ACQUIRED');
+  assert.equal(differentEndpoint.permit.endpointId, 'endpoint-local-2');
+
+  const noEndpoint = requestBulkheadPermit(
+    differentEndpoint.snapshot,
+    p,
+    bulkheadRequest('request-ep-4', 'provider-c'),
+    100,
+  );
+  assert.equal(noEndpoint.status, 'ACQUIRED');
+  assert.equal(noEndpoint.permit.endpointId, null);
+});
+
 test('bulkhead release promotes first eligible queued request and preserves provider limits', () => {
   const p = policy();
   const a = requestBulkheadPermit(
@@ -266,6 +313,62 @@ test('bulkhead release promotes first eligible queued request and preserves prov
   assert.throws(
     () => releaseBulkheadPermit(releaseA.snapshot, p, 'permit:unknown', 140),
     /unknown bulkhead permit/,
+  );
+});
+
+test('success failure timeout and cancellation all release permits deterministically', () => {
+  for (const outcome of ['SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED']) {
+    const p = policy({ maxGlobalActive: 1 });
+    const acquired = requestBulkheadPermit(
+      { active: [], queued: [] },
+      p,
+      bulkheadRequest('request-' + outcome.toLowerCase(), 'provider-a'),
+      100,
+    );
+    const queued = requestBulkheadPermit(
+      acquired.snapshot,
+      p,
+      bulkheadRequest('queued-' + outcome.toLowerCase(), 'provider-b'),
+      100,
+    );
+
+    const released = releaseBulkheadPermitAfterOutcome(
+      queued.snapshot,
+      p,
+      acquired.permit.permitId,
+      120,
+      outcome,
+    );
+
+    assert.equal(released.outcome, outcome);
+    assert.equal(released.permitReleased, true);
+    assert.equal(released.semanticRetry, false);
+    assert.equal(released.snapshot.active.length, 1);
+    assert.equal(released.promotedPermit.requestId, 'queued-' + outcome.toLowerCase());
+  }
+
+  assert.throws(
+    () =>
+      releaseBulkheadPermitAfterOutcome(
+        {
+          active: [
+            {
+              permitId: 'permit:request-invalid',
+              requestId: 'request-invalid',
+              providerId: 'provider-a',
+              endpointId: null,
+              acquiredMonoMs: 100,
+              queueWaitMs: 0,
+            },
+          ],
+          queued: [],
+        },
+        policy(),
+        'permit:request-invalid',
+        120,
+        'UNKNOWN',
+      ),
+    /unsupported bulkhead terminal outcome/,
   );
 });
 
@@ -309,6 +412,8 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
     policy({ maxGlobalActive: 0 }),
     policy({ maxGlobalActive: 1.5 }),
     policy({ maxPerProviderActive: 0 }),
+    policy({ maxPerEndpointActive: 0 }),
+    policy({ maxPerEndpointActive: 1.5 }),
     policy({ maxQueued: -1 }),
     policy({ maxQueued: 1.5 }),
   ]) {
@@ -325,6 +430,7 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
   for (const invalidRequest of [
     bulkheadRequest('x', 'provider-a'),
     bulkheadRequest('request-new', 'x'),
+    bulkheadRequest('request-new', 'provider-a', 100, 'x'),
     bulkheadRequest('request-new', 'provider-a', -1),
     bulkheadRequest('request-new', 'provider-a', Number.NaN),
   ]) {
@@ -346,6 +452,7 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
         permitId: 'permit:request-001',
         requestId: 'request-001',
         providerId: 'provider-a',
+        endpointId: null,
         acquiredMonoMs: 100,
         queueWaitMs: 0,
       },
@@ -353,6 +460,7 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
         permitId: 'permit:request-002',
         requestId: 'request-001',
         providerId: 'provider-b',
+        endpointId: null,
         acquiredMonoMs: 100,
         queueWaitMs: 0,
       },
@@ -382,6 +490,10 @@ test('bulkhead rejects duplicate requests malformed state and backwards monotoni
     },
     {
       active: [{ ...acquired.permit, providerId: 'x' }],
+      queued: [],
+    },
+    {
+      active: [{ ...acquired.permit, endpointId: 'x' }],
       queued: [],
     },
     {
@@ -466,4 +578,6 @@ test('runtime stability guards cannot grant authority or convert waiting into se
   assert.equal(runtimeStabilityCanGrantAuthority(), false);
   assert.equal(waitingCountsAsSemanticRetry(), false);
   assert.equal(expiredLeaseCanRepeatSideEffects(), false);
+  assert.equal(bulkheadTerminalOutcomeCanSkipPermitRelease(), false);
+  assert.equal(bulkheadTerminalOutcomeCountsAsSemanticRetry(), false);
 });
