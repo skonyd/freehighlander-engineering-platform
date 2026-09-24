@@ -1,4 +1,22 @@
 export {
+  advanceRuntimeHeartbeat,
+  classifyRuntimeActivityLiveness,
+  createRuntimeHeartbeat,
+  heartbeatCanAuthorizeReplay,
+  heartbeatCanCarrySecretValue,
+  heartbeatCanDeclareSemanticSuccess,
+  heartbeatCanGrantAuthority,
+  validateRuntimeHeartbeat,
+  type RuntimeActivityLiveness,
+  type RuntimeHeartbeatIdentity,
+  type RuntimeHeartbeatV1,
+  type RuntimeLeaseLiveness,
+  type RuntimeLivenessDecision,
+  type RuntimeLivenessObservation,
+  type RuntimeProgressMetadata,
+} from './runtime-heartbeat.js';
+
+export {
   cancellationCanSkipResourceRelease,
   cancellationCanTriggerModelShopping,
   cancellationCountsAsSemanticFailure,
