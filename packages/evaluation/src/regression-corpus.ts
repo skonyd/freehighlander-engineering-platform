@@ -289,7 +289,9 @@ async function validateRegressionCase(regressionCase: RegressionCaseV1): Promise
   requireHash(regressionCase.sourceFindingKeyHash, 'sourceFindingKeyHash');
   requireHash(regressionCase.sanitizedInputHash, 'sanitizedInputHash');
   requireHash(regressionCase.sanitizationAttestationHash, 'sanitizationAttestationHash');
-  uniqueSortedHashes(regressionCase.evidenceHashes);
+  if (uniqueSortedHashes(regressionCase.evidenceHashes).length === 0) {
+    throw new Error('regression case requires exact evidence hashes');
+  }
   if (!isRegressionSeverity(regressionCase.severity)) {
     throw new Error('regression case severity must be P0/P1/P2');
   }
