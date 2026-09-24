@@ -7,6 +7,7 @@ export {
   localWorkspaceDestroyRequiresLeaseGuard,
   localWorktreeBackendCanGrantAuthority,
   type LocalCommandExecutorOptions,
+  type RegisteredLocalCommandV1,
   type LocalGitWorktreeBackendOptions,
   type LocalWorkspaceHandle,
   type WorkspaceSnapshotV1,
