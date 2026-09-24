@@ -239,7 +239,6 @@ test('catalog management rejects empty identifiers and unknown providers', async
   );
 });
 
-
 test('validated catalog snapshots can rehydrate management state without emitting audit', async () => {
   const providers = new ProviderRegistry();
   providers.register(provider('p1', { models: [{ modelId: 'model-a', locality: 'REMOTE' }] }));
