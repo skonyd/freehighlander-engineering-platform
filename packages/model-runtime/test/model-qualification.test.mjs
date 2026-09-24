@@ -9,6 +9,7 @@ import {
   modelQualificationCanGrantAuthority,
   qualificationAllowsBinding,
   recordCapabilityProbe,
+  recordRegressionVerification,
   recordShadowVerification,
 } from '../dist/index.js';
 
@@ -185,4 +186,208 @@ test('qualification snapshot tampering and malformed hashes fail closed', () => 
       }),
     /hash mismatch/,
   );
+});
+
+test('required regression corpus blocks eligibility until exact PASS evidence exists', () => {
+  const probed = recordCapabilityProbe(discovered(), {
+    evidenceHash: PROBE_HASH,
+    status: 'PASS',
+    probedAt: '2026-09-24T19:00:00.000Z',
+  });
+  const shadow = recordShadowVerification(probed, {
+    evidenceHash: SHADOW_HASH,
+    status: 'PASS',
+    verifiedAt: '2026-09-24T19:05:00.000Z',
+    role: 'final-review',
+    riskTier: 'HIGH',
+  });
+  const corpusHash = 'e'.repeat(64);
+
+  assert.throws(
+    () =>
+      grantModelEligibility(shadow, {
+        role: 'final-review',
+        riskTier: 'HIGH',
+        grantedAt: '2026-09-24T19:10:00.000Z',
+        decisionHash: DECISION_HASH,
+        requiredRegressionCorpusHash: corpusHash,
+      }),
+    /requires passing regression verification/,
+  );
+
+  const failed = recordRegressionVerification(shadow, {
+    corpusHash,
+    reportHash: 'f'.repeat(64),
+    status: 'FAIL',
+    verifiedAt: '2026-09-24T19:07:00.000Z',
+  });
+  assert.equal(failed.stage, 'SHADOW_VERIFIED');
+  assert.equal(failed.regression.status, 'FAIL');
+
+  assert.throws(
+    () =>
+      grantModelEligibility(failed, {
+        role: 'final-review',
+        riskTier: 'HIGH',
+        grantedAt: '2026-09-24T19:10:00.000Z',
+        decisionHash: DECISION_HASH,
+        requiredRegressionCorpusHash: corpusHash,
+      }),
+    /requires passing regression verification/,
+  );
+
+  const passed = recordRegressionVerification(shadow, {
+    corpusHash,
+    reportHash: '1'.repeat(64),
+    status: 'PASS',
+    verifiedAt: '2026-09-24T19:08:00+00:00',
+  });
+  assert.equal(passed.regression.verifiedAt, '2026-09-24T19:08:00.000Z');
+
+  assert.throws(
+    () =>
+      grantModelEligibility(passed, {
+        role: 'final-review',
+        riskTier: 'HIGH',
+        grantedAt: '2026-09-24T19:10:00.000Z',
+        decisionHash: DECISION_HASH,
+        requiredRegressionCorpusHash: '2'.repeat(64),
+      }),
+    /regression corpus hash mismatch/,
+  );
+
+  const eligible = grantModelEligibility(passed, {
+    role: 'final-review',
+    riskTier: 'HIGH',
+    grantedAt: '2026-09-24T19:10:00.000Z',
+    decisionHash: DECISION_HASH,
+    requiredRegressionCorpusHash: corpusHash,
+  });
+  assert.equal(eligible.stage, 'ELIGIBLE');
+  assert.equal(eligible.regression.corpusHash, corpusHash);
+  assert.equal(eligible.regression.status, 'PASS');
+  assert.equal(eligible.eligibility.requiredRegressionCorpusHash, corpusHash);
+});
+
+test('regression verification is only valid after passing shadow verification', () => {
+  assert.throws(
+    () =>
+      recordRegressionVerification(discovered(), {
+        corpusHash: 'e'.repeat(64),
+        reportHash: 'f'.repeat(64),
+        status: 'PASS',
+        verifiedAt: '2026-09-24T19:08:00.000Z',
+      }),
+    /cannot record regression verification/,
+  );
+
+  const probed = recordCapabilityProbe(discovered(), {
+    evidenceHash: PROBE_HASH,
+    status: 'PASS',
+    probedAt: '2026-09-24T19:00:00.000Z',
+  });
+  const failedShadow = recordShadowVerification(probed, {
+    evidenceHash: SHADOW_HASH,
+    status: 'FAIL',
+    verifiedAt: '2026-09-24T19:05:00.000Z',
+    role: 'controller',
+    riskTier: 'NORMAL',
+  });
+
+  assert.throws(
+    () =>
+      recordRegressionVerification(failedShadow, {
+        corpusHash: 'e'.repeat(64),
+        reportHash: 'f'.repeat(64),
+        status: 'PASS',
+        verifiedAt: '2026-09-24T19:08:00.000Z',
+      }),
+    /cannot record regression verification/,
+  );
+});
+
+test('regression evidence hashes and timestamps fail closed and survive terminal states', () => {
+  const probed = recordCapabilityProbe(discovered(), {
+    evidenceHash: PROBE_HASH,
+    status: 'PASS',
+    probedAt: '2026-09-24T19:00:00.000Z',
+  });
+  const shadow = recordShadowVerification(probed, {
+    evidenceHash: SHADOW_HASH,
+    status: 'PASS',
+    verifiedAt: '2026-09-24T19:05:00.000Z',
+    role: 'controller',
+    riskTier: 'NORMAL',
+  });
+
+  assert.throws(
+    () =>
+      recordRegressionVerification(shadow, {
+        corpusHash: 'bad',
+        reportHash: 'f'.repeat(64),
+        status: 'PASS',
+        verifiedAt: '2026-09-24T19:08:00.000Z',
+      }),
+    /regression corpusHash/,
+  );
+  assert.throws(
+    () =>
+      recordRegressionVerification(shadow, {
+        corpusHash: 'e'.repeat(64),
+        reportHash: 'bad',
+        status: 'PASS',
+        verifiedAt: '2026-09-24T19:08:00.000Z',
+      }),
+    /regression reportHash/,
+  );
+  assert.throws(
+    () =>
+      recordRegressionVerification(shadow, {
+        corpusHash: 'e'.repeat(64),
+        reportHash: 'f'.repeat(64),
+        status: 'PASS',
+        verifiedAt: 'not-a-date',
+      }),
+    /ISO timestamp/,
+  );
+
+  const verified = recordRegressionVerification(shadow, {
+    corpusHash: 'e'.repeat(64),
+    reportHash: 'f'.repeat(64),
+    status: 'PASS',
+    verifiedAt: '2026-09-24T19:08:00.000Z',
+  });
+  const eligible = grantModelEligibility(verified, {
+    role: 'controller',
+    riskTier: 'NORMAL',
+    grantedAt: '2026-09-24T19:10:00.000Z',
+    decisionHash: DECISION_HASH,
+    requiredRegressionCorpusHash: 'e'.repeat(64),
+  });
+
+  assert.equal(markQualificationDeprecated(eligible).regression.reportHash, 'f'.repeat(64));
+  assert.equal(markQualificationUnavailable(eligible).regression.reportHash, 'f'.repeat(64));
+});
+
+test('eligibility remains backward compatible when no regression corpus is required', () => {
+  const probed = recordCapabilityProbe(discovered(), {
+    evidenceHash: PROBE_HASH,
+    status: 'PASS',
+    probedAt: '2026-09-24T19:00:00.000Z',
+  });
+  const shadow = recordShadowVerification(probed, {
+    evidenceHash: SHADOW_HASH,
+    status: 'PASS',
+    verifiedAt: '2026-09-24T19:05:00.000Z',
+    role: 'controller',
+    riskTier: 'NORMAL',
+  });
+  const eligible = grantModelEligibility(shadow, {
+    role: 'controller',
+    riskTier: 'NORMAL',
+    grantedAt: '2026-09-24T19:10:00.000Z',
+    decisionHash: DECISION_HASH,
+  });
+  assert.equal(eligible.stage, 'ELIGIBLE');
+  assert.equal(eligible.regression, undefined);
 });
