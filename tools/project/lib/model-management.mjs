@@ -13,7 +13,9 @@ import {
 import { AtomicJsonConfigStore } from '../../../packages/persistence/dist/index.js';
 
 export function modelManagementStateFile(root, override) {
-  return override ? path.resolve(override) : path.join(root, '.freehighlander', 'model-management.json');
+  return override
+    ? path.resolve(override)
+    : path.join(root, '.freehighlander', 'model-management.json');
 }
 
 export function createModelManagementStore(root, override) {
@@ -42,8 +44,7 @@ export function writeModelManagementState(store, generation, state) {
   const normalized = validateModelManagementStateV1(state);
   const result = store.write(generation, normalized);
   if (result.status !== 'WRITTEN' || result.snapshot === null) {
-    const actual =
-      result.actualGeneration === null ? 'unknown' : String(result.actualGeneration);
+    const actual = result.actualGeneration === null ? 'unknown' : String(result.actualGeneration);
     throw new Error(
       `model management state write conflict: ${result.status} expected=${generation} actual=${actual}`,
     );
@@ -72,10 +73,9 @@ export function setManagedProvider(state, input) {
   const previous = state.providers.find((item) => item.id === provider.id);
   const changed = previous === undefined || JSON.stringify(previous) !== JSON.stringify(provider);
 
-  const providers = [
-    ...state.providers.filter((item) => item.id !== provider.id),
-    provider,
-  ].sort((left, right) => left.id.localeCompare(right.id));
+  const providers = [...state.providers.filter((item) => item.id !== provider.id), provider].sort(
+    (left, right) => left.id.localeCompare(right.id),
+  );
 
   const next = {
     ...state,
@@ -178,12 +178,7 @@ export async function healthManagedProvider(state, providerId, env = process.env
   };
 }
 
-export async function refreshManagedProvider(
-  state,
-  providerId,
-  refreshedAt,
-  env = process.env,
-) {
+export async function refreshManagedProvider(state, providerId, refreshedAt, env = process.env) {
   const provider = managedProviderById(state, providerId);
   const adapter = createManagedProviderAdapter(provider, env);
   const registry = new ProviderRegistry();
@@ -226,7 +221,8 @@ export function selectCatalogs(state, providerId) {
 
 export function selectQualifications(state, filters = {}) {
   return state.qualifications.filter((snapshot) => {
-    if (filters.providerId !== undefined && snapshot.providerId !== filters.providerId) return false;
+    if (filters.providerId !== undefined && snapshot.providerId !== filters.providerId)
+      return false;
     if (filters.modelId !== undefined && snapshot.modelId !== filters.modelId) return false;
     if (filters.role !== undefined) {
       const role = snapshot.eligibility?.role ?? snapshot.shadow?.role;
@@ -321,12 +317,7 @@ export function previewManagedBinding(state, args, env = process.env) {
   return { plan, input, qualification };
 }
 
-export async function publishManagedBinding(
-  state,
-  args,
-  publishedAt,
-  env = process.env,
-) {
+export async function publishManagedBinding(state, args, publishedAt, env = process.env) {
   const input = bindingInputFromArgs(args);
   const provider = managedProviderById(state, input.primary.providerId);
   const adapter = createManagedProviderAdapter(provider, env);
@@ -342,12 +333,7 @@ export async function publishManagedBinding(
   const existingPublications = state.publications.filter((publication) =>
     publication.plan.bindings.every((binding) => binding.providerId === provider.id),
   );
-  const service = new RoleBindingManagementService(
-    registry,
-    catalogs,
-    audit,
-    existingPublications,
-  );
+  const service = new RoleBindingManagementService(registry, catalogs, audit, existingPublications);
   const qualification = findEligibleQualification(
     state,
     input.primary.providerId,
