@@ -1509,6 +1509,32 @@ try {
   failures.push('missing fail-closed stuck-run reconciliation contract');
 }
 
+try {
+  const atomicConfigSource = await fs.readFile(
+    path.join(root, 'packages', 'persistence', 'src', 'atomic-json-config-store.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export class AtomicJsonConfigStore',
+    "openSync(this.#lockPath, 'wx'",
+    "status: 'GENERATION_CONFLICT'",
+    "status: 'WRITER_CONFLICT'",
+    'fsyncSync(tempFd)',
+    'renameSync(tempPath, this.filePath)',
+    'fsyncDirectoryIfSupported(parent)',
+    'export function atomicConfigCanGrantAuthority(): false',
+    'export function atomicConfigCanBypassGenerationCas(): false',
+    'export function inFlightConfigSnapshotCanMutate(): false',
+  ]) {
+    if (!atomicConfigSource.includes(invariant)) {
+      failures.push(`atomic config CAS contract missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing atomic config generation-CAS persistence contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
