@@ -316,7 +316,7 @@ export class GeminiProviderAdapter implements ProviderAdapter {
       try {
         resolution = resolveProviderEffort(requested, {
           supportedEfforts: profile.supportedEfforts,
-          nativeMapping: profile.nativeLevels,
+          ...(profile.nativeLevels === undefined ? {} : { nativeMapping: profile.nativeLevels }),
         });
       } catch (error) {
         throw new GeminiProviderInvocationError(
