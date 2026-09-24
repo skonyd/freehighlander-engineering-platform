@@ -235,7 +235,9 @@ test('bulkhead acquires within global and per-provider capacity and measures que
   assert.deepEqual(queueFull.snapshot, globallySaturated.snapshot);
 });
 
-test('bulkhead release promotes first eligible queued request and preserves provider limits', () => {
+test(
+  'bulkhead release promotes first eligible queued request and preserves provider limits',
+  () => {
   const p = policy();
   const a = requestBulkheadPermit(
     { active: [], queued: [] },
@@ -274,7 +276,8 @@ test('bulkhead release promotes first eligible queued request and preserves prov
     () => releaseBulkheadPermit(releaseA.snapshot, p, 'permit:unknown', 140),
     /unknown bulkhead permit/,
   );
-});
+  },
+);
 
 test('bulkhead rejects duplicate requests malformed state and backwards monotonic time', () => {
   const p = policy();
@@ -491,8 +494,11 @@ test('malformed deadline records fail closed on remaining-budget evaluation', ()
   assert.throws(() => remainingMonotonicBudgetMs(deadline, -1));
 });
 
-test('runtime stability guards cannot grant authority or convert waiting into semantic retry', () => {
-  assert.equal(runtimeStabilityCanGrantAuthority(), false);
-  assert.equal(waitingCountsAsSemanticRetry(), false);
-  assert.equal(expiredLeaseCanRepeatSideEffects(), false);
-});
+test(
+  'runtime stability guards cannot grant authority or convert waiting into semantic retry',
+  () => {
+    assert.equal(runtimeStabilityCanGrantAuthority(), false);
+    assert.equal(waitingCountsAsSemanticRetry(), false);
+    assert.equal(expiredLeaseCanRepeatSideEffects(), false);
+  },
+);
