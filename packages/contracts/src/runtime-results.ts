@@ -148,3 +148,158 @@ export function structuredRoleResultCanGrantAuthority(): false {
 export function malformedOutputCanBecomeSemanticApproval(): false {
   return false;
 }
+
+
+export const runtimeErrorClassV1Schema = z.enum([
+  'VALIDATION',
+  'POLICY_DENIED',
+  'DEPENDENCY',
+  'PROVIDER',
+  'ACTIVITY',
+  'WORKSPACE',
+  'CONFLICT',
+  'TIMEOUT',
+  'RATE_LIMIT',
+  'AUTHENTICATION',
+  'HUMAN_REQUIRED',
+  'INTERNAL',
+]);
+
+export const runtimeErrorSeverityV1Schema = z.enum([
+  'INFO',
+  'WARNING',
+  'ERROR',
+  'CRITICAL',
+]);
+
+export const runtimeRetryabilityV1Schema = z.enum([
+  'NEVER',
+  'SAFE_IMMEDIATE',
+  'AFTER_BACKOFF',
+  'AFTER_USER_ACTION',
+]);
+
+export const userImpactV1Schema = z.enum([
+  'WAITING',
+  'DEGRADED',
+  'PARTIAL',
+  'BLOCKED',
+]);
+
+export const userActionKindV1Schema = z.enum([
+  'NONE',
+  'RETRY',
+  'CHECK_CONFIGURATION',
+  'REAUTHENTICATE',
+  'PROVIDE_SECRET',
+  'RESOLVE_CONFLICT',
+  'HUMAN_DECISION',
+  'CONTACT_SUPPORT',
+]);
+
+export const safeDetailV1Schema = z
+  .object({
+    label: z.string().min(1).max(80),
+    value: z.string().min(1).max(500),
+  })
+  .strict();
+
+export const runtimeErrorReportV1Schema = z
+  .object({
+    schemaVersion: z.literal(1),
+    kind: z.literal('RUNTIME_ERROR'),
+    errorId: identifierSchema,
+    patternId: z.string().regex(/^FH-[A-Z][A-Z0-9_]*-[0-9]{3}$/),
+    errorClass: runtimeErrorClassV1Schema,
+    severity: runtimeErrorSeverityV1Schema,
+    retryability: runtimeRetryabilityV1Schema,
+    binding: resultBindingV1Schema,
+    component: identifierSchema,
+    operation: identifierSchema,
+    correlationId: identifierSchema,
+    technicalSummary: z.string().min(1).max(1000),
+    failureKind: identifierSchema.optional(),
+    evidence: z.array(evidenceReferenceV1Schema),
+    occurredAt: z.string().datetime({ offset: true }),
+    authority: z.literal('NONE'),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.errorClass === 'HUMAN_REQUIRED' && value.retryability !== 'AFTER_USER_ACTION') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['retryability'],
+        message: 'HUMAN_REQUIRED errors must wait for user action',
+      });
+    }
+  });
+
+export const userFacingErrorV1Schema = z
+  .object({
+    schemaVersion: z.literal(1),
+    kind: z.literal('USER_ERROR'),
+    errorId: identifierSchema,
+    patternId: z.string().regex(/^FH-[A-Z][A-Z0-9_]*-[0-9]{3}$/),
+    correlationId: identifierSchema,
+    severity: runtimeErrorSeverityV1Schema,
+    impact: userImpactV1Schema,
+    retryability: runtimeRetryabilityV1Schema,
+    action: userActionKindV1Schema,
+    title: z.string().min(1).max(120),
+    summary: z.string().min(1).max(600),
+    whatHappened: z.string().min(1).max(1200),
+    nextAction: z.string().min(1).max(1200),
+    safeDetails: z.array(safeDetailV1Schema).max(20),
+    evidence: z.array(evidenceReferenceV1Schema).max(20),
+    redactionStatus: z.enum(['APPLIED', 'NOT_REQUIRED']),
+    safeForUserDisplay: z.literal(true),
+    authority: z.literal('NONE'),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.retryability === 'AFTER_USER_ACTION' && value.action === 'NONE') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['action'],
+        message: 'AFTER_USER_ACTION errors must identify a user action',
+      });
+    }
+    if (value.impact === 'BLOCKED' && !value.nextAction.trim()) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['nextAction'],
+        message: 'BLOCKED user errors require a next action',
+      });
+    }
+  });
+
+export type RuntimeErrorClassV1 = z.infer<typeof runtimeErrorClassV1Schema>;
+export type RuntimeErrorSeverityV1 = z.infer<typeof runtimeErrorSeverityV1Schema>;
+export type RuntimeRetryabilityV1 = z.infer<typeof runtimeRetryabilityV1Schema>;
+export type UserImpactV1 = z.infer<typeof userImpactV1Schema>;
+export type UserActionKindV1 = z.infer<typeof userActionKindV1Schema>;
+export type SafeDetailV1 = z.infer<typeof safeDetailV1Schema>;
+export type RuntimeErrorReportV1 = z.infer<typeof runtimeErrorReportV1Schema>;
+export type UserFacingErrorV1 = z.infer<typeof userFacingErrorV1Schema>;
+
+export function runtimeErrorPattern(error: RuntimeErrorReportV1): string {
+  return [
+    error.patternId,
+    error.errorClass,
+    error.component,
+    error.operation,
+    error.retryability,
+  ].join(':');
+}
+
+export function runtimeErrorCanExposeRawCause(): false {
+  return false;
+}
+
+export function userFacingErrorCanContainSecrets(): false {
+  return false;
+}
+
+export function errorReportingCanGrantAuthority(): false {
+  return false;
+}
