@@ -213,6 +213,10 @@ export function qualificationAllowsBinding(
   );
 }
 
+export function validateModelQualificationSnapshotV1(snapshot: ModelQualificationSnapshotV1): void {
+  validateSnapshot(snapshot);
+}
+
 export function modelQualificationCanGrantAuthority(): false {
   return false;
 }

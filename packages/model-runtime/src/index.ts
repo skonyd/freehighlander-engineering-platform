@@ -44,6 +44,7 @@ export {
   recordCapabilityProbe,
   recordRegressionVerification,
   recordShadowVerification,
+  validateModelQualificationSnapshotV1,
   type CapabilityProbeEvidence,
   type EligibilityGrant,
   type ModelQualificationIdentity,

@@ -11,6 +11,7 @@ import {
   recordCapabilityProbe,
   recordRegressionVerification,
   recordShadowVerification,
+  validateModelQualificationSnapshotV1,
 } from '../dist/index.js';
 
 const CATALOG_HASH = 'a'.repeat(64);
@@ -390,4 +391,32 @@ test('eligibility remains backward compatible when no regression corpus is requi
   });
   assert.equal(eligible.stage, 'ELIGIBLE');
   assert.equal(eligible.regression, undefined);
+});
+
+test('persisted qualification snapshot validation accepts canonical state and rejects tamper', () => {
+  const initial = discovered();
+  const probed = recordCapabilityProbe(initial, {
+    evidenceHash: PROBE_HASH,
+    status: 'PASS',
+    probedAt: '2026-09-24T18:00:00.000Z',
+  });
+  const shadow = recordShadowVerification(probed, {
+    evidenceHash: SHADOW_HASH,
+    status: 'PASS',
+    verifiedAt: '2026-09-24T18:05:00.000Z',
+    role: 'controller',
+    riskTier: 'NORMAL',
+  });
+  const eligible = grantModelEligibility(shadow, {
+    role: 'controller',
+    riskTier: 'NORMAL',
+    grantedAt: '2026-09-24T18:10:00.000Z',
+    decisionHash: DECISION_HASH,
+  });
+
+  assert.doesNotThrow(() => validateModelQualificationSnapshotV1(eligible));
+  assert.throws(
+    () => validateModelQualificationSnapshotV1({ ...eligible, hash: 'f'.repeat(64) }),
+    /hash mismatch/,
+  );
 });
