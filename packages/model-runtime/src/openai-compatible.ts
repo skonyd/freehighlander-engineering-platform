@@ -1,3 +1,4 @@
+import { measureMonotonicDuration } from './monotonic-timing.js';
 import type {
   ProviderAdapter,
   ProviderCapability,
@@ -14,6 +15,7 @@ export interface OpenAiCompatibleProviderOptions {
   readonly apiKey?: string;
   readonly healthTimeoutMs?: number;
   readonly headers?: Readonly<Record<string, string>>;
+  readonly monotonicNow?: () => number;
 }
 
 export class ProviderInvocationError extends Error {
@@ -53,6 +55,7 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
   readonly #apiKey: string | undefined;
   readonly #healthTimeoutMs: number;
   readonly #headers: Readonly<Record<string, string>>;
+  readonly #monotonicNow: () => number;
 
   constructor(
     readonly id: string,
@@ -65,6 +68,7 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
     this.#apiKey = options.apiKey;
     this.#healthTimeoutMs = options.healthTimeoutMs ?? 5_000;
     this.#headers = options.headers ?? {};
+    this.#monotonicNow = options.monotonicNow ?? (() => performance.now());
   }
 
   capabilities(): ReadonlySet<ProviderCapability> {
@@ -103,6 +107,8 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
     if (!Number.isFinite(request.timeoutMs) || request.timeoutMs < 1) {
       throw new ProviderInvocationError('timeoutMs must be positive', 'malformed_output');
     }
+
+    const startedAtMonoMs = this.#monotonicNow();
 
     let response: Response;
     try {
@@ -157,10 +163,13 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
 
     const mappedUsage = mapUsage(parsed.usage);
 
+    const latency = measureMonotonicDuration(startedAtMonoMs, this.#monotonicNow());
+
     return {
       output,
       model: parsed.model ?? request.model,
       ...(mappedUsage ? { usage: mappedUsage } : {}),
+      latencyMs: latency.durationMs,
     };
   }
 
