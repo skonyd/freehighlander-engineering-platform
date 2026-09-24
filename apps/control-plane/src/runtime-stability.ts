@@ -423,7 +423,9 @@ function bulkheadHasCapacity(
   providerId: string,
 ): boolean {
   if (snapshot.active.length >= policy.maxGlobalActive) return false;
-  const providerActive = snapshot.active.filter((permit) => permit.providerId === providerId).length;
+  const providerActive = snapshot.active.filter(
+    (permit) => permit.providerId === providerId,
+  ).length;
   return providerActive < policy.maxPerProviderActive;
 }
 
