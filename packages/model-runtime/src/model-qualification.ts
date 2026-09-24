@@ -1,12 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export type ModelQualificationStage =
-  | 'DISCOVERED'
-  | 'PROBED'
-  | 'SHADOW_VERIFIED'
-  | 'ELIGIBLE'
-  | 'DEPRECATED'
-  | 'UNAVAILABLE';
+  'DISCOVERED' | 'PROBED' | 'SHADOW_VERIFIED' | 'ELIGIBLE' | 'DEPRECATED' | 'UNAVAILABLE';
 
 export type QualificationRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
 
