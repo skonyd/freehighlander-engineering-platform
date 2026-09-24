@@ -1135,7 +1135,6 @@ try {
   failures.push('missing privacy export/delete manifest planning contract');
 }
 
-
 try {
   const egressPreparation = await fs.readFile(
     path.join(root, 'packages', 'governance', 'src', 'provider-egress-preparation.ts'),
@@ -1161,7 +1160,11 @@ try {
     }
   }
 
-  if (!dataPolicySource.includes('unknown data classification fails closed at provider egress boundary')) {
+  if (
+    !dataPolicySource.includes(
+      'unknown data classification fails closed at provider egress boundary',
+    )
+  ) {
     failures.push('provider egress policy must fail closed on unknown runtime classification');
   }
 } catch {
