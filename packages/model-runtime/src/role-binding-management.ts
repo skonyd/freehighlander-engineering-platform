@@ -71,7 +71,8 @@ export class RoleBindingManagementService {
       const key = publicationKey(publication.logicalRole, publication.riskTier);
       if (this.#published.has(key)) {
         throw new Error(
-          `duplicate initial role binding publication ${publication.logicalRole}/${publication.riskTier}`,
+          `duplicate initial role binding publication ${publication.logicalRole}/` +
+            publication.riskTier,
         );
       }
       this.#published.set(key, publication);
@@ -205,7 +206,10 @@ export function validateRoleBindingPublicationV1(publication: RoleBindingPublica
   }
 
   validateBindingPlan(publication.plan);
-  if (publication.plan.logicalRole !== logicalRole || publication.plan.riskTier !== publication.riskTier) {
+  if (
+    publication.plan.logicalRole !== logicalRole ||
+    publication.plan.riskTier !== publication.riskTier
+  ) {
     throw new Error('role binding publication plan identity mismatch');
   }
 
