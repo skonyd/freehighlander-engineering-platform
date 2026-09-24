@@ -1171,6 +1171,52 @@ try {
   failures.push('missing fail-closed provider egress preparation contract');
 }
 
+try {
+  const orchestrationDir = path.join(root, 'packages', 'orchestration', 'src');
+  const orchestrationFiles = (await fs.readdir(orchestrationDir))
+    .filter((name) => name.endsWith('.ts'))
+    .sort();
+  const forbiddenSideEffectMarkers = [
+    "from 'node:fs'",
+    "from 'node:fs/promises'",
+    "from 'node:child_process'",
+    "from 'node:http'",
+    "from 'node:https'",
+    "from 'node:net'",
+    "from 'node:dgram'",
+  ];
+
+  for (const file of orchestrationFiles) {
+    const source = await fs.readFile(path.join(orchestrationDir, file), 'utf8');
+    for (const marker of forbiddenSideEffectMarkers) {
+      if (source.includes(marker)) {
+        failures.push(`pure orchestration module ${file} must not import side-effect API ${marker}`);
+      }
+    }
+  }
+
+  const runtimeSource = await fs.readFile(
+    path.join(root, 'apps', 'control-plane', 'src', 'execution-runtime.ts'),
+    'utf8',
+  );
+  for (const invariant of [
+    'export class ActivityRunner',
+    "request.executionMode === 'REPLAY'",
+    'readonly readOnly: true',
+    "readonly authority: 'NONE'",
+    'export function executionRuntimeCanGrantAuthority(): false',
+    'export function activityRunnerCanExecuteDuringReplay(): false',
+    'export function evaluateChangeBudget',
+    'export function validateWorkspaceReattach',
+  ]) {
+    if (!runtimeSource.includes(invariant)) {
+      failures.push(`execution runtime missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing execution-runtime side-effect boundary contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
