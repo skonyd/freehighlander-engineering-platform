@@ -256,8 +256,8 @@ function canonicalJson(value: JsonValue): string {
     return '[' + value.map((item) => canonicalJson(item)).join(',') + ']';
   }
 
-  const entries = Object.keys(value)
-    .sort()
-    .map((key) => JSON.stringify(key) + ':' + canonicalJson(value[key]));
+  const entries = Object.entries(value)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, nested]) => JSON.stringify(key) + ':' + canonicalJson(nested));
   return '{' + entries.join(',') + '}';
 }
