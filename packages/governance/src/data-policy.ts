@@ -218,6 +218,12 @@ export function evaluateProviderEgress(
         authority: 'NONE',
       };
   }
+
+  return {
+    allowed: false,
+    reason: 'unknown data classification fails closed at provider egress boundary',
+    authority: 'NONE',
+  };
 }
 
 export function evaluateRawCapture(

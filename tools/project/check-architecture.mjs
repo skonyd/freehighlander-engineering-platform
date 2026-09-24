@@ -1135,6 +1135,42 @@ try {
   failures.push('missing privacy export/delete manifest planning contract');
 }
 
+try {
+  const egressPreparation = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'provider-egress-preparation.ts'),
+    'utf8',
+  );
+  const dataPolicySource = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'data-policy.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function providerEgressPreparationCanInvokeProvider(): false',
+    'export function providerEgressPreparationCanGrantAuthority(): false',
+    'readonly invocationAuthorized: false',
+    "readonly authority: 'NONE'",
+    'redactSensitive(originalPayload)',
+    "createHash('sha256')",
+    "outcome: 'DENY'",
+    'packet: null',
+  ]) {
+    if (!egressPreparation.includes(invariant)) {
+      failures.push(`provider egress preparation missing invariant: ${invariant}`);
+    }
+  }
+
+  if (
+    !dataPolicySource.includes(
+      'unknown data classification fails closed at provider egress boundary',
+    )
+  ) {
+    failures.push('provider egress policy must fail closed on unknown runtime classification');
+  }
+} catch {
+  failures.push('missing fail-closed provider egress preparation contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

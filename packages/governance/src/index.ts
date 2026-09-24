@@ -1,4 +1,18 @@
 export {
+  prepareProviderEgress,
+  providerEgressPreparationCanGrantAuthority,
+  providerEgressPreparationCanInvokeProvider,
+  validateProviderEgressPreparationRequest,
+  type JsonValue,
+  type ProviderEgressCandidatePacket,
+  type ProviderEgressPreparation,
+  type ProviderEgressPreparationRequest,
+  type ProviderEgressPreparationValidation,
+  type ProviderEgressReasonCode,
+  type ProviderEgressTelemetryPayload,
+} from './provider-egress-preparation.js';
+
+export {
   buildPrivacyLifecycleManifest,
   privacyManifestCanDeleteAuditData,
   privacyManifestCanDeleteData,
