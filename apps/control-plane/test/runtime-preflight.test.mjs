@@ -70,6 +70,7 @@ test('runtime preflight deterministically reports every blocking condition', () 
   assert.deepEqual(
     result.failures.map((failure) => failure.code),
     [
+      'RUN_SNAPSHOT_UNBUILDABLE',
       'BINDING_MISSING',
       'CAPABILITY_MISSING',
       'CIRCUIT_OPEN',
@@ -79,8 +80,7 @@ test('runtime preflight deterministically reports every blocking condition', () 
       'MODEL_INELIGIBLE',
       'PROVIDER_UNAVAILABLE',
       'SECRET_UNRESOLVABLE',
-      'RUN_SNAPSHOT_UNBUILDABLE',
-    ].sort(),
+    ],
   );
   assert.equal(
     result.failures.every((failure) => failure.detail.length > 0),
