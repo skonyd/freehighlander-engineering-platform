@@ -1493,7 +1493,7 @@ try {
     'export function createSecretBindingV1',
     'export function createSecretBindingProfileV1',
     'export function evaluateSecretBindingStatusV1',
-    "secretValuesPresent: false",
+    'secretValuesPresent: false',
     "status: requiredBlocked ? 'BLOCKED_CONFIGURATION' : optionalMissing ? 'PARTIAL' : 'READY'",
     'export function secretBindingCanContainSecretValues(): false',
     'export function secretBindingCanExportCredentialMaterial(): false',
