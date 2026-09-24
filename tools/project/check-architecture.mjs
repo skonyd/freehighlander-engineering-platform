@@ -1298,7 +1298,11 @@ try {
   if (!localRuntimeSource.includes("readonly commandId: string")) {
     failures.push('local command activities must select registered commandId values');
   }
-  if (localRuntimeSource.includes("readonly executable: string;\n  readonly args: readonly string[];\n  readonly cwd?: string;\n}")) {
+  if (
+    localRuntimeSource.includes(
+      "readonly executable: string;\n  readonly args: readonly string[];\n  readonly cwd?: string;\n}",
+    )
+  ) {
     failures.push('model-facing command activity input must not accept executable/args directly');
   }
   if (localRuntimeSource.includes('shell: true') || localRuntimeSource.includes('exec(')) {
