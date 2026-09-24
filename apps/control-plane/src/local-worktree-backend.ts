@@ -127,11 +127,6 @@ export class LocalGitWorktreeBackend {
       workspacePath,
       descriptor.exactRevision,
     ]);
-    const observedHead = await gitHead(workspacePath);
-    if (observedHead !== descriptor.exactRevision) {
-      throw new Error('created worktree HEAD does not match exact revision');
-    }
-
     const metadata: WorkspaceMetadataV1 = {
       schemaVersion: METADATA_SCHEMA_VERSION,
       descriptor,
@@ -140,13 +135,15 @@ export class LocalGitWorktreeBackend {
     };
     await atomicWriteJson(metadataPath, metadata);
 
-    return {
+    const handle: LocalWorkspaceHandle = {
       descriptor,
       repositoryRoot: repository,
       workspacePath,
       metadataPath,
       authority: 'NONE',
     };
+    await assertHandleCurrent(handle);
+    return handle;
   }
 
   async reattach(descriptor: ExecutionWorkspaceDescriptor): Promise<LocalWorkspaceHandle> {
@@ -602,8 +599,6 @@ async function resolveWorkspacePath(
   validateRelativeWorkspacePath(relativePath);
   const root = await realpath(workspaceRoot);
   const candidate = path.resolve(root, relativePath);
-  requireContainedPath(root, candidate);
-
   const segments = relativePath.split(/[\\/]+/).filter((segment) => segment && segment !== '.');
   let current = root;
   const inspectCount = mode === 'WRITE' ? Math.max(segments.length - 1, 0) : segments.length;
@@ -640,12 +635,6 @@ function validateRelativeWorkspacePath(value: string): void {
   const parts = value.split(/[\\/]+/);
   if (parts.includes('..')) throw new Error('workspace path traversal is forbidden');
   if (parts.includes('.git')) throw new Error('workspace .git mutation/read is forbidden');
-}
-
-function requireContainedPath(root: string, candidate: string): void {
-  if (candidate !== root && !candidate.startsWith(root + path.sep)) {
-    throw new Error('workspace path escaped root');
-  }
 }
 
 function parseCommandActivityInput(source: string): CommandActivityInputV1 {
