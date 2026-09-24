@@ -1425,8 +1425,10 @@ try {
     'export function runtimePreflightCanResolveSecretValue(): false',
     'export function runtimePreflightCanGrantAuthority(): false',
     'readonly invocationAuthorized: false',
-    "failure('SECRET_UNRESOLVABLE'",
-    "failure('CIRCUIT_OPEN'",
+    '!resolvableSecrets.has(handleId)',
+    "binding.circuitState === 'OPEN'",
+    "'SECRET_UNRESOLVABLE'",
+    "'CIRCUIT_OPEN'",
   ]) {
     if (!preflightSource.includes(invariant)) {
       failures.push(`runtime preflight contract missing invariant: ${invariant}`);
