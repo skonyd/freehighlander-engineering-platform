@@ -26,6 +26,9 @@ export type EventType =
   | 'human.decision'
   | 'provider.unavailable'
   | 'provider.health.checked'
+  | 'model.catalog.refreshed'
+  | 'model.binding.changed'
+  | 'model.qualification.changed'
   | 'provider.circuit.opened'
   | 'provider.circuit.half_opened'
   | 'provider.circuit.closed'
@@ -48,6 +51,106 @@ export type EventType =
   | 'persistence.backup.completed'
   | 'persistence.restore.completed'
   | 'lineage.validation.failed';
+
+export type ModelCatalogEventType =
+  'model.catalog.refreshed' | 'model.binding.changed' | 'model.qualification.changed';
+
+export interface ModelCatalogEventPayload extends Record<string, unknown> {
+  readonly action: 'REFRESH' | 'BINDING_CHANGE' | 'QUALIFICATION_CHANGE';
+  readonly providerId: string;
+  readonly modelId?: string;
+  readonly bindingId?: string;
+  readonly logicalRole?: string;
+  readonly riskTier?: 'NORMAL' | 'HIGH' | 'CRITICAL';
+  readonly previousHash?: string;
+  readonly currentHash: string;
+  readonly previousState?: string;
+  readonly currentState?: string;
+  readonly itemCount?: number;
+}
+
+const modelCatalogPayloadKeys = new Set([
+  'action',
+  'providerId',
+  'modelId',
+  'bindingId',
+  'logicalRole',
+  'riskTier',
+  'previousHash',
+  'currentHash',
+  'previousState',
+  'currentState',
+  'itemCount',
+]);
+
+export function createModelCatalogEvent(
+  input: Omit<EngineeringEventInput<ModelCatalogEventPayload>, 'type'> & {
+    readonly type: ModelCatalogEventType;
+  },
+): EngineeringEvent<ModelCatalogEventPayload> {
+  validateModelCatalogPayload(input.payload);
+  const expectedAction = {
+    'model.catalog.refreshed': 'REFRESH',
+    'model.binding.changed': 'BINDING_CHANGE',
+    'model.qualification.changed': 'QUALIFICATION_CHANGE',
+  } as const;
+  if (input.payload.action !== expectedAction[input.type]) {
+    throw new Error(`model catalog telemetry action does not match event type ${input.type}`);
+  }
+  return createEvent(input);
+}
+
+function validateModelCatalogPayload(payload: ModelCatalogEventPayload): void {
+  const record = payload as unknown as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (!modelCatalogPayloadKeys.has(key)) {
+      throw new Error(`model catalog telemetry payload field is not allowed: ${key}`);
+    }
+  }
+
+  if (!payload.providerId.trim()) {
+    throw new Error('model catalog telemetry providerId is required');
+  }
+
+  for (const [name, value] of [
+    ['modelId', payload.modelId],
+    ['bindingId', payload.bindingId],
+    ['logicalRole', payload.logicalRole],
+    ['previousState', payload.previousState],
+    ['currentState', payload.currentState],
+  ] as const) {
+    if (value !== undefined && !value.trim()) {
+      throw new Error(`model catalog telemetry ${name} must not be empty`);
+    }
+  }
+
+  for (const [name, value] of [
+    ['previousHash', payload.previousHash],
+    ['currentHash', payload.currentHash],
+  ] as const) {
+    if (value !== undefined && !/^[a-f0-9]{64}$/.test(value)) {
+      throw new Error(`model catalog telemetry ${name} must be lowercase sha256`);
+    }
+  }
+
+  if (
+    payload.riskTier !== undefined &&
+    !['NORMAL', 'HIGH', 'CRITICAL'].includes(payload.riskTier)
+  ) {
+    throw new Error('model catalog telemetry riskTier is invalid');
+  }
+
+  if (
+    payload.itemCount !== undefined &&
+    (!Number.isInteger(payload.itemCount) || payload.itemCount < 0)
+  ) {
+    throw new Error('model catalog telemetry itemCount must be a non-negative integer');
+  }
+
+  if (payload.action === 'REFRESH' && payload.modelId !== undefined) {
+    throw new Error('catalog refresh telemetry must remain aggregate and omit modelId');
+  }
+}
 
 export type HardeningEventType =
   | 'policy.decision'
