@@ -310,6 +310,16 @@ test('user-facing errors reject raw diagnostic fields and incomplete user-action
       safeForUserDisplay: false,
     }),
   );
+
+  assert.throws(
+    () =>
+      userFacingErrorV1Schema.parse({
+        ...valid,
+        impact: 'BLOCKED',
+        nextAction: '   ',
+      }),
+    /BLOCKED user errors require a next action/,
+  );
 });
 
 test('error reporting contracts never grant authority or raw-cause permission', () => {
