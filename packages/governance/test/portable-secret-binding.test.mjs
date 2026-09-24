@@ -103,9 +103,7 @@ test('resolver reference formats remain metadata-only and backend specific', () 
     binding({ resolverKind: 'BITWARDEN_SECRETS_MANAGER', reference: 'project/secret' }),
   );
   assert.throws(() => binding({ resolverKind: 'HASHICORP_VAULT', reference: 'kv/path' }));
-  assert.throws(() =>
-    binding({ resolverKind: 'GITHUB_AUTH_CAPABILITY', reference: 'gh-cli' }),
-  );
+  assert.throws(() => binding({ resolverKind: 'GITHUB_AUTH_CAPABILITY', reference: 'gh-cli' }));
 });
 
 test('credential-shaped resolver references fail closed', () => {
@@ -215,7 +213,9 @@ test('required secret gaps block only as configuration evidence and optional gap
   const required = evaluateSecretBindingStatusV1([requirement()], emptyProfile, []);
   assert.equal(required.status, 'BLOCKED_CONFIGURATION');
   assert.equal(required.resolutions[0]?.status, 'BLOCKED_CONFIGURATION');
-  assert.deepEqual(required.resolutions[0]?.reasons, ['no machine-resolvable binding is configured']);
+  assert.deepEqual(required.resolutions[0]?.reasons, [
+    'no machine-resolvable binding is configured',
+  ]);
 
   const optional = evaluateSecretBindingStatusV1(
     [requirement({ optional: true })],
@@ -238,13 +238,9 @@ test('project template is a requirement declaration and not a resolvable binding
   });
   const profile = createSecretBindingProfileV1('work-laptop', [template]);
 
-  const result = evaluateSecretBindingStatusV1([requirement()], profile, [
-    evidence(),
-  ]);
+  const result = evaluateSecretBindingStatusV1([requirement()], profile, [evidence()]);
   assert.equal(result.status, 'BLOCKED_CONFIGURATION');
-  assert.deepEqual(result.resolutions[0]?.reasons, [
-    'no machine-resolvable binding is configured',
-  ]);
+  assert.deepEqual(result.resolutions[0]?.reasons, ['no machine-resolvable binding is configured']);
 });
 
 test('resolver health authentication capability and missing evidence fail closed', () => {
@@ -288,9 +284,7 @@ test('profile and evidence identities are deterministic and duplicates fail clos
   );
 
   assert.throws(() => createSecretBindingProfileV1('work-laptop', [b, b]));
-  assert.throws(() =>
-    createSecretBindingProfileV1('other-profile', [b]),
-  );
+  assert.throws(() => createSecretBindingProfileV1('other-profile', [b]));
   assert.throws(() =>
     evaluateSecretBindingStatusV1([requirement(), requirement()], profile, [evidence()]),
   );
@@ -316,9 +310,7 @@ test('malformed requirement binding profile and resolver evidence fail closed', 
   assert.throws(() => validateSecretBindingV1({ ...b, schemaVersion: 2 }));
   assert.throws(() => validateSecretBindingV1({ ...b, authority: 'SYSTEM_POLICY' }));
   assert.throws(() => validateSecretBindingProfileV1({ ...profile, schemaVersion: 2 }));
-  assert.throws(() =>
-    validateSecretBindingProfileV1({ ...profile, authority: 'SYSTEM_POLICY' }),
-  );
+  assert.throws(() => validateSecretBindingProfileV1({ ...profile, authority: 'SYSTEM_POLICY' }));
 
   for (const resolverEvidence of [
     evidence({ resolverKind: 'UNKNOWN' }),
