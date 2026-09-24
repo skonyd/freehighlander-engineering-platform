@@ -1387,6 +1387,31 @@ try {
   failures.push('missing fail-closed JSONL torn-tail recovery contract');
 }
 
+try {
+  const schedulerSource = await fs.readFile(
+    path.join(root, 'packages', 'orchestration', 'src', 'project-scheduler.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function buildProjectSchedulePlan',
+    'export function createHumanDecisionQueueEntry',
+    "state === 'PARKED_HUMAN'",
+    "conflictWithActive !== 'SAFE_TO_RUN_CONCURRENTLY'",
+    "workspaceIsolation !== 'ISOLATED'",
+    'export function parkedHumanRequiredCancelsProject(): false',
+    'export function modelCanResolveHumanDecision(): false',
+    'export function unknownConflictCanRun(): false',
+    'export function schedulerCanGrantAuthority(): false',
+  ]) {
+    if (!schedulerSource.includes(invariant)) {
+      failures.push(`non-blocking HUMAN_REQUIRED scheduler missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing non-blocking HUMAN_REQUIRED project scheduler');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

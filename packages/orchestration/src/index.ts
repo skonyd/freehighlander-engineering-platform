@@ -1,4 +1,21 @@
 export {
+  buildProjectSchedulePlan,
+  createHumanDecisionQueueEntry,
+  modelCanResolveHumanDecision,
+  parkedHumanRequiredCancelsProject,
+  schedulerCanGrantAuthority,
+  unknownConflictCanRun,
+  type HumanDecisionQueueEntry,
+  type HumanDecisionQueueEntryInput,
+  type ProjectConflictClassification,
+  type ProjectSchedulePlan,
+  type ProjectWorkItem,
+  type ProjectWorkItemDisposition,
+  type ProjectWorkItemState,
+  type WorkspaceIsolationState,
+} from './project-scheduler.js';
+
+export {
   buildCanonicalExecutionScope,
   buildNodeExecutionIdentity,
   createNodeResultV1,
