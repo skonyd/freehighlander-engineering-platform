@@ -1230,13 +1230,42 @@ try {
     "kind: z.literal('TEST_ADEQUACY')",
     "kind: z.literal('CANDIDATE_ADJUDICATION')",
     "kind: z.literal('AUTONOMOUS_MERGE_REVIEW')",
+    "kind: z.literal('RUNTIME_ERROR')",
+    "kind: z.literal('USER_ERROR')",
     "status: 'MALFORMED'",
+    'export const runtimeErrorPatternCatalogV1',
+    'export function buildUserFacingErrorV1',
+    'safeForUserDisplay: z.literal(true)',
+    "redactionStatus: z.enum(['APPLIED', 'NOT_REQUIRED'])",
     'export function structuredRoleResultIsSemanticNegative',
     'export function structuredRoleResultCanGrantAuthority(): false',
     'export function malformedOutputCanBecomeSemanticApproval(): false',
+    'export function runtimeErrorCanExposeRawCause(): false',
+    'export function userFacingErrorCanContainSecrets(): false',
+    'export function errorReportingCanGrantAuthority(): false',
   ]) {
     if (!structuredResults.includes(invariant)) {
       failures.push(`structured specialist output contract missing invariant: ${invariant}`);
+    }
+  }
+
+  const userErrorStart = structuredResults.indexOf('export const userFacingErrorV1Schema');
+  const userErrorEnd = structuredResults.indexOf('export type RuntimeErrorClassV1');
+  if (userErrorStart < 0 || userErrorEnd <= userErrorStart) {
+    failures.push('user-facing error schema boundary is missing');
+  } else {
+    const userErrorSchemaSource = structuredResults.slice(userErrorStart, userErrorEnd);
+    for (const forbiddenField of [
+      'rawCause',
+      'stackTrace',
+      'stdout',
+      'stderr',
+      'secretValue',
+      'providerRawResponse',
+    ]) {
+      if (userErrorSchemaSource.includes(forbiddenField)) {
+        failures.push(`user-facing error schema must not expose raw diagnostic field: ${forbiddenField}`);
+      }
     }
   }
 } catch {
