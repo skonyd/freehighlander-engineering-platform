@@ -680,9 +680,7 @@ test('filesystem and git activity schemas reject malformed fields deterministica
     }),
   ];
   for (const input of malformedFilesystemInputs) {
-    const result = await filesystem.execute(
-      request(handle, 'FILESYSTEM', {}, { input }),
-    );
+    const result = await filesystem.execute(request(handle, 'FILESYSTEM', {}, { input }));
     assert.equal(result.failureKind, 'MALFORMED_ACTIVITY_INPUT');
   }
 
