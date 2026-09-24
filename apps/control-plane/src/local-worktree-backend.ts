@@ -55,8 +55,14 @@ export interface WorkspaceSnapshotV1 {
   readonly authority: 'NONE';
 }
 
+export interface RegisteredLocalCommandV1 {
+  readonly id: string;
+  readonly executable: string;
+  readonly args: readonly string[];
+}
+
 export interface LocalCommandExecutorOptions {
-  readonly allowedExecutables: readonly string[];
+  readonly commands: readonly RegisteredLocalCommandV1[];
   readonly maxOutputBytes?: number;
   readonly inheritedEnvironmentKeys?: readonly string[];
 }
@@ -70,8 +76,7 @@ interface WorkspaceMetadataV1 {
 
 interface CommandActivityInputV1 {
   readonly schemaVersion: 1;
-  readonly executable: string;
-  readonly args: readonly string[];
+  readonly commandId: string;
   readonly cwd?: string;
 }
 
@@ -299,9 +304,21 @@ export function createLocalCommandActivityExecutor(
   handle: LocalWorkspaceHandle,
   options: LocalCommandExecutorOptions,
 ): ActivityExecutor {
-  const allowedExecutables = new Set(options.allowedExecutables);
-  if (allowedExecutables.size === 0) throw new Error('allowedExecutables must not be empty');
-  for (const executable of allowedExecutables) validateExecutableName(executable);
+  if (options.commands.length === 0) throw new Error('commands must not be empty');
+  const commands = new Map<string, RegisteredLocalCommandV1>();
+  for (const command of options.commands) {
+    validateCommandId(command.id);
+    validateExecutableName(command.executable);
+    if (!Array.isArray(command.args) || command.args.some((argument) => typeof argument !== 'string')) {
+      throw new Error('registered command args must be a string array');
+    }
+    if (commands.has(command.id)) throw new Error('duplicate registered command id');
+    commands.set(command.id, {
+      id: command.id,
+      executable: command.executable,
+      args: [...command.args],
+    });
+  }
 
   const maxOutputBytes = options.maxOutputBytes ?? 1024 * 1024;
   if (!Number.isInteger(maxOutputBytes) || maxOutputBytes <= 0) {
@@ -336,22 +353,32 @@ export function createLocalCommandActivityExecutor(
           failureKind: 'MALFORMED_ACTIVITY_INPUT',
         };
       }
-      if (!allowedExecutables.has(input.executable)) {
+      const command = commands.get(input.commandId);
+      if (!command) {
         return {
           status: 'FAILED',
           output: '',
-          failureKind: 'EXECUTABLE_NOT_ALLOWED',
+          failureKind: 'COMMAND_NOT_REGISTERED',
         };
       }
 
-      await assertHandleCurrent(handle);
-      const cwd = input.cwd
-        ? await resolveWorkspacePath(handle.workspacePath, input.cwd, 'DIRECTORY')
-        : handle.workspacePath;
+      let cwd: string;
+      try {
+        await assertHandleCurrent(handle);
+        cwd = input.cwd
+          ? await resolveWorkspacePath(handle.workspacePath, input.cwd, 'DIRECTORY')
+          : handle.workspacePath;
+      } catch {
+        return {
+          status: 'FAILED',
+          output: '',
+          failureKind: 'COMMAND_WORKSPACE_INVALID',
+        };
+      }
       const environment = pickEnvironment(inheritedEnvironmentKeys);
 
       try {
-        const result = await execFileAsync(input.executable, [...input.args], {
+        const result = await execFileAsync(command.executable, [...command.args], {
           cwd,
           timeout: request.timeoutMs,
           maxBuffer: maxOutputBytes,
@@ -619,20 +646,16 @@ function requireContainedPath(root: string, candidate: string): void {
 
 function parseCommandActivityInput(source: string): CommandActivityInputV1 {
   const value = parseJsonRecord(source, 'command activity input');
-  assertExactKeys(value, ['schemaVersion', 'executable', 'args'], ['cwd']);
+  assertExactKeys(value, ['schemaVersion', 'commandId'], ['cwd']);
   if (value.schemaVersion !== 1) throw new Error('command activity schemaVersion must be 1');
-  if (typeof value.executable !== 'string') throw new Error('command executable must be a string');
-  validateExecutableName(value.executable);
-  if (!Array.isArray(value.args) || value.args.some((item) => typeof item !== 'string')) {
-    throw new Error('command args must be a string array');
-  }
+  if (typeof value.commandId !== 'string') throw new Error('commandId must be a string');
+  validateCommandId(value.commandId);
   if (value.cwd !== undefined && typeof value.cwd !== 'string') {
     throw new Error('command cwd must be a string');
   }
   return {
     schemaVersion: 1,
-    executable: value.executable,
-    args: value.args as string[],
+    commandId: value.commandId,
     ...(value.cwd === undefined ? {} : { cwd: value.cwd as string }),
   };
 }
@@ -698,6 +721,12 @@ function assertExactKeys(
   }
   if (keys.some((key) => !allowed.has(key))) {
     throw new Error('activity input contains unknown fields');
+  }
+}
+
+function validateCommandId(value: string): void {
+  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/.test(value)) {
+    throw new Error('commandId must be a bounded identifier');
   }
 }
 
