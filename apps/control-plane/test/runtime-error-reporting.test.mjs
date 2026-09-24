@@ -205,4 +205,33 @@ test('runtime error report validates public identifiers and messages', () => {
       }),
     /maxValueChars/,
   );
+  assert.throws(
+    () =>
+      createRuntimeErrorReport({
+        code: 'VALID_CODE',
+        userMessage: 'x'.repeat(501),
+        correlationId: 'corr-12345678',
+      }),
+    /userMessage/,
+  );
+  assert.throws(
+    () =>
+      createRuntimeErrorReport({
+        code: 'VALID_CODE',
+        userMessage: 'valid message',
+        correlationId: 'corr-12345678',
+        maxDetailEntries: 1.5,
+      }),
+    /maxDetailEntries/,
+  );
+  assert.throws(
+    () =>
+      createRuntimeErrorReport({
+        code: 'VALID_CODE',
+        userMessage: 'valid message',
+        correlationId: 'corr-12345678',
+        maxValueChars: 1.5,
+      }),
+    /maxValueChars/,
+  );
 });
