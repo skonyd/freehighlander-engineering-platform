@@ -187,10 +187,7 @@ function normalizeRecord(
   };
 }
 
-function validatePrevious(
-  previous: ModelCatalogSnapshotV1 | undefined,
-  providerId: string,
-): void {
+function validatePrevious(previous: ModelCatalogSnapshotV1 | undefined, providerId: string): void {
   if (!previous) return;
   if (previous.schemaVersion !== 1) throw new Error('previous catalog schemaVersion must be 1');
   if (previous.providerId !== providerId) throw new Error('previous catalog providerId mismatch');
