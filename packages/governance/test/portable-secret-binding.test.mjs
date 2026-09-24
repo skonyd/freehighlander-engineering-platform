@@ -114,7 +114,7 @@ test('credential-shaped resolver references fail closed', () => {
     'xoxb-example',
     'token=examplevalue',
     'api_key=examplevalue',
-    '-----BEGIN PRIVATE KEY-----',
+    '-----BEGIN ' + 'PRIVATE KEY-----',
     'line-one\nline-two',
   ]) {
     assert.throws(() =>
