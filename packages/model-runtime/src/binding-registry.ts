@@ -265,6 +265,67 @@ export function resolveBindingPlan(
   };
 }
 
+export function validateBindingPlan(plan: BindingPlan): void {
+  if (plan.schemaVersion !== 1) throw new Error('binding plan schemaVersion must be 1');
+  requireId(plan.logicalRole, 'logicalRole');
+  if (!['NORMAL', 'HIGH', 'CRITICAL'].includes(plan.riskTier)) {
+    throw new Error('binding plan riskTier is invalid');
+  }
+  if (plan.authorityGranted !== false) {
+    throw new Error('binding plan authorityGranted must remain false');
+  }
+  if (
+    plan.requiredCapabilities.length !== uniqueSorted(plan.requiredCapabilities).length ||
+    plan.requiredCapabilities.some(
+      (capability, index) => uniqueSorted(plan.requiredCapabilities)[index] !== capability,
+    )
+  ) {
+    throw new Error('binding plan requiredCapabilities must be unique and sorted');
+  }
+  if (plan.requiredIndependenceGroup !== undefined) {
+    requireId(plan.requiredIndependenceGroup, 'requiredIndependenceGroup');
+  }
+  if (plan.bindings.length === 0) throw new Error('binding plan requires at least one binding');
+
+  const seen = new Set<string>();
+  for (const binding of plan.bindings) {
+    const bindingId = requireId(binding.bindingId, 'bindingId');
+    if (seen.has(bindingId)) throw new Error('binding plan contains duplicate binding references');
+    seen.add(bindingId);
+    if (!/^\d+\.\d+\.\d+$/.test(binding.bindingVersion)) {
+      throw new Error(`binding ${bindingId} version must be semantic x.y.z`);
+    }
+    requireId(binding.providerId, 'providerId');
+    requireId(binding.model, 'model');
+    if (binding.effort !== undefined) requireId(binding.effort, 'effort');
+    requireId(binding.independenceGroup, 'independenceGroup');
+    const capabilities = uniqueSorted(binding.capabilities);
+    if (
+      capabilities.length !== binding.capabilities.length ||
+      capabilities.some((capability, index) => binding.capabilities[index] !== capability)
+    ) {
+      throw new Error(`binding ${bindingId} capabilities must be unique and sorted`);
+    }
+  }
+
+  validateHashMap(plan.catalogHashes, 'catalog hash');
+  validateHashMap(plan.qualificationHashes, 'qualification hash');
+
+  const identity = {
+    schemaVersion: 1,
+    logicalRole: plan.logicalRole,
+    riskTier: plan.riskTier,
+    requiredCapabilities: plan.requiredCapabilities,
+    requiredIndependenceGroup: plan.requiredIndependenceGroup ?? null,
+    bindings: plan.bindings,
+    catalogHashes: plan.catalogHashes ?? null,
+    qualificationHashes: plan.qualificationHashes ?? null,
+  } as const;
+  if (sha256Canonical(identity) !== plan.hash) {
+    throw new Error('binding plan hash mismatch');
+  }
+}
+
 export function selectBinding(
   plan: BindingPlan,
   availability: Readonly<Record<string, boolean>>,
@@ -328,6 +389,19 @@ function validateBinding(binding: ModelBindingDefinition): ModelBindingDefinitio
 
 function uniqueSorted<T extends string>(values: readonly T[]): T[] {
   return [...new Set(values)].sort();
+}
+
+function validateHashMap(
+  values: Readonly<Record<string, string>> | undefined,
+  label: string,
+): void {
+  if (values === undefined) return;
+  for (const [key, value] of Object.entries(values)) {
+    requireId(key, label + ' key');
+    if (!/^[a-f0-9]{64}$/.test(value)) {
+      throw new Error(label + ' must be lowercase sha256');
+    }
+  }
 }
 
 function requireId(value: string, name: string): string {
