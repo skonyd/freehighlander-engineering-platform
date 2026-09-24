@@ -104,6 +104,9 @@ export function grantModelEligibility(
   if (previous.stage !== 'SHADOW_VERIFIED' && previous.stage !== 'ELIGIBLE') {
     throw new Error(`cannot grant eligibility from stage ${previous.stage}`);
   }
+  if (previous.probe?.status !== 'PASS') {
+    throw new Error('eligibility requires a passing capability probe');
+  }
   if (previous.shadow?.status !== 'PASS') {
     throw new Error('eligibility requires passing shadow verification');
   }
