@@ -366,6 +366,7 @@ test('registered command executor is shell-free bounded and normalizes success f
 
   const malformedInputs = [
     'not json',
+    JSON.stringify(null),
     JSON.stringify([]),
     JSON.stringify({ schemaVersion: 2, commandId: 'node-print' }),
     JSON.stringify({ schemaVersion: 1 }),
