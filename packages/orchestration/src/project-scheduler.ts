@@ -1,16 +1,9 @@
 import { createHash } from 'node:crypto';
 
-export type ProjectWorkItemState =
-  | 'PENDING'
-  | 'ACTIVE'
-  | 'PARKED_HUMAN'
-  | 'COMPLETE'
-  | 'FAILED';
+export type ProjectWorkItemState = 'PENDING' | 'ACTIVE' | 'PARKED_HUMAN' | 'COMPLETE' | 'FAILED';
 
 export type ProjectConflictClassification =
-  | 'SAFE_TO_RUN_CONCURRENTLY'
-  | 'SERIALIZE_WITH_ACTIVE_ITEM'
-  | 'UNKNOWN';
+  'SAFE_TO_RUN_CONCURRENTLY' | 'SERIALIZE_WITH_ACTIVE_ITEM' | 'UNKNOWN';
 
 export type WorkspaceIsolationState = 'ISOLATED' | 'SHARED' | 'UNKNOWN';
 
