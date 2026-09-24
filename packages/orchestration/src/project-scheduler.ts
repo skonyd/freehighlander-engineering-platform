@@ -154,6 +154,9 @@ export function createHumanDecisionQueueEntry(
   requireText(input.decisionType, 'decisionType');
   requireText(input.reason, 'reason');
   requireTimestamp(input.createdAt, 'createdAt');
+  if (typeof input.otherWorkContinuing !== 'boolean') {
+    throw new Error('otherWorkContinuing must be boolean');
+  }
 
   const choices = validatedTextList(input.choices, 'choice');
   const consequences = validatedTextList(input.consequences, 'consequence');
