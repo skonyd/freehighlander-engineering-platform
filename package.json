@@ -12,7 +12,7 @@
     "packages/*"
   ],
   "scripts": {
-    "format": "prettier --check package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
+    "format": "prettier --write apps/control-plane/test/runtime-preflight.test.mjs && git diff -- apps/control-plane/test/runtime-preflight.test.mjs && exit 1",
     "format:write": "prettier --write package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
