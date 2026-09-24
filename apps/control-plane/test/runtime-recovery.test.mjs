@@ -217,7 +217,14 @@ test('idempotency metadata must match activity effect', () => {
 });
 
 test('all supported RUNNING lease and evidence enum values validate', () => {
-  for (const lease of ['ACTIVE_OWNED', 'ACTIVE_OTHER', 'EXPIRED', 'RELEASED', 'MISSING', 'UNKNOWN']) {
+  for (const lease of [
+    'ACTIVE_OWNED',
+    'ACTIVE_OTHER',
+    'EXPIRED',
+    'RELEASED',
+    'MISSING',
+    'UNKNOWN',
+  ]) {
     assert.doesNotThrow(() =>
       reconcileStuckRun(
         observation({
