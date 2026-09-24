@@ -264,10 +264,10 @@ test('heartbeat validation catches schema authority and non-canonical tampering'
         ...heartbeat,
         progress: {
           ...heartbeat.progress,
-          completedUnits: 2,
+          completedUnits: 4,
         },
       }),
-    /canonically normalized|completedUnits/,
+    /completedUnits cannot exceed totalUnits/,
   );
 });
 
