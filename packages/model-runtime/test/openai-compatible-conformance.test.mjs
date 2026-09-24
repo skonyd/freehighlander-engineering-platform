@@ -1,0 +1,141 @@
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import test from 'node:test';
+
+import { OpenAiCompatibleProviderAdapter } from '../dist/index.js';
+import { runProviderAdapterConformance } from './provider-conformance.mjs';
+
+async function createHarness(mode) {
+  const timers = new Set();
+  const server = createServer((request, response) => {
+    if (mode === 'transport-failure') {
+      request.socket.destroy();
+      return;
+    }
+
+    if (request.url === '/v1/models') {
+      if (mode === 'unhealthy') {
+        response.writeHead(503, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ error: { message: 'provider unavailable' } }));
+        return;
+      }
+
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ data: [{ id: 'conformance-model' }] }));
+      return;
+    }
+
+    if (mode === 'timeout') {
+      const timer = setTimeout(() => {
+        timers.delete(timer);
+        if (!response.destroyed) {
+          response.writeHead(200, { 'content-type': 'application/json' });
+          response.end(
+            JSON.stringify({
+              model: 'conformance-model-returned',
+              choices: [{ message: { content: 'late output' } }],
+            }),
+          );
+        }
+      }, 1_000);
+      timers.add(timer);
+      return;
+    }
+
+    if (mode === 'auth-failure') {
+      response.writeHead(401, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ error: { message: 'authentication failed' } }));
+      return;
+    }
+
+    if (mode === 'quota-failure') {
+      response.writeHead(429, {
+        'content-type': 'application/json',
+        'retry-after': '2',
+      });
+      response.end(JSON.stringify({ error: { message: 'quota exhausted' } }));
+      return;
+    }
+
+    if (mode === 'rate-limit-failure') {
+      response.writeHead(429, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ error: { message: 'too many requests' } }));
+      return;
+    }
+
+    if (mode === 'provider-failure') {
+      response.writeHead(503, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ error: { message: 'upstream unavailable' } }));
+      return;
+    }
+
+    if (mode === 'malformed-failure') {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end('{not-json');
+      return;
+    }
+
+    response.writeHead(200, { 'content-type': 'application/json' });
+    response.end(
+      JSON.stringify({
+        model: 'conformance-model-returned',
+        choices: [{ message: { content: 'conformance output' } }],
+        usage: {
+          prompt_tokens: 100,
+          completion_tokens: 25,
+          total_tokens: 125,
+          prompt_tokens_details: { cached_tokens: 40 },
+          completion_tokens_details: { reasoning_tokens: 10 },
+        },
+      }),
+    );
+  });
+
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== 'string');
+
+  const adapter = new OpenAiCompatibleProviderAdapter('conformance-openai-compatible', {
+    baseUrl: `http://127.0.0.1:${address.port}`,
+    healthTimeoutMs: 250,
+  });
+
+  return {
+    adapter,
+    close: async () => {
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
+      server.closeAllConnections?.();
+      await new Promise((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    },
+  };
+}
+
+test('OpenAI-compatible adapter satisfies shared provider conformance', async (t) => {
+  await runProviderAdapterConformance(t, {
+    expectedCapabilities: ['usage_token_breakdown'],
+    healthy: () => createHarness('healthy'),
+    unhealthy: () => createHarness('unhealthy'),
+    success: () => createHarness('success'),
+    timeout: () => createHarness('timeout'),
+    authFailure: () => createHarness('auth-failure'),
+    quotaFailure: () => createHarness('quota-failure'),
+    rateLimitFailure: () => createHarness('rate-limit-failure'),
+    providerFailure: () => createHarness('provider-failure'),
+    transportFailure: () => createHarness('transport-failure'),
+    malformedFailure: () => createHarness('malformed-failure'),
+    expectedSuccess: {
+      output: 'conformance output',
+      model: 'conformance-model-returned',
+      usage: {
+        inputTokens: 100,
+        cachedInputTokens: 40,
+        outputTokens: 25,
+        reasoningTokens: 10,
+        totalTokens: 125,
+      },
+    },
+  });
+});
