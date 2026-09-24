@@ -1,4 +1,25 @@
 export {
+  CommandSecretResolverAdapter,
+  ExecFileSecretCommandRunner,
+  GitHubAuthCapabilityResolverAdapter,
+  LocalEnvSecretResolverAdapter,
+  OsKeychainSecretResolverAdapter,
+  SecretResolverRegistry,
+  VaultSecretResolverAdapter,
+  createDefaultSecretResolverRegistry,
+  secretResolverRuntimeCanExposeSecretValues,
+  secretResolverRuntimeCanGrantAuthority,
+  secretResolverRuntimeCanPersistSecretValues,
+  secretResolverRuntimeUsesShell,
+  type SecretCommandResult,
+  type SecretCommandRunner,
+  type SecretMaterialInjectionRequest,
+  type SecretMaterialInjectionSink,
+  type SecretResolverRegistryOptions,
+  type SecretResolverRuntimeAdapter,
+} from './secret-resolver-runtime.js';
+
+export {
   createSecretBindingProfileV1,
   createSecretBindingV1,
   createSecretRequirementV1,
