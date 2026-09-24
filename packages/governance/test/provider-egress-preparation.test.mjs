@@ -84,6 +84,15 @@ test('sanitized content hash is deterministic under object key reordering', () =
   assert.deepEqual(first.packet?.sanitizedPayload, second.packet?.sanitizedPayload);
 });
 
+test('array payloads validate and hash deterministically', () => {
+  const payload = [{ safe: 'visible' }, 1, true, null];
+  const first = prepareProviderEgress(policy, request({ payload }));
+  const second = prepareProviderEgress(policy, request({ payload: [...payload] }));
+
+  assert.deepEqual(first.packet?.sanitizedPayload, payload);
+  assert.equal(first.packet?.contentHash, second.packet?.contentHash);
+});
+
 test('INTERNAL and CONFIDENTIAL remote egress fail closed until policy/binding requirements pass', () => {
   const internalDenied = prepareProviderEgress(policy, request({ classification: 'INTERNAL' }));
   assert.equal(internalDenied.decision.allowed, false);
