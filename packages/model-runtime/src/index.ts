@@ -108,11 +108,23 @@ export interface ProviderResponse {
   readonly latencyMs?: number;
 }
 
+export interface ProviderModelDiscovery {
+  readonly modelId: string;
+  readonly displayName?: string;
+  readonly capabilities?: readonly ProviderCapability[];
+  readonly supportedEfforts?: readonly string[];
+  readonly contextWindowTokens?: number;
+  readonly maxOutputTokens?: number;
+  readonly locality: 'LOCAL' | 'REMOTE';
+  readonly availability?: 'AVAILABLE' | 'DEPRECATED';
+}
+
 export interface ProviderAdapter {
   readonly id: string;
   capabilities(): ReadonlySet<ProviderCapability>;
   health(): Promise<ProviderHealth>;
   invoke(request: ProviderRequest): Promise<ProviderResponse>;
+  listModels?(): Promise<readonly ProviderModelDiscovery[]>;
   countInputTokens?(input: string, model: string): Promise<number>;
   cancel?(requestId: string): Promise<void>;
 }
