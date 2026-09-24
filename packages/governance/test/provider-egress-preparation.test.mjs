@@ -84,7 +84,9 @@ test('sanitized content hash is deterministic under object key reordering', () =
   assert.deepEqual(first.packet?.sanitizedPayload, second.packet?.sanitizedPayload);
 });
 
-test('INTERNAL and CONFIDENTIAL remote egress fail closed until policy/binding requirements pass', () => {
+test(
+  'INTERNAL and CONFIDENTIAL remote egress fail closed until policy/binding requirements pass',
+  () => {
   const internalDenied = prepareProviderEgress(
     policy,
     request({ classification: 'INTERNAL' }),
@@ -129,7 +131,8 @@ test('INTERNAL and CONFIDENTIAL remote egress fail closed until policy/binding r
     confidentialAllowed.telemetryPayload.reasonCode,
     'CONFIDENTIAL_POLICY_BINDING_APPROVED',
   );
-});
+  },
+);
 
 test('SECRET remote egress never produces an invocation payload', () => {
   const result = prepareProviderEgress(
