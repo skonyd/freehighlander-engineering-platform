@@ -4,6 +4,7 @@ import type {
   ProviderCapability,
   ProviderFailureKind,
   ProviderHealth,
+  ProviderModelDiscovery,
   ProviderRequest,
   ProviderResponse,
   ProviderUsage,
@@ -16,6 +17,7 @@ export interface OpenAiCompatibleProviderOptions {
   readonly healthTimeoutMs?: number;
   readonly headers?: Readonly<Record<string, string>>;
   readonly monotonicNow?: () => number;
+  readonly modelLocality?: 'LOCAL' | 'REMOTE';
 }
 
 export class ProviderInvocationError extends Error {
@@ -50,12 +52,19 @@ interface ChatCompletionResponse {
   };
 }
 
+interface ModelsResponse {
+  readonly data?: readonly {
+    readonly id?: unknown;
+  }[];
+}
+
 export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
   readonly #baseUrl: string;
   readonly #apiKey: string | undefined;
   readonly #healthTimeoutMs: number;
   readonly #headers: Readonly<Record<string, string>>;
   readonly #monotonicNow: () => number;
+  readonly #modelLocality: 'LOCAL' | 'REMOTE';
 
   constructor(
     readonly id: string,
@@ -69,6 +78,7 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
     this.#healthTimeoutMs = options.healthTimeoutMs ?? 5_000;
     this.#headers = options.headers ?? {};
     this.#monotonicNow = options.monotonicNow ?? (() => performance.now());
+    this.#modelLocality = options.modelLocality ?? 'REMOTE';
   }
 
   capabilities(): ReadonlySet<ProviderCapability> {
@@ -99,6 +109,74 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
         detail: error instanceof Error ? error.message : 'unknown provider error',
       };
     }
+  }
+
+  async listModels(): Promise<readonly ProviderModelDiscovery[]> {
+    let response: Response;
+    try {
+      response = await this.#fetchWithTimeout(
+        `${this.#baseUrl}/v1/models`,
+        { method: 'GET', headers: this.#requestHeaders() },
+        this.#healthTimeoutMs,
+      );
+    } catch (error) {
+      if (isAbortError(error)) {
+        throw new ProviderInvocationError('provider model discovery timed out', 'transport_failure');
+      }
+      throw new ProviderInvocationError(
+        error instanceof Error ? error.message : 'provider model discovery transport failed',
+        'transport_failure',
+      );
+    }
+
+    const raw = await response.text();
+    if (!response.ok) {
+      throw new ProviderInvocationError(
+        `provider model discovery returned HTTP ${response.status}: ${truncate(raw, 500)}`,
+        classifyHttpFailure(response.status, raw),
+        response.status,
+        parseRetryAfterMs(response.headers.get('retry-after')),
+      );
+    }
+
+    let parsed: ModelsResponse;
+    try {
+      parsed = JSON.parse(raw) as ModelsResponse;
+    } catch {
+      throw new ProviderInvocationError(
+        'provider model discovery returned invalid JSON',
+        'malformed_output',
+      );
+    }
+
+    if (!Array.isArray(parsed.data)) {
+      throw new ProviderInvocationError(
+        'provider model discovery response has no data array',
+        'malformed_output',
+      );
+    }
+
+    const seen = new Set<string>();
+    const models: ProviderModelDiscovery[] = [];
+    for (const entry of parsed.data) {
+      const id = typeof entry?.id === 'string' ? entry.id.trim() : '';
+      if (!id) {
+        throw new ProviderInvocationError(
+          'provider model discovery returned an invalid model id',
+          'malformed_output',
+        );
+      }
+      if (seen.has(id)) continue;
+      seen.add(id);
+      models.push({
+        modelId: id,
+        displayName: id,
+        locality: this.#modelLocality,
+      });
+    }
+
+    models.sort((left, right) => left.modelId.localeCompare(right.modelId));
+    return models;
   }
 
   async invoke(request: ProviderRequest): Promise<ProviderResponse> {
@@ -162,7 +240,6 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
     }
 
     const mappedUsage = mapUsage(parsed.usage);
-
     const latency = measureMonotonicDuration(startedAtMonoMs, this.#monotonicNow());
 
     return {
