@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 
 import { checkCatalogBinding } from './model-catalog.js';
 import type { ModelCatalogSnapshotV1 } from './model-catalog.js';
+import { qualificationAllowsBinding } from './model-qualification.js';
+import type { ModelQualificationSnapshotV1 } from './model-qualification.js';
 import type { ProviderAdapter, ProviderCapability, ProviderFailureKind } from './index.js';
 
 export type BindingRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
@@ -31,6 +33,7 @@ export interface BindingPlanRequest {
   readonly primaryBindingId: string;
   readonly fallbackBindingIds?: readonly string[];
   readonly catalogByProvider?: Readonly<Record<string, ModelCatalogSnapshotV1>>;
+  readonly qualificationByBinding?: Readonly<Record<string, ModelQualificationSnapshotV1>>;
 }
 
 export interface ResolvedBinding {
@@ -51,6 +54,7 @@ export interface BindingPlan {
   readonly requiredIndependenceGroup?: string;
   readonly bindings: readonly ResolvedBinding[];
   readonly catalogHashes?: Readonly<Record<string, string>>;
+  readonly qualificationHashes?: Readonly<Record<string, string>>;
   readonly hash: string;
   readonly authorityGranted: false;
 }
@@ -128,6 +132,7 @@ export function resolveBindingPlan(
     const binding = bindings.get(bindingId);
     const provider = providers.get(binding.providerId);
     const catalog = request.catalogByProvider?.[binding.providerId];
+    const qualification = request.qualificationByBinding?.[binding.id];
 
     if (request.catalogByProvider !== undefined && catalog === undefined) {
       throw new Error(
@@ -148,6 +153,27 @@ export function resolveBindingPlan(
       if (binding.effort !== undefined && catalogCheck.supportedEffort === false) {
         throw new Error(
           `binding ${binding.id} effort ${binding.effort} is unsupported by model ${binding.model}`,
+        );
+      }
+    }
+
+    if (request.qualificationByBinding !== undefined && qualification === undefined) {
+      throw new Error(`binding ${binding.id} has no qualification snapshot`);
+    }
+
+    if (qualification !== undefined) {
+      if (qualification.providerId !== binding.providerId) {
+        throw new Error(`binding ${binding.id} qualification provider mismatch`);
+      }
+      if (qualification.modelId !== binding.model) {
+        throw new Error(`binding ${binding.id} qualification model mismatch`);
+      }
+      if (catalog !== undefined && qualification.catalogHash !== catalog.hash) {
+        throw new Error(`binding ${binding.id} qualification catalog hash is stale`);
+      }
+      if (!qualificationAllowsBinding(qualification, request.logicalRole, request.riskTier)) {
+        throw new Error(
+          `binding ${binding.id} model ${binding.model} is not eligible for ${request.logicalRole}/${request.riskTier}`,
         );
       }
     }
@@ -203,6 +229,15 @@ export function resolveBindingPlan(
             .map(([providerId, snapshot]) => [providerId, snapshot.hash]),
         );
 
+  const qualificationHashes =
+    request.qualificationByBinding === undefined
+      ? undefined
+      : Object.fromEntries(
+          Object.entries(request.qualificationByBinding)
+            .sort(([left], [right]) => left.localeCompare(right))
+            .map(([bindingId, snapshot]) => [bindingId, snapshot.hash]),
+        );
+
   const identity = {
     schemaVersion: 1,
     logicalRole: request.logicalRole,
@@ -211,6 +246,7 @@ export function resolveBindingPlan(
     requiredIndependenceGroup: request.requiredIndependenceGroup ?? null,
     bindings: resolved,
     catalogHashes: catalogHashes ?? null,
+    qualificationHashes: qualificationHashes ?? null,
   } as const;
 
   return {
@@ -223,6 +259,7 @@ export function resolveBindingPlan(
       : {}),
     bindings: resolved,
     ...(catalogHashes ? { catalogHashes } : {}),
+    ...(qualificationHashes ? { qualificationHashes } : {}),
     hash: sha256Canonical(identity),
     authorityGranted: false,
   };
