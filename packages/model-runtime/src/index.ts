@@ -1,4 +1,14 @@
 export {
+  canonicalEffortChoices,
+  effortNormalizationCanGrantAuthority,
+  normalizeEffortValue,
+  resolveProviderEffort,
+  type CanonicalEffort,
+  type ProviderEffortResolution,
+  type ProviderEffortResolutionOptions,
+} from './effort-normalization.js';
+
+export {
   RoleBindingManagementService,
   roleBindingManagementCanGrantAuthority,
   type RoleBindingManagementAuditEvent,
