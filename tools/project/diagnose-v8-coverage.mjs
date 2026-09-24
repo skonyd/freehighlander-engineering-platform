@@ -9,15 +9,13 @@ for (const name of fs.readdirSync(root)) {
   for (const script of report.result ?? []) {
     if (!script.url.endsWith(sourcePath)) continue;
     for (const fn of script.functions ?? []) {
-      const zero = (fn.ranges ?? []).filter((range) => range.count === 0);
-      for (const range of zero) {
-        const start = Math.max(0, range.startOffset - 80);
-        const end = Math.min(source.length, range.endOffset + 80);
+      for (const range of (fn.ranges ?? []).filter((candidate) => candidate.count === 0)) {
+        if (range.endOffset - range.startOffset > 500) continue;
         console.log(
-          'UNCOVERED',
+          'UNCOVERED_EXACT',
           fn.functionName || '<anonymous>',
           JSON.stringify(range),
-          JSON.stringify(source.slice(start, end)),
+          JSON.stringify(source.slice(range.startOffset, range.endOffset)),
         );
       }
     }
