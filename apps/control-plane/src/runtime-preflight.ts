@@ -145,8 +145,8 @@ export function evaluateRuntimePreflight(input: RuntimePreflightInput): RuntimeP
   }
 
   failures.sort((left, right) => {
-    const leftKey = (left.bindingId ?? '') + ':' + left.code + ':' + left.detail;
-    const rightKey = (right.bindingId ?? '') + ':' + right.code + ':' + right.detail;
+    const leftKey = [left.bindingId, left.code, left.detail].join(':');
+    const rightKey = [right.bindingId, right.code, right.detail].join(':');
     return leftKey.localeCompare(rightKey);
   });
 
