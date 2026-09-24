@@ -121,7 +121,10 @@ export class OpenAiCompatibleProviderAdapter implements ProviderAdapter {
       );
     } catch (error) {
       if (isAbortError(error)) {
-        throw new ProviderInvocationError('provider model discovery timed out', 'transport_failure');
+        throw new ProviderInvocationError(
+          'provider model discovery timed out',
+          'transport_failure',
+        );
       }
       throw new ProviderInvocationError(
         error instanceof Error ? error.message : 'provider model discovery transport failed',
