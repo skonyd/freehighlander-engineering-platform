@@ -1,15 +1,7 @@
-export type ContextCompressionClass =
-  | 'PROTECTED'
-  | 'LOSSLESS'
-  | 'EXTRACTIVE'
-  | 'SEMANTIC_ALLOWED';
+export type ContextCompressionClass = 'PROTECTED' | 'LOSSLESS' | 'EXTRACTIVE' | 'SEMANTIC_ALLOWED';
 
 export type ContextLifecycleState =
-  | 'ACTIVE'
-  | 'SUPERSEDED'
-  | 'EXPIRED'
-  | 'ARTIFACT_ONLY'
-  | 'PROTECTED';
+  'ACTIVE' | 'SUPERSEDED' | 'EXPIRED' | 'ARTIFACT_ONLY' | 'PROTECTED';
 
 export interface ContextProtectionInput {
   readonly id: string;
