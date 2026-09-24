@@ -10,6 +10,7 @@ import {
   TelemetryEmitter,
   cachedInputShare,
   createEvent,
+  createModelCatalogEvent,
   parseEvent,
   readJsonlEvents,
   serializeEvent,
@@ -220,4 +221,108 @@ test('provider resilience telemetry is metadata-only and circuit-aware', () => {
   assert.equal(restored.provider?.failureKind, 'quota_exhausted');
   assert.equal('prompt' in restored, false);
   assert.equal('completion' in restored, false);
+});
+
+
+test('model catalog telemetry accepts metadata-only refresh/binding/qualification events', () => {
+  const refresh = createModelCatalogEvent({
+    type: 'model.catalog.refreshed',
+    timestamp: '2026-09-24T18:00:00.000Z',
+    runId: 'catalog-refresh-1',
+    payload: {
+      action: 'REFRESH',
+      providerId: 'provider-a',
+      previousHash: 'a'.repeat(64),
+      currentHash: 'b'.repeat(64),
+      itemCount: 12,
+    },
+  });
+  assert.equal(refresh.payload.action, 'REFRESH');
+  assert.equal(refresh.payload.itemCount, 12);
+
+  const binding = createModelCatalogEvent({
+    type: 'model.binding.changed',
+    timestamp: '2026-09-24T18:01:00.000Z',
+    runId: 'binding-change-1',
+    payload: {
+      action: 'BINDING_CHANGE',
+      providerId: 'provider-a',
+      modelId: 'model-a',
+      bindingId: 'reviewer-primary',
+      logicalRole: 'reviewer',
+      riskTier: 'HIGH',
+      previousHash: 'b'.repeat(64),
+      currentHash: 'c'.repeat(64),
+      previousState: 'model-old',
+      currentState: 'model-a',
+    },
+  });
+  assert.equal(binding.payload.bindingId, 'reviewer-primary');
+
+  const qualification = createModelCatalogEvent({
+    type: 'model.qualification.changed',
+    timestamp: '2026-09-24T18:02:00.000Z',
+    runId: 'qualification-change-1',
+    payload: {
+      action: 'QUALIFICATION_CHANGE',
+      providerId: 'provider-a',
+      modelId: 'model-a',
+      logicalRole: 'reviewer',
+      riskTier: 'HIGH',
+      currentHash: 'd'.repeat(64),
+      previousState: 'SHADOW_VERIFIED',
+      currentState: 'ELIGIBLE',
+    },
+  });
+  assert.equal(qualification.payload.currentState, 'ELIGIBLE');
+});
+
+test('model catalog telemetry rejects secret-like extra fields and malformed metadata', () => {
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        type: 'model.catalog.refreshed',
+        timestamp: '2026-09-24T18:00:00.000Z',
+        runId: 'bad-refresh',
+        payload: {
+          action: 'REFRESH',
+          providerId: 'provider-a',
+          currentHash: 'a'.repeat(64),
+          apiKey: 'secret-value',
+        },
+      }),
+    /field is not allowed: apiKey/,
+  );
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        type: 'model.catalog.refreshed',
+        timestamp: '2026-09-24T18:00:00.000Z',
+        runId: 'bad-refresh',
+        payload: {
+          action: 'REFRESH',
+          providerId: 'provider-a',
+          modelId: 'must-not-be-present',
+          currentHash: 'a'.repeat(64),
+        },
+      }),
+    /must remain aggregate/,
+  );
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        type: 'model.binding.changed',
+        timestamp: '2026-09-24T18:00:00.000Z',
+        runId: 'bad-binding',
+        payload: {
+          action: 'BINDING_CHANGE',
+          providerId: 'provider-a',
+          bindingId: 'reviewer-primary',
+          currentHash: 'not-a-hash',
+        },
+      }),
+    /currentHash/,
+  );
 });
