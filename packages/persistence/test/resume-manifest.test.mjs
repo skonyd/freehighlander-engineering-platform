@@ -119,10 +119,7 @@ test('portable resume manifest is deterministic normalized and authority-neutral
     'reasoning',
     'structured-output',
   ]);
-  assert.deepEqual(first.requiredSecretHandleIds, [
-    'github.repo.auth',
-    'provider.openai.api',
-  ]);
+  assert.deepEqual(first.requiredSecretHandleIds, ['github.repo.auth', 'provider.openai.api']);
   assert.match(first.manifestHash, /^[a-f0-9]{64}$/);
   assert.equal(first.authority, 'NONE');
   validateResumeManifestV1(first);
@@ -153,9 +150,7 @@ test('manifest rejects absolute or path-shaped logical workspace identities', ()
     'relative\\path',
     'x',
   ]) {
-    assert.throws(() =>
-      createResumeManifestV1(manifestInput({ workspaceLogicalId })),
-    );
+    assert.throws(() => createResumeManifestV1(manifestInput({ workspaceLogicalId })));
   }
 });
 
@@ -229,9 +224,7 @@ test('manifest rejects ambiguous duplicate or conflicting portable identities', 
       ],
     }),
     manifestInput({
-      artifactManifest: [
-        { artifactId: 'artifact-a', contentHash: H1, classification: 'UNKNOWN' },
-      ],
+      artifactManifest: [{ artifactId: 'artifact-a', contentHash: H1, classification: 'UNKNOWN' }],
     }),
     manifestInput({
       requiredProviderCapabilities: {
@@ -264,14 +257,8 @@ test('manifest hash validation rejects tampering and authority expansion', () =>
     () => validateResumeManifestV1({ ...manifest, remoteHead: 'c'.repeat(40) }),
     /hash mismatch/,
   );
-  assert.throws(
-    () => validateResumeManifestV1({ ...manifest, manifestHash: H1 }),
-    /hash mismatch/,
-  );
-  assert.throws(
-    () => validateResumeManifestV1({ ...manifest, schemaVersion: 2 }),
-    /schemaVersion/,
-  );
+  assert.throws(() => validateResumeManifestV1({ ...manifest, manifestHash: H1 }), /hash mismatch/);
+  assert.throws(() => validateResumeManifestV1({ ...manifest, schemaVersion: 2 }), /schemaVersion/);
   assert.throws(
     () => validateResumeManifestV1({ ...manifest, authority: 'SYSTEM_POLICY' }),
     /authority/,
