@@ -1658,9 +1658,9 @@ try {
     'export function heartbeatCanDeclareSemanticSuccess(): false',
     'export function heartbeatCanAuthorizeReplay(): false',
     'export function heartbeatCanCarrySecretValue(): false',
-    "return decision('STALLED'",
-    "return decision('INTERRUPTED'",
-    "return decision('RECOVERY_REQUIRED'",
+    "'STALLED'",
+    "'INTERRUPTED'",
+    "'RECOVERY_REQUIRED'",
   ]) {
     if (!heartbeatSource.includes(invariant)) {
       failures.push(`runtime heartbeat contract missing invariant: ${invariant}`);
