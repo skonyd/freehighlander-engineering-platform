@@ -117,9 +117,7 @@ export interface MalformedStructuredRoleResult {
   readonly errors: readonly string[];
 }
 
-export type StructuredRoleParseResult =
-  | ValidStructuredRoleResult
-  | MalformedStructuredRoleResult;
+export type StructuredRoleParseResult = ValidStructuredRoleResult | MalformedStructuredRoleResult;
 
 export function parseStructuredRoleResultV1(input: unknown): StructuredRoleParseResult {
   const parsed = structuredRoleResultV1Schema.safeParse(input);
