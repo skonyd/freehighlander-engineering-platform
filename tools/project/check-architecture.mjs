@@ -1643,6 +1643,33 @@ try {
   failures.push('missing reusable provider adapter conformance suite');
 }
 
+try {
+  const heartbeatSource = await fs.readFile(
+    path.join(root, 'apps', 'control-plane', 'src', 'runtime-heartbeat.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function createRuntimeHeartbeat',
+    'export function classifyRuntimeActivityLiveness',
+    "readonly authority: 'NONE'",
+    'readonly semanticSuccess: false',
+    'export function heartbeatCanGrantAuthority(): false',
+    'export function heartbeatCanDeclareSemanticSuccess(): false',
+    'export function heartbeatCanAuthorizeReplay(): false',
+    'export function heartbeatCanCarrySecretValue(): false',
+    "return decision('STALLED'",
+    "return decision('INTERRUPTED'",
+    "return decision('RECOVERY_REQUIRED'",
+  ]) {
+    if (!heartbeatSource.includes(invariant)) {
+      failures.push(`runtime heartbeat contract missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing bounded runtime heartbeat/liveness contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
