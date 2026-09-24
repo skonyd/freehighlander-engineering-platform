@@ -3,6 +3,7 @@ export {
   modelCatalogCanGrantAuthority,
   modelCatalogRefreshCanRewriteBindings,
   reconcileModelCatalog,
+  refreshModelCatalogFromProvider,
   type ModelCatalogAvailability,
   type ModelCatalogBindingCheck,
   type ModelCatalogLocality,
