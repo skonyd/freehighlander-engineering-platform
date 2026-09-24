@@ -5,6 +5,7 @@ import {
   BindingRegistry,
   ProviderRegistry,
   bindingRegistryCanGrantAuthority,
+  reconcileModelCatalog,
   resolveBindingPlan,
   selectBinding,
 } from '../dist/index.js';
@@ -233,5 +234,212 @@ test('unknown provider and binding references fail closed', () => {
         primaryBindingId: 'bad-provider',
       }),
     /unknown provider/,
+  );
+});
+
+function catalog(providerId, models) {
+  return reconcileModelCatalog({
+    providerId,
+    refreshedAt: '2026-09-24T18:00:00.000Z',
+    discovered: models.map((item) => ({
+      providerId,
+      modelId: item.modelId,
+      locality: 'REMOTE',
+      source: 'DISCOVERED',
+      capabilities: item.capabilities ?? [],
+      supportedEfforts: item.supportedEfforts ?? [],
+      ...(item.availability ? { availability: item.availability } : {}),
+    })),
+  });
+}
+
+test('catalog-aware binding plan rejects unavailable and unknown models for new runs', () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1', ['structured_output']));
+
+  const bindings = new BindingRegistry();
+  bindings.register({
+    id: 'removed',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'removed-model',
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+  bindings.register({
+    id: 'unknown',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'unknown-model',
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+
+  const first = catalog('p1', [{ modelId: 'removed-model', capabilities: ['structured_output'] }]);
+  const refreshed = reconcileModelCatalog({
+    providerId: 'p1',
+    refreshedAt: '2026-09-24T19:00:00.000Z',
+    previous: first,
+    discovered: [],
+  });
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'reviewer',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'removed',
+        catalogByProvider: { p1: refreshed },
+      }),
+    /model removed-model is unavailable/,
+  );
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'reviewer',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'unknown',
+        catalogByProvider: { p1: refreshed },
+      }),
+    /model unknown-model is unknown_model/,
+  );
+});
+
+test('catalog-aware binding plan validates model effort and model-level capabilities', () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1', ['structured_output', 'tool_calling']));
+
+  const bindings = new BindingRegistry();
+  bindings.register({
+    id: 'bad-effort',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'model-a',
+    effort: 'high',
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+  bindings.register({
+    id: 'bad-capability',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'model-a',
+    requiredCapabilities: ['tool_calling'],
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+
+  const snapshot = catalog('p1', [
+    {
+      modelId: 'model-a',
+      capabilities: ['structured_output'],
+      supportedEfforts: ['low', 'medium'],
+    },
+  ]);
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'reviewer',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'bad-effort',
+        catalogByProvider: { p1: snapshot },
+      }),
+    /effort high is unsupported/,
+  );
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'reviewer',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'bad-capability',
+        catalogByProvider: { p1: snapshot },
+      }),
+    /lacks required capability tool_calling/,
+  );
+});
+
+test('catalog-aware binding plan accepts eligible model and preserves immutable plan identity', () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1', ['structured_output']));
+
+  const bindings = new BindingRegistry();
+  bindings.register({
+    id: 'eligible',
+    version: '2.0.0',
+    providerId: 'p1',
+    model: 'model-a',
+    effort: 'medium',
+    requiredCapabilities: ['structured_output'],
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+
+  const snapshot = catalog('p1', [
+    {
+      modelId: 'model-a',
+      capabilities: ['structured_output'],
+      supportedEfforts: ['low', 'medium', 'high'],
+    },
+  ]);
+
+  const plan = resolveBindingPlan(providers, bindings, {
+    logicalRole: 'controller',
+    riskTier: 'NORMAL',
+    primaryBindingId: 'eligible',
+    catalogByProvider: { p1: snapshot },
+  });
+
+  assert.equal(plan.bindings[0].model, 'model-a');
+  assert.equal(plan.bindings[0].effort, 'medium');
+  assert.equal(plan.catalogHashes.p1, snapshot.hash);
+  assert.equal(plan.authorityGranted, false);
+
+  const later = reconcileModelCatalog({
+    providerId: 'p1',
+    refreshedAt: '2026-09-24T20:00:00.000Z',
+    previous: snapshot,
+    discovered: [],
+  });
+  assert.equal(later.records[0].availability, 'UNAVAILABLE');
+  assert.equal(plan.bindings[0].model, 'model-a');
+  assert.equal(plan.bindings[0].effort, 'medium');
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'controller',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'eligible',
+        catalogByProvider: { p1: later },
+      }),
+    /model model-a is unavailable/,
+  );
+});
+
+test('catalog-aware mode fails closed when a referenced provider has no catalog snapshot', () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('p1'));
+  const bindings = new BindingRegistry();
+  bindings.register({
+    id: 'b1',
+    version: '1.0.0',
+    providerId: 'p1',
+    model: 'm1',
+    allowedRiskTiers: ['NORMAL'],
+    independenceGroup: 'g',
+  });
+
+  assert.throws(
+    () =>
+      resolveBindingPlan(providers, bindings, {
+        logicalRole: 'controller',
+        riskTier: 'NORMAL',
+        primaryBindingId: 'b1',
+        catalogByProvider: {},
+      }),
+    /no catalog snapshot/,
   );
 });
