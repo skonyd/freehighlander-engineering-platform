@@ -119,8 +119,9 @@ test('local worktree backend validates configuration and exact repository identi
   });
   await assert.rejects(() => backend.create(shortRevision, fixture.repositoryRoot), /full Git SHA/);
 
-  await assert.rejects(() =>
-    backend.create(descriptor(fixture.revision, { workspaceId: 'bad/id' }), fixture.repositoryRoot),
+  assert.throws(
+    () => descriptor(fixture.revision, { workspaceId: 'bad/id' }),
+    /workspaceId must be a bounded identifier/,
   );
   await assert.rejects(() =>
     backend.create(descriptor(fixture.revision, { workspaceId: 'workspace-004' }), 'relative'),
