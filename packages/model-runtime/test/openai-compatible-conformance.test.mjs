@@ -288,7 +288,6 @@ test('OpenAI-compatible model discovery classifies HTTP failures', async () => {
   }
 });
 
-
 test('OpenAI-compatible adapter validates and maps configured model efforts', async () => {
   const observedBodies = [];
   const server = createServer(async (request, response) => {
@@ -381,7 +380,8 @@ test('OpenAI-compatible adapter validates and maps configured model efforts', as
           timeoutMs: 2_000,
         }),
       (error) =>
-        error?.kind === 'malformed_output' && /does not expose reasoning effort support/.test(error.message),
+        error?.kind === 'malformed_output' &&
+        /does not expose reasoning effort support/.test(error.message),
     );
   } finally {
     server.closeAllConnections?.();
