@@ -45,20 +45,20 @@ test('runtime error report redacts secret-like keys and omits raw cause messages
     cause: new Error('raw provider response with secret text'),
   });
 
-  assert.deepEqual(
-    report.details,
-    [
-      { key: 'Authorization', value: '[REDACTED]' },
-      { key: 'apiKey', value: '[REDACTED]' },
-      { key: 'model', value: 'example-model' },
-      { key: 'payload', value: '[structured-value-omitted]' },
-      { key: 'cause', value: 'Error' },
-    ],
-  );
+  assert.deepEqual(report.details, [
+    { key: 'Authorization', value: '[REDACTED]' },
+    { key: 'apiKey', value: '[REDACTED]' },
+    { key: 'model', value: 'example-model' },
+    { key: 'payload', value: '[structured-value-omitted]' },
+    { key: 'cause', value: 'Error' },
+  ]);
 
   const rendered = formatRuntimeErrorForUser(report);
   assert.match(rendered, /Correlation ID: corr-abcdefgh/);
-  assert.doesNotMatch(rendered, /super-secret-value|Bearer abc|raw provider response/);
+  assert.doesNotMatch(
+    rendered,
+    /super-secret-value|Bearer abc|raw provider response/,
+  );
 });
 
 test('runtime error report bounds details and normalizes multiline values', () => {
