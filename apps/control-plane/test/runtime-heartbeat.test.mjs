@@ -271,6 +271,47 @@ test('heartbeat validation catches schema authority and non-canonical tampering'
   );
 });
 
+test('heartbeat canonical validation rejects extra persisted fields', () => {
+  const heartbeat = createRuntimeHeartbeat(identity(), 0, 100, 200, progress());
+
+  assert.throws(
+    () =>
+      validateRuntimeHeartbeat({
+        ...heartbeat,
+        unexpectedMetadata: 'not-canonical',
+      }),
+    /not canonically normalized/,
+  );
+});
+
+test('progress counters allow one-sided unknown values without losing bounds', () => {
+  const unknownTotal = createRuntimeHeartbeat(
+    identity(),
+    0,
+    100,
+    200,
+    progress({
+      completedUnits: 2,
+      totalUnits: null,
+    }),
+  );
+  assert.equal(unknownTotal.progress.completedUnits, 2);
+  assert.equal(unknownTotal.progress.totalUnits, null);
+
+  const unknownCompleted = createRuntimeHeartbeat(
+    identity(),
+    1,
+    110,
+    210,
+    progress({
+      completedUnits: null,
+      totalUnits: 3,
+    }),
+  );
+  assert.equal(unknownCompleted.progress.completedUnits, null);
+  assert.equal(unknownCompleted.progress.totalUnits, 3);
+});
+
 test('liveness configuration enums and silence budgets fail closed', () => {
   const heartbeat = createRuntimeHeartbeat(identity(), 1, 100, 200, progress());
 
