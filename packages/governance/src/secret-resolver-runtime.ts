@@ -87,7 +87,9 @@ export class SecretResolverRegistry {
     return this.get(binding.resolverKind).probe(binding);
   }
 
-  async probeAll(bindings: readonly SecretBindingV1[]): Promise<readonly SecretResolverEvidenceV1[]> {
+  async probeAll(
+    bindings: readonly SecretBindingV1[],
+  ): Promise<readonly SecretResolverEvidenceV1[]> {
     const evidence: SecretResolverEvidenceV1[] = [];
     for (const binding of bindings) evidence.push(await this.probe(binding));
     return evidence.sort((left, right) => {
@@ -259,9 +261,7 @@ export class CommandSecretResolverAdapter implements SecretResolverRuntimeAdapte
     readonly kind: 'ONEPASSWORD' | 'BITWARDEN_SECRETS_MANAGER',
     readonly runner: SecretCommandRunner,
     readonly timeoutMs: number,
-    readonly commandBuilder: (
-      reference: string,
-    ) => {
+    readonly commandBuilder: (reference: string) => {
       readonly executable: string;
       readonly probeArgs: readonly string[];
       readonly readArgs: readonly string[];
@@ -436,7 +436,8 @@ async function injectAndValidate(
 
 function assertBindingPlan(binding: SecretBindingV1, plan: SecretInjectionPlan): void {
   assertBindingKind(binding, binding.resolverKind);
-  if (binding.handleId !== plan.handleId) throw new Error('secret binding and injection plan mismatch');
+  if (binding.handleId !== plan.handleId)
+    throw new Error('secret binding and injection plan mismatch');
   if (secretBackendForResolverKind(binding.resolverKind) !== plan.backend) {
     throw new Error('secret resolver backend does not match injection plan');
   }
@@ -490,26 +491,17 @@ function bitwardenCommand(reference: string) {
 function osKeychainCommand(
   platform: NodeJS.Platform,
   reference: string,
-):
-  | {
-      readonly executable: string;
-      readonly probeArgs: readonly string[];
-      readonly readArgs: readonly string[];
-    }
-  | null {
+): {
+  readonly executable: string;
+  readonly probeArgs: readonly string[];
+  readonly readArgs: readonly string[];
+} | null {
   const parsed = parseKeychainReference(reference);
   if (platform === 'darwin') {
     return {
       executable: 'security',
       probeArgs: ['help'],
-      readArgs: [
-        'find-generic-password',
-        '-s',
-        parsed.service,
-        '-a',
-        parsed.account,
-        '-w',
-      ],
+      readArgs: ['find-generic-password', '-s', parsed.service, '-a', parsed.account, '-w'],
     };
   }
   if (platform === 'linux') {
@@ -562,7 +554,8 @@ function parseVaultMaterial(stdout: string, field: string): ResolvedSecretMateri
     throw new Error('HASHICORP_VAULT response has no requested field');
   }
 
-  const leaseId = typeof parsed.lease_id === 'string' && parsed.lease_id ? parsed.lease_id : undefined;
+  const leaseId =
+    typeof parsed.lease_id === 'string' && parsed.lease_id ? parsed.lease_id : undefined;
   const leaseDuration =
     typeof parsed.lease_duration === 'number' &&
     Number.isInteger(parsed.lease_duration) &&
@@ -606,7 +599,8 @@ function requireSafeLocatorPart(value: string, field: string): void {
 }
 
 function requireExecutable(value: string): void {
-  if (!/^[A-Za-z0-9._-]{1,128}$/.test(value)) throw new Error('secret resolver executable is invalid');
+  if (!/^[A-Za-z0-9._-]{1,128}$/.test(value))
+    throw new Error('secret resolver executable is invalid');
 }
 
 function requireArgument(value: string): void {
