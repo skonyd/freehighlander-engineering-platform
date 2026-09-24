@@ -215,12 +215,7 @@ test('OS_KEYCHAIN uses native command adapters and fails closed without a secure
   const evidence = await windowsRegistry.probe(secretBinding);
   assert.equal(evidence.health, 'UNAVAILABLE');
   await assert.rejects(
-    () =>
-      windowsRegistry.inject(
-        secretBinding,
-        plan('provider.keychain.api', 'OS_KEYCHAIN'),
-        sink,
-      ),
+    () => windowsRegistry.inject(secretBinding, plan('provider.keychain.api', 'OS_KEYCHAIN'), sink),
     /secure OS keychain backend is unavailable/,
   );
 });
@@ -269,9 +264,7 @@ test('Vault adapter tracks dynamic lease only in memory and revokes it before si
   assert.equal(sink.values.has(receipt.receiptId), false);
   assert.ok(
     runner.calls.some(
-      (call) =>
-        call.executable === 'vault' &&
-        call.args.join(' ') === 'lease revoke lease-123',
+      (call) => call.executable === 'vault' && call.args.join(' ') === 'lease revoke lease-123',
     ),
   );
 });
