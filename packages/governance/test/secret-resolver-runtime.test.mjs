@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  ExecFileSecretCommandRunner,
   createDefaultSecretResolverRegistry,
   createSecretBindingProfileV1,
   createSecretBindingV1,
@@ -297,4 +298,20 @@ test('resolver runtime invariants remain authority-neutral shell-free and non-pe
   assert.equal(secretResolverRuntimeCanPersistSecretValues(), false);
   assert.equal(secretResolverRuntimeUsesShell(), false);
   assert.equal(secretResolverRuntimeCanGrantAuthority(), false);
+});
+
+
+test('execFile secret command runner is shell-free and normalizes process failure without output leakage', async () => {
+  const runner = new ExecFileSecretCommandRunner();
+  const success = await runner.run('node', ['-e', "process.stdout.write('ok')"], 5_000);
+  assert.deepEqual(success, { exitCode: 0, stdout: 'ok' });
+
+  const missing = await runner.run('fh-secret-command-that-does-not-exist', [], 5_000);
+  assert.equal(missing.exitCode, 1);
+  assert.equal(missing.stdout, '');
+
+  await assert.rejects(
+    () => runner.run('../bad', [], 5_000),
+    /secret resolver executable is invalid/,
+  );
 });
