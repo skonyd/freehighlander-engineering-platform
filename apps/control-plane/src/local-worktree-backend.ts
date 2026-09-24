@@ -243,9 +243,15 @@ export class LocalGitWorktreeBackend {
 
     const untrackedPaths = parseUntrackedPaths(statusPorcelain);
     const untracked: WorkspaceUntrackedEntry[] = [];
+    let snapshotBytes =
+      Buffer.byteLength(trackedDiff, 'utf8') + Buffer.byteLength(statusPorcelain, 'utf8');
     for (const entryPath of untrackedPaths) {
       const target = await resolveWorkspacePath(handle.workspacePath, entryPath, 'READ');
       const bytes = await readFile(target);
+      snapshotBytes += bytes.byteLength;
+      if (snapshotBytes > this.#maxSnapshotBytes) {
+        throw new Error('workspace snapshot exceeds maxSnapshotBytes');
+      }
       untracked.push({
         path: entryPath,
         sizeBytes: bytes.byteLength,
@@ -592,7 +598,7 @@ function requireContainedPath(root: string, candidate: string): void {
 
 function parseCommandActivityInput(source: string): CommandActivityInputV1 {
   const value = parseJsonRecord(source, 'command activity input');
-  assertExactKeys(value, ['schemaVersion', 'executable', 'args', 'cwd'], ['cwd']);
+  assertExactKeys(value, ['schemaVersion', 'executable', 'args'], ['cwd']);
   if (value.schemaVersion !== 1) throw new Error('command activity schemaVersion must be 1');
   if (typeof value.executable !== 'string') throw new Error('command executable must be a string');
   validateExecutableName(value.executable);
@@ -718,6 +724,17 @@ async function assertHandleCurrent(handle: LocalWorkspaceHandle): Promise<void> 
   if (path.resolve(handle.workspacePath) !== handle.workspacePath) {
     throw new Error('workspace handle path must be canonical');
   }
+
+  const metadata = await readWorkspaceMetadata(handle.metadataPath);
+  if (
+    metadata.descriptor.workspaceHash !== handle.descriptor.workspaceHash ||
+    canonicalJson(metadata.descriptor) !== canonicalJson(handle.descriptor) ||
+    path.resolve(metadata.workspacePath) !== handle.workspacePath ||
+    path.resolve(metadata.repositoryRoot) !== handle.repositoryRoot
+  ) {
+    throw new Error('workspace handle metadata mismatch');
+  }
+
   const observedHead = await gitHead(handle.workspacePath);
   if (observedHead !== handle.descriptor.exactRevision) {
     throw new Error('workspace handle HEAD drifted from exact revision');
