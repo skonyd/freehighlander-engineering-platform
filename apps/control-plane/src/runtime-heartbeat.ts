@@ -26,10 +26,7 @@ export interface RuntimeHeartbeatIdentity {
 export type RuntimeLeaseLiveness = 'ACTIVE' | 'EXPIRED' | 'MISSING' | 'UNKNOWN';
 
 export type RuntimeActivityLiveness =
-  | 'ACTIVE_PROGRESSING'
-  | 'STALLED'
-  | 'INTERRUPTED'
-  | 'RECOVERY_REQUIRED';
+  'ACTIVE_PROGRESSING' | 'STALLED' | 'INTERRUPTED' | 'RECOVERY_REQUIRED';
 
 export interface RuntimeLivenessObservation {
   readonly identity: RuntimeHeartbeatIdentity;
@@ -145,9 +142,7 @@ export function classifyRuntimeActivityLiveness(
   if (observation.lease === 'EXPIRED' || observation.lease === 'MISSING') {
     return decision(
       'INTERRUPTED',
-      observation.lease === 'EXPIRED'
-        ? 'runtime lease expired'
-        : 'runtime lease is missing',
+      observation.lease === 'EXPIRED' ? 'runtime lease expired' : 'runtime lease is missing',
       observation.heartbeat === null
         ? null
         : observation.nowMonoMs - observation.heartbeat.recordedAtMonoMs,
@@ -155,11 +150,7 @@ export function classifyRuntimeActivityLiveness(
   }
 
   if (observation.heartbeat === null) {
-    return decision(
-      'RECOVERY_REQUIRED',
-      'active lease has no heartbeat evidence',
-      null,
-    );
+    return decision('RECOVERY_REQUIRED', 'active lease has no heartbeat evidence', null);
   }
 
   const age = observation.nowMonoMs - observation.heartbeat.recordedAtMonoMs;
