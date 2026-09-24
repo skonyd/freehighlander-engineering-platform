@@ -41,10 +41,7 @@ test('model management CLI parser preserves repeated options and validates requi
 
   assert.equal(parsed.command, 'binding');
   assert.equal(parsed.subcommand, 'preview');
-  assert.deepEqual(parsed.options.capability, [
-    'usage_token_breakdown',
-    'reasoning_effort',
-  ]);
+  assert.deepEqual(parsed.options.capability, ['usage_token_breakdown', 'reasoning_effort']);
   assert.equal(requireOption(parsed.options, 'role'), 'controller');
   assert.throws(() => requireOption(parsed.options, 'missing'), /--missing is required/);
 });
@@ -74,10 +71,7 @@ test('atomic model management store persists references only and rejects stale C
     const reread = readModelManagementState(store);
     assert.equal(reread.state.providers[0].credential.reference, 'LOCAL_PROVIDER_API_KEY');
 
-    assert.throws(
-      () => writeModelManagementState(store, 0, reread.state),
-      /GENERATION_CONFLICT/,
-    );
+    assert.throws(() => writeModelManagementState(store, 0, reread.state), /GENERATION_CONFLICT/);
   } finally {
     delete process.env.LOCAL_PROVIDER_API_KEY;
     await rm(root, { recursive: true, force: true });
@@ -255,23 +249,13 @@ test('binding preview and publish require exact eligible qualification and remai
     const preview = previewManagedBinding(state, args, {});
     assert.equal(preview.plan.authorityGranted, false);
 
-    const published = await publishManagedBinding(
-      state,
-      args,
-      '2026-09-24T20:45:00.000Z',
-      {},
-    );
+    const published = await publishManagedBinding(state, args, '2026-09-24T20:45:00.000Z', {});
     assert.equal(published.publication.authority, 'NONE');
     assert.equal(published.state.publications.length, 1);
     assert.equal(published.auditEvents.length, 1);
 
     assert.throws(
-      () =>
-        previewManagedBinding(
-          { ...refreshed.state, qualifications: [discovered] },
-          args,
-          {},
-        ),
+      () => previewManagedBinding({ ...refreshed.state, qualifications: [discovered] }, args, {}),
       /expected exactly one ELIGIBLE qualification/,
     );
   } finally {
@@ -310,6 +294,9 @@ async function startModelServer(initialModels) {
       return requests;
     },
     baseUrl: `http://127.0.0.1:${address.port}`,
-    close: () => new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve()))),
+    close: () =>
+      new Promise((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      ),
   };
 }
