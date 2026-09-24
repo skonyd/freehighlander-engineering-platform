@@ -488,7 +488,9 @@ export function buildUserFacingErrorV1(
 export function getRuntimeErrorPatternDefinitionV1(
   patternId: RuntimeErrorReportV1['patternId'] | UserFacingErrorV1['patternId'],
 ): RuntimeErrorPatternDefinitionV1 {
-  const pattern = runtimeErrorPatternCatalogV1.find((candidate) => candidate.patternId === patternId);
+  const pattern = runtimeErrorPatternCatalogV1.find(
+    (candidate) => candidate.patternId === patternId,
+  );
   if (!pattern) throw new Error('unknown runtime error pattern');
   return pattern;
 }
