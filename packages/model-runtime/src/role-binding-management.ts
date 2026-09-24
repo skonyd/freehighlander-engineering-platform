@@ -90,9 +90,7 @@ export class RoleBindingManagementService {
     return resolveBindingPlan(this.providers, registry, {
       logicalRole,
       riskTier: input.riskTier,
-      ...(input.requiredCapabilities
-        ? { requiredCapabilities: input.requiredCapabilities }
-        : {}),
+      ...(input.requiredCapabilities ? { requiredCapabilities: input.requiredCapabilities } : {}),
       ...(input.requiredIndependenceGroup
         ? { requiredIndependenceGroup: input.requiredIndependenceGroup }
         : {}),
