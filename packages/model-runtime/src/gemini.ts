@@ -190,12 +190,13 @@ export class GeminiProviderAdapter implements ProviderAdapter {
         seen.add(modelId);
 
         const profile = this.#thinkingProfiles[modelId];
-        const supportedEfforts = profile ? profileEfforts(profile) : [];
+        const thinkingConfigured = profile !== undefined && model.thinking === true;
+        const supportedEfforts = thinkingConfigured ? profileEfforts(profile) : [];
         const capabilities: ProviderCapability[] = ['usage_token_breakdown'];
         if (methods.some((method) => method.toLowerCase() === 'counttokens')) {
           capabilities.push('token_counting');
         }
-        if (profile && model.thinking === true) {
+        if (thinkingConfigured) {
           capabilities.push('reasoning_effort');
         }
 
@@ -368,7 +369,10 @@ export class GeminiProviderAdapter implements ProviderAdapter {
     const body = await response.text();
     if (!response.ok) {
       throw new GeminiProviderInvocationError(
-        `${operation} returned HTTP ${response.status}: ${truncate(body, 500)}`,
+        `${operation} returned HTTP ${response.status}: ${truncate(
+          redactSecret(body, this.#apiKey),
+          500,
+        )}`,
         classifyHttpFailure(response.status, body),
         response.status,
         parseRetryAfterMs(response.headers.get('retry-after')),
@@ -477,4 +481,9 @@ function isAbortError(error: unknown): boolean {
 
 function truncate(value: string, max: number): string {
   return value.length <= max ? value : `${value.slice(0, max)}…`;
+}
+
+
+function redactSecret(value: string, secret: string): string {
+  return secret ? value.split(secret).join('[REDACTED]') : value;
 }
