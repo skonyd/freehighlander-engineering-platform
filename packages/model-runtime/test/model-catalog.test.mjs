@@ -85,10 +85,7 @@ test('refresh preserves discovery time and marks disappeared models unavailable'
     previous: second,
     discovered: [model('keep'), model('new-model')],
   });
-  assert.equal(
-    third.records.find((record) => record.modelId === 'gone').unavailableSince,
-    T2,
-  );
+  assert.equal(third.records.find((record) => record.modelId === 'gone').unavailableSince, T2);
 });
 
 test('binding checks never silently migrate unavailable or unknown models', () => {
