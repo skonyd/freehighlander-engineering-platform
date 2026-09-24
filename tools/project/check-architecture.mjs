@@ -1264,7 +1264,9 @@ try {
       'providerRawResponse',
     ]) {
       if (userErrorSchemaSource.includes(forbiddenField)) {
-        failures.push(`user-facing error schema must not expose raw diagnostic field: ${forbiddenField}`);
+        failures.push(
+          `user-facing error schema must not expose raw diagnostic field: ${forbiddenField}`,
+        );
       }
     }
   }
