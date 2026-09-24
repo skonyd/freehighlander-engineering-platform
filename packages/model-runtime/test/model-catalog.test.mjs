@@ -261,7 +261,6 @@ test('catalog identifiers and effort metadata are normalized and validated', () 
   );
 });
 
-
 test('provider discovery refresh requires health and preserves provider-neutral metadata', async () => {
   let listed = 0;
   const provider = {
