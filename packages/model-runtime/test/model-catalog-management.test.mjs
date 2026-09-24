@@ -187,34 +187,31 @@ test('health/discovery and audit failures do not publish a new catalog', async (
   assert.equal(service.getCatalog('p1'), undefined);
 });
 
-test(
-  'catalog management lists providers deterministically and never grants authority',
-  async () => {
-    const providers = new ProviderRegistry();
-    providers.register(provider('z-provider', { models: [] }));
-    providers.register(provider('a-provider', { models: [] }));
-    const audit = new AuditSink();
-    const service = new ModelCatalogManagementService(providers, audit);
+test('catalog management lists providers deterministically and never grants authority', async () => {
+  const providers = new ProviderRegistry();
+  providers.register(provider('z-provider', { models: [] }));
+  providers.register(provider('a-provider', { models: [] }));
+  const audit = new AuditSink();
+  const service = new ModelCatalogManagementService(providers, audit);
 
-    await service.refreshProvider({
-      providerId: 'z-provider',
-      refreshedAt: '2026-09-24T18:00:00.000Z',
-      operationId: 'z',
-    });
-    await service.refreshProvider({
-      providerId: 'a-provider',
-      refreshedAt: '2026-09-24T18:00:00.000Z',
-      operationId: 'a',
-    });
+  await service.refreshProvider({
+    providerId: 'z-provider',
+    refreshedAt: '2026-09-24T18:00:00.000Z',
+    operationId: 'z',
+  });
+  await service.refreshProvider({
+    providerId: 'a-provider',
+    refreshedAt: '2026-09-24T18:00:00.000Z',
+    operationId: 'a',
+  });
 
-    assert.deepEqual(
-      service.listCatalogs().map((snapshot) => snapshot.providerId),
-      ['a-provider', 'z-provider'],
-    );
-    assert.equal(modelCatalogManagementCanGrantAuthority(), false);
-    assert.equal(modelCatalogManagementCanRewriteBindings(), false);
-  },
-);
+  assert.deepEqual(
+    service.listCatalogs().map((snapshot) => snapshot.providerId),
+    ['a-provider', 'z-provider'],
+  );
+  assert.equal(modelCatalogManagementCanGrantAuthority(), false);
+  assert.equal(modelCatalogManagementCanRewriteBindings(), false);
+});
 
 test('catalog management rejects empty identifiers and unknown providers', async () => {
   const providers = new ProviderRegistry();
