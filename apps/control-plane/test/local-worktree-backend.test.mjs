@@ -760,6 +760,25 @@ test('command executor handles missing process output and missing inherited envi
   assert.equal(result.output, '{"stderr":"","stdout":""}');
 });
 
+test('snapshot deterministically sorts multiple untracked files and normalizes safe path segments', async (t) => {
+  const fixture = await createFixture(t);
+  const backend = new LocalGitWorktreeBackend({ runtimeRoot: fixture.runtimeRoot });
+  const handle = await backend.create(
+    descriptor(fixture.revision, { workspaceId: 'workspace-sort-normalize' }),
+    fixture.repositoryRoot,
+  );
+
+  await backend.writeText(handle, 'zeta.txt', 'zeta\n', 100);
+  await backend.writeText(handle, 'alpha.txt', 'alpha\n', 100);
+  assert.equal(await backend.readText(handle, './nested//keep.txt'), 'keep\n');
+
+  const snapshot = await backend.snapshot(handle);
+  assert.deepEqual(
+    snapshot.untracked.map((entry) => entry.path),
+    ['alpha.txt', 'zeta.txt'],
+  );
+});
+
 test('runtime backend authority invariants remain explicit', () => {
   assert.equal(localWorktreeBackendCanGrantAuthority(), false);
   assert.equal(localWorkspaceDestroyRequiresLeaseGuard(), true);
