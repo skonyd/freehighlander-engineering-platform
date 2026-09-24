@@ -223,7 +223,6 @@ test('provider resilience telemetry is metadata-only and circuit-aware', () => {
   assert.equal('completion' in restored, false);
 });
 
-
 test('model catalog telemetry accepts metadata-only refresh/binding/qualification events', () => {
   const refresh = createModelCatalogEvent({
     type: 'model.catalog.refreshed',
