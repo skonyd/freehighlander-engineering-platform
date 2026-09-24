@@ -188,7 +188,6 @@ test('qualification snapshot tampering and malformed hashes fail closed', () => 
   );
 });
 
-
 test('required regression corpus blocks eligibility until exact PASS evidence exists', () => {
   const probed = recordCapabilityProbe(discovered(), {
     evidenceHash: PROBE_HASH,
