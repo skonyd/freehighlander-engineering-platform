@@ -300,7 +300,6 @@ test('resolver runtime invariants remain authority-neutral shell-free and non-pe
   assert.equal(secretResolverRuntimeCanGrantAuthority(), false);
 });
 
-
 test('execFile secret command runner is shell-free and normalizes process failure without output leakage', async () => {
   const runner = new ExecFileSecretCommandRunner();
   const success = await runner.run('node', ['-e', "process.stdout.write('ok')"], 5_000);
