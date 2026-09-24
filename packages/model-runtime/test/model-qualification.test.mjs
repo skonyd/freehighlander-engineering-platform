@@ -131,39 +131,36 @@ test('qualification transitions reject skipped stages and role-risk mismatch', (
   );
 });
 
-test(
-  'deprecated and unavailable qualification states preserve evidence but are not bindable',
-  () => {
-    const probed = recordCapabilityProbe(discovered(), {
-      evidenceHash: PROBE_HASH,
-      status: 'PASS',
-      probedAt: '2026-09-24T18:00:00.000Z',
-    });
-    const shadow = recordShadowVerification(probed, {
-      evidenceHash: SHADOW_HASH,
-      status: 'PASS',
-      verifiedAt: '2026-09-24T18:05:00.000Z',
-      role: 'controller',
-      riskTier: 'NORMAL',
-    });
-    const eligible = grantModelEligibility(shadow, {
-      role: 'controller',
-      riskTier: 'NORMAL',
-      grantedAt: '2026-09-24T18:10:00.000Z',
-      decisionHash: DECISION_HASH,
-    });
+test('deprecated and unavailable qualification states preserve evidence but are not bindable', () => {
+  const probed = recordCapabilityProbe(discovered(), {
+    evidenceHash: PROBE_HASH,
+    status: 'PASS',
+    probedAt: '2026-09-24T18:00:00.000Z',
+  });
+  const shadow = recordShadowVerification(probed, {
+    evidenceHash: SHADOW_HASH,
+    status: 'PASS',
+    verifiedAt: '2026-09-24T18:05:00.000Z',
+    role: 'controller',
+    riskTier: 'NORMAL',
+  });
+  const eligible = grantModelEligibility(shadow, {
+    role: 'controller',
+    riskTier: 'NORMAL',
+    grantedAt: '2026-09-24T18:10:00.000Z',
+    decisionHash: DECISION_HASH,
+  });
 
-    const deprecated = markQualificationDeprecated(eligible);
-    const unavailable = markQualificationUnavailable(eligible);
+  const deprecated = markQualificationDeprecated(eligible);
+  const unavailable = markQualificationUnavailable(eligible);
 
-    assert.equal(deprecated.stage, 'DEPRECATED');
-    assert.equal(unavailable.stage, 'UNAVAILABLE');
-    assert.equal(deprecated.shadow.evidenceHash, SHADOW_HASH);
-    assert.equal(unavailable.eligibility.decisionHash, DECISION_HASH);
-    assert.equal(qualificationAllowsBinding(deprecated, 'controller', 'NORMAL'), false);
-    assert.equal(qualificationAllowsBinding(unavailable, 'controller', 'NORMAL'), false);
-  },
-);
+  assert.equal(deprecated.stage, 'DEPRECATED');
+  assert.equal(unavailable.stage, 'UNAVAILABLE');
+  assert.equal(deprecated.shadow.evidenceHash, SHADOW_HASH);
+  assert.equal(unavailable.eligibility.decisionHash, DECISION_HASH);
+  assert.equal(qualificationAllowsBinding(deprecated, 'controller', 'NORMAL'), false);
+  assert.equal(qualificationAllowsBinding(unavailable, 'controller', 'NORMAL'), false);
+});
 
 test('qualification snapshot tampering and malformed hashes fail closed', () => {
   assert.throws(
