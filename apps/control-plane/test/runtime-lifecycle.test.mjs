@@ -82,17 +82,9 @@ test('all supported cancellation reasons are accepted', () => {
 });
 
 test('cancellation graph validation fails closed on malformed topology and enums', () => {
+  assert.throws(() => planRuntimeCancellation([], 'root-001', 'USER_CANCEL'), /cannot be empty/);
   assert.throws(
-    () => planRuntimeCancellation([], 'root-001', 'USER_CANCEL'),
-    /cannot be empty/,
-  );
-  assert.throws(
-    () =>
-      planRuntimeCancellation(
-        [activity('x', null, 'RUNNING')],
-        'x',
-        'USER_CANCEL',
-      ),
+    () => planRuntimeCancellation([activity('x', null, 'RUNNING')], 'x', 'USER_CANCEL'),
     /bounded identifier/,
   );
   assert.throws(
@@ -105,12 +97,7 @@ test('cancellation graph validation fails closed on malformed topology and enums
     /duplicate/,
   );
   assert.throws(
-    () =>
-      planRuntimeCancellation(
-        [activity('root-001', null, 'UNKNOWN')],
-        'root-001',
-        'USER_CANCEL',
-      ),
+    () => planRuntimeCancellation([activity('root-001', null, 'UNKNOWN')], 'root-001', 'USER_CANCEL'),
     /unsupported activity lifecycle state/,
   );
   assert.throws(
@@ -162,12 +149,7 @@ test('cancellation graph validation fails closed on malformed topology and enums
     /unknown cancellation root/,
   );
   assert.throws(
-    () =>
-      planRuntimeCancellation(
-        [activity('root-001', null, 'RUNNING')],
-        'root-001',
-        'UNKNOWN',
-      ),
+    () => planRuntimeCancellation([activity('root-001', null, 'RUNNING')], 'root-001', 'UNKNOWN'),
     /unsupported cancellation reason/,
   );
 });
@@ -182,11 +164,7 @@ test('all supported activity states validate through cancellation planning', () 
     'FAILED',
   ]) {
     assert.doesNotThrow(() =>
-      planRuntimeCancellation(
-        [activity('root-001', null, state, false)],
-        'root-001',
-        'SHUTDOWN',
-      ),
+      planRuntimeCancellation([activity('root-001', null, state, false)], 'root-001', 'SHUTDOWN'),
     );
   }
 });
@@ -227,12 +205,7 @@ test('graceful drain permits only the canonical transition sequence', () => {
 
 test('graceful drain gates checkpoint settle and all resource releases', () => {
   assert.throws(
-    () =>
-      transitionRuntimeDrain(
-        'RUNNING',
-        'DRAINING',
-        drainEvidence({ acceptingNewWork: true }),
-      ),
+    () => transitionRuntimeDrain('RUNNING', 'DRAINING', drainEvidence({ acceptingNewWork: true })),
     /stop accepting new work/,
   );
 
@@ -263,12 +236,7 @@ test('graceful drain gates checkpoint settle and all resource releases', () => {
     { secretReceiptsRevoked: false },
   ]) {
     assert.throws(
-      () =>
-        transitionRuntimeDrain(
-          'RELEASING',
-          'STOPPED',
-          drainEvidence(overrides),
-        ),
+      () => transitionRuntimeDrain('RELEASING', 'STOPPED', drainEvidence(overrides)),
       /all runtime resources are released/,
     );
   }
@@ -282,26 +250,13 @@ test('runtime drain intake is allowed only while RUNNING', () => {
 });
 
 test('drain and cancellation enums fail closed when malformed', () => {
+  assert.throws(() => runtimeDrainAcceptsNewWork('UNKNOWN'), /unsupported runtime drain state/);
   assert.throws(
-    () => runtimeDrainAcceptsNewWork('UNKNOWN'),
+    () => transitionRuntimeDrain('UNKNOWN', 'DRAINING', drainEvidence()),
     /unsupported runtime drain state/,
   );
   assert.throws(
-    () =>
-      transitionRuntimeDrain(
-        'UNKNOWN',
-        'DRAINING',
-        drainEvidence(),
-      ),
-    /unsupported runtime drain state/,
-  );
-  assert.throws(
-    () =>
-      transitionRuntimeDrain(
-        'RUNNING',
-        'UNKNOWN',
-        drainEvidence(),
-      ),
+    () => transitionRuntimeDrain('RUNNING', 'UNKNOWN', drainEvidence()),
     /unsupported runtime drain state/,
   );
 });
