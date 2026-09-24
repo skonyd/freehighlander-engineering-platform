@@ -1,4 +1,26 @@
 export {
+  buildCanonicalExecutionScope,
+  buildNodeExecutionIdentity,
+  createNodeResultV1,
+  evaluateMandatoryJoin,
+  evaluateNodeResultReuse,
+  nodeResultReuseCanGrantAuthority,
+  semanticNegativeCanTriggerModelShopping,
+  type CanonicalExecutionScope,
+  type CanonicalExecutionScopeInput,
+  type MandatoryJoinRequirement,
+  type MandatoryJoinResult,
+  type NodeExecutionIdentity,
+  type NodeExecutionIdentityInput,
+  type NodeResultStatus,
+  type NodeResultV1,
+  type NodeResultV1Input,
+  type NodeReuseContext,
+  type NodeReuseDecision,
+  type NodeReuseStatus,
+} from './node-result.js';
+
+export {
   buildRecoveryCheckpoint,
   buildReplayManifest,
   nextReplaySequence,
