@@ -1,4 +1,18 @@
 export {
+  evaluateRuntimePreflight,
+  runtimePreflightCanGrantAuthority,
+  runtimePreflightCanInvokeProvider,
+  runtimePreflightCanResolveSecretValue,
+  type RuntimePreflightBindingInput,
+  type RuntimePreflightCircuitState,
+  type RuntimePreflightFailure,
+  type RuntimePreflightFailureCode,
+  type RuntimePreflightInput,
+  type RuntimePreflightResult,
+  type RuntimePreflightStatus,
+} from './runtime-preflight.js';
+
+export {
   acquireRunLease,
   buildRunIntentIdentity,
   createMonotonicDeadline,
