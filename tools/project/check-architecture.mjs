@@ -1150,7 +1150,7 @@ try {
     'export function providerEgressPreparationCanGrantAuthority(): false',
     'readonly invocationAuthorized: false',
     "readonly authority: 'NONE'",
-    "redactSensitive(originalPayload)",
+    'redactSensitive(originalPayload)',
     "createHash('sha256')",
     "outcome: 'DENY'",
     'packet: null',
