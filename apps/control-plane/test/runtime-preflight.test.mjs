@@ -82,7 +82,10 @@ test('runtime preflight deterministically reports every blocking condition', () 
       'RUN_SNAPSHOT_UNBUILDABLE',
     ].sort(),
   );
-  assert.equal(result.failures.every((failure) => failure.detail.length > 0), true);
+  assert.equal(
+    result.failures.every((failure) => failure.detail.length > 0),
+    true,
+  );
 });
 
 test('requested effort fails closed when support is unknown but omitted effort does not', () => {
@@ -136,37 +139,32 @@ test('HALF_OPEN circuit can be preflight-eligible but OPEN circuit blocks', () =
   assert.equal(open.failures[0]?.code, 'CIRCUIT_OPEN');
 });
 
-test(
-  'multiple bindings are checked deterministically and duplicate binding ids fail closed',
-  () => {
-    const result = evaluateRuntimePreflight({
-      runSnapshotBuildable: true,
-      bindings: [
-        binding({
-          bindingId: 'binding-002',
-          providerId: 'provider-002',
-          modelId: 'model-002',
-        }),
-        binding(),
-      ],
-    });
-    assert.deepEqual(result.checkedBindingIds, ['binding-001', 'binding-002']);
+test('multiple bindings are checked deterministically and duplicate binding ids fail closed', () => {
+  const result = evaluateRuntimePreflight({
+    runSnapshotBuildable: true,
+    bindings: [
+      binding({
+        bindingId: 'binding-002',
+        providerId: 'provider-002',
+        modelId: 'model-002',
+      }),
+      binding(),
+    ],
+  });
+  assert.deepEqual(result.checkedBindingIds, ['binding-001', 'binding-002']);
 
-    assert.throws(
-      () =>
-        evaluateRuntimePreflight({
-          runSnapshotBuildable: true,
-          bindings: [binding(), binding()],
-        }),
-      /duplicate runtime preflight bindingId/,
-    );
-  },
-);
+  assert.throws(
+    () =>
+      evaluateRuntimePreflight({
+        runSnapshotBuildable: true,
+        bindings: [binding(), binding()],
+      }),
+    /duplicate runtime preflight bindingId/,
+  );
+});
 
-test(
-  'preflight binding input rejects malformed identifiers circuit values and duplicate evidence ids',
-  () => {
-    const malformed = [
+test('preflight binding input rejects malformed identifiers circuit values and duplicate evidence ids', () => {
+  const malformed = [
     binding({ bindingId: 'x' }),
     binding({ logicalRole: 'x' }),
     binding({ providerId: 'x' }),
@@ -179,19 +177,18 @@ test(
     binding({ availableCapabilities: ['capability-a', 'capability-a'] }),
     binding({ requiredSecretHandleIds: ['provider.api', 'provider.api'] }),
     binding({ resolvableSecretHandleIds: ['provider.api', 'provider.api'] }),
-      binding({ requiredCapabilities: ['x'] }),
-    ];
+    binding({ requiredCapabilities: ['x'] }),
+  ];
 
-    for (const value of malformed) {
-      assert.throws(() =>
-        evaluateRuntimePreflight({
-          runSnapshotBuildable: true,
-          bindings: [value],
-        }),
-      );
-    }
-  },
-);
+  for (const value of malformed) {
+    assert.throws(() =>
+      evaluateRuntimePreflight({
+        runSnapshotBuildable: true,
+        bindings: [value],
+      }),
+    );
+  }
+});
 
 test('preflight can report missing secret separately from provider authentication behavior', () => {
   const result = evaluateRuntimePreflight({
