@@ -1611,13 +1611,7 @@ try {
     'utf8',
   );
   const openAiConformance = await fs.readFile(
-    path.join(
-      root,
-      'packages',
-      'model-runtime',
-      'test',
-      'openai-compatible-conformance.test.mjs',
-    ),
+    path.join(root, 'packages', 'model-runtime', 'test', 'openai-compatible-conformance.test.mjs'),
     'utf8',
   );
 
