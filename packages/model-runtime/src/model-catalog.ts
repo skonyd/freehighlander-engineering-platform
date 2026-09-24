@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import type { ProviderCapability } from './index.js';
+import type { ProviderAdapter, ProviderCapability } from './index.js';
 
 export type ModelCatalogSource = 'DISCOVERED' | 'MANUAL';
 export type ModelCatalogLocality = 'LOCAL' | 'REMOTE';
@@ -58,6 +58,41 @@ export interface ModelCatalogBindingCheck {
   readonly supportedEffort: boolean | null;
   readonly maySilentlyRewriteBinding: false;
   readonly authority: 'NONE';
+}
+
+export async function refreshModelCatalogFromProvider(
+  provider: ProviderAdapter,
+  refreshedAt: string,
+  previous?: ModelCatalogSnapshotV1,
+): Promise<ModelCatalogSnapshotV1> {
+  const health = await provider.health();
+  if (!health.available) {
+    throw new Error(`provider ${provider.id} is not healthy for model discovery`);
+  }
+  if (!provider.listModels) {
+    throw new Error(`provider ${provider.id} does not support model discovery`);
+  }
+
+  const discovered = await provider.listModels();
+  return reconcileModelCatalog({
+    providerId: provider.id,
+    refreshedAt,
+    ...(previous ? { previous } : {}),
+    discovered: discovered.map((model) => ({
+      providerId: provider.id,
+      modelId: model.modelId,
+      ...(model.displayName === undefined ? {} : { displayName: model.displayName }),
+      capabilities: model.capabilities ?? [],
+      supportedEfforts: model.supportedEfforts ?? [],
+      ...(model.contextWindowTokens === undefined
+        ? {}
+        : { contextWindowTokens: model.contextWindowTokens }),
+      ...(model.maxOutputTokens === undefined ? {} : { maxOutputTokens: model.maxOutputTokens }),
+      locality: model.locality,
+      source: 'DISCOVERED',
+      availability: model.availability ?? 'AVAILABLE',
+    })),
+  });
 }
 
 export function reconcileModelCatalog(input: ModelCatalogReconcileInput): ModelCatalogSnapshotV1 {
