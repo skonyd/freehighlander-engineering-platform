@@ -130,7 +130,9 @@ export function resolveBindingPlan(
     const catalog = request.catalogByProvider?.[binding.providerId];
 
     if (request.catalogByProvider !== undefined && catalog === undefined) {
-      throw new Error(`binding ${binding.id} has no catalog snapshot for provider ${binding.providerId}`);
+      throw new Error(
+        `binding ${binding.id} has no catalog snapshot for provider ${binding.providerId}`,
+      );
     }
 
     if (catalog !== undefined) {
