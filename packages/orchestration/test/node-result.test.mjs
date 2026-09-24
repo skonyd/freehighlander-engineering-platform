@@ -210,9 +210,7 @@ test('exact successful pure result is reusable and any execution identity drift 
   assert.deepEqual(stale.reasons, ['execution identity mismatch']);
 });
 
-test(
-  'semantic negative failed and human-required results never masquerade as reusable success',
-  () => {
+test('semantic negative failed and human-required results never masquerade as reusable success', () => {
   const identity = buildNodeExecutionIdentity(identityInput());
 
   for (const status of ['SEMANTIC_NEGATIVE', 'FAILED', 'HUMAN_REQUIRED']) {
@@ -224,8 +222,7 @@ test(
     assert.equal(decision.status, 'NOT_REUSABLE');
     assert.deepEqual(decision.reasons, ['only successful node results may be reused']);
   }
-  },
-);
+});
 
 test('side-effecting success additionally requires exact idempotency evidence', () => {
   const identity = buildNodeExecutionIdentity(identityInput());
@@ -239,19 +236,14 @@ test('side-effecting success additionally requires exact idempotency evidence', 
     'side-effecting result requires idempotency evidence',
   ]);
 
-  const withEvidence = evaluateNodeResultReuse(
-    result(identity, { idempotencyEvidenceHash: H2 }),
-    {
-      expectedIdentity: identity,
-      sideEffecting: true,
-    },
-  );
+  const withEvidence = evaluateNodeResultReuse(result(identity, { idempotencyEvidenceHash: H2 }), {
+    expectedIdentity: identity,
+    sideEffecting: true,
+  });
   assert.equal(withEvidence.status, 'REUSABLE');
 });
 
-test(
-  'mandatory join is completion-order independent and accepts only exact reusable predecessors',
-  () => {
+test('mandatory join is completion-order independent and accepts only exact reusable predecessors', () => {
   const leftIdentity = buildNodeExecutionIdentity(identityInput({ nodeId: 'left-001' }));
   const rightIdentity = buildNodeExecutionIdentity(
     identityInput({ nodeId: 'right-001', inputHash: H4 }),
@@ -284,12 +276,9 @@ test(
   assert.deepEqual(first.acceptedResultHashes, [left.resultHash, right.resultHash].sort());
   assert.deepEqual(first.errors, []);
   assert.equal(first.authority, 'NONE');
-  },
-);
+});
 
-test(
-  'mandatory join fails closed on missing stale semantic-negative and side-effect evidence gaps',
-  () => {
+test('mandatory join fails closed on missing stale semantic-negative and side-effect evidence gaps', () => {
   const leftIdentity = buildNodeExecutionIdentity(identityInput({ nodeId: 'left-001' }));
   const rightIdentity = buildNodeExecutionIdentity(
     identityInput({ nodeId: 'right-001', inputHash: H4 }),
@@ -330,8 +319,7 @@ test(
     'right-001: execution identity mismatch',
     'side-001: side-effecting result requires idempotency evidence',
   ]);
-  },
-);
+});
 
 test('join and result integrity validation fail closed on malformed or forged state', () => {
   const identity = buildNodeExecutionIdentity(identityInput());
