@@ -1,4 +1,27 @@
 export {
+  createSecretBindingProfileV1,
+  createSecretBindingV1,
+  createSecretRequirementV1,
+  evaluateSecretBindingStatusV1,
+  secretBindingCanContainSecretValues,
+  secretBindingCanExportCredentialMaterial,
+  secretBindingCanGrantAuthority,
+  validateSecretBindingProfileV1,
+  validateSecretBindingV1,
+  validateSecretRequirementV1,
+  type SecretBindingProfileV1,
+  type SecretBindingStatusV1,
+  type SecretBindingStorage,
+  type SecretBindingV1,
+  type SecretRequirementResolutionV1,
+  type SecretRequirementStatus,
+  type SecretRequirementV1,
+  type SecretResolverEvidenceV1,
+  type SecretResolverHealth,
+  type SecretResolverKind,
+} from './portable-secret-binding.js';
+
+export {
   prepareProviderEgress,
   providerEgressPreparationCanGrantAuthority,
   providerEgressPreparationCanInvokeProvider,

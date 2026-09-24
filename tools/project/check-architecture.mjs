@@ -1566,6 +1566,45 @@ try {
   failures.push('missing cancellation tree and graceful drain contract');
 }
 
+try {
+  const portableSecretBinding = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'portable-secret-binding.ts'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    'export function createSecretRequirementV1',
+    'export function createSecretBindingV1',
+    'export function createSecretBindingProfileV1',
+    'export function evaluateSecretBindingStatusV1',
+    'secretValuesPresent: false',
+    "status: requiredBlocked ? 'BLOCKED_CONFIGURATION' : optionalMissing ? 'PARTIAL' : 'READY'",
+    'export function secretBindingCanContainSecretValues(): false',
+    'export function secretBindingCanExportCredentialMaterial(): false',
+    'export function secretBindingCanGrantAuthority(): false',
+    "readonly authority: 'NONE'",
+  ]) {
+    if (!portableSecretBinding.includes(invariant)) {
+      failures.push(`portable secret binding missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const forbiddenField of [
+    'readonly secretValue:',
+    'readonly rawValue:',
+    'readonly credential:',
+    'readonly password:',
+    'readonly token:',
+    'readonly privateKey:',
+  ]) {
+    if (portableSecretBinding.includes(forbiddenField)) {
+      failures.push(`portable secret binding must remain value-free: ${forbiddenField}`);
+    }
+  }
+} catch {
+  failures.push('missing portable secret binding metadata contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
