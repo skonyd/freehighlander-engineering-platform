@@ -1,18 +1,8 @@
 export type RuntimeObservedState =
-  | 'RUNNING'
-  | 'READY'
-  | 'PASSED'
-  | 'FAILED'
-  | 'BLOCKED'
-  | 'HUMAN_REQUIRED';
+  'RUNNING' | 'READY' | 'PASSED' | 'FAILED' | 'BLOCKED' | 'HUMAN_REQUIRED';
 
 export type RuntimeLeaseObservation =
-  | 'ACTIVE_OWNED'
-  | 'ACTIVE_OTHER'
-  | 'EXPIRED'
-  | 'RELEASED'
-  | 'MISSING'
-  | 'UNKNOWN';
+  'ACTIVE_OWNED' | 'ACTIVE_OTHER' | 'EXPIRED' | 'RELEASED' | 'MISSING' | 'UNKNOWN';
 
 export type RuntimeRecoveryEvidenceStatus = 'VALID' | 'MISSING' | 'INVALID';
 export type RuntimeActivityEffect = 'READ_ONLY' | 'SIDE_EFFECTING';
@@ -31,17 +21,10 @@ export interface RuntimeRecoveryObservation {
   readonly idempotencyEvidence: RuntimeIdempotencyEvidence;
 }
 
-export type RuntimeRecoveryStatus =
-  | 'UNCHANGED'
-  | 'LIVE'
-  | 'INTERRUPTED'
-  | 'RECOVERY_REQUIRED';
+export type RuntimeRecoveryStatus = 'UNCHANGED' | 'LIVE' | 'INTERRUPTED' | 'RECOVERY_REQUIRED';
 
 export type RuntimeRecoveryNextAction =
-  | 'NONE'
-  | 'RESUME_FROM_CHECKPOINT'
-  | 'RERUN_SAFE'
-  | 'HUMAN_REVIEW';
+  'NONE' | 'RESUME_FROM_CHECKPOINT' | 'RERUN_SAFE' | 'HUMAN_REVIEW';
 
 export interface RuntimeRecoveryDecision {
   readonly runId: string;
