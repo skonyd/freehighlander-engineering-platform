@@ -193,3 +193,97 @@ test('OpenAI-compatible latency fails closed when monotonic clock moves backward
     await harness.close();
   }
 });
+
+test('OpenAI-compatible model discovery maps /v1/models without inventing capabilities', async () => {
+  const harness = await createHarness('healthy');
+
+  try {
+    const models = await harness.adapter.listModels();
+    assert.deepEqual(models, [
+      {
+        modelId: 'conformance-model',
+        displayName: 'conformance-model',
+        locality: 'REMOTE',
+      },
+    ]);
+  } finally {
+    await harness.close();
+  }
+});
+
+test('OpenAI-compatible model discovery supports explicit local endpoint classification', async () => {
+  const harness = await createHarness('healthy', { modelLocality: 'LOCAL' });
+
+  try {
+    const models = await harness.adapter.listModels();
+    assert.equal(models[0].locality, 'LOCAL');
+  } finally {
+    await harness.close();
+  }
+});
+
+test('OpenAI-compatible model discovery fails closed on malformed model payload', async () => {
+  const timers = new Set();
+  const server = createServer((request, response) => {
+    if (request.url === '/v1/models') {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ data: [{ id: '' }] }));
+      return;
+    }
+    response.writeHead(404);
+    response.end();
+  });
+
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== 'string');
+  const adapter = new OpenAiCompatibleProviderAdapter('malformed-model-list', {
+    baseUrl: `http://127.0.0.1:${address.port}`,
+    healthTimeoutMs: 250,
+  });
+
+  try {
+    await assert.rejects(
+      () => adapter.listModels(),
+      (error) => error?.kind === 'malformed_output' && /invalid model id/.test(error.message),
+    );
+  } finally {
+    for (const timer of timers) clearTimeout(timer);
+    server.closeAllConnections?.();
+    await new Promise((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});
+
+test('OpenAI-compatible model discovery classifies HTTP failures', async () => {
+  const server = createServer((request, response) => {
+    if (request.url === '/v1/models') {
+      response.writeHead(401, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ error: { message: 'authentication failed' } }));
+      return;
+    }
+    response.writeHead(404);
+    response.end();
+  });
+
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== 'string');
+  const adapter = new OpenAiCompatibleProviderAdapter('model-list-auth', {
+    baseUrl: `http://127.0.0.1:${address.port}`,
+    healthTimeoutMs: 250,
+  });
+
+  try {
+    await assert.rejects(
+      () => adapter.listModels(),
+      (error) => error?.kind === 'auth_unavailable' && error?.status === 401,
+    );
+  } finally {
+    server.closeAllConnections?.();
+    await new Promise((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});
