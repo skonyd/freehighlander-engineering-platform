@@ -55,10 +55,7 @@ test('runtime error report redacts secret-like keys and omits raw cause messages
 
   const rendered = formatRuntimeErrorForUser(report);
   assert.match(rendered, /Correlation ID: corr-abcdefgh/);
-  assert.doesNotMatch(
-    rendered,
-    /super-secret-value|Bearer abc|raw provider response/,
-  );
+  assert.doesNotMatch(rendered, /super-secret-value|Bearer abc|raw provider response/);
 });
 
 test('runtime error report bounds details and normalizes multiline values', () => {
