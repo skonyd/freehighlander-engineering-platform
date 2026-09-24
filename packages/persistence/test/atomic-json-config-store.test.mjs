@@ -83,7 +83,10 @@ test('atomic config store creates updates and preserves immutable in-flight snap
   assert.equal(reread?.snapshotHash, second.snapshot?.snapshotHash);
 
   const entries = await readdir(root);
-  assert.equal(entries.some((entry) => entry.startsWith('.fh-config-')), false);
+  assert.equal(
+    entries.some((entry) => entry.startsWith('.fh-config-')),
+    false,
+  );
   assert.equal(entries.includes('runtime-config.json.lock'), false);
 });
 
@@ -151,7 +154,10 @@ test('validator failure leaves no partial file and always releases write lock', 
   const entries = await readdir(root);
   assert.equal(entries.includes('runtime-config.json'), false);
   assert.equal(entries.includes('runtime-config.json.lock'), false);
-  assert.equal(entries.some((entry) => entry.startsWith('.fh-config-')), false);
+  assert.equal(
+    entries.some((entry) => entry.startsWith('.fh-config-')),
+    false,
+  );
 });
 
 test('invalid expected generation and constructor inputs fail closed', async (t) => {
