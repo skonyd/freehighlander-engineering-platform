@@ -1,9 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export type ResumeArtifactClassification =
-  | 'PORTABLE_REQUIRED'
-  | 'RECONSTRUCTIBLE'
-  | 'LOCAL_ONLY_CACHE';
+  'PORTABLE_REQUIRED' | 'RECONSTRUCTIBLE' | 'LOCAL_ONLY_CACHE';
 
 export interface ResumeWorkflowIdentity {
   readonly id: string;
@@ -250,9 +248,7 @@ export function evaluateResumeManifestCas(
   };
 }
 
-export function resumeArtifactMustTransfer(
-  classification: ResumeArtifactClassification,
-): boolean {
+export function resumeArtifactMustTransfer(classification: ResumeArtifactClassification): boolean {
   requireArtifactClassification(classification);
   return classification === 'PORTABLE_REQUIRED';
 }
@@ -347,11 +343,7 @@ function uniqueSortedIdentifiers(values: readonly string[], label: string): read
   return [...seen].sort();
 }
 
-function assertDisjoint(
-  left: readonly string[],
-  right: readonly string[],
-  label: string,
-): void {
+function assertDisjoint(left: readonly string[], right: readonly string[], label: string): void {
   const rightSet = new Set(right);
   if (left.some((value) => rightSet.has(value))) {
     throw new Error(label + ' must be disjoint');
