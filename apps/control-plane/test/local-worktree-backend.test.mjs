@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -534,6 +534,232 @@ test('snapshot byte budget counts tracked status and untracked file contents', a
 
   await backend.writeText(handle, 'large.txt', 'x'.repeat(200), 500);
   await assert.rejects(() => backend.snapshot(handle), /maxSnapshotBytes/);
+});
+
+test('backend rejects forged authority workspace ids and same-hash descriptor mutation', async (t) => {
+  const fixture = await createFixture(t);
+  const backend = new LocalGitWorktreeBackend({ runtimeRoot: fixture.runtimeRoot });
+  const input = descriptor(fixture.revision);
+  await backend.create(input, fixture.repositoryRoot);
+
+  await assert.rejects(
+    () =>
+      backend.create(
+        { ...input, workspaceId: 'workspace-auth', authority: 'SYSTEM_POLICY' },
+        fixture.repositoryRoot,
+      ),
+    /authority must remain NONE/,
+  );
+  await assert.rejects(
+    () => backend.create({ ...input, workspaceId: 'bad/id' }, fixture.repositoryRoot),
+    /path-safe identifier/,
+  );
+
+  const forgedSameHash = { ...input, runId: 'run-forged', workspaceHash: input.workspaceHash };
+  await assert.rejects(() => backend.reattach(forgedSameHash), /descriptor mismatch/);
+});
+
+test('reattach rejects canonical-path substitution and nested Git takeover', async (t) => {
+  const fixture = await createFixture(t);
+
+  {
+    const runtimeRoot = path.join(fixture.root, 'runtime-symlink');
+    const backend = new LocalGitWorktreeBackend({ runtimeRoot });
+    const input = descriptor(fixture.revision, { workspaceId: 'workspace-symlink' });
+    const handle = await backend.create(input, fixture.repositoryRoot);
+    await rm(handle.workspacePath, { recursive: true, force: true });
+    await symlink(fixture.repositoryRoot, handle.workspacePath, 'dir');
+    await assert.rejects(() => backend.reattach(input), /canonicalization mismatch/);
+  }
+
+  {
+    const runtimeRoot = path.join(fixture.root, 'runtime-nested-git');
+    const backend = new LocalGitWorktreeBackend({ runtimeRoot });
+    const input = descriptor(fixture.revision, { workspaceId: 'workspace-nested' });
+    const handle = await backend.create(input, fixture.repositoryRoot);
+    await rm(handle.workspacePath, { recursive: true, force: true });
+    const workspaceParent = path.dirname(handle.workspacePath);
+    await git(workspaceParent, ['init']);
+    await mkdir(handle.workspacePath);
+    await assert.rejects(() => backend.reattach(input), /Git top-level mismatch/);
+  }
+});
+
+test('filesystem permission errors fail closed instead of masquerading as missing paths', async (t) => {
+  if (process.platform === 'win32') return;
+
+  const fixture = await createFixture(t);
+  const backend = new LocalGitWorktreeBackend({ runtimeRoot: fixture.runtimeRoot });
+  const handle = await backend.create(descriptor(fixture.revision), fixture.repositoryRoot);
+
+  const restricted = path.join(handle.workspacePath, 'restricted');
+  await mkdir(restricted);
+  await chmod(restricted, 0o000);
+  try {
+    await assert.rejects(() => backend.writeText(handle, 'restricted/new.txt', 'x', 10));
+  } finally {
+    await chmod(restricted, 0o755);
+  }
+
+  const blockedRuntime = path.join(fixture.root, 'blocked-runtime');
+  const blockedWorkspaces = path.join(blockedRuntime, 'workspaces');
+  await mkdir(blockedWorkspaces, { recursive: true });
+  await chmod(blockedWorkspaces, 0o000);
+  try {
+    const blockedBackend = new LocalGitWorktreeBackend({ runtimeRoot: blockedRuntime });
+    await assert.rejects(() =>
+      blockedBackend.create(
+        descriptor(fixture.revision, { workspaceId: 'workspace-permission' }),
+        fixture.repositoryRoot,
+      ),
+    );
+  } finally {
+    await chmod(blockedWorkspaces, 0o755);
+  }
+});
+
+test('tracked diff can independently exceed snapshot budget before untracked hashing', async (t) => {
+  const fixture = await createFixture(t);
+  const backend = new LocalGitWorktreeBackend({
+    runtimeRoot: fixture.runtimeRoot,
+    maxSnapshotBytes: 64,
+  });
+  const handle = await backend.create(
+    descriptor(fixture.revision, { workspaceId: 'workspace-tracked-budget' }),
+    fixture.repositoryRoot,
+  );
+
+  await backend.writeText(handle, 'tracked.txt', 'tracked-change-'.repeat(30), 1000);
+  await assert.rejects(() => backend.snapshot(handle), /maxSnapshotBytes/);
+});
+
+test('filesystem and git activity schemas reject malformed fields deterministically', async (t) => {
+  const fixture = await createFixture(t);
+  const backend = new LocalGitWorktreeBackend({ runtimeRoot: fixture.runtimeRoot });
+  const handle = await backend.create(
+    descriptor(fixture.revision, { workspaceId: 'workspace-malformed' }),
+    fixture.repositoryRoot,
+  );
+  const filesystem = createLocalFilesystemActivityExecutor(backend, handle);
+  const gitExecutor = createLocalGitActivityExecutor(backend, handle);
+
+  const malformedFilesystemInputs = [
+    'not json',
+    JSON.stringify([]),
+    JSON.stringify({ schemaVersion: 2, operation: 'READ_TEXT', path: 'tracked.txt' }),
+    JSON.stringify({ schemaVersion: 1, operation: 'READ_TEXT' }),
+    JSON.stringify({ schemaVersion: 1, operation: 'READ_TEXT', path: 1 }),
+    JSON.stringify({ schemaVersion: 1, operation: 'READ_TEXT', path: 'tracked.txt', extra: true }),
+    JSON.stringify({
+      schemaVersion: 1,
+      operation: 'WRITE_TEXT',
+      path: 1,
+      content: 'x',
+      maxBytes: 10,
+    }),
+    JSON.stringify({
+      schemaVersion: 1,
+      operation: 'WRITE_TEXT',
+      path: 'x.txt',
+      content: 1,
+      maxBytes: 10,
+    }),
+    JSON.stringify({
+      schemaVersion: 1,
+      operation: 'WRITE_TEXT',
+      path: 'x.txt',
+      content: 'x',
+      maxBytes: -1,
+    }),
+    JSON.stringify({
+      schemaVersion: 1,
+      operation: 'WRITE_TEXT',
+      path: 'x.txt',
+      content: 'x',
+      maxBytes: 1.5,
+    }),
+  ];
+  for (const input of malformedFilesystemInputs) {
+    const result = await filesystem.execute(
+      request(handle, 'FILESYSTEM', {}, { input }),
+    );
+    assert.equal(result.failureKind, 'MALFORMED_ACTIVITY_INPUT');
+  }
+
+  const malformedGitInputs = [
+    'not json',
+    JSON.stringify([]),
+    JSON.stringify({ schemaVersion: 2, operation: 'STATUS' }),
+    JSON.stringify({ schemaVersion: 1 }),
+    JSON.stringify({ schemaVersion: 1, operation: 'STATUS', extra: true }),
+    JSON.stringify({ schemaVersion: 1, operation: 'PUSH' }),
+  ];
+  for (const input of malformedGitInputs) {
+    const result = await gitExecutor.execute(request(handle, 'GIT', {}, { input }));
+    assert.equal(result.failureKind, 'MALFORMED_ACTIVITY_INPUT');
+  }
+
+  await assert.rejects(() => backend.readText(handle, ' '), /relative path is required/);
+  await assert.rejects(() => backend.readText(handle, 'C:\\escape'), /relative/);
+});
+
+test('forged handles fail closed before Git or filesystem activity execution', async (t) => {
+  const fixture = await createFixture(t);
+  const backend = new LocalGitWorktreeBackend({ runtimeRoot: fixture.runtimeRoot });
+  const handle = await backend.create(
+    descriptor(fixture.revision, { workspaceId: 'workspace-forged-handle' }),
+    fixture.repositoryRoot,
+  );
+
+  await assert.rejects(
+    () =>
+      backend.readText(
+        { ...handle, descriptor: { ...handle.descriptor, backendId: 'other-backend' } },
+        'tracked.txt',
+      ),
+    /handle backend mismatch/,
+  );
+
+  await assert.rejects(
+    () =>
+      backend.readText(
+        {
+          ...handle,
+          workspacePath:
+            handle.workspacePath + path.sep + '..' + path.sep + path.basename(handle.workspacePath),
+        },
+        'tracked.txt',
+      ),
+    /path must be canonical/,
+  );
+});
+
+test('command executor handles missing process output and missing inherited environment safely', async (t) => {
+  const fixture = await createFixture(t);
+  const backend = new LocalGitWorktreeBackend({ runtimeRoot: fixture.runtimeRoot });
+  const handle = await backend.create(
+    descriptor(fixture.revision, { workspaceId: 'workspace-missing-command' }),
+    fixture.repositoryRoot,
+  );
+  delete process.env.FH_RUNTIME_MISSING_ENV;
+
+  const executor = createLocalCommandActivityExecutor(handle, {
+    commands: [
+      {
+        id: 'missing-command',
+        executable: 'fh-command-that-does-not-exist',
+        args: [],
+      },
+    ],
+    inheritedEnvironmentKeys: ['PATH', 'FH_RUNTIME_MISSING_ENV'],
+  });
+
+  const result = await executor.execute(
+    request(handle, 'COMMAND', { schemaVersion: 1, commandId: 'missing-command' }),
+  );
+  assert.equal(result.status, 'FAILED');
+  assert.equal(result.failureKind, 'COMMAND_FAILED');
+  assert.equal(result.output, '{"stderr":"","stdout":""}');
 });
 
 test('runtime backend authority invariants remain explicit', () => {
