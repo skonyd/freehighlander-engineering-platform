@@ -71,9 +71,31 @@ export interface BindingRecoveryObservation {
   readonly resetAt?: string;
 }
 
+export type PreferredBindingReturnDecision = 'APPROVE' | 'DENY';
+
+export interface PreferredBindingReturnApprovalInput {
+  readonly approverId: string;
+  readonly decidedAt: string;
+  readonly decision: PreferredBindingReturnDecision;
+}
+
+export interface PreferredBindingReturnApprovalV1 {
+  readonly schemaVersion: 1;
+  readonly logicalRole: string;
+  readonly planHash: string;
+  readonly stateHash: string;
+  readonly preferredBindingId: string;
+  readonly activeBindingId: string;
+  readonly approverId: string;
+  readonly decidedAt: string;
+  readonly decision: PreferredBindingReturnDecision;
+  readonly approvalHash: string;
+  readonly authority: 'NONE';
+}
+
 export interface PreferredBindingReturnInput {
   readonly preferredAvailable: boolean;
-  readonly userApprovedReturn?: boolean;
+  readonly returnApproval?: PreferredBindingReturnApprovalV1;
 }
 
 export interface PreferredBindingReturnTransition {
@@ -202,6 +224,89 @@ export function recordBindingRecoveryObservation(
   return buildState({ ...state, cooldowns: updated });
 }
 
+export function createPreferredBindingReturnApproval(
+  state: RoleBindingFailoverStateV1,
+  plan: BindingPlan,
+  input: PreferredBindingReturnApprovalInput,
+): PreferredBindingReturnApprovalV1 {
+  validateStateAgainstPlan(state, plan);
+  if (state.activeBindingId === state.preferredBindingId) {
+    throw new Error('preferred binding return approval requires an active fallback');
+  }
+  requireText(input.approverId, 'approverId');
+  const decidedAt = normalizeTimestamp(input.decidedAt, 'decidedAt');
+  if (input.decision !== 'APPROVE' && input.decision !== 'DENY') {
+    throw new Error('preferred binding return decision is invalid');
+  }
+
+  const identity = {
+    schemaVersion: 1,
+    logicalRole: state.logicalRole,
+    planHash: state.planHash,
+    stateHash: state.stateHash,
+    preferredBindingId: state.preferredBindingId,
+    activeBindingId: state.activeBindingId,
+    approverId: input.approverId,
+    decidedAt,
+    decision: input.decision,
+  } as const;
+
+  return {
+    ...identity,
+    approvalHash: sha256Canonical(identity),
+    authority: 'NONE',
+  };
+}
+
+export function validatePreferredBindingReturnApproval(
+  approval: PreferredBindingReturnApprovalV1,
+  state: RoleBindingFailoverStateV1,
+  plan: BindingPlan,
+): void {
+  validateStateAgainstPlan(state, plan);
+  if (approval.schemaVersion !== 1) {
+    throw new Error('preferred binding return approval schemaVersion must be 1');
+  }
+  if (approval.authority !== 'NONE') {
+    throw new Error('preferred binding return approval authority must remain NONE');
+  }
+  if (approval.logicalRole !== state.logicalRole) {
+    throw new Error('preferred binding return approval logical role mismatch');
+  }
+  if (approval.planHash !== state.planHash) {
+    throw new Error('preferred binding return approval plan hash mismatch');
+  }
+  if (approval.stateHash !== state.stateHash) {
+    throw new Error('preferred binding return approval state hash mismatch');
+  }
+  if (approval.preferredBindingId !== state.preferredBindingId) {
+    throw new Error('preferred binding return approval preferred binding mismatch');
+  }
+  if (approval.activeBindingId !== state.activeBindingId) {
+    throw new Error('preferred binding return approval active binding mismatch');
+  }
+  requireText(approval.approverId, 'approval approverId');
+  normalizeTimestamp(approval.decidedAt, 'approval decidedAt');
+  if (approval.decision !== 'APPROVE' && approval.decision !== 'DENY') {
+    throw new Error('preferred binding return approval decision is invalid');
+  }
+
+  const identity = {
+    schemaVersion: 1,
+    logicalRole: approval.logicalRole,
+    planHash: approval.planHash,
+    stateHash: approval.stateHash,
+    preferredBindingId: approval.preferredBindingId,
+    activeBindingId: approval.activeBindingId,
+    approverId: approval.approverId,
+    decidedAt: approval.decidedAt,
+    decision: approval.decision,
+  } as const;
+  if (sha256Canonical(identity) !== approval.approvalHash) {
+    throw new Error('preferred binding return approval hash mismatch');
+  }
+}
+
 export function evaluatePreferredBindingReturn(
   state: RoleBindingFailoverStateV1,
   plan: BindingPlan,
@@ -230,12 +335,22 @@ export function evaluatePreferredBindingReturn(
     };
   }
 
-  if (state.policy.returnPolicy === 'ASK_BEFORE_RETURN' && input.userApprovedReturn !== true) {
-    return {
-      status: 'APPROVAL_REQUIRED',
-      state,
-      reason: 'user approval is required before returning to the preferred binding',
-    };
+  if (state.policy.returnPolicy === 'ASK_BEFORE_RETURN') {
+    if (input.returnApproval === undefined) {
+      return {
+        status: 'APPROVAL_REQUIRED',
+        state,
+        reason: 'exact-bound user approval is required before returning to the preferred binding',
+      };
+    }
+    validatePreferredBindingReturnApproval(input.returnApproval, state, plan);
+    if (input.returnApproval.decision !== 'APPROVE') {
+      return {
+        status: 'STAYING_ON_FALLBACK',
+        state,
+        reason: 'user declined return to the preferred binding',
+      };
+    }
   }
 
   return {
