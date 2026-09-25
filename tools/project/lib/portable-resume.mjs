@@ -470,6 +470,32 @@ export async function claimPortableResumeOwnership({
   };
 }
 
+export async function resolvePortableResumeProjectId(store, requestedProjectId) {
+  if (requestedProjectId !== null && requestedProjectId !== undefined) {
+    if (
+      typeof requestedProjectId !== 'string' ||
+      !/^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/.test(requestedProjectId)
+    ) {
+      throw new Error('portable resume project id must be a bounded identifier');
+    }
+    return requestedProjectId;
+  }
+
+  if (!store || typeof store.listProjectIds !== 'function') {
+    throw new Error('portable resume store does not support project discovery');
+  }
+  const projectIds = await store.listProjectIds();
+  if (projectIds.length === 0) {
+    throw new Error('no portable resume project state found on the remote');
+  }
+  if (projectIds.length > 1) {
+    throw new Error(
+      'multiple portable resume projects found; use --project: ' + projectIds.join(', '),
+    );
+  }
+  return projectIds[0];
+}
+
 export function buildPortableResumePlan({ manifest, reconciliation, secrets }) {
   validateResumeManifestV1(manifest);
   if (reconciliation === null || typeof reconciliation !== 'object') {
