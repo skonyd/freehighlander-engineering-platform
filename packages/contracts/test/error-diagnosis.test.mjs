@@ -109,6 +109,15 @@ test('diagnosis is exact-bound to error identity binding and surfaced component'
   assert.throws(
     () =>
       buildDiagnosedUserErrorV1(
+        runtimeError({ correlationId: 'corr-002' }),
+        diagnosis,
+      ),
+    /correlationId does not match/,
+  );
+
+  assert.throws(
+    () =>
+      buildDiagnosedUserErrorV1(
         runtimeError({
           binding: {
             runId: 'run-002',
@@ -206,6 +215,11 @@ test('unresolved root cause is explicit and cannot claim a specific cause kind',
   assert.equal(diagnosis.causeKind, 'UNKNOWN');
   assert.equal(diagnosis.certainty, 'UNRESOLVED');
   assert.match(formatRuntimeErrorDiagnosisForUser(error, diagnosis), /exact root cause could not/);
+
+  const bundle = buildDiagnosedUserErrorV1(error, diagnosis);
+  assert.equal(bundle.userError.title, 'Internal failure needs diagnosis');
+  assert.match(bundle.userError.whatHappened, /internal invariant failed/i);
+  assert.doesNotMatch(bundle.conciseMessage, /Retry at/);
 
   assert.throws(
     () =>
