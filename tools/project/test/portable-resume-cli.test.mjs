@@ -921,7 +921,6 @@ test('portable resume planner rejects missing readiness evidence', () => {
   );
 });
 
-
 test('portable resume project discovery selects the only remote project', async () => {
   const selected = await resolvePortableResumeProjectId(
     {
@@ -979,8 +978,5 @@ test('portable resume project discovery fails closed when no remote state exists
     () => resolvePortableResumeProjectId({}, null),
     /does not support project discovery/,
   );
-  await assert.rejects(
-    () => resolvePortableResumeProjectId({}, 'x'),
-    /bounded identifier/,
-  );
+  await assert.rejects(() => resolvePortableResumeProjectId({}, 'x'), /bounded identifier/);
 });
