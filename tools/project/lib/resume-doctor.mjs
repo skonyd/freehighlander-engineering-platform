@@ -157,7 +157,120 @@ export function inspectResumeHostCapabilities({
   };
 }
 
-export function buildResumeDoctorSummary({ projectId, manifest, secretReadiness, host }) {
+export async function inspectResumeProviderReadiness({
+  managedState,
+  requiredProviderCapabilities,
+  adapterFactory,
+}) {
+  if (!managedState || typeof managedState !== 'object' || !Array.isArray(managedState.providers)) {
+    throw new Error('managed model provider state is required');
+  }
+  if (
+    !requiredProviderCapabilities ||
+    typeof requiredProviderCapabilities !== 'object' ||
+    Array.isArray(requiredProviderCapabilities)
+  ) {
+    throw new Error('required provider capabilities must be an object');
+  }
+  if (typeof adapterFactory !== 'function') {
+    throw new Error('resume provider adapter factory is required');
+  }
+
+  const resolutions = [];
+  for (const [providerId, requiredCapabilities] of Object.entries(
+    requiredProviderCapabilities,
+  ).sort(([left], [right]) => left.localeCompare(right))) {
+    requireIdentifier(providerId, 'provider id');
+    const required = uniqueSortedIdentifiers(requiredCapabilities, 'provider capability');
+    const provider = managedState.providers.find((entry) => entry.id === providerId);
+
+    if (!provider) {
+      resolutions.push({
+        providerId,
+        status: 'MISSING_PROVIDER',
+        requiredCapabilities: required,
+        availableCapabilities: [],
+        missingCapabilities: required,
+        locality: null,
+        endpointRequired: null,
+        endpointHealthy: null,
+      });
+      continue;
+    }
+
+    let adapter;
+    try {
+      adapter = adapterFactory(provider);
+    } catch {
+      resolutions.push({
+        providerId,
+        status: 'CREDENTIAL_UNAVAILABLE',
+        requiredCapabilities: required,
+        availableCapabilities: [],
+        missingCapabilities: required,
+        locality: provider.locality,
+        endpointRequired: provider.locality === 'LOCAL',
+        endpointHealthy: provider.locality === 'LOCAL' ? false : null,
+      });
+      continue;
+    }
+
+    const availableCapabilities = uniqueSortedIdentifiers(
+      [...adapter.capabilities()],
+      'available provider capability',
+    );
+    const available = new Set(availableCapabilities);
+    const missingCapabilities = required.filter((capability) => !available.has(capability));
+
+    let healthy = false;
+    try {
+      const health = await adapter.health();
+      healthy = health?.available === true;
+    } catch {
+      healthy = false;
+    }
+
+    const status =
+      missingCapabilities.length > 0
+        ? 'CAPABILITY_MISSING'
+        : healthy
+          ? 'READY'
+          : 'PROVIDER_UNAVAILABLE';
+
+    resolutions.push({
+      providerId,
+      status,
+      requiredCapabilities: required,
+      availableCapabilities,
+      missingCapabilities,
+      locality: provider.locality,
+      endpointRequired: provider.locality === 'LOCAL',
+      endpointHealthy: provider.locality === 'LOCAL' ? healthy : null,
+    });
+  }
+
+  const blockedProviderIds = resolutions
+    .filter((resolution) => resolution.status !== 'READY')
+    .map((resolution) => resolution.providerId);
+
+  return {
+    status: blockedProviderIds.length === 0 ? 'READY' : 'BLOCKED',
+    resolutions,
+    blockedProviderIds,
+    providerDependentWorkReady: blockedProviderIds.length === 0,
+    providerHealthProbed: true,
+    secretValuesPresent: false,
+    authority: 'NONE',
+  };
+}
+
+export function buildResumeDoctorSummary({
+  projectId,
+  manifest,
+  secretReadiness,
+  providerReadiness,
+  host,
+}) {
   if (!host || typeof host !== 'object' || !Array.isArray(host.checks)) {
     throw new Error('resume doctor host report is required');
   }
@@ -169,6 +282,9 @@ export function buildResumeDoctorSummary({ projectId, manifest, secretReadiness,
   }
   if (!secretReadiness || typeof secretReadiness !== 'object') {
     throw new Error('resume doctor secret readiness is required');
+  }
+  if (!providerReadiness || typeof providerReadiness !== 'object') {
+    throw new Error('resume doctor provider readiness is required');
   }
 
   const blockedSecretHandleIds = Array.isArray(secretReadiness.blockedHandleIds)
@@ -185,13 +301,18 @@ export function buildResumeDoctorSummary({ projectId, manifest, secretReadiness,
         )
       : {};
 
+  const blockedProviderIds = Array.isArray(providerReadiness.blockedProviderIds)
+    ? [...providerReadiness.blockedProviderIds].sort()
+    : [];
+
   return {
-    status:
-      host.ok && blockedSecretHandleIds.length === 0
-        ? 'READY'
-        : host.ok
+    status: !host.ok
+      ? 'BLOCKED_HOST'
+      : blockedProviderIds.length > 0
+        ? 'BLOCKED_PROVIDER'
+        : blockedSecretHandleIds.length > 0
           ? 'BLOCKED_SECRET'
-          : 'BLOCKED_HOST',
+          : 'READY',
     projectId,
     generation: manifest.generation,
     manifestHash: manifest.manifestHash,
@@ -202,6 +323,9 @@ export function buildResumeDoctorSummary({ projectId, manifest, secretReadiness,
     requiredSecretHandleIds: [...manifest.requiredSecretHandleIds].sort(),
     blockedSecretHandleIds,
     secretDependentWorkReady: secretReadiness.secretDependentWorkReady === true,
+    providerReadiness,
+    blockedProviderIds,
+    providerDependentWorkReady: providerReadiness.providerDependentWorkReady === true,
     credentialsCopied: false,
     secretValuesPresent: false,
     authority: 'NONE',
@@ -214,6 +338,23 @@ export function resumeDoctorCanCopyCredentials() {
 
 export function resumeDoctorCanGrantAuthority() {
   return false;
+}
+
+function uniqueSortedIdentifiers(values, label) {
+  if (!Array.isArray(values)) throw new Error(label + ' list must be an array');
+  const seen = new Set();
+  for (const value of values) {
+    requireIdentifier(value, label);
+    if (seen.has(value)) throw new Error('duplicate ' + label + ': ' + value);
+    seen.add(value);
+  }
+  return [...seen].sort();
+}
+
+function requireIdentifier(value, label) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{1,127}$/.test(value)) {
+    throw new Error(label + ' must be a bounded identifier');
+  }
 }
 
 function addCommandCheck(checks, id, result, expectedOutput) {
