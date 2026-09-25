@@ -12,6 +12,7 @@ import {
   recordShadowVerification,
 } from '../../../packages/model-runtime/dist/index.js';
 import {
+  bindingInputFromArgs,
   createModelManagementStore,
   parseCliArgs,
   previewManagedBinding,
@@ -52,6 +53,74 @@ test('model management CLI parser preserves repeated options and validates requi
   assert.equal(optionOnly.subcommand, undefined);
   assert.equal(optionOnly.options.state, '/tmp/model-state.json');
 });
+
+test('binding args preserve ordered fallbacks and safe return policy defaults', () => {
+  const input = bindingInputFromArgs({
+    role: 'controller',
+    risk: 'NORMAL',
+    provider: 'anthropic',
+    model: 'opus-5.5',
+    bindingId: 'controller-opus',
+    effort: 'low',
+    fallback: [
+      'controller-gpt,openai,gpt-6,medium,openai,1.2.0',
+      'controller-gemini,google,gemini-pro,medium',
+    ],
+  });
+
+  assert.deepEqual(
+    input.fallbacks.map((binding) => binding.id),
+    ['controller-gpt', 'controller-gemini'],
+  );
+  assert.equal(input.fallbacks[0].version, '1.2.0');
+  assert.equal(input.fallbacks[0].providerId, 'openai');
+  assert.equal(input.fallbacks[1].independenceGroup, 'google');
+  assert.deepEqual(input.failoverPolicy, {
+    returnPolicy: 'ASK_BEFORE_RETURN',
+    unknownResetRecheckMs: 60_000,
+  });
+
+  const auto = bindingInputFromArgs({
+    role: 'controller',
+    risk: 'NORMAL',
+    provider: 'anthropic',
+    model: 'opus-5.5',
+    bindingId: 'controller-opus',
+    fallback: 'controller-gpt,openai,gpt-6',
+    returnPolicy: 'AUTO_RETURN',
+    unknownResetRecheckMs: '120000',
+  });
+  assert.deepEqual(auto.failoverPolicy, {
+    returnPolicy: 'AUTO_RETURN',
+    unknownResetRecheckMs: 120_000,
+  });
+
+  assert.throws(
+    () =>
+      bindingInputFromArgs({
+        role: 'controller',
+        risk: 'NORMAL',
+        provider: 'anthropic',
+        model: 'opus-5.5',
+        bindingId: 'controller-opus',
+        returnPolicy: 'AUTO_RETURN',
+      }),
+    /requires at least one fallback/,
+  );
+  assert.throws(
+    () =>
+      bindingInputFromArgs({
+        role: 'controller',
+        risk: 'NORMAL',
+        provider: 'anthropic',
+        model: 'opus-5.5',
+        bindingId: 'controller-opus',
+        fallback: 'bad-spec',
+      }),
+    /fallback must be/,
+  );
+});
+
 
 test('atomic model management store persists references only and rejects stale CAS writes', async () => {
   const root = await makeTempRoot();
