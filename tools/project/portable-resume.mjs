@@ -2,6 +2,11 @@
 
 import path from 'node:path';
 
+import {
+  createHumanDecisionQueueStore,
+  enqueueHumanDecision,
+  readHumanDecisionQueue,
+} from './lib/human-decision-queue.mjs';
 import { GitPortableOwnershipStore } from './lib/portable-ownership-store.mjs';
 import { assertSafeCheckpointWorktree } from './lib/reconciliation.mjs';
 import {
@@ -24,6 +29,7 @@ import {
   readPreparedResumeManifest,
   rebuildPortableResumeReadModel,
   restorePortableCompletedNodeResults,
+  restorePortableHumanDecisionQueue,
   resolvePortableResumeProjectId,
   readRemoteBranchHead,
 } from './lib/portable-resume.mjs';
@@ -168,6 +174,14 @@ try {
       semanticGatePassInferred: false,
       authority: 'NONE',
     };
+    let humanDecisions = {
+      status: 'NOT_CHECKED',
+      restoredDecisionIds: [],
+      decisionCount: 0,
+      localQueueGeneration: null,
+      semanticGatePassInferred: false,
+      authority: 'NONE',
+    };
     let readModel = {
       status: 'NOT_CHECKED',
       projectId,
@@ -208,6 +222,28 @@ try {
         authority: 'NONE',
       };
 
+      const restoredDecisions = restorePortableHumanDecisionQueue({
+        manifest,
+        eventBundle,
+      });
+      const decisionStore = createHumanDecisionQueueStore(root, projectId);
+      for (const entry of restoredDecisions.entries) {
+        const currentQueue = readHumanDecisionQueue(decisionStore, projectId);
+        const queued = enqueueHumanDecision(decisionStore, currentQueue.generation, entry);
+        if (!['QUEUED', 'ALREADY_QUEUED'].includes(queued.status)) {
+          throw new Error('portable human decision local queue restore conflict');
+        }
+      }
+      const restoredQueue = readHumanDecisionQueue(decisionStore, projectId);
+      humanDecisions = {
+        status: restoredDecisions.status,
+        restoredDecisionIds: restoredDecisions.restoredDecisionIds,
+        decisionCount: restoredDecisions.decisionCount,
+        localQueueGeneration: restoredQueue.generation,
+        semanticGatePassInferred: false,
+        authority: 'NONE',
+      };
+
       readModel = await rebuildPortableResumeReadModel({
         store,
         repositoryIdentity: state.repository,
@@ -216,7 +252,7 @@ try {
       });
     }
 
-    printJson({ ...result, secrets, plan, nodeResults, readModel });
+    printJson({ ...result, secrets, plan, nodeResults, humanDecisions, readModel });
     if (result.status !== 'READY' || result.readyToMutate !== true) process.exitCode = 2;
   } else if (parsed.command === 'help' || parsed.command === undefined) {
     printHelp();
@@ -323,6 +359,7 @@ Resume safety:
   - unresolved required handles block secret-dependent work without blocking unrelated READY work
   - emits PARKED / READY / WAITING planner state directly from the portable manifest
   - completed exact NodeResults are restored from hash-bound portable event metadata after HEAD reconciliation
+  - parked HUMAN_REQUIRED decisions are restored into the local atomic decision queue from exact portable metadata
   - bound portable events rebuild the local SQLite read-model idempotently after HEAD reconciliation
   - planner requires neither local SQLite nor LOCAL_ONLY_CACHE state
   - SQLite/WAL is never used as the handoff protocol
