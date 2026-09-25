@@ -93,13 +93,20 @@ export function inspectResumeHostCapabilities({
   if (npmVersion.exitCode !== 0) {
     checks.push(fail('npm', 'npm is unavailable'));
   } else if (npmVersion.stdout.trim() !== npmPin) {
-    checks.push(fail('npm', `npm ${npmPin} required; current ${npmVersion.stdout.trim() || 'unknown'}`));
+    checks.push(
+      fail('npm', `npm ${npmPin} required; current ${npmVersion.stdout.trim() || 'unknown'}`),
+    );
   } else {
     checks.push(pass('npm', npmPin));
   }
 
   if (!satisfiesNodeEngine(nodeVersion, packageJson.engines?.node)) {
-    checks.push(fail('node', `Node ${packageJson.engines?.node ?? 'engine range'} required; current ${nodeVersion}`));
+    checks.push(
+      fail(
+        'node',
+        `Node ${packageJson.engines?.node ?? 'engine range'} required; current ${nodeVersion}`,
+      ),
+    );
   } else {
     checks.push(pass('node', nodeVersion));
   }
@@ -116,7 +123,13 @@ export function inspectResumeHostCapabilities({
 
   const repoView = runner.run(
     'gh',
-    ['repo', 'view', repositoryIdentity, '--json', 'nameWithOwner,viewerPermission,defaultBranchRef'],
+    [
+      'repo',
+      'view',
+      repositoryIdentity,
+      '--json',
+      'nameWithOwner,viewerPermission,defaultBranchRef',
+    ],
     root,
   );
   if (repoView.exitCode !== 0) {
@@ -240,7 +253,10 @@ function satisfiesNodeEngine(nodeVersion, engine) {
 }
 
 function parseVersion(value) {
-  const parts = value.split('.').slice(0, 3).map((part) => Number(part.replace(/\D.*$/, '')));
+  const parts = value
+    .split('.')
+    .slice(0, 3)
+    .map((part) => Number(part.replace(/\D.*$/, '')));
   while (parts.length < 3) parts.push(0);
   if (parts.some((part) => !Number.isInteger(part) || part < 0)) {
     throw new Error('invalid semantic version');
@@ -294,10 +310,7 @@ function firstLine(value) {
 }
 
 function requireRepository(value) {
-  if (
-    typeof value !== 'string' ||
-    !/^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/.test(value)
-  ) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/.test(value)) {
     throw new Error('repositoryIdentity must be a bounded owner/name identifier');
   }
 }
