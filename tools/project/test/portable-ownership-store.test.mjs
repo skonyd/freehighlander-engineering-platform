@@ -110,10 +110,7 @@ test('Git portable ownership store publishes reads renews and releases with exac
 
 test('portable ownership state refs are Git-safe and authority-neutral', () => {
   const ref = portableOwnershipStateRef('project:151', 'issue:151');
-  assert.match(
-    ref,
-    /^refs\/heads\/freehighlander-ownership\/[a-f0-9]{64}\/[a-f0-9]{64}$/,
-  );
+  assert.match(ref, /^refs\/heads\/freehighlander-ownership\/[a-f0-9]{64}\/[a-f0-9]{64}$/);
   assert.equal(portableOwnershipStateCanMergeIntoProductBranches(), false);
   assert.equal(portableOwnershipStoreCanGrantAuthority(), false);
 });
