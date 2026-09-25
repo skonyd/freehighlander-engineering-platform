@@ -86,7 +86,7 @@ Umbrella: #88.
 - [ ] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1
 - [ ] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 / ADR-required
 
-Detailed decomposition and authority boundary: [FH-40..FH-KUIKA-10 Productization Roadmap](docs/planning/FH-40-49-PRODUCTIZATION-ROADMAP.md).
+Detailed decomposition and authority boundary: [FH-KUIKA module roadmap](docs/modules/kuika-inspired-productization/ROADMAP.md).
 
 ## Current blocker
 
