@@ -132,8 +132,12 @@ export function runFhResume({
       runner,
     });
     repositoryRoot = bootstrapResult.repositoryRoot;
-  } else if (!existsSync(path.join(repositoryRoot, '.git'))) {
-    throw new Error('fh resume without owner/repo must run from a Git repository root');
+  } else {
+    const discoveredRoot = runner.run('git', ['rev-parse', '--show-toplevel'], repositoryRoot);
+    if (discoveredRoot.exitCode !== 0 || !discoveredRoot.stdout.trim()) {
+      throw new Error('fh resume without owner/repo must run inside a Git repository');
+    }
+    repositoryRoot = path.resolve(discoveredRoot.stdout.trim());
   }
 
   const packageFile = path.join(repositoryRoot, 'package.json');
@@ -162,6 +166,9 @@ export function runFhResume({
   appendOption(doctorArgs, '--secret-profile', parsed.secretProfileId);
   appendOption(doctorArgs, '--remote', parsed.remote);
   const doctor = runner.run('npm', doctorArgs, repositoryRoot);
+  if (parsed.claim && doctor.exitCode !== 0) {
+    throw new Error('fh resume --claim requires resume doctor PASS');
+  }
 
   const resumeArgs = ['run', 'project:portable-resume', '--', 'resume'];
   appendOption(resumeArgs, '--project', parsed.projectId);
