@@ -49,9 +49,7 @@ export interface RepairAccountingDecision {
 
 const REVISION_PATTERN = /^[a-f0-9]{40,64}$/;
 
-export function createRepairAccountingState(
-  policy: RepairBudgetPolicy,
-): RepairAccountingStateV1 {
+export function createRepairAccountingState(policy: RepairBudgetPolicy): RepairAccountingStateV1 {
   validatePolicy(policy);
   return {
     schemaVersion: 1,
@@ -184,7 +182,7 @@ export function validateRepairAccountingState(state: RepairAccountingStateV1): v
   if (state.semanticRepairs > 0 && state.lastAcceptedRepairRevision === null) {
     throw new Error('semantic repair state requires lastAcceptedRepairRevision');
   }
-  if (state.exhausted !== (state.semanticRepairs >= state.maxSemanticRepairs)) {
+  if (state.exhausted !== state.semanticRepairs >= state.maxSemanticRepairs) {
     throw new Error('repair accounting exhausted flag is inconsistent');
   }
 }
