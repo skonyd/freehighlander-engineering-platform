@@ -1,12 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export type ArtifactReceiptKind =
-  | 'TEST_LOG'
-  | 'CI_LOG'
-  | 'SCANNER_REPORT'
-  | 'SEARCH_RESULT'
-  | 'DEPENDENCY_REPORT'
-  | 'TOOL_OUTPUT';
+  'TEST_LOG' | 'CI_LOG' | 'SCANNER_REPORT' | 'SEARCH_RESULT' | 'DEPENDENCY_REPORT' | 'TOOL_OUTPUT';
 
 export type ArtifactReceiptStatus = 'PASS' | 'FAIL' | 'PARTIAL';
 
@@ -101,9 +96,7 @@ export function buildArtifactReceipt(input: ArtifactReceiptInput): ArtifactRecei
       : status === 'FAIL'
         ? 'FAILURE_RECEIPT'
         : 'PARTIAL_RECEIPT';
-  const contextReplacement = requiredRawEvidence
-    ? 'FORBIDDEN_REQUIRED_RAW_EVIDENCE'
-    : 'ALLOWED';
+  const contextReplacement = requiredRawEvidence ? 'FORBIDDEN_REQUIRED_RAW_EVIDENCE' : 'ALLOWED';
 
   const identity = {
     schemaVersion: 1,
