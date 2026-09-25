@@ -308,7 +308,6 @@ async function startModelServer(initialModels) {
   };
 }
 
-
 test('credential resolution and provider removal fail closed without leaking or guessing', () => {
   const provider = {
     schemaVersion: 1,
