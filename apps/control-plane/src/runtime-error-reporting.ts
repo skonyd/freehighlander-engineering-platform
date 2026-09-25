@@ -206,6 +206,10 @@ const CAUSE_CERTAINTIES = new Set<RuntimeErrorCauseCertainty>([
   'DETERMINISTIC_RULE',
   'UNRESOLVED',
 ]);
+const REDACTION_STATUSES = new Set<RuntimeErrorDiagnosisInput['redactionStatus']>([
+  'APPLIED',
+  'NOT_REQUIRED',
+]);
 const OBVIOUS_SECRET_VALUE_PATTERN =
   /(?:bearer\s+[A-Za-z0-9._~+/=-]{6,}|(?:api[_-]?key|password|passwd|secret|token)\s*[:=]\s*\S+)/i;
 
@@ -254,7 +258,7 @@ function normalizeDiagnosis(
     safeForUserDisplay: true,
   };
 
-  if (diagnosis.redactionStatus !== 'APPLIED' && diagnosis.redactionStatus !== 'NOT_REQUIRED') {
+  if (!REDACTION_STATUSES.has(diagnosis.redactionStatus)) {
     throw new Error('diagnosis redactionStatus is invalid');
   }
 
@@ -278,7 +282,7 @@ function normalizeDiagnosisText(
 
 function normalizeTimestamp(value: string): string {
   const parsed = Date.parse(value);
-  if (!value.trim() || Number.isNaN(parsed)) {
+  if (Number.isNaN(parsed)) {
     throw new Error('diagnosis retryAt must be an ISO timestamp');
   }
   return new Date(parsed).toISOString();
