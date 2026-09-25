@@ -33,7 +33,4 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: |
-          npm run format:write
-          git diff -- tools/project/lib/full-auto-preview.mjs
-          exit 1
+        run: npm run verify
