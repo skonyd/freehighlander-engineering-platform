@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-import {
-  preparePortableResumeRepository,
-} from './lib/portable-resume-bootstrap.mjs';
+import { preparePortableResumeRepository } from './lib/portable-resume-bootstrap.mjs';
 
 try {
   const { repository, options } = parseArgs(process.argv.slice(2));
