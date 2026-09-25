@@ -111,10 +111,7 @@ test('empty discovery query keeps only the initial core schema set', () => {
 });
 
 test('small catalog activation remains direct regardless of query', () => {
-  const tools = [
-    tool('git.read', 'git', ['read'], 10),
-    tool('git.diff', 'git', ['diff'], 20),
-  ];
+  const tools = [tool('git.read', 'git', ['read'], 10), tool('git.diff', 'git', ['diff'], 20)];
   const plan = buildLazyToolExposurePlan(tools);
   const activation = activateToolSchemas(tools, plan, 'unknown', 1);
 
@@ -137,10 +134,7 @@ test('catalog validation fails closed on malformed inputs', () => {
     () => buildLazyToolExposurePlan([tool('a', '', ['read'])]),
     /namespace is required/,
   );
-  assert.throws(
-    () => buildLazyToolExposurePlan([tool('a', 'git', [''])]),
-    /keyword is required/,
-  );
+  assert.throws(() => buildLazyToolExposurePlan([tool('a', 'git', [''])]), /keyword is required/);
   assert.throws(
     () => buildLazyToolExposurePlan([tool('a', 'git', ['read'], -1)]),
     /non-negative integer/,
@@ -158,15 +152,11 @@ test('activation fails closed on stale plan and invalid activation bound', () =>
   ];
   const plan = buildLazyToolExposurePlan(tools);
 
-  assert.throws(() => activateToolSchemas(tools, { ...plan, authority: 'SYSTEM_POLICY' }, 'misc', 1));
+  assert.throws(() =>
+    activateToolSchemas(tools, { ...plan, authority: 'SYSTEM_POLICY' }, 'misc', 1),
+  );
   assert.throws(
-    () =>
-      activateToolSchemas(
-        [...tools, tool('late-tool', 'misc', ['late'], 10)],
-        plan,
-        'late',
-        1,
-      ),
+    () => activateToolSchemas([...tools, tool('late-tool', 'misc', ['late'], 10)], plan, 'late', 1),
     /does not match current catalog/,
   );
   assert.throws(() => activateToolSchemas(tools, plan, 'misc', 0), /maxActivated/);
