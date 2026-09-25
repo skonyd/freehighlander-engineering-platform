@@ -263,11 +263,7 @@ test('OS_KEYCHAIN uses native command adapters and fails closed without a secure
   assert.equal(unsupported.health, 'UNAVAILABLE');
   await assert.rejects(
     () =>
-      unsupportedRegistry.inject(
-        secretBinding,
-        plan('provider.keychain.api', 'OS_KEYCHAIN'),
-        sink,
-      ),
+      unsupportedRegistry.inject(secretBinding, plan('provider.keychain.api', 'OS_KEYCHAIN'), sink),
     /secure OS keychain backend is unavailable/,
   );
 });
@@ -298,11 +294,7 @@ test('Windows OS_KEYCHAIN fails closed when Credential Locker activation is unav
 
   await assert.rejects(
     () =>
-      registry.inject(
-        secretBinding,
-        plan('provider.windows-keychain.api', 'OS_KEYCHAIN'),
-        sink,
-      ),
+      registry.inject(secretBinding, plan('provider.windows-keychain.api', 'OS_KEYCHAIN'), sink),
     /OS_KEYCHAIN secret resolution failed/,
   );
   assert.equal(sink.values.size, 0);
