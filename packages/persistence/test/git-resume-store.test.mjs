@@ -202,10 +202,7 @@ test('GitResumeStore atomically publishes and reads a manifest-bound portable ev
       }),
     );
 
-    await assert.rejects(
-      () => store.publishCas(manifest, null),
-      /requires its bound event bundle/,
-    );
+    await assert.rejects(() => store.publishCas(manifest, null), /requires its bound event bundle/);
 
     const decision = await store.publishCasWithEventBundle(manifest, events, null);
     assert.equal(decision.status, 'ACCEPT');
