@@ -94,6 +94,11 @@ export {
 } from './model-catalog.js';
 
 export {
+  parseProviderRetryAfterMs,
+  retryAfterParserCanGrantAuthority,
+} from './retry-after.js';
+
+export {
   applyProviderInvocationFailure,
   normalizeProviderInvocationFailure,
   providerFailureIntegrationCanGrantAuthority,
