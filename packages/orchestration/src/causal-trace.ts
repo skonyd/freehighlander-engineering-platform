@@ -1,11 +1,5 @@
 export type CausalSpanKind =
-  | 'MODEL'
-  | 'COMMAND'
-  | 'GATE'
-  | 'JOIN'
-  | 'PARALLEL_BRANCH'
-  | 'AGGREGATE'
-  | 'OTHER';
+  'MODEL' | 'COMMAND' | 'GATE' | 'JOIN' | 'PARALLEL_BRANCH' | 'AGGREGATE' | 'OTHER';
 
 export type CausalSpanStatus = 'SUCCEEDED' | 'FAILED' | 'BLOCKED' | 'SKIPPED';
 
