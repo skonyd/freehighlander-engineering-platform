@@ -121,7 +121,6 @@ test('binding args preserve ordered fallbacks and safe return policy defaults', 
   );
 });
 
-
 test('atomic model management store persists references only and rejects stale CAS writes', async () => {
   const root = await makeTempRoot();
   try {
@@ -362,9 +361,8 @@ test('managed binding publish validates multi-provider fallbacks and persists re
     }
 
     for (const providerId of ['anthropic', 'openai', 'google']) {
-      state = (
-        await refreshManagedProvider(state, providerId, '2026-09-25T18:20:00.000Z', {})
-      ).state;
+      state = (await refreshManagedProvider(state, providerId, '2026-09-25T18:20:00.000Z', {}))
+        .state;
     }
 
     const specs = [
@@ -409,10 +407,7 @@ test('managed binding publish validates multi-provider fallbacks and persists re
         model: 'opus-5.5',
         bindingId: 'controller-opus',
         effort: undefined,
-        fallback: [
-          'controller-gpt,openai,gpt-6',
-          'controller-gemini,google,gemini-pro',
-        ],
+        fallback: ['controller-gpt,openai,gpt-6', 'controller-gemini,google,gemini-pro'],
         returnPolicy: 'ASK_BEFORE_RETURN',
         unknownResetRecheckMs: 30_000,
       },
