@@ -11,8 +11,8 @@ import {
 
 const hash = (character) => character.repeat(64);
 
-test('PASS artifact certificate replaces large successful logs with compact metadata', () => {
-  const receipt = buildPassArtifactCertificate({
+test('PASS artifact certificate replaces large successful logs with compact metadata', async () => {
+  const receipt = await buildPassArtifactCertificate({
     artifactId: 'test-output:abc',
     exactRevision: 'a'.repeat(40),
     artifactHash: hash('1'),
@@ -30,11 +30,11 @@ test('PASS artifact certificate replaces large successful logs with compact meta
   assert.match(receipt.receiptHash, /^[a-f0-9]{64}$/);
   assert.equal(receipt.authority, 'NONE');
   assert.equal(artifactReceiptCanGrantAuthority(), false);
-  assert.doesNotThrow(() => validateArtifactReceipt(receipt));
+  await assert.doesNotReject(() => validateArtifactReceipt(receipt));
 });
 
-test('required raw evidence may have a receipt but the receipt cannot replace it', () => {
-  const receipt = buildPassArtifactCertificate({
+test('required raw evidence may have a receipt but the receipt cannot replace it', async () => {
+  const receipt = await buildPassArtifactCertificate({
     artifactId: 'security-scan:required',
     exactRevision: 'a'.repeat(40),
     artifactHash: hash('2'),
@@ -49,8 +49,8 @@ test('required raw evidence may have a receipt but the receipt cannot replace it
   assert.equal(artifactReceiptCanReplaceRequiredRawEvidence(), false);
 });
 
-test('FAIL receipt requires failure evidence references and cannot masquerade as PASS', () => {
-  const receipt = buildArtifactReceipt({
+test('FAIL receipt requires failure evidence references and cannot masquerade as PASS', async () => {
+  const receipt = await buildArtifactReceipt({
     artifactId: 'test-output:failed',
     exactRevision: 'a'.repeat(40),
     artifactHash: hash('3'),
@@ -66,7 +66,7 @@ test('FAIL receipt requires failure evidence references and cannot masquerade as
   assert.equal(receipt.certificate, 'FAILURE_RECEIPT');
   assert.deepEqual(receipt.relevantExcerptHashes, [hash('4'), hash('5')]);
 
-  assert.throws(
+  await assert.rejects(
     () =>
       buildArtifactReceipt({
         artifactId: 'bad-fail',
@@ -82,7 +82,7 @@ test('FAIL receipt requires failure evidence references and cannot masquerade as
     /requires at least one relevant excerpt hash/,
   );
 
-  assert.throws(
+  await assert.rejects(
     () =>
       buildArtifactReceipt({
         artifactId: 'bad-pass',
@@ -99,13 +99,13 @@ test('FAIL receipt requires failure evidence references and cannot masquerade as
   );
 });
 
-test('receipt rejects unknown raw content or secret fields', () => {
+test('receipt rejects unknown raw content or secret fields', async () => {
   for (const [field, value] of [
     ['rawContent', 'large raw log'],
     ['prompt', 'hidden prompt'],
     ['secretValue', 'secret'],
   ]) {
-    assert.throws(
+    await assert.rejects(
       () =>
         buildArtifactReceipt({
           artifactId: 'tool-output',
@@ -124,8 +124,8 @@ test('receipt rejects unknown raw content or secret fields', () => {
   }
 });
 
-test('receipt token and count accounting fails closed', () => {
-  assert.throws(
+test('receipt token and count accounting fails closed', async () => {
+  await assert.rejects(
     () =>
       buildArtifactReceipt({
         artifactId: 'bad-count',
@@ -142,7 +142,7 @@ test('receipt token and count accounting fails closed', () => {
     /failureCount cannot exceed itemCount/,
   );
 
-  assert.throws(
+  await assert.rejects(
     () =>
       buildArtifactReceipt({
         artifactId: 'bad-tokens',
@@ -159,8 +159,8 @@ test('receipt token and count accounting fails closed', () => {
   );
 });
 
-test('tampered derived state or receipt hash is rejected', () => {
-  const receipt = buildPassArtifactCertificate({
+test('tampered derived state or receipt hash is rejected', async () => {
+  const receipt = await buildPassArtifactCertificate({
     artifactId: 'ci-output',
     exactRevision: 'a'.repeat(40),
     artifactHash: hash('8'),
@@ -170,7 +170,7 @@ test('tampered derived state or receipt hash is rejected', () => {
     estimatedSourceTokens: 200,
   });
 
-  assert.throws(
+  await assert.rejects(
     () =>
       validateArtifactReceipt({
         ...receipt,
@@ -178,7 +178,7 @@ test('tampered derived state or receipt hash is rejected', () => {
       }),
     /derived state mismatch/,
   );
-  assert.throws(
+  await assert.rejects(
     () => validateArtifactReceipt({ ...receipt, receiptHash: hash('0') }),
     /hash mismatch/,
   );
