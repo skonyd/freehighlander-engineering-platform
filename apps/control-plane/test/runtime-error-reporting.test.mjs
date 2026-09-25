@@ -237,7 +237,6 @@ test('runtime error report validates public identifiers and messages', () => {
   );
 });
 
-
 test('diagnosed runtime error reports concise confirmed root cause and retry time', () => {
   const report = createRuntimeErrorReport({
     code: 'PROVIDER_QUOTA_EXHAUSTED',
@@ -348,10 +347,7 @@ test('diagnosis validation rejects unsupported or contradictory causal claims', 
     () => create({ ...base, causeKind: 'TRANSPORT', certainty: 'UNRESOLVED' }),
     /UNRESOLVED diagnosis must use UNKNOWN cause/,
   );
-  assert.throws(
-    () => create({ ...base, redactionStatus: 'RAW' }),
-    /redactionStatus is invalid/,
-  );
+  assert.throws(() => create({ ...base, redactionStatus: 'RAW' }), /redactionStatus is invalid/);
 });
 
 test('diagnosis rejects unsafe text malformed source and invalid retry timestamp', () => {
