@@ -16,6 +16,21 @@ export {
 } from './project-scheduler.js';
 
 export {
+  acquirePortableOwnershipLease,
+  portableMachineInstanceIdCanGrantOwnership,
+  portableOwnershipCanGrantAuthority,
+  portableOwnershipCanTakeOverActiveLease,
+  portableOwnershipLeaseIsActive,
+  releasePortableOwnershipLease,
+  renewPortableOwnershipLease,
+  validatePortableOwnershipLease,
+  type AcquirePortableOwnershipDecision,
+  type AcquirePortableOwnershipRequest,
+  type PortableOwnershipLeaseState,
+  type PortableOwnershipLeaseV1,
+} from './portable-ownership.js';
+
+export {
   buildCanonicalExecutionScope,
   buildNodeExecutionIdentity,
   createNodeResultV1,
