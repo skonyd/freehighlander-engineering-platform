@@ -93,10 +93,7 @@ export {
   type ModelCatalogSource,
 } from './model-catalog.js';
 
-export {
-  parseProviderRetryAfterMs,
-  retryAfterParserCanGrantAuthority,
-} from './retry-after.js';
+export { parseProviderRetryAfterMs, retryAfterParserCanGrantAuthority } from './retry-after.js';
 
 export {
   applyProviderInvocationFailure,
