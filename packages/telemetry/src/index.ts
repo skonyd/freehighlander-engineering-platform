@@ -54,10 +54,8 @@ export type EventType =
   | 'persistence.restore.completed'
   | 'lineage.validation.failed';
 
-
 export type OrchestrationTraceEventType =
-  | 'orchestration.span.completed'
-  | 'orchestration.run.summary';
+  'orchestration.span.completed' | 'orchestration.run.summary';
 
 export interface OrchestrationTraceEventPayload extends Record<string, unknown> {
   readonly kind: 'SPAN' | 'RUN_SUMMARY';
@@ -105,13 +103,19 @@ export function createOrchestrationTraceEvent(
   },
 ): EngineeringEvent<OrchestrationTraceEventPayload> {
   validateOrchestrationTracePayload(input.payload);
-  const expectedKind =
-    input.type === 'orchestration.span.completed' ? 'SPAN' : 'RUN_SUMMARY';
+  const expectedKind = input.type === 'orchestration.span.completed' ? 'SPAN' : 'RUN_SUMMARY';
   if (input.payload.kind !== expectedKind) {
     throw new Error('orchestration trace telemetry kind does not match event type');
   }
   if (input.payload.kind === 'SPAN') {
-    for (const field of ['spanId', 'nodeId', 'spanKind', 'status', 'attempt', 'durationMs'] as const) {
+    for (const field of [
+      'spanId',
+      'nodeId',
+      'spanKind',
+      'status',
+      'attempt',
+      'durationMs',
+    ] as const) {
       if (input.payload[field] === undefined) {
         throw new Error(`orchestration span telemetry requires ${field}`);
       }
