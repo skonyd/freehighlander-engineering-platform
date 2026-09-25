@@ -76,8 +76,7 @@ export function evaluateFullAutoMergeIntent(
   requireSha256(input.reviewScopeHash, 'reviewScopeHash');
 
   const reason = evaluateReason(input);
-  const status: FullAutoMergeIntentStatus =
-    reason === 'READY' ? 'SHADOW_INTENT_READY' : 'BLOCKED';
+  const status: FullAutoMergeIntentStatus = reason === 'READY' ? 'SHADOW_INTENT_READY' : 'BLOCKED';
 
   const identity = {
     schemaVersion: 1,
