@@ -368,7 +368,6 @@ test('portable handoff needs no ownership lease when there is no active work ite
   assert.equal(ownershipCalls, 0);
 });
 
-
 test('portable resume blocks a live ownership lease without exact lease continuity', async () => {
   const candidate = manifest();
   const active = acquirePortableOwnershipLease(
@@ -481,8 +480,16 @@ test('portable resume requires ownership claim when lease is missing released or
 
   for (const [stored, now, ownershipStatus] of [
     [null, '2026-09-25T07:00:30.000Z', 'MISSING'],
-    [{ lease: released, revision: 'e'.repeat(40), authority: 'NONE' }, '2026-09-25T07:00:40.000Z', 'RELEASED'],
-    [{ lease: active, revision: 'd'.repeat(40), authority: 'NONE' }, '2026-09-25T07:01:00.000Z', 'EXPIRED'],
+    [
+      { lease: released, revision: 'e'.repeat(40), authority: 'NONE' },
+      '2026-09-25T07:00:40.000Z',
+      'RELEASED',
+    ],
+    [
+      { lease: active, revision: 'd'.repeat(40), authority: 'NONE' },
+      '2026-09-25T07:01:00.000Z',
+      'EXPIRED',
+    ],
   ]) {
     const result = await inspectPortableResumeWithOwnership({
       resumeStore: {
