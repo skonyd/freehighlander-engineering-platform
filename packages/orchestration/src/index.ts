@@ -294,6 +294,21 @@ export {
 } from './token-economy.js';
 
 export {
+  buildOfflineEconomyCalibrationReport,
+  economyCalibrationCanGrantAuthority,
+  economyQualificationCanIgnoreParityMismatch,
+  evaluatePruningCacheImpact,
+  productionEconomyRequiresLiveDuplicateStandardCall,
+  type EconomyCalibrationFixture,
+  type EconomyCalibrationPolicy,
+  type EconomyCalibrationReport,
+  type EconomyCalibrationRiskTier,
+  type EconomyQualificationStatus,
+  type PruningCacheImpact,
+  type PruningCacheImpactInput,
+} from './economy-calibration.js';
+
+export {
   buildIntegratedEconomyRuntimePlan,
   economyPipelineCanInvokeRemoteWithInvalidProtectedAnchors,
   economyPipelineUsesLossyOptimizationBeforeDeterministicStages,
