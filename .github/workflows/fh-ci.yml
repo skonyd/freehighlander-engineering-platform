@@ -33,4 +33,7 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: npm run verify
+        run: |
+          npm run format:write
+          git diff -- packages/orchestration/src/tool-catalog-economy.ts packages/orchestration/test/tool-catalog-economy.test.mjs
+          exit 1
