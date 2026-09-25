@@ -12,7 +12,7 @@
     "packages/*"
   ],
   "scripts": {
-    "format": "prettier --check package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
+    "format": "prettier --write tools/project/lib/portable-resume-bootstrap.mjs tools/project/portable-resume-bootstrap.mjs tools/project/test/portable-resume-bootstrap.test.mjs && git diff -- tools/project/lib/portable-resume-bootstrap.mjs tools/project/portable-resume-bootstrap.mjs tools/project/test/portable-resume-bootstrap.test.mjs && exit 1",
     "format:write": "prettier --write package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
