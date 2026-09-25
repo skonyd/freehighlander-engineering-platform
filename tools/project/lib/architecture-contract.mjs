@@ -184,16 +184,8 @@ export function assertArchitectureContract(contract) {
     'V2 #207 merge SHA',
   );
   expect(contract.migration?.v2_reference_post_merge_hardening_pr, 209, 'V2 hardening PR');
-  expect(
-    contract.migration?.v2_compatibility_authority,
-    'ENABLED',
-    'V2 compatibility authority',
-  );
-  expect(
-    contract.migration?.fh01b2_dependency_status,
-    'SATISFIED',
-    'FH-01B2 dependency status',
-  );
+  expect(contract.migration?.v2_compatibility_authority, 'ENABLED', 'V2 compatibility authority');
+  expect(contract.migration?.fh01b2_dependency_status, 'SATISFIED', 'FH-01B2 dependency status');
   expect(contract.migration?.v3_authority, 'SHADOW_ONLY', 'V3 authority');
   expect(contract.migration?.v3_authority_cutover_phase, 'FH-20', 'V3 authority cutover phase');
 
