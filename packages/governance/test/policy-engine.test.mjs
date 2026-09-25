@@ -202,8 +202,9 @@ test('policy configuration cannot self-approve', () => {
   assert.equal(policyConfigurationCanSelfApprove(), false);
 });
 
-
-test('MODEL_QUORUM_REQUIRED is distinct from human approval and defaults to lower precedence', () => {
+test(
+  'MODEL_QUORUM_REQUIRED is distinct from human approval and defaults to lower precedence',
+  () => {
   const normal = evaluatePolicy(policy, {
     principalKind: 'MODEL',
     action: 'merge',
@@ -228,10 +229,13 @@ test('MODEL_QUORUM_REQUIRED is distinct from human approval and defaults to lowe
     dataClassification: 'SECRET',
   });
   assert.equal(secret.effect, 'DENY');
-  assert.deepEqual(secret.matchedRuleIds, ['deny-secret-merge', 'quorum-normal-merge']);
-});
+    assert.deepEqual(secret.matchedRuleIds, ['deny-secret-merge', 'quorum-normal-merge']);
+  },
+);
 
-test('model quorum cannot create human approval requests satisfy human gates or override DENY', () => {
+test(
+  'model quorum cannot create human approval requests satisfy human gates or override DENY',
+  () => {
   const quorum = evaluatePolicy(policy, {
     principalKind: 'MODEL',
     action: 'merge',
@@ -251,6 +255,7 @@ test('model quorum cannot create human approval requests satisfy human gates or 
       }),
     /requires HUMAN_REQUIRED/,
   );
-  assert.equal(modelQuorumCanSatisfyHumanRequired(), false);
-  assert.equal(modelQuorumCanOverrideDeny(), false);
-});
+    assert.equal(modelQuorumCanSatisfyHumanRequired(), false);
+    assert.equal(modelQuorumCanOverrideDeny(), false);
+  },
+);
