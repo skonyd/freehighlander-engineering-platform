@@ -1,5 +1,6 @@
 import { normalizeEffortValue, resolveProviderEffort } from './effort-normalization.js';
 import { measureMonotonicDuration } from './monotonic-timing.js';
+import { parseProviderRetryAfterMs } from './retry-after.js';
 import type {
   ProviderAdapter,
   ProviderCapability,
@@ -375,7 +376,7 @@ export class GeminiProviderAdapter implements ProviderAdapter {
         )}`,
         classifyHttpFailure(response.status, body),
         response.status,
-        parseRetryAfterMs(response.headers.get('retry-after')),
+        parseProviderRetryAfterMs(response.headers.get('retry-after')),
       );
     }
     return { body, response };
@@ -461,13 +462,6 @@ function classifyHttpFailure(status: number, body: string): ProviderFailureKind 
   }
   if (status >= 500) return 'provider_unavailable';
   return 'transport_failure';
-}
-
-function parseRetryAfterMs(value: string | null): number | undefined {
-  if (value === null) return undefined;
-  const seconds = Number(value.trim());
-  if (!Number.isFinite(seconds) || seconds < 0) return undefined;
-  return Math.round(seconds * 1_000);
 }
 
 function isAbortError(error: unknown): boolean {
