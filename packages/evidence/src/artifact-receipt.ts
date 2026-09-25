@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 export type ArtifactReceiptKind =
   'TEST_LOG' | 'CI_LOG' | 'SCANNER_REPORT' | 'SEARCH_RESULT' | 'DEPENDENCY_REPORT' | 'TOOL_OUTPUT';
 
@@ -55,7 +53,7 @@ const allowedInputKeys = new Set([
   'requiredRawEvidence',
 ]);
 
-export function buildArtifactReceipt(input: ArtifactReceiptInput): ArtifactReceipt {
+export async function buildArtifactReceipt(input: ArtifactReceiptInput): Promise<ArtifactReceipt> {
   rejectUnknownInputFields(input);
 
   const artifactId = requireText(input.artifactId, 'artifactId');
@@ -132,16 +130,16 @@ export function buildArtifactReceipt(input: ArtifactReceiptInput): ArtifactRecei
     relevantExcerptHashes,
     requiredRawEvidence,
     contextReplacement,
-    receiptHash: sha256(canonicalJson(identity)),
+    receiptHash: await sha256Hex(canonicalJson(identity)),
     authority: 'NONE',
   };
 }
 
-export function buildPassArtifactCertificate(
+export async function buildPassArtifactCertificate(
   input: Omit<ArtifactReceiptInput, 'status' | 'failureCount'> & {
     readonly failureCount?: 0;
   },
-): ArtifactReceipt {
+): Promise<ArtifactReceipt> {
   return buildArtifactReceipt({
     ...input,
     status: 'PASS',
@@ -149,7 +147,7 @@ export function buildPassArtifactCertificate(
   });
 }
 
-export function validateArtifactReceipt(receipt: ArtifactReceipt): void {
+export async function validateArtifactReceipt(receipt: ArtifactReceipt): Promise<void> {
   if (receipt.schemaVersion !== 1) {
     throw new Error('artifact receipt schemaVersion must be 1');
   }
@@ -157,7 +155,7 @@ export function validateArtifactReceipt(receipt: ArtifactReceipt): void {
     throw new Error('artifact receipt authority must be NONE');
   }
 
-  const rebuilt = buildArtifactReceipt({
+  const rebuilt = await buildArtifactReceipt({
     artifactId: receipt.artifactId,
     exactRevision: receipt.exactRevision,
     artifactHash: receipt.artifactHash,
@@ -246,8 +244,9 @@ function requireNonNegativeInteger(value: number, field: string): number {
   return value;
 }
 
-function sha256(value: string): string {
-  return createHash('sha256').update(value, 'utf8').digest('hex');
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 function canonicalJson(value: unknown): string {
