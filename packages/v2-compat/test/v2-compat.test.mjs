@@ -489,25 +489,30 @@ test('reference profile is the accepted #207 + #209 compatibility profile', () =
   assert.equal(ACCEPTED_V2_REFERENCE.pullRequest, 207);
 });
 
-
 test('protocol rejects duplicate STATUS and ROLE fields fail-closed', () => {
   const duplicateStatus = preReview().replace(
     'STATUS: CANDIDATE',
     'STATUS: CANDIDATE\nSTATUS: CANDIDATE',
   );
-  assert.equal(validateArtifactForStore('pre-review', duplicateStatus, {
-    expectedSha: revision,
-    configHash,
-  }).valid, false);
+  assert.equal(
+    validateArtifactForStore('pre-review', duplicateStatus, {
+      expectedSha: revision,
+      configHash,
+    }).valid,
+    false,
+  );
 
   const duplicateRole = preReview().replace(
     'ROLE: pre-review',
     'ROLE: pre-review\nROLE: pre-review',
   );
-  assert.equal(validateArtifactForStore('pre-review', duplicateRole, {
-    expectedSha: revision,
-    configHash,
-  }).valid, false);
+  assert.equal(
+    validateArtifactForStore('pre-review', duplicateRole, {
+      expectedSha: revision,
+      configHash,
+    }).valid,
+    false,
+  );
 });
 
 test('context-triage signal detection is status-independent and CRLF-safe', () => {
