@@ -1,7 +1,10 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 
-import { releasePortableOwnershipLease } from '../../../packages/orchestration/dist/index.js';
+import {
+  portableOwnershipLeaseIsActive,
+  releasePortableOwnershipLease,
+} from '../../../packages/orchestration/dist/index.js';
 import {
   GitResumeStore,
   validateResumeManifestV1,
@@ -233,6 +236,100 @@ export async function inspectPortableResume({
       repositoryIdentity,
       remoteHead,
     }),
+    semanticGatePassInferred: false,
+  };
+}
+
+export async function inspectPortableResumeWithOwnership({
+  resumeStore,
+  ownershipStore,
+  repositoryIdentity,
+  projectId,
+  readRemoteHead,
+  leaseId,
+  now,
+}) {
+  const manifest = await resumeStore.getLatest(repositoryIdentity, projectId);
+  if (manifest === null) {
+    return {
+      status: 'NOT_FOUND',
+      repositoryIdentity,
+      projectId,
+      ownershipStatus: 'NOT_CHECKED',
+      readyToMutate: false,
+      semanticGatePassInferred: false,
+      authority: 'NONE',
+    };
+  }
+
+  const remoteHead = await readRemoteHead(manifest.branch);
+  const reconciliation = evaluatePortableResumeReconciliation({
+    manifest,
+    repositoryIdentity,
+    remoteHead,
+  });
+  if (reconciliation.status !== 'READY') {
+    return {
+      ...reconciliation,
+      ownershipStatus: 'NOT_CHECKED',
+      readyToMutate: false,
+      semanticGatePassInferred: false,
+    };
+  }
+
+  if (manifest.activeWorkItemId === null) {
+    return {
+      ...reconciliation,
+      ownershipStatus: 'NOT_REQUIRED',
+      readyToMutate: true,
+      semanticGatePassInferred: false,
+    };
+  }
+
+  const ownership = await ownershipStore.getLatest(
+    repositoryIdentity,
+    manifest.projectId,
+    manifest.activeWorkItemId,
+  );
+  if (ownership === null) {
+    return {
+      ...reconciliation,
+      status: 'OWNERSHIP_CLAIM_REQUIRED',
+      ownershipStatus: 'MISSING',
+      readyToMutate: false,
+      semanticGatePassInferred: false,
+    };
+  }
+
+  if (portableOwnershipLeaseIsActive(ownership.lease, now)) {
+    if (typeof leaseId === 'string' && leaseId === ownership.lease.leaseId) {
+      return {
+        ...reconciliation,
+        ownershipStatus: 'HELD',
+        ownershipRevision: ownership.revision,
+        ownershipGeneration: ownership.lease.generation,
+        readyToMutate: true,
+        semanticGatePassInferred: false,
+      };
+    }
+    return {
+      ...reconciliation,
+      status: 'OWNERSHIP_ACTIVE',
+      ownershipStatus: 'ACTIVE_OTHER_OR_UNPROVEN',
+      ownershipRevision: ownership.revision,
+      ownershipGeneration: ownership.lease.generation,
+      readyToMutate: false,
+      semanticGatePassInferred: false,
+    };
+  }
+
+  return {
+    ...reconciliation,
+    status: 'OWNERSHIP_CLAIM_REQUIRED',
+    ownershipStatus: ownership.lease.state === 'RELEASED' ? 'RELEASED' : 'EXPIRED',
+    ownershipRevision: ownership.revision,
+    ownershipGeneration: ownership.lease.generation,
+    readyToMutate: false,
     semanticGatePassInferred: false,
   };
 }
