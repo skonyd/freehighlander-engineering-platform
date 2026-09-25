@@ -76,6 +76,19 @@ test('expired or explicitly released portable ownership can be reacquired with n
   assert.equal(released.state, 'RELEASED');
   assert.equal(released.releasedAt, '2026-09-25T07:01:10.000Z');
   assert.equal(portableOwnershipLeaseIsActive(released, '2026-09-25T07:01:11.000Z'), false);
+  assert.throws(
+    () =>
+      acquirePortableOwnershipLease(
+        request({
+          leaseId: 'lease-too-early',
+          machineInstanceId: 'machine-too-early',
+          now: '2026-09-25T07:01:09.999Z',
+          lastCheckpointGeneration: 4,
+        }),
+        released,
+      ),
+    /predates release/,
+  );
 
   const afterRelease = acquirePortableOwnershipLease(
     request({
