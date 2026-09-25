@@ -10,6 +10,7 @@ import {
 } from '../../../packages/orchestration/dist/index.js';
 import { createResumeManifestV1 } from '../../../packages/persistence/dist/index.js';
 import {
+  claimPortableResumeOwnership,
   evaluatePortableResumeReconciliation,
   inspectPortableResume,
   inspectPortableResumeWithOwnership,
@@ -563,5 +564,238 @@ test('portable resume skips ownership reads when reconciliation is stale or no w
   assert.equal(idle.status, 'READY');
   assert.equal(idle.ownershipStatus, 'NOT_REQUIRED');
   assert.equal(idle.readyToMutate, true);
+  assert.equal(ownershipReads, 0);
+});
+
+
+test('portable resume claims missing ownership with exact null-revision CAS and read-back', async () => {
+  const candidate = manifest();
+  const events = [];
+  let claimed = null;
+
+  const result = await claimPortableResumeOwnership({
+    resumeStore: {
+      async getLatest() {
+        events.push('resume-read');
+        return candidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        if (claimed === null) {
+          events.push('ownership-read-missing');
+          return null;
+        }
+        events.push('ownership-read-claimed');
+        return { lease: claimed, revision: 'e'.repeat(40), authority: 'NONE' };
+      },
+      async publishCas(value, expectedRevision) {
+        events.push('ownership-publish');
+        assert.equal(expectedRevision, null);
+        claimed = value;
+        return { status: 'ACCEPT', revision: 'e'.repeat(40), authority: 'NONE' };
+      },
+    },
+    repositoryIdentity: candidate.repositoryIdentity,
+    projectId: candidate.projectId,
+    readRemoteHead: async () => REMOTE_HEAD,
+    runId: 'run-151',
+    leaseId: 'lease-machine-b',
+    machineInstanceId: 'machine-b',
+    ttlMs: 120_000,
+    now: '2026-09-25T07:02:00.000Z',
+  });
+
+  assert.equal(result.status, 'READY');
+  assert.equal(result.ownershipStatus, 'CLAIMED');
+  assert.equal(result.ownershipClaimed, true);
+  assert.equal(result.reclaimedExpiredLease, false);
+  assert.equal(result.ownershipGeneration, 1);
+  assert.equal(result.readyToMutate, true);
+  assert.equal(result.authority, 'NONE');
+  assert.deepEqual(events, [
+    'resume-read',
+    'ownership-read-missing',
+    'ownership-publish',
+    'ownership-read-claimed',
+  ]);
+});
+
+test('portable resume reclaims an expired lease with incremented generation', async () => {
+  const candidate = manifest();
+  const expired = acquirePortableOwnershipLease(
+    {
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      workItemId: candidate.activeWorkItemId,
+      runId: 'run-151',
+      leaseId: 'lease-machine-a',
+      machineInstanceId: 'machine-a',
+      now: '2026-09-25T07:00:00.000Z',
+      ttlMs: 60_000,
+      lastCheckpointGeneration: candidate.generation,
+    },
+    null,
+  ).lease;
+  let claimed = null;
+
+  const result = await claimPortableResumeOwnership({
+    resumeStore: {
+      async getLatest() {
+        return candidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        return claimed === null
+          ? { lease: expired, revision: 'd'.repeat(40), authority: 'NONE' }
+          : { lease: claimed, revision: 'e'.repeat(40), authority: 'NONE' };
+      },
+      async publishCas(value, expectedRevision) {
+        assert.equal(expectedRevision, 'd'.repeat(40));
+        assert.equal(value.generation, 2);
+        assert.equal(value.leaseId, 'lease-machine-b');
+        claimed = value;
+        return { status: 'ACCEPT', revision: 'e'.repeat(40), authority: 'NONE' };
+      },
+    },
+    repositoryIdentity: candidate.repositoryIdentity,
+    projectId: candidate.projectId,
+    readRemoteHead: async () => REMOTE_HEAD,
+    runId: 'run-151',
+    leaseId: 'lease-machine-b',
+    machineInstanceId: 'machine-b',
+    ttlMs: 120_000,
+    now: '2026-09-25T07:02:00.000Z',
+  });
+
+  assert.equal(result.status, 'READY');
+  assert.equal(result.ownershipStatus, 'CLAIMED');
+  assert.equal(result.reclaimedExpiredLease, true);
+  assert.equal(result.ownershipGeneration, 2);
+  assert.equal(result.readyToMutate, true);
+});
+
+test('portable resume claim cannot take over a live ownership lease', async () => {
+  const candidate = manifest();
+  const active = acquirePortableOwnershipLease(
+    {
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      workItemId: candidate.activeWorkItemId,
+      runId: 'run-151',
+      leaseId: 'lease-machine-a',
+      machineInstanceId: 'machine-a',
+      now: '2026-09-25T07:00:00.000Z',
+      ttlMs: 120_000,
+      lastCheckpointGeneration: candidate.generation,
+    },
+    null,
+  ).lease;
+  let publishCalls = 0;
+
+  const result = await claimPortableResumeOwnership({
+    resumeStore: {
+      async getLatest() {
+        return candidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        return { lease: active, revision: 'd'.repeat(40), authority: 'NONE' };
+      },
+      async publishCas() {
+        publishCalls += 1;
+        throw new Error('live ownership must not be overwritten');
+      },
+    },
+    repositoryIdentity: candidate.repositoryIdentity,
+    projectId: candidate.projectId,
+    readRemoteHead: async () => REMOTE_HEAD,
+    runId: 'run-151',
+    leaseId: 'lease-machine-b',
+    machineInstanceId: 'machine-b',
+    ttlMs: 120_000,
+    now: '2026-09-25T07:00:30.000Z',
+  });
+
+  assert.equal(result.status, 'OWNERSHIP_ACTIVE');
+  assert.equal(result.ownershipClaimed, false);
+  assert.equal(result.readyToMutate, false);
+  assert.equal(publishCalls, 0);
+});
+
+test('portable resume claim reports exact CAS conflict without guessing takeover', async () => {
+  const candidate = manifest();
+  let readCount = 0;
+
+  const result = await claimPortableResumeOwnership({
+    resumeStore: {
+      async getLatest() {
+        return candidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        readCount += 1;
+        return null;
+      },
+      async publishCas(value, expectedRevision) {
+        assert.equal(value.generation, 1);
+        assert.equal(expectedRevision, null);
+        return {
+          status: 'CONFLICT',
+          reason: 'remote portable ownership state changed during publish',
+          revision: null,
+          authority: 'NONE',
+        };
+      },
+    },
+    repositoryIdentity: candidate.repositoryIdentity,
+    projectId: candidate.projectId,
+    readRemoteHead: async () => REMOTE_HEAD,
+    runId: 'run-151',
+    leaseId: 'lease-machine-b',
+    machineInstanceId: 'machine-b',
+    ttlMs: 120_000,
+    now: '2026-09-25T07:02:00.000Z',
+  });
+
+  assert.equal(result.status, 'OWNERSHIP_CLAIM_CONFLICT');
+  assert.equal(result.ownershipStatus, 'CONFLICT');
+  assert.equal(result.ownershipClaimed, false);
+  assert.equal(result.readyToMutate, false);
+  assert.equal(readCount, 1);
+});
+
+test('portable resume validates claim inputs before touching ownership state', async () => {
+  const candidate = manifest();
+  let ownershipReads = 0;
+
+  await assert.rejects(
+    () =>
+      claimPortableResumeOwnership({
+        resumeStore: {
+          async getLatest() {
+            return candidate;
+          },
+        },
+        ownershipStore: {
+          async getLatest() {
+            ownershipReads += 1;
+            return null;
+          },
+        },
+        repositoryIdentity: candidate.repositoryIdentity,
+        projectId: candidate.projectId,
+        readRemoteHead: async () => REMOTE_HEAD,
+        runId: null,
+        leaseId: 'lease-machine-b',
+        machineInstanceId: 'machine-b',
+        ttlMs: 120_000,
+        now: '2026-09-25T07:02:00.000Z',
+      }),
+    /runId is required/,
+  );
   assert.equal(ownershipReads, 0);
 });
