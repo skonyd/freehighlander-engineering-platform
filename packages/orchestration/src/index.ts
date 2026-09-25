@@ -121,6 +121,19 @@ export {
 } from './replay-engine.js';
 
 export {
+  buildFullAutoQuorumArtifact,
+  fullAutoQuorumCanGrantAuthority,
+  fullAutoQuorumIsMergeEvidenceComplete,
+  validateFullAutoQuorumArtifact,
+  type FullAutoQuorumArtifact,
+  type FullAutoQuorumInput,
+  type FullAutoQuorumScope,
+  type FullAutoQuorumStatus,
+  type FullAutoReviewerEvidence,
+  type FullAutoReviewerVerdict,
+} from './full-auto-quorum.js';
+
+export {
   buildDebateSnapshot,
   createDebateSession,
   debateConfigurationCanGrantAuthority,
