@@ -6,6 +6,7 @@ import {
   acquirePortableOwnershipLease,
   portableOwnershipLeaseIsActive,
   releasePortableOwnershipLease,
+  validateHumanDecisionQueueEntry,
   validateNodeResultV1,
 } from '../../../packages/orchestration/dist/index.js';
 import {
@@ -100,6 +101,10 @@ export async function publishPreparedResumeCheckpoint({
     manifest,
     eventBundle,
   });
+  const restoredHumanDecisions = restorePortableHumanDecisionQueue({
+    manifest,
+    eventBundle,
+  });
 
   const expectedGeneration = manifest.generation === 1 ? null : manifest.generation - 1;
   const decision =
@@ -151,6 +156,8 @@ export async function publishPreparedResumeCheckpoint({
     eventBundleHash,
     restoredNodeResultCount: restoredNodeResults.resultCount,
     restoredNodeIds: restoredNodeResults.restoredNodeIds,
+    parkedDecisionCount: restoredHumanDecisions.decisionCount,
+    parkedDecisionIds: restoredHumanDecisions.restoredDecisionIds,
     published: true,
     semanticGatePassInferred: false,
     authority: 'NONE',
@@ -644,6 +651,105 @@ export function restorePortableCompletedNodeResults({ manifest, eventBundle }) {
     restoredNodeIds,
     resultCount: results.length,
     results,
+    semanticGatePassInferred: false,
+    authority: 'NONE',
+  };
+}
+
+export function restorePortableHumanDecisionQueue({ manifest, eventBundle }) {
+  validateResumeManifestV1(manifest);
+  if (eventBundle === null || typeof eventBundle !== 'object') {
+    if (manifest.parkedDecisionIds.length === 0) {
+      return {
+        status: 'NOT_REQUIRED',
+        restoredDecisionIds: [],
+        decisionCount: 0,
+        entries: [],
+        semanticGatePassInferred: false,
+        authority: 'NONE',
+      };
+    }
+    throw new Error('parked human decisions require an event bundle');
+  }
+
+  validatePortableCanonicalEventBundleV1(eventBundle);
+  if (eventBundle.repositoryIdentity !== manifest.repositoryIdentity) {
+    throw new Error('portable human decision bundle repository identity mismatch');
+  }
+  if (eventBundle.projectId !== manifest.projectId) {
+    throw new Error('portable human decision bundle project identity mismatch');
+  }
+  if (eventBundle.exactRevision !== manifest.remoteHead) {
+    throw new Error('portable human decision bundle revision mismatch');
+  }
+
+  const expected = new Set(manifest.parkedDecisionIds);
+  const entriesById = new Map();
+
+  for (const record of eventBundle.events) {
+    const event = record.event;
+    if (event.type !== 'human.required') continue;
+    const raw = event.payload?.portableHumanDecisionQueueEntry;
+    if (raw === undefined) continue;
+    if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+      throw new Error('portable human decision payload must be an object');
+    }
+
+    const entry = raw;
+    validateHumanDecisionQueueEntry(entry);
+    if (entriesById.has(entry.decisionId)) {
+      throw new Error('duplicate portable human decision: ' + entry.decisionId);
+    }
+    if (!expected.has(entry.decisionId)) {
+      throw new Error('portable event bundle contains an unlisted human decision: ' + entry.decisionId);
+    }
+    if (entry.repositoryIdentity !== manifest.repositoryIdentity) {
+      throw new Error('portable human decision repository mismatch: ' + entry.decisionId);
+    }
+    if (entry.projectId !== manifest.projectId) {
+      throw new Error('portable human decision project mismatch: ' + entry.decisionId);
+    }
+    if (entry.runId !== eventBundle.runId) {
+      throw new Error('portable human decision run mismatch: ' + entry.decisionId);
+    }
+    if (entry.exactRevision !== manifest.remoteHead) {
+      throw new Error('portable human decision revision mismatch: ' + entry.decisionId);
+    }
+    if (entry.currentness.workflowHash !== manifest.workflow.hash) {
+      throw new Error('portable human decision workflow mismatch: ' + entry.decisionId);
+    }
+    if (entry.currentness.runSnapshotHash !== manifest.runSnapshotHash) {
+      throw new Error('portable human decision run snapshot mismatch: ' + entry.decisionId);
+    }
+    if (entry.currentness.policyHash !== manifest.policyHash) {
+      throw new Error('portable human decision policy mismatch: ' + entry.decisionId);
+    }
+    if (entry.currentness.catalogSnapshotHash !== manifest.catalogSnapshotHash) {
+      throw new Error('portable human decision catalog mismatch: ' + entry.decisionId);
+    }
+    if (entry.currentness.bindingSnapshotHash !== manifest.bindingSnapshotHash) {
+      throw new Error('portable human decision binding mismatch: ' + entry.decisionId);
+    }
+    if (event.node?.id !== undefined && event.node.id !== entry.nodeId) {
+      throw new Error('portable human decision node mismatch: ' + entry.decisionId);
+    }
+
+    entriesById.set(entry.decisionId, entry);
+  }
+
+  for (const decisionId of manifest.parkedDecisionIds) {
+    if (!entriesById.has(decisionId)) {
+      throw new Error('portable human decision is missing: ' + decisionId);
+    }
+  }
+
+  const restoredDecisionIds = [...entriesById.keys()].sort();
+  const entries = restoredDecisionIds.map((decisionId) => entriesById.get(decisionId));
+  return {
+    status: entries.length === 0 ? 'NOT_REQUIRED' : 'RESTORED',
+    restoredDecisionIds,
+    decisionCount: entries.length,
+    entries,
     semanticGatePassInferred: false,
     authority: 'NONE',
   };
