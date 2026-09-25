@@ -174,10 +174,7 @@ export function assertArchitectureContract(contract) {
     contract.full_auto?.human_required_satisfiable_by_model_quorum,
     'Full Auto human gate delegation',
   );
-  expectFalse(
-    contract.full_auto?.deny_overridable_by_model_quorum,
-    'Full Auto deny override',
-  );
+  expectFalse(contract.full_auto?.deny_overridable_by_model_quorum, 'Full Auto deny override');
   expectTrue(
     contract.full_auto?.system_policy_creates_merge_intent,
     'Full Auto system policy merge intent',
