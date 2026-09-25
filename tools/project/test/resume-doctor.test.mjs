@@ -207,7 +207,6 @@ test('resume doctor remains credential-copy-free and authority-neutral', () => {
   assert.equal(resumeDoctorCanGrantAuthority(), false);
 });
 
-
 test('resume provider readiness probes required providers and capabilities without values', async () => {
   const adapters = new Map([
     [
