@@ -268,7 +268,7 @@ test('portable resume crosses Linux source to Windows/macOS fixtures with no cha
     assert.equal(handoff.status, 'PORTABLE_READY');
     assert.equal(handoff.handoffComplete, true);
     assert.equal(handoff.ownershipRelease, 'RELEASED');
-    assert.equal(handoff.currentnessStatus, 'VERIFIED');
+    assert.equal(handoff.eventBundleHash, events.bundleHash);
 
     const serialized = JSON.stringify({ manifest, events });
     assert.equal(serialized.includes(source), false);
