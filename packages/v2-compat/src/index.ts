@@ -170,6 +170,44 @@ export async function taskFingerprint(repositoryIdentity: string, taskId: string
   return sha256Hex(`${repositoryIdentity}|${taskId}`);
 }
 
+async function hashBoundFields(fields: readonly string[]): Promise<string> {
+  const fieldHashes = await Promise.all(fields.map((field) => sha256Hex(field)));
+  return sha256Hex(fieldHashes.join(''));
+}
+
+export async function testReviewScopeHash(
+  baseSha: string,
+  title: string,
+  body: string,
+  triageHash: string,
+): Promise<string> {
+  return hashBoundFields([baseSha, title, body, triageHash]);
+}
+
+export async function finalReviewScopeHash(input: {
+  readonly headSha: string;
+  readonly baseSha: string;
+  readonly title: string;
+  readonly body: string;
+  readonly labels: string;
+  readonly taskId: string;
+  readonly triageHash: string;
+  readonly configHash: string;
+  readonly effectiveRisk: RiskTier;
+}): Promise<string> {
+  return hashBoundFields([
+    input.headSha,
+    input.baseSha,
+    input.title,
+    input.body,
+    input.labels,
+    input.taskId,
+    input.triageHash,
+    input.configHash,
+    input.effectiveRisk,
+  ]);
+}
+
 export function parsePrTaskId(body: string): string | null {
   const matches = [...body.matchAll(/<!--\s*automation-task-id:\s*([A-Za-z0-9-]+)\s*-->/g)];
   return matches.length === 1 ? (matches[0]?.[1] ?? null) : null;
@@ -408,6 +446,17 @@ function section(text: string, key: string): string {
   return match?.[1]?.trimEnd() ?? '';
 }
 
+export function contextTriageHasSignal(text: string): boolean {
+  for (const key of ['AMBIGUITIES', 'RISKS_CANDIDATE']) {
+    const lines = section(text.replaceAll('\r', ''), key)
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (lines.some((line) => !/^-\s*none\s*$/i.test(line))) return true;
+  }
+  return false;
+}
+
 export interface ValidationResult {
   readonly valid: boolean;
   readonly errors: readonly string[];
@@ -419,10 +468,14 @@ function result(errors: string[]): ValidationResult {
 
 export function validateProtocol(text: string, expectedSha?: string): ValidationResult {
   const errors: string[] = [];
-  const status = topValues(text, 'STATUS')[0] ?? null;
-  const role = topValues(text, 'ROLE')[0] ?? null;
+  const statuses = topValues(text, 'STATUS');
+  const rolesFound = topValues(text, 'ROLE');
+  const status = statuses[0] ?? null;
+  const role = rolesFound[0] ?? null;
   const sha = topValues(text, 'SHA')[0] ?? null;
 
+  if (statuses.length !== 1) errors.push('STATUS must appear exactly once');
+  if (rolesFound.length !== 1) errors.push('ROLE must appear exactly once');
   if (!status || !['PASS', 'WARN', 'FAIL', 'CANDIDATE', 'COMPLETE'].includes(status)) {
     errors.push('invalid STATUS');
   }
@@ -577,6 +630,8 @@ export interface ArtifactValidationOptions {
   readonly configHash: string;
   readonly trustedStore?: boolean;
   readonly profile?: V2CompatibilityProfile;
+  readonly expectedTestReviewScopeHash?: string;
+  readonly expectedFinalReviewScopeHash?: string;
 }
 
 export function validateArtifactForStore(
@@ -609,13 +664,35 @@ export function validateArtifactForStore(
     }
   }
 
+  if (type === 'test-review') {
+    const scopeHashes = topValues(text, 'SCOPE_HASH');
+    if (scopeHashes.length !== 1 || !/^[0-9a-f]{64}$/.test(scopeHashes[0] ?? '')) {
+      errors.push('invalid test-review SCOPE_HASH');
+    } else if (
+      options.expectedTestReviewScopeHash !== undefined &&
+      scopeHashes[0] !== options.expectedTestReviewScopeHash
+    ) {
+      errors.push('test-review SCOPE_HASH mismatch');
+    }
+  }
+
   if (type === 'final-review') {
     const initial = topValue(text, 'INITIAL_RISK') as RiskTier | null;
     const final = topValue(text, 'FINAL_RISK') as RiskTier | null;
     const effective = topValue(text, 'EFFECTIVE_RISK') as RiskTier | null;
     const model = topValue(text, 'MODEL');
     const effort = topValue(text, 'EFFORT');
+    const scopeHashes = topValues(text, 'SCOPE_HASH');
     const profile = options.profile ?? V2_REFERENCE_PROFILE;
+
+    if (scopeHashes.length !== 1 || !/^[0-9a-f]{64}$/.test(scopeHashes[0] ?? '')) {
+      errors.push('invalid final-review SCOPE_HASH');
+    } else if (
+      options.expectedFinalReviewScopeHash !== undefined &&
+      scopeHashes[0] !== options.expectedFinalReviewScopeHash
+    ) {
+      errors.push('final-review SCOPE_HASH mismatch');
+    }
 
     if (!initial || !final || !effective || !(initial in riskRank) || !(final in riskRank)) {
       errors.push('invalid final-review risk provenance');
@@ -764,9 +841,10 @@ export async function validateContextTriageGate(input: {
   }
 
   const status = topValue(input.triage, 'STATUS');
-  if (status === 'WARN') {
+  const needsAdjudication = status === 'WARN' || contextTriageHasSignal(input.triage);
+  if (needsAdjudication) {
     if (!input.adjudication) {
-      errors.push('WARN context-triage requires adjudication');
+      errors.push('context-triage signal requires adjudication');
     } else {
       errors.push(
         ...validateArtifactForStore('context-triage-adjudication', input.adjudication, {
