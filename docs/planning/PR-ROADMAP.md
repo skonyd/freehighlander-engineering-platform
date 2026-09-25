@@ -8,15 +8,16 @@ FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 
 - FH-01A complete.
 - FH-01B1 provisional compatibility complete.
-- FH-01B2 blocked by Creator Marketplace #207 final acceptance/merge/smoke.
+- FH-01B2 final reconciliation complete via PR #237.
 - FH-02..FH-19 complete.
-- FH-20 readiness gate complete; authority cutover blocked.
+- FH-20 readiness gate complete; Creator Marketplace external blocker cleared; explicit cutover still pending.
 - FH-30A..FH-37A complete and authority-neutral.
 - FH-30B..FH-37B remain post-cutover.
 - Pre-cutover hardening through reproducible CI, repository hygiene, tracked-secret enforcement, 19/19 measured native coverage, opaque SecretHandle/EPHEMERAL injection, lockfile provenance, safe vulnerability reporting, deterministic build-output integrity accidental-publish safety, internal workspace dependency-confusion prevention and workspace package entrypoint integrity enforcement, source-to-dist build completeness enforcement, privacy export/delete manifest planning and fail-closed provider-egress preparation are complete.
 
 ```text
-V2 reference = PROVISIONAL
+V2 reference = ACCEPTED
+V2 compatibility authority = ENABLED
 V3 authority = SHADOW_ONLY
 ```
 
@@ -24,7 +25,7 @@ V3 authority = SHADOW_ONLY
 - **FH-00** Planning foundation — complete
 - **FH-01A** TypeScript monorepo/bootstrap — complete
 - **FH-01B1** Provisional V2 compatibility — complete
-- **FH-01B2** Accepted V2 reconciliation — blocked by #207
+- **FH-01B2** Accepted V2 reconciliation — complete via PR #237
 - **FH-02** Telemetry event schema + emitter — complete
 - **FH-03** SQLite telemetry/state index — complete
 - **FH-04** Read-only dashboard — complete
@@ -46,7 +47,7 @@ V3 authority = SHADOW_ONLY
 - **FH-17** Replay/simulation + crash recovery — complete
 - **FH-18** Management UI — complete
 - **FH-19** V2/V3 shadow parity — complete
-- **FH-20** V3 authority cutover — readiness complete, cutover blocked by FH-01B2/#207
+- **FH-20** V3 authority cutover — readiness complete, external blocker cleared, explicit human/policy cutover pending
 
 ## Modules
 
@@ -64,10 +65,10 @@ FH-01 did not remain blocked as a whole. The work was split:
 ```text
 FH-01A platform bootstrap                         COMPLETE
 FH-01B1 provisional V2 compatibility             COMPLETE
-FH-01B2 final accepted-V2 reconciliation         BLOCKED BY #207
+FH-01B2 final accepted-V2 reconciliation         COMPLETE
 ```
 
-The provisional reference SHA cannot be promoted to final accepted authority evidence without Creator Marketplace #207 completion.
+The provisional reference was reconciled and promoted to the final accepted V2 reference after Creator Marketplace #207/#209 completion.
 
 ## Dependency spine — current
 
@@ -77,11 +78,11 @@ FH-00 → FH-01A/FH-01B1 → FH-02..FH-19 → FH-20 readiness
                                       ├──→ FH-30A..FH-37A COMPLETE
                                       │
                                       └──→ pre-cutover hardening COMPLETE
-Creator Marketplace #207
+Creator Marketplace #207/#209 COMPLETE
         ↓
-FH-01B2 final reconciliation
+FH-01B2 final reconciliation COMPLETE
         ↓
-FH-20 final authority cutover
+FH-20 explicit human/policy authority cutover
         ↓
 FH-30B..FH-37B activation
 ```
