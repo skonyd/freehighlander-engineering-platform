@@ -256,10 +256,7 @@ export interface HumanDecisionResponseV1 extends HumanDecisionResponseInput {
 }
 
 export type HumanDecisionResumeStatus =
-  | 'RESUME_READY'
-  | 'UNAUTHORIZED'
-  | 'INVALID_RESPONSE'
-  | 'STALE';
+  'RESUME_READY' | 'UNAUTHORIZED' | 'INVALID_RESPONSE' | 'STALE';
 
 export interface HumanDecisionResumeContext {
   readonly authorityVerified: boolean;
@@ -368,7 +365,10 @@ export function evaluateHumanDecisionResume(
   }
 
   const staleDimensions: string[] = [];
-  if (response.exactRevision !== entry.exactRevision || context.exactRevision !== entry.exactRevision) {
+  if (
+    response.exactRevision !== entry.exactRevision ||
+    context.exactRevision !== entry.exactRevision
+  ) {
     staleDimensions.push('revision');
   }
   if (response.scopeHash !== entry.scopeHash || context.scopeHash !== entry.scopeHash) {
