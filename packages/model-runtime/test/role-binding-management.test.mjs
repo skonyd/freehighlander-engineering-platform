@@ -466,3 +466,61 @@ test('role binding publication rehydration rejects duplicate role-risk state and
     /plan identity mismatch/,
   );
 });
+
+
+test('publication persists optional failover policy without invalidating legacy publications', async () => {
+  const { providers, catalogs, snapshot } = await setupCatalog([
+    {
+      modelId: 'primary-model',
+      locality: 'REMOTE',
+      capabilities: ['structured_output'],
+      supportedEfforts: ['medium'],
+    },
+    {
+      modelId: 'fallback-model',
+      locality: 'REMOTE',
+      capabilities: ['structured_output'],
+      supportedEfforts: ['medium'],
+    },
+  ]);
+  const audit = new AuditSink();
+  const service = new RoleBindingManagementService(providers, catalogs, audit);
+  const primary = binding('controller-primary', '1.0.0', 'primary-model');
+  const fallback = binding('controller-fallback', '1.0.0', 'fallback-model');
+  const primaryQualification = qualify(snapshot, 'primary-model', 'controller', 'NORMAL');
+  const fallbackQualification = qualify(snapshot, 'fallback-model', 'controller', 'NORMAL', '4');
+
+  const publication = await service.publish({
+    logicalRole: 'controller',
+    riskTier: 'NORMAL',
+    primary,
+    fallbacks: [fallback],
+    failoverPolicy: {
+      returnPolicy: 'ASK_BEFORE_RETURN',
+      unknownResetRecheckMs: 60_000,
+    },
+    qualifications: {
+      [primary.id]: primaryQualification,
+      [fallback.id]: fallbackQualification,
+    },
+    operationId: 'controller-failover',
+    publishedAt: '2026-09-25T18:30:00.000Z',
+  });
+
+  assert.deepEqual(publication.failoverPolicy, {
+    returnPolicy: 'ASK_BEFORE_RETURN',
+    unknownResetRecheckMs: 60_000,
+  });
+  assert.deepEqual(audit.events[0].payload.fallbackBindingIds, ['controller-fallback']);
+  assert.equal(audit.events[0].payload.returnPolicy, 'ASK_BEFORE_RETURN');
+  assert.doesNotThrow(() => validateRoleBindingPublicationV1(publication));
+
+  assert.throws(
+    () =>
+      validateRoleBindingPublicationV1({
+        ...publication,
+        fallbacks: [],
+      }),
+    /failover policy requires at least one fallback/,
+  );
+});
