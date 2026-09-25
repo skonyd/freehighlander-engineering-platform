@@ -5,7 +5,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 
 const REQUIRED_ADRS = Array.from(
-  { length: 20 },
+  { length: 21 },
   (_, index) => `ADR-${String(index + 1).padStart(4, '0')}`,
 );
 
@@ -67,7 +67,7 @@ export function assertArchitectureContract(contract) {
   ) {
     throw new Error('architecture contract_version must be semantic version');
   }
-  expect(contract.contract_version, '1.8.0', 'architecture contract version');
+  expect(contract.contract_version, '1.9.0', 'architecture contract version');
   expect(contract.status, 'FROZEN_BASELINE', 'architecture status');
   expect(contract.phase, 'FH-10', 'architecture phase');
 
@@ -172,7 +172,28 @@ export function assertArchitectureContract(contract) {
     'semantic model shopping after verdict',
   );
 
-  expect(contract.migration?.v2_reference_status, 'PROVISIONAL', 'V2 reference status');
+  expect(contract.migration?.v2_reference_status, 'ACCEPTED', 'V2 reference status');
+  expect(
+    contract.migration?.v2_reference_sha,
+    '1a8e215b78a3a5008aae6aae36488b3273733b19',
+    'V2 accepted reference SHA',
+  );
+  expect(
+    contract.migration?.v2_reference_merge_sha,
+    'e4707a3c4267db9d2aadd452782b91045b96724d',
+    'V2 #207 merge SHA',
+  );
+  expect(contract.migration?.v2_reference_post_merge_hardening_pr, 209, 'V2 hardening PR');
+  expect(
+    contract.migration?.v2_compatibility_authority,
+    'ENABLED',
+    'V2 compatibility authority',
+  );
+  expect(
+    contract.migration?.fh01b2_dependency_status,
+    'SATISFIED',
+    'FH-01B2 dependency status',
+  );
   expect(contract.migration?.v3_authority, 'SHADOW_ONLY', 'V3 authority');
   expect(contract.migration?.v3_authority_cutover_phase, 'FH-20', 'V3 authority cutover phase');
 
