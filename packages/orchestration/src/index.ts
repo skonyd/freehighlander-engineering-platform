@@ -1,4 +1,16 @@
 export {
+  buildCausalRunSummary,
+  causalTracingCanGrantAuthority,
+  causalTracingCanPersistHiddenReasoning,
+  createCausalSpan,
+  type CausalRunSummary,
+  type CausalSpan,
+  type CausalSpanInput,
+  type CausalSpanKind,
+  type CausalSpanStatus,
+} from './causal-trace.js';
+
+export {
   buildProjectSchedulePlan,
   createHumanDecisionQueueEntry,
   createHumanDecisionResponseV1,
