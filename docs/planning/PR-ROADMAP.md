@@ -30,6 +30,29 @@ V3 authority = SHADOW_ONLY
 - **FH-02** Telemetry event schema + emitter — complete
 - **FH-03** SQLite telemetry/state index — complete
 - **FH-04** Read-only dashboard — complete
+- **FH-04B** Zero-Token Core Home Dashboard — proposed; read-only and independent of FH-20
+
+## Core Home extension
+
+Detailed implementation plan: [FH-04B-ZERO-TOKEN-CORE-HOME.md](FH-04B-ZERO-TOKEN-CORE-HOME.md).
+
+FH-04B turns the existing telemetry-first FH-04 surface into the default Core Home without introducing any model call on render/refresh.
+
+Recommended slices:
+
+~~~text
+FH-04B.1 zero-token contract + snapshot schema
+FH-04B.2 SQLite/local read-model aggregation
+FH-04B.3 minimal Core Home UI
+FH-04B.4 current work + approvals
+FH-04B.5 provider/quota/failover
+FH-04B.6 structured errors + attention
+FH-04B.7 continuity/findings/local Git
+FH-04B.8 UX hardening
+FH-04B.9 optional external CI/PR status
+~~~
+
+Invariant: Home refresh cannot invoke ProviderAdapter/model inference and remains usable without FH-KUIKA.
 
 ## Qwen / economics
 - **FH-05** Qwen specialist shadow roles — complete
