@@ -23,7 +23,7 @@
     "project:resume": "node tools/project/resume.mjs",
     "project:checkpoint": "node tools/project/checkpoint.mjs",
     "project:context": "node tools/project/context.mjs",
-    "project:portable-resume": "npm run build -w @freehighlander/persistence && node tools/project/portable-resume.mjs",
+    "project:portable-resume": "npm run build -w @freehighlander/orchestration -w @freehighlander/persistence && node tools/project/portable-resume.mjs",
     "project:architecture": "node tools/project/architecture.mjs",
     "dashboard:start": "npm run start -w @freehighlander/web",
     "models": "npm run build -w @freehighlander/model-runtime -w @freehighlander/persistence && node tools/project/models.mjs",
