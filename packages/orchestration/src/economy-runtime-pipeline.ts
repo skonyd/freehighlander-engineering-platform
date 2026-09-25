@@ -37,10 +37,7 @@ import {
 } from './tool-catalog-economy.js';
 
 export type TokenEconomyPipelineStatus =
-  | 'READY_FOR_REMOTE'
-  | 'REMOTE_SKIPPED'
-  | 'DEFERRED_FOR_LOCAL_BATCH'
-  | 'BLOCKED_INVALID_PACKET';
+  'READY_FOR_REMOTE' | 'REMOTE_SKIPPED' | 'DEFERRED_FOR_LOCAL_BATCH' | 'BLOCKED_INVALID_PACKET';
 
 export type TokenEconomyPipelineStage =
   | 'DETERMINISTIC_REDUCTION'
@@ -51,8 +48,7 @@ export type TokenEconomyPipelineStage =
   | 'REMOTE_NECESSITY'
   | 'ECONOMY_LEDGER';
 
-export interface TokenEconomyRemoteNecessityInput
-  extends Omit<RemoteCallNecessityInput, 'mode'> {}
+export interface TokenEconomyRemoteNecessityInput extends Omit<RemoteCallNecessityInput, 'mode'> {}
 
 export interface StandardRuntimePipelineInput {
   readonly mode: 'STANDARD';
@@ -107,8 +103,7 @@ export interface TokenEconomyRuntimePipelineInput {
 }
 
 export type IntegratedEconomyRuntimeInput =
-  | StandardRuntimePipelineInput
-  | TokenEconomyRuntimePipelineInput;
+  StandardRuntimePipelineInput | TokenEconomyRuntimePipelineInput;
 
 export interface IntegratedEconomyRuntimePlan {
   readonly schemaVersion: 1;
