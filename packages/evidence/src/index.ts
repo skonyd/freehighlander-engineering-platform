@@ -1,4 +1,16 @@
 export {
+  artifactReceiptCanGrantAuthority,
+  artifactReceiptCanReplaceRequiredRawEvidence,
+  buildArtifactReceipt,
+  buildPassArtifactCertificate,
+  validateArtifactReceipt,
+  type ArtifactReceipt,
+  type ArtifactReceiptInput,
+  type ArtifactReceiptKind,
+  type ArtifactReceiptStatus,
+} from './artifact-receipt.js';
+
+export {
   evidenceBudgetCanTruncateRequiredEvidence,
   evidencePolicyCanGrantAuthority,
   validateEvidencePolicy,
