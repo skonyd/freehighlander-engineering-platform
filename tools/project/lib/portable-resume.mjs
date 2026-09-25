@@ -96,6 +96,11 @@ export async function publishPreparedResumeCheckpoint({
     };
   }
 
+  const restoredNodeResults = restorePortableCompletedNodeResults({
+    manifest,
+    eventBundle,
+  });
+
   const expectedGeneration = manifest.generation === 1 ? null : manifest.generation - 1;
   const decision =
     eventBundle === null
@@ -144,6 +149,8 @@ export async function publishPreparedResumeCheckpoint({
     generation: manifest.generation,
     manifestHash: manifest.manifestHash,
     eventBundleHash,
+    restoredNodeResultCount: restoredNodeResults.resultCount,
+    restoredNodeIds: restoredNodeResults.restoredNodeIds,
     published: true,
     semanticGatePassInferred: false,
     authority: 'NONE',
