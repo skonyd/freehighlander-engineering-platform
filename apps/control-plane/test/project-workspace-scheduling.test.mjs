@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { buildProjectSchedulePlan } from '@freehighlander/orchestration';
+import { buildProjectSchedulePlan } from '../../../packages/orchestration/dist/index.js';
 
 import {
   LocalGitWorktreeBackend,
