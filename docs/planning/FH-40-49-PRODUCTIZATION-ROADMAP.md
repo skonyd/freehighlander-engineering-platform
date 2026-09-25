@@ -1,0 +1,804 @@
+# FH-40..FH-49 Productization / Studio Roadmap
+
+**Status:** PROPOSED PRODUCTIZATION ROADMAP  
+**Scope:** Kuika-inspired productization ideas adapted to FreeHighlander engineering-control-plane semantics  
+**Authority state assumed:** V3 remains `SHADOW_ONLY` until FH-20 explicit cutover  
+**Canonical UX companion:** [Control Plane UX](../ui/CONTROL-PLANE-UX.md)
+
+## Purpose
+
+This roadmap turns FreeHighlander's existing control-plane capabilities into a coherent product surface without changing the core rule that model output is data, never authority.
+
+The goal is not to turn FreeHighlander into a generic low-code application builder. The target remains an **AI engineering control plane** for software lifecycle planning, implementation, review, testing, security, release, operations and incident learning.
+
+The productization layer should expose the capabilities already present in orchestration, governance, model-runtime, evidence, lineage, persistence and the control plane through safe, explainable and versioned UX.
+
+## Product principles
+
+1. **Authority is always visible.** Every screen that can lead to mutation shows the current authority, risk tier, policy and approval state.
+2. **Modes do not grant authority.** ASK / PLAN / EXECUTE / REVIEW are interaction modes only; policy and logical roles remain authoritative.
+3. **Draft first, publish second.** Workflows, blueprints, roles and connector configurations follow Draft → Validate → Simulate → Publish.
+4. **Published definitions are immutable.** Edits create a new semantic version.
+5. **Explainability is a primary UI surface.** Routing, fallback, quota, error, gate and approval decisions expose concise cause/reason/evidence.
+6. **Context is bounded.** UI context selection should map to existing context-packet/evidence contracts rather than sending the whole repository by default.
+7. **Safe-by-construction integrations.** External connectors are normalized through ToolAdapter/MCP and never inherit authority from remote metadata.
+8. **Pre-cutover work remains authority-neutral.** UI, drafts, simulation, inspection and preparation may progress before FH-20; mutation activation must respect existing cutover gates.
+
+## Product information architecture
+
+~~~text
+FREEHIGHLANDER STUDIO
+
+Home
+Projects
+Workbench
+  ├─ Ask
+  ├─ Plan
+  ├─ Execute
+  └─ Review
+Build
+  ├─ Blueprints
+  ├─ Workflows
+  ├─ Roles
+  └─ Solution Packs
+Integrate
+  ├─ Connectors
+  ├─ Models & Providers
+  └─ Routines
+Knowledge
+  ├─ Engineering Graph
+  ├─ Evidence
+  └─ Search
+Operate
+  ├─ Runs
+  ├─ Approvals
+  ├─ Errors
+  ├─ Quotas / Routing
+  └─ Audit
+Settings
+~~~
+
+## Delivery waves
+
+### Wave 0 — Product shell and observability, pre-cutover safe
+
+- FH-40 Studio shell + explainable operations
+- FH-41 interaction-mode contracts and read-only/draft UX
+- FH-42 blueprint catalog contracts and simulation
+- FH-43 workflow-studio draft/validate/simulate UX
+- FH-44 connector catalog/permission inspection and configuration drafts
+
+No Wave 0 item may independently enable V3 mutation authority.
+
+### Wave 1 — Reusable engineering product surfaces
+
+- FH-45 role marketplace + solution packs
+- FH-46 engineering knowledge vault / lineage-aware retrieval
+- FH-47 routine and event-trigger definitions
+- FH-48 constraint-aware pre-call router optimizer
+
+Activation of write-capable workflows/connectors/routines must follow FH-20 and the relevant module authority gates.
+
+### Wave 2 — Enterprise collaboration boundary
+
+- FH-49 multi-user identity / RBAC / organization readiness
+
+FH-49 changes the initial local-first single-user product boundary and therefore requires a dedicated ADR, architecture-contract version bump and security threat-model update before implementation.
+
+---
+
+# FH-40 — Studio Shell + Explainable Operations Console
+
+**Priority:** P0  
+**Value:** very high  
+**Pre-cutover:** yes, if read-only/control-intent only
+
+## Outcomes
+
+Replace the telemetry-only feeling with a product-grade Studio shell while reusing the existing web/control-plane separation.
+
+Primary screens:
+
+- Home / project health
+- Runs
+- Run detail
+- Errors
+- Provider/Quota health
+- Approval inbox
+- Evidence drawer
+- Audit/event timeline
+
+## Operations Console requirements
+
+Every provider/runtime failure should render structured diagnosis when available:
+
+~~~text
+[PROVIDER_QUOTA_EXHAUSTED]
+Headline
+Root cause
+Source component / operation
+Failed step
+Observed signal
+Retry at
+Fallback selected
+Preferred-model recovery state
+Next action
+Correlation ID
+~~~
+
+Provider-routing panel should show:
+
+- logical role
+- preferred binding
+- active binding
+- fallback chain
+- current cooldown
+- next recovery check
+- return policy: STAY / ASK / AUTO
+- exact reason for switching
+- qualification/risk compatibility
+- cost/token/latency summary
+
+## Proposed PR slices
+
+- **FH-40.1** Studio navigation shell, project switcher, command palette and consistent page layout.
+- **FH-40.2** Operations Console read model for structured runtime errors and routing transitions.
+- **FH-40.3** Run detail redesign with timeline, evidence, model/tool calls and gate decisions.
+- **FH-40.4** Approval Inbox read surface with exact revision/scope/currentness visualization.
+- **FH-40.5** accessibility/responsive/persistent-filter polish and UX contract tests.
+
+## Main impact
+
+- `apps/web`
+- `apps/control-plane`
+- `packages/persistence`
+- `packages/contracts`
+- telemetry/read-model projections
+
+## Acceptance criteria
+
+- UI never invents a root cause when diagnosis certainty is unresolved.
+- secret-like details remain redacted.
+- UI cannot grant authority directly.
+- all displayed approval/routing/error states map to canonical contracts.
+- run execution survives UI disconnect.
+
+---
+
+# FH-41 — Engineering Workbench: ASK / PLAN / EXECUTE / REVIEW
+
+**Priority:** P0  
+**Value:** very high  
+**Pre-cutover:** ASK/PLAN/REVIEW preparation yes; EXECUTE activation subject to authority
+
+## Intent
+
+Provide one conversational/workbench entry point with four explicit modes.
+
+### ASK
+
+Read-only explanation and repository/project query.
+
+### PLAN
+
+Produces requirement/task/architecture/workflow candidates and change plans but no mutation authority.
+
+### EXECUTE
+
+Requests bounded writer workflows. EXECUTE is not itself authority and must pass role, sandbox, data, risk and system-policy gates.
+
+### REVIEW
+
+Independent evaluation of an exact revision/evidence set. Producer self-approval remains forbidden.
+
+## Context UX
+
+Context chips should be explicit and inspectable:
+
+- active project
+- branch / exact revision
+- selected files
+- requirement/task/ADR
+- run/evidence bundle
+- selected workflow/blueprint
+- connector/tool capabilities
+- token estimate
+
+Users should be able to inspect why an item was included in the context packet.
+
+## Proposed PR slices
+
+- **FH-41.1** interaction-mode contract and authority-neutral intent objects.
+- **FH-41.2** Workbench UI with mode selector and context chips.
+- **FH-41.3** PLAN output → structured candidate work items/blueprint parameters.
+- **FH-41.4** REVIEW → exact-revision independent-review entry.
+- **FH-41.5** EXECUTE control-plane intent activation after required authority gates.
+
+## Acceptance criteria
+
+- mode identity cannot raise role authority.
+- ASK never mutates project/repository state.
+- PLAN outputs are candidates until accepted by normal governance.
+- REVIEW requires exact-revision/evidence binding.
+- EXECUTE displays effective role, risk, workflow and policy before start.
+
+---
+
+# FH-42 — Engineering Blueprint Catalog
+
+**Priority:** P0  
+**Value:** very high  
+**Pre-cutover:** yes for catalog/validation/simulation
+
+## Intent
+
+Convert frequent engineering intents into deterministic, versioned engineering patterns rather than asking a model to reinvent the lifecycle every time.
+
+Initial blueprints:
+
+- feature implementation
+- bug fix
+- security patch
+- dependency upgrade
+- database migration
+- refactor
+- release preparation
+- hotfix
+- incident response
+- performance regression
+- provider/model migration
+- architecture change
+
+## Blueprint contract
+
+Each blueprint should define at minimum:
+
+- id + semantic version
+- compatible intent classes
+- default risk tier
+- required lifecycle stages
+- required evidence
+- required roles
+- independence constraints
+- workflow template reference
+- optional parameters
+- authority-sensitive nodes
+- validation rules
+- simulation fixtures
+
+Blueprint selection may be suggested by a model, but publication/execution semantics remain deterministic.
+
+## UX
+
+Blueprint Catalog cards show:
+
+- purpose
+- risk
+- stages
+- required roles
+- expected gates
+- compatible project types
+- last version
+- usage count / success telemetry
+- Validate / Simulate / Start from blueprint
+
+Blueprint detail includes a visual lifecycle preview and generated workflow diff before publish.
+
+## Proposed PR slices
+
+- **FH-42.1** blueprint schema/package and versioning.
+- **FH-42.2** deterministic matcher interface and candidate-scoring evidence.
+- **FH-42.3** initial curated blueprint pack.
+- **FH-42.4** catalog UI and blueprint detail.
+- **FH-42.5** blueprint → workflow draft generation and simulation.
+- **FH-42.6** measured blueprint quality/usage telemetry.
+
+## Acceptance criteria
+
+- model suggestion cannot silently modify a published blueprint.
+- blueprint execution resolves to a normal immutable workflow snapshot.
+- authority requirements cannot be weakened by blueprint parameters.
+- blueprint version and hash are recorded in run lineage.
+
+---
+
+# FH-43 — Visual Workflow Studio
+
+**Priority:** P0  
+**Value:** high  
+**Pre-cutover:** draft/validate/simulate yes
+
+## Intent
+
+Expose the existing workflow DAG/state machine as a visual authoring surface while retaining the FreeHighlander Workflow Spec as the canonical representation.
+
+Do not make BPMN the canonical runtime model. BPMN import/export may be a future adapter.
+
+## Node palette
+
+- MODEL
+- COMMAND
+- GATE
+- CONDITION
+- PARALLEL
+- AGGREGATE
+- DEBATE
+- LOOP
+- HUMAN
+- SUBWORKFLOW
+
+## Inspector
+
+Selecting a node exposes:
+
+- logical role
+- bindings
+- risk tier
+- timeout/retry
+- token/cost/time budget
+- input/output mapping
+- required evidence
+- sandbox policy
+- tool permissions
+- approval policy
+- transition rules
+
+## Designer layout
+
+~~~text
+┌ Node palette ┐  ┌──────────── Canvas ─────────────┐  ┌ Inspector ┐
+│ Model        │  │ Plan → Implement → Test         │  │ Role      │
+│ Gate         │  │              ↘ Security → Gate  │  │ Risk      │
+│ Human        │  │                                 │  │ Evidence  │
+│ Debate       │  │                                 │  │ Policy    │
+└──────────────┘  └─────────────────────────────────┘  └───────────┘
+                         Validate | Simulate | Publish
+~~~
+
+## Proposed PR slices
+
+- **FH-43.1** workflow draft/read contract and canonical round-trip.
+- **FH-43.2** graph canvas + node palette.
+- **FH-43.3** node inspector + policy/evidence/budget surfaces.
+- **FH-43.4** deterministic validation visualization.
+- **FH-43.5** simulation/replay preview.
+- **FH-43.6** publish/version-diff lifecycle.
+
+## Acceptance criteria
+
+- UI round-trip does not change canonical semantics.
+- invalid/unbounded/authority-incompatible graphs fail closed.
+- published versions are immutable.
+- current runs stay pinned to their original snapshot.
+
+---
+
+# FH-44 — Connector Hub / MCP Tool Manager
+
+**Priority:** P0  
+**Value:** high  
+**Pre-cutover:** catalog, permission review and configuration drafts yes
+
+## Intent
+
+Productize ADR-0011 and `.freehighlander/plugin-policy.yaml` into a safe connector experience.
+
+Initial connector categories:
+
+- source control: GitHub/GitLab
+- issue/project: Jira/Linear
+- messaging: Slack/Teams
+- CI/CD
+- Kubernetes
+- observability: Prometheus/Sentry/Datadog
+- security: Trivy/SonarQube
+- secrets: Vault-compatible brokers
+- generic MCP server
+- generic OpenAPI/HTTP adapter where explicitly reviewed
+
+## Connector detail
+
+Show before enablement:
+
+- source/protocol
+- version/pin
+- trust level
+- tools/resources discovered
+- requested filesystem scope
+- network destinations
+- secret handles
+- mutation capability
+- role allowlists
+- data classification
+- human/system-policy requirements
+- provenance/signature where available
+
+## Proposed PR slices
+
+- **FH-44.1** ToolAdapter registry persistence/read model.
+- **FH-44.2** MCP discovery/normalization adapter.
+- **FH-44.3** connector install-review contract and permission diff.
+- **FH-44.4** Connector Hub UI.
+- **FH-44.5** credential-reference configuration using SecretHandle only.
+- **FH-44.6** activation/runtime invocation after authority prerequisites.
+
+## Acceptance criteria
+
+- remote metadata never grants authority.
+- EXTERNAL_UNTRUSTED remains disabled by default.
+- permission changes produce an explicit diff.
+- raw secrets are never persisted in connector state.
+- connector tool execution revalidates permission at invocation time.
+
+---
+
+# FH-45 — Role Marketplace + Engineering Solution Packs
+
+**Priority:** P1  
+**Value:** high
+
+## Intent
+
+Turn RoleRegistry and portable role packages into reusable engineering products.
+
+Initial trusted role packs:
+
+- architecture reviewer
+- implementation agent
+- test reviewer
+- security reviewer
+- release reviewer
+- incident investigator
+- dependency-upgrade specialist
+- Kubernetes reviewer
+- database-migration reviewer
+- performance reviewer
+
+Solution Packs combine blueprints, workflows, roles, dashboards and connector requirements.
+
+Initial packs:
+
+- Pull Request Quality Pack
+- Security Review Pack
+- Release Readiness Pack
+- Incident Response Pack
+- Dependency Upgrade Pack
+
+## UX
+
+Role card:
+
+- role purpose/version
+- authority ceiling
+- risk scope
+- required evidence
+- tool permissions
+- preferred/fallback model qualification
+- benchmark history
+- install/pin/update actions
+
+## Proposed PR slices
+
+- **FH-45.1** package manifest/bundle format.
+- **FH-45.2** signed/pinned catalog metadata and provenance.
+- **FH-45.3** Role Marketplace UI.
+- **FH-45.4** Solution Pack bundle/install planner.
+- **FH-45.5** update compatibility/diff and rollback-to-version planning.
+
+---
+
+# FH-46 — Engineering Knowledge Vault / Lineage-RAG
+
+**Priority:** P1  
+**Value:** high
+
+## Intent
+
+Provide hybrid engineering retrieval over documents, evidence and the existing digital thread.
+
+Retrieval order should prefer authoritative structured relationships before semantic similarity.
+
+~~~text
+Question
+  ↓
+Exact entity/revision lookup
+  ↓
+Lineage graph traversal
+  ↓
+Evidence retrieval
+  ↓
+Semantic/vector discovery when needed
+  ↓
+Answer with provenance
+~~~
+
+## UX
+
+Knowledge Explorer:
+
+- search/query box
+- entity graph
+- requirement → ADR → task → code → test → release → incident path
+- evidence drawer
+- source revision/hash
+- relationship type
+- discovery confidence
+- “authoritative relation” vs “semantic suggestion” distinction
+
+## Proposed PR slices
+
+- **FH-46.1** query/retrieval contracts.
+- **FH-46.2** lineage-first hybrid retriever.
+- **FH-46.3** bounded local index/vector adapter.
+- **FH-46.4** Knowledge Explorer UI.
+- **FH-46.5** provenance-bearing answer package.
+- **FH-46.6** retrieval eval suite.
+
+## Acceptance criteria
+
+- vector similarity cannot create authoritative lineage.
+- every factual engineering answer can expose source/revision provenance.
+- SECRET/CONFIDENTIAL data obeys provider-egress policy.
+- retrieval remains compatible with local-first operation.
+
+---
+
+# FH-47 — Routines / Trigger Engine
+
+**Priority:** P1  
+**Value:** high  
+**Authority:** activation-sensitive
+
+## Trigger types
+
+- MANUAL
+- CRON
+- WEBHOOK
+- GIT_EVENT
+- CI_EVENT
+- RELEASE_EVENT
+- INCIDENT_EVENT
+- SECURITY_EVENT
+
+## Example routines
+
+- PR opened → independent review + security/test checks
+- CI failed → failure classification + evidence collection
+- release candidate → release-readiness blueprint
+- incident opened → incident timeline/evidence workflow
+- scheduled dependency/security review
+- preferred-provider recovery check
+
+## UX
+
+Routines page shows:
+
+- trigger
+- workflow
+- last/next run
+- enabled state
+- required authority
+- connector dependencies
+- secret dependencies
+- concurrency
+- retry/backoff
+- recent failures
+
+## Proposed PR slices
+
+- **FH-47.1** trigger contract/event normalization.
+- **FH-47.2** routine definitions and deterministic scheduler integration.
+- **FH-47.3** webhook/event adapters.
+- **FH-47.4** Routines UI.
+- **FH-47.5** authority-aware activation and failure/retry telemetry.
+
+---
+
+# FH-48 — Constraint-aware Model / Work Router Optimizer
+
+**Priority:** P1  
+**Value:** medium-high
+
+## Intent
+
+Select eligible bindings before a call using deterministic constraints and measured telemetry.
+
+Inputs may include:
+
+- role qualification
+- risk tier
+- data locality/classification
+- provider health
+- quota/reset time
+- latency
+- cost/token budget
+- context requirement
+- independence group
+- benchmark eligibility
+
+The optimizer must remain **pre-call routing only**. It cannot rerun semantic failures across models to shop for a more favorable verdict.
+
+## UX
+
+Routing explanation:
+
+~~~text
+Role: security-reviewer
+Risk: HIGH
+Data: INTERNAL
+
+Claude  eligible / quota unavailable
+GPT     eligible / available / selected
+Gemini  eligible / available
+Local   not qualified for HIGH
+
+Decision: GPT
+Reason: preferred binding unavailable; next eligible binding satisfies policy.
+~~~
+
+## Proposed PR slices
+
+- **FH-48.1** deterministic constraint model.
+- **FH-48.2** routing decision evidence contract.
+- **FH-48.3** telemetry-derived cost/latency/availability features.
+- **FH-48.4** simulation and what-if UI.
+- **FH-48.5** router integration with existing availability-only failover.
+
+---
+
+# FH-49 — Enterprise Collaboration / Identity Boundary
+
+**Priority:** P2 / deferred  
+**Value:** strategic, not required for initial local-first product
+
+Possible scope:
+
+- OIDC
+- users/teams
+- RBAC
+- project membership
+- approval delegation rules
+- organization-level policy
+- auditable actor identity
+- multi-project/multi-tenant separation
+
+This work is intentionally deferred because it changes the accepted local-first-single-user boundary.
+
+Required before implementation:
+
+1. dedicated ADR;
+2. architecture-contract version bump;
+3. updated threat model;
+4. identity/authorization data model;
+5. migration design;
+6. explicit decision on single-tenant vs multi-tenant persistence.
+
+---
+
+# UX / visual design direction
+
+## Design language
+
+- desktop-first engineering console, responsive down to tablet
+- dense but calm information hierarchy
+- dark/light support eventually, but semantic state must never depend on color alone
+- monospaced treatment for hashes, revisions, run IDs and provider IDs
+- permanent global project/revision context
+- clear badges for `SHADOW_ONLY`, `HUMAN_REQUIRED`, `MODEL_QUORUM_REQUIRED`, `DENY`
+- side drawers for evidence and diagnostics to avoid losing task context
+
+## Global status bar
+
+Always show:
+
+~~~text
+Project | Branch/Revision | Authority Mode | Active Workflow | Token/Cost Budget | Provider Health
+~~~
+
+## Command palette
+
+Search/navigate:
+
+- project
+- run
+- workflow
+- blueprint
+- role
+- connector
+- requirement/ADR/task
+- error correlation ID
+
+Commands that imply mutation should show effective authority and ask for normal policy approval; the palette itself never bypasses policy.
+
+## Empty states/onboarding
+
+First-run onboarding should guide users through:
+
+1. open/connect project
+2. inspect architecture
+3. configure model/provider
+4. select/install role pack
+5. validate a blueprint
+6. simulate workflow
+7. run ASK/PLAN safely
+
+Do not require write authority to complete onboarding.
+
+---
+
+# Cross-cutting engineering requirements
+
+Every FH-40..FH-49 implementation must include, where applicable:
+
+- TypeScript contracts and schema validation
+- deterministic hashes/version pinning
+- test coverage and adversarial/fail-closed cases
+- telemetry events
+- lineage/evidence bindings
+- privacy/redaction review
+- sandbox/tool permission review
+- migration/compatibility handling
+- read-model support
+- UX loading/empty/error states
+- accessibility semantics
+- documentation and ADR check
+
+## Architecture-change rules
+
+The following require ADR + architecture contract evolution before activation:
+
+- changing existing authority semantics
+- allowing UI mode to imply authority
+- changing fallback from availability-only to semantic shopping
+- adopting BPMN as canonical workflow semantics
+- allowing semantic/vector similarity to establish authoritative lineage
+- changing local-first-single-user product mode
+- permitting external connector metadata to grant trust/authority
+
+## Non-goals
+
+This roadmap does not add:
+
+- generic drag/drop web/mobile app builder
+- generic form/PDF/email designer
+- HR/procurement business applications
+- consumer chatbot product
+- direct model self-promotion to authority
+- unrestricted plugin execution
+
+---
+
+# Recommended dependency graph
+
+~~~text
+FH-20 explicit authority cutover ──────────────────────────────┐
+                                                              │
+FH-40 Studio/Operations ──┐                                   │
+                         ├─→ FH-41 Workbench ────────┐         │
+FH-42 Blueprints ─────────┤                          │         │
+                         ├─→ FH-43 Workflow Studio ─┼─→ activation paths
+FH-44 Connector Hub ──────┘                          │         │
+                                                    │         │
+FH-45 Roles/Solution Packs ─────────────────────────┤         │
+FH-46 Knowledge/Lineage-RAG ────────────────────────┤         │
+FH-47 Routines ─────────────────────────────────────┤─────────┘
+FH-48 Router Optimizer ─────────────────────────────┘
+
+FH-49 Enterprise identity is independent strategic work and requires a new architecture decision.
+~~~
+
+## Recommended implementation order
+
+1. FH-40
+2. FH-41.1–41.4
+3. FH-42
+4. FH-43
+5. FH-44.1–44.5
+6. FH-45
+7. FH-46
+8. FH-48
+9. FH-47 definition/UI preparation
+10. post-FH-20 activation slices: FH-41.5, FH-44.6, FH-47.5 and other authority-bearing mutations
+11. FH-49 only after explicit product-boundary decision
+
+This ordering maximizes visible product value while preserving the current authority boundary.
