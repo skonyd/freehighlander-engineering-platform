@@ -226,6 +226,9 @@ function validateWorkItems(
     if (!CONFLICT_STATES.has(item.conflictWithActive)) {
       throw new Error('unsupported conflict classification');
     }
+    if (item.blockedSecretHandleIds !== undefined && !Array.isArray(item.blockedSecretHandleIds)) {
+      throw new Error('blockedSecretHandleIds must be an array');
+    }
     const blockedSecretHandleIds = uniqueSortedIdentifiers(
       item.blockedSecretHandleIds ?? [],
       'blocked secret handle id',
