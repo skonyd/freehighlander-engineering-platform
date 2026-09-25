@@ -79,37 +79,52 @@ Any new package not already allowed by the frozen architecture requires normal a
 
 ## Product information architecture
 
-~~~text
-FREEHIGHLANDER STUDIO
+FH-KUIKA is exposed as a distinct module in the FreeHighlander UI.
 
-Home
-Projects
-Workbench
-  ├─ Ask
-  ├─ Plan
-  ├─ Execute
-  └─ Review
-Build
-  ├─ Blueprints
-  ├─ Workflows
-  ├─ Roles
-  └─ Solution Packs
-Integrate
-  ├─ Connectors
-  ├─ Models & Providers
-  └─ Routines
-Knowledge
-  ├─ Engineering Graph
-  ├─ Evidence
-  └─ Search
-Operate
-  ├─ Runs
-  ├─ Approvals
-  ├─ Errors
-  ├─ Quotas / Routing
-  └─ Audit
-Settings
+~~~text
+FREEHIGHLANDER
+├─ Core
+│  ├─ Dashboard
+│  ├─ Projects
+│  ├─ Runs
+│  ├─ Workflows
+│  ├─ Roles
+│  ├─ Models / Providers
+│  ├─ Policies
+│  ├─ Artifacts / Metrics
+│  └─ Settings
+│
+└─ Modules
+   └─ FH-KUIKA
+      ├─ Overview
+      ├─ Workbench
+      │  ├─ Ask
+      │  ├─ Plan
+      │  ├─ Execute
+      │  └─ Review
+      ├─ Build
+      │  ├─ Blueprints
+      │  ├─ Workflow Studio
+      │  ├─ Role Marketplace
+      │  └─ Solution Packs
+      ├─ Integrate
+      │  ├─ Connector Hub
+      │  ├─ Models & Routing
+      │  └─ Routines
+      ├─ Knowledge
+      │  ├─ Engineering Graph
+      │  ├─ Evidence
+      │  └─ Search
+      └─ Operate
+         ├─ Operations Console
+         ├─ Approvals
+         ├─ Errors
+         ├─ Routing / Quotas
+         └─ Audit
 ~~~
+
+The UI route namespace should also preserve this boundary, for example `/modules/fh-kuika/*`. Core routes must not depend on the module being installed or enabled.
+
 
 ## Delivery waves
 
