@@ -1,4 +1,14 @@
 export {
+  buildParallelBenchmarkReport,
+  parallelBenchmarkCanGrantAuthority,
+  representativeParallelBenchmarkFixtures,
+  type BenchmarkRiskTier,
+  type ParallelBenchmarkReportV1,
+  type ParallelBenchmarkSampleInput,
+  type ParallelBenchmarkSampleResult,
+} from './parallel-benchmark.js';
+
+export {
   applyRepairEvent,
   createRepairAccountingState,
   repairAccountingCanGrantAuthority,
