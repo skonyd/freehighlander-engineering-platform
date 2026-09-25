@@ -18,12 +18,12 @@ const prRoadmap = await fs.readFile(path.join(root, 'docs', 'planning', 'PR-ROAD
 const securityPolicy = await fs.readFile(path.join(root, 'SECURITY.md'), 'utf8');
 
 expect(state.phase?.id, 'PRE-CUTOVER', 'state phase');
-expect(state.phase?.status, 'blocked_on_external_dependency', 'state phase status');
+expect(state.phase?.status, 'external_dependency_satisfied_cutover_not_applied', 'state phase status');
 expect(state.active_work?.branch, 'main', 'state active branch');
 if (state.active_work?.pull_request !== null) {
-  failures.push('state active_work.pull_request must be null while waiting on external dependency');
+  failures.push('state active_work.pull_request must be null in canonical main state');
 }
-expect(state.fh01b?.promotion?.status, 'blocked', 'FH-01B2 promotion state');
+expect(state.fh01b?.promotion?.status, 'complete', 'FH-01B2 promotion state');
 expect(state.fh20?.cutover_allowed, false, 'FH-20 cutover state');
 expect(state.fh20?.v3_authority, 'SHADOW_ONLY', 'V3 authority state');
 
@@ -44,7 +44,7 @@ for (const [documentName, content, required] of [
     [
       'FH-30A..FH-37A authority-neutral SDLC preparation lane tamamlandı.',
       'V3 authority = SHADOW_ONLY',
-      'FH-01B2 final V2 reconciliation/parity',
+      'FH-01B2 final reconciliation',
     ],
   ],
   [
@@ -76,23 +76,23 @@ for (const [documentName, content, required] of [
     'PROJECT_STATE.md',
     projectState,
     [
-      'PRE-CUTOVER PREPARATION COMPLETE / FH-01B2 + FH-20 CUTOVER BLOCKED',
+      'PRE-CUTOVER / CREATOR MARKETPLACE #207 DEPENDENCY SATISFIED',
       'FH-37A Engineering Lineage',
       'workspace dependency-boundary enforcement',
       '#109 / PR #110 — reproducible CI',
       '#111 / PR #112 — checkout credential isolation',
-      '#114 / PR #117 — deterministic git-tracked secret leakage gate',
-      '#118 / PR #119 — reviewed current-main refresh',
-      '#120 / PR #121 — Node 24 native per-workspace coverage regression floors',
+      '#114 / PR #117 — deterministic tracked-secret leakage gate',
+      '#118 / PR #119 — pinned GitHub Actions refresh',
+      '#120 / PR #121 — native per-workspace coverage regression floors',
       '#122 / PR #123 — control-plane contract tests',
       '#124 / PR #125 — opaque SecretHandle',
-      '#126 / PR #127 — deterministic npm lockfile provenance',
-      '#128 / PR #129 — safe private vulnerability reporting guidance',
+      '#126 / PR #127 — deterministic lockfile provenance',
+      '#128 / PR #129 — private vulnerability reporting guidance',
       '#130 / PR #131 — deterministic clean-rebuild output integrity',
       '#132 / PR #133 — monorepo accidental-publish safety',
       '#134 / PR #135 — internal workspace dependency-confusion gate',
-      '#136 / PR #137 — workspace package entrypoint integrity gate',
-      '#138 / PR #139 — source-to-dist build completeness gate',
+      '#136 / PR #137 — workspace package entrypoint integrity',
+      '#138 / PR #139 — source-to-dist build completeness',
       '#140 / PR #141 — metadata-only privacy EXPORT/DELETE manifest planning',
       '#142 / PR #143 — fail-closed provider-egress preparation',
     ],
@@ -102,7 +102,7 @@ for (const [documentName, content, required] of [
     roadmap,
     [
       'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
-      'READINESS COMPLETE / CUTOVER BLOCKED',
+      'READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED',
       'Pre-cutover hardening — COMPLETE THROUGH PROVIDER EGRESS PREPARATION',
       'metadata-only privacy EXPORT/DELETE manifest planning',
       'fail-closed provider-egress preparation',
