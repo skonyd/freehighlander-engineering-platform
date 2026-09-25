@@ -141,6 +141,7 @@ async function execute(parsed, current, store) {
       becameUnavailableModelIds: refreshed.result.becameUnavailableModelIds,
       restoredModelIds: refreshed.result.restoredModelIds,
       deprecatedModelIds: refreshed.result.deprecatedModelIds,
+      invalidated: refreshed.invalidated,
       auditEvents: refreshed.auditEvents,
       authority: 'NONE',
     };
