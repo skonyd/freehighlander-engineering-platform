@@ -110,7 +110,9 @@ export function selectJitRepositoryContext(
       score: scoreEntry(entry, queryTerms, changedPaths),
     }))
     .filter((item) => item.score > 0)
-    .sort((left, right) => right.score - left.score || left.entry.path.localeCompare(right.entry.path));
+    .sort(
+      (left, right) => right.score - left.score || left.entry.path.localeCompare(right.entry.path),
+    );
 
   for (const { entry } of ranked) {
     if (estimatedTokens + entry.estimatedTokens > input.targetTokens) continue;
@@ -200,7 +202,14 @@ function normalizePath(value: string, field = 'repository path'): string {
 }
 
 function tokenize(value: string): readonly string[] {
-  return [...new Set(value.toLowerCase().split(/[^a-z0-9._:/-]+/).filter(Boolean))].sort();
+  return [
+    ...new Set(
+      value
+        .toLowerCase()
+        .split(/[^a-z0-9._:/-]+/)
+        .filter(Boolean),
+    ),
+  ].sort();
 }
 
 function requireText(value: string, field: string): string {
