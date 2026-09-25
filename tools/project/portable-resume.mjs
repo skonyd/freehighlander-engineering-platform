@@ -20,7 +20,9 @@ import {
   publishPreparedResumeCheckpoint,
   publishPreparedResumeHandoff,
   readCheckpointWorktreeStatus,
+  readPreparedPortableEventBundle,
   readPreparedResumeManifest,
+  rebuildPortableResumeReadModel,
   resolvePortableResumeProjectId,
   readRemoteBranchHead,
 } from './lib/portable-resume.mjs';
@@ -39,10 +41,18 @@ try {
     if (option(parsed.options, 'secret-profile') !== null) {
       throw new Error('--secret-profile is valid only with resume');
     }
+    if (option(parsed.options, 'read-model') !== null) {
+      throw new Error('--read-model is valid only with resume');
+    }
     const manifestFile = requireOption(parsed.options, 'manifest');
     assertSafeCheckpointWorktree(readCheckpointWorktreeStatus(root));
 
     const manifest = await readPreparedResumeManifest(path.resolve(process.cwd(), manifestFile));
+    const eventsFile = option(parsed.options, 'events');
+    const eventBundle =
+      eventsFile === null
+        ? null
+        : await readPreparedPortableEventBundle(path.resolve(process.cwd(), eventsFile));
     const store = createPortableResumeStore(root, remote);
     const remoteHead = readRemoteBranchHead(root, remote, manifest.branch);
     const handoff = parsed.flags.has('handoff');
@@ -60,12 +70,14 @@ try {
           leaseId:
             manifest.activeWorkItemId === null ? null : requireOption(parsed.options, 'lease-id'),
           releasedAt: new Date().toISOString(),
+          eventBundle,
         })
       : await publishPreparedResumeCheckpoint({
           store,
           manifest,
           repositoryIdentity: state.repository,
           remoteHead,
+          eventBundle,
         });
     printJson(result);
     if (result.status !== 'PORTABLE_READY' || result.handoffComplete === false) {
@@ -73,6 +85,9 @@ try {
     }
   } else if (parsed.command === 'resume') {
     if (parsed.flags.has('handoff')) throw new Error('--handoff is valid only with checkpoint');
+    if (option(parsed.options, 'events') !== null) {
+      throw new Error('--events is valid only with checkpoint');
+    }
     const store = createPortableResumeStore(root, remote);
     const projectId = await resolvePortableResumeProjectId(
       store,
@@ -145,7 +160,41 @@ try {
             secrets,
           });
 
-    printJson({ ...result, secrets, plan });
+    let readModel = {
+      status: 'NOT_CHECKED',
+      projectId,
+      eventBundleHash: null,
+      imported: 0,
+      duplicates: 0,
+      localDatabaseRequiredForPortability: false,
+      semanticGatePassInferred: false,
+      authority: 'NONE',
+    };
+    if (
+      manifest !== null &&
+      result.currentRemoteHead !== null &&
+      result.currentRemoteHead === manifest.remoteHead
+    ) {
+      const configuredReadModel = option(parsed.options, 'read-model');
+      const readModelFile =
+        configuredReadModel === null
+          ? path.join(
+              root,
+              '.freehighlander',
+              'runtime',
+              'resume-read-models',
+              `${projectId}.sqlite`,
+            )
+          : path.resolve(process.cwd(), configuredReadModel);
+      readModel = await rebuildPortableResumeReadModel({
+        store,
+        repositoryIdentity: state.repository,
+        projectId,
+        filePath: readModelFile,
+      });
+    }
+
+    printJson({ ...result, secrets, plan, readModel });
     if (result.status !== 'READY' || result.readyToMutate !== true) process.exitCode = 2;
   } else if (parsed.command === 'help' || parsed.command === undefined) {
     printHelp();
@@ -221,9 +270,9 @@ function printHelp() {
   console.log(`FreeHighlander portable resume
 
 Usage:
-  npm run project:portable-resume -- checkpoint --manifest <manifest.json> [--remote origin]
-  npm run project:portable-resume -- checkpoint --manifest <manifest.json> --handoff --lease-id <lease-id> [--remote origin]
-  npm run project:portable-resume -- resume [--project <project-id>] [--lease-id <current-lease-id>] [--secret-profile <profile>] [--remote origin]
+  npm run project:portable-resume -- checkpoint --manifest <manifest.json> [--events <portable-events.json>] [--remote origin]
+  npm run project:portable-resume -- checkpoint --manifest <manifest.json> [--events <portable-events.json>] --handoff --lease-id <lease-id> [--remote origin]
+  npm run project:portable-resume -- resume [--project <project-id>] [--lease-id <current-lease-id>] [--secret-profile <profile>] [--read-model <file>] [--remote origin]
   npm run project:portable-resume -- resume [--project <project-id>] --claim \
     --run-id <run-id> --lease-id <new-lease-id> --machine-instance <machine-id> --ttl-ms <milliseconds> [--secret-profile <profile>] [--remote origin]
 
@@ -231,8 +280,9 @@ Checkpoint safety:
   - requires a clean product worktree
   - validates the strict ResumeManifestV1 contract
   - verifies manifest remote HEAD is current before publication
+  - publishes manifest + bound portable event bundle atomically when --events is provided
   - publishes with generation/CAS semantics
-  - verifies remote read-back/hash
+  - verifies remote read-back/hash for both manifest and event bundle
   - --handoff releases the exact active ownership lease only after checkpoint verification
   - handoff lease release uses exact Git revision CAS and read-back verification
   - never infers semantic gate PASS or authority
@@ -250,7 +300,9 @@ Resume safety:
   - checks only SecretHandles required by the portable manifest against the selected local profile
   - unresolved required handles block secret-dependent work without blocking unrelated READY work
   - emits PARKED / READY / WAITING planner state directly from the portable manifest
+  - bound portable events rebuild the local SQLite read-model idempotently after HEAD reconciliation
   - planner requires neither local SQLite nor LOCAL_ONLY_CACHE state
+  - SQLite/WAL is never used as the handoff protocol
   - secret values and private resolver locators are never printed
   - reports RECONCILIATION_REQUIRED instead of guessing continuation
   - never mutates or cleans the product worktree
