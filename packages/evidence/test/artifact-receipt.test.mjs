@@ -23,6 +23,7 @@ test('PASS artifact certificate replaces large successful logs with compact meta
     durationMs: 83_000,
   });
 
+  assert.equal(receipt.schemaVersion, 1);
   assert.equal(receipt.status, 'PASS');
   assert.equal(receipt.certificate, 'PASS_CERTIFICATE');
   assert.equal(receipt.failureCount, 0);
