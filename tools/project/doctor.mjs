@@ -102,11 +102,8 @@ if (doctorArgs.resume) {
       loadSecretRequirements,
       readLocalSecretProfile,
     } = await import('./lib/secrets.mjs');
-    const {
-      createManagedProviderAdapter,
-      createModelManagementStore,
-      readModelManagementState,
-    } = await import('./lib/model-management.mjs');
+    const { createManagedProviderAdapter, createModelManagementStore, readModelManagementState } =
+      await import('./lib/model-management.mjs');
 
     const resumeStore = createPortableResumeStore(root, doctorArgs.remote);
     const projectId = await resolvePortableResumeProjectId(resumeStore, doctorArgs.projectId);
@@ -144,9 +141,7 @@ if (doctorArgs.resume) {
       );
     }
     if (resumeSummary.blockedProviderIds.length > 0) {
-      failures.push(
-        'resume providers unavailable: ' + resumeSummary.blockedProviderIds.join(', '),
-      );
+      failures.push('resume providers unavailable: ' + resumeSummary.blockedProviderIds.join(', '));
     }
   } catch (error) {
     failures.push(
