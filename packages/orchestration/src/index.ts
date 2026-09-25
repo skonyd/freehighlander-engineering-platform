@@ -227,6 +227,17 @@ export {
 } from './protected-anchor-verifier.js';
 
 export {
+  activateToolSchemas,
+  buildLazyToolExposurePlan,
+  lazyToolSchemaLoadingCanGrantAuthority,
+  lazyToolSchemaLoadingCanHideRequiredCoreTools,
+  type LazyToolExposurePlan,
+  type ToolCatalogEconomyProfile,
+  type ToolSchemaActivationResult,
+  type ToolSchemaDescriptor,
+} from './tool-catalog-economy.js';
+
+export {
   buildEconomyLedger,
   economyLedgerCanGrantAuthority,
   evaluateRemoteCallNecessity,
