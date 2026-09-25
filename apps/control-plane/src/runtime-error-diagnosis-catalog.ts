@@ -57,7 +57,8 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     headline: 'Input validation failed',
     severity: 'ERROR',
     retryable: false,
-    rootCause: (subject) => `Validation rejected ${subject} because it does not satisfy the required contract.`,
+    rootCause: (subject) =>
+      `Validation rejected ${subject} because it does not satisfy the required contract.`,
     nextAction: (subject) => `Correct ${subject} and submit the operation again`,
   },
   CONFIGURATION_FAILURE: {
@@ -67,7 +68,8 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     headline: 'Configuration is invalid',
     severity: 'ERROR',
     retryable: false,
-    rootCause: (subject) => `Configuration ${subject} is invalid or unavailable for this operation.`,
+    rootCause: (subject) =>
+      `Configuration ${subject} is invalid or unavailable for this operation.`,
     nextAction: (subject) => `Correct configuration ${subject} before retrying`,
   },
   POLICY_DENIED: {
@@ -78,7 +80,8 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     severity: 'WARNING',
     retryable: false,
     rootCause: (subject) => `System policy denied ${subject}; execution was not authorized.`,
-    nextAction: (subject) => `Review the policy decision for ${subject} or obtain the required approval`,
+    nextAction: (subject) =>
+      `Review the policy decision for ${subject} or obtain the required approval`,
   },
   SECRET_BINDING_MISSING: {
     code: 'SECRET_BINDING_MISSING',
@@ -87,7 +90,8 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     headline: 'Required secret binding is missing',
     severity: 'ERROR',
     retryable: false,
-    rootCause: (subject) => `Required secret binding ${subject} is not available to the execution boundary.`,
+    rootCause: (subject) =>
+      `Required secret binding ${subject} is not available to the execution boundary.`,
     nextAction: (subject) => `Configure or restore secret binding ${subject} before retrying`,
   },
   WORKSPACE_IDENTITY_MISMATCH: {
@@ -97,8 +101,10 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     headline: 'Execution workspace is stale',
     severity: 'ERROR',
     retryable: false,
-    rootCause: (subject) => `Workspace ${subject} no longer matches the required run or revision identity.`,
-    nextAction: (subject) => `Recreate or reattach workspace ${subject} using the current run identity`,
+    rootCause: (subject) =>
+      `Workspace ${subject} no longer matches the required run or revision identity.`,
+    nextAction: (subject) =>
+      `Recreate or reattach workspace ${subject} using the current run identity`,
   },
   REVISION_CONFLICT: {
     code: 'REVISION_CONFLICT',
@@ -107,8 +113,10 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     headline: 'Repository revision changed',
     severity: 'ERROR',
     retryable: false,
-    rootCause: (subject) => `Revision ${subject} no longer matches the revision required by this operation.`,
-    nextAction: (subject) => `Refresh the repository state for ${subject} and recompute current evidence`,
+    rootCause: (subject) =>
+      `Revision ${subject} no longer matches the revision required by this operation.`,
+    nextAction: (subject) =>
+      `Refresh the repository state for ${subject} and recompute current evidence`,
   },
   COMMAND_FAILED: {
     code: 'COMMAND_FAILED',
@@ -118,7 +126,8 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     severity: 'ERROR',
     retryable: false,
     rootCause: (subject) => `Registered command ${subject} completed with a failure result.`,
-    nextAction: (subject) => `Inspect the safe command evidence for ${subject} and correct the failing step`,
+    nextAction: (subject) =>
+      `Inspect the safe command evidence for ${subject} and correct the failing step`,
   },
   ACTIVITY_TIMEOUT: {
     code: 'ACTIVITY_TIMEOUT',
@@ -128,7 +137,8 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     severity: 'ERROR',
     retryable: true,
     rootCause: (subject) => `Activity ${subject} exceeded its allowed execution deadline.`,
-    nextAction: (subject) => `Retry activity ${subject} only if its idempotency and remaining deadline allow it`,
+    nextAction: (subject) =>
+      `Retry activity ${subject} only if its idempotency and remaining deadline allow it`,
   },
   DEPENDENCY_UNAVAILABLE: {
     code: 'DEPENDENCY_UNAVAILABLE',
@@ -137,7 +147,8 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     headline: 'Required dependency is unavailable',
     severity: 'ERROR',
     retryable: true,
-    rootCause: (subject) => `Dependency ${subject} is not currently available to complete this operation.`,
+    rootCause: (subject) =>
+      `Dependency ${subject} is not currently available to complete this operation.`,
     nextAction: (subject) => `Retry after dependency ${subject} becomes healthy`,
   },
   INTERNAL_INVARIANT: {
@@ -147,8 +158,10 @@ const templates: Readonly<Record<KnownRuntimeFailureKind, FailureTemplate>> = {
     headline: 'Internal invariant failed',
     severity: 'CRITICAL',
     retryable: false,
-    rootCause: (subject) => `Internal invariant ${subject} failed and execution stopped fail-closed.`,
-    nextAction: (subject) => `Inspect correlation evidence for invariant ${subject} before resuming execution`,
+    rootCause: (subject) =>
+      `Internal invariant ${subject} failed and execution stopped fail-closed.`,
+    nextAction: (subject) =>
+      `Inspect correlation evidence for invariant ${subject} before resuming execution`,
   },
 };
 
