@@ -2,6 +2,7 @@ export {
   materializeSelectedProjectWorkspaces,
   projectSchedulerCanStartWithoutIsolatedWorkspace,
   projectWorkspaceActivationCanGrantAuthority,
+  type ProjectScheduleSelection,
   type ProjectWorkspaceActivationMode,
   type ProjectWorkspaceActivationPlan,
   type ProjectWorkspaceActivationRequest,
