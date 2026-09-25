@@ -236,3 +236,162 @@ test('runtime error report validates public identifiers and messages', () => {
     /maxValueChars/,
   );
 });
+
+
+test('diagnosed runtime error reports concise confirmed root cause and retry time', () => {
+  const report = createRuntimeErrorReport({
+    code: 'PROVIDER_QUOTA_EXHAUSTED',
+    userMessage: 'The provider request failed.',
+    severity: 'WARNING',
+    operation: 'model.invoke',
+    retryable: true,
+    correlationId: 'corr-diagnosed1',
+    diagnosis: {
+      causeCode: 'QUOTA_EXHAUSTED',
+      causeKind: 'QUOTA_EXHAUSTED',
+      certainty: 'CONFIRMED_SIGNAL',
+      headline: 'Primary model quota exhausted',
+      sourceComponent: 'anthropic-provider',
+      sourceOperation: 'chat-completions',
+      failedStep: 'Invoke preferred final-review model',
+      rootCause:
+        'The provider rejected the preferred model because its current usage quota is exhausted.',
+      observedSignal: 'quota_exhausted with Retry-After 1800 seconds',
+      nextAction: 'Use the configured fallback and retry the preferred model after reset',
+      retryAt: '2026-09-25T23:00:00+03:00',
+      redactionStatus: 'NOT_REQUIRED',
+    },
+  });
+
+  assert.equal(report.diagnosis?.causeKind, 'QUOTA_EXHAUSTED');
+  assert.equal(report.diagnosis?.retryAt, '2026-09-25T20:00:00.000Z');
+  assert.equal(report.diagnosis?.safeForUserDisplay, true);
+
+  const rendered = formatRuntimeErrorForUser(report);
+  assert.match(rendered, /Primary model quota exhausted/);
+  assert.match(rendered, /Cause: The provider rejected/);
+  assert.match(rendered, /Source: anthropic-provider\/chat-completions/);
+  assert.match(rendered, /Failed step: Invoke preferred final-review model/);
+  assert.match(rendered, /Signal: quota_exhausted/);
+  assert.match(rendered, /Next: Use the configured fallback/);
+  assert.match(rendered, /Retry at: 2026-09-25T20:00:00.000Z/);
+  assert.doesNotMatch(rendered, /The provider request failed\./);
+
+  const legacy = createRuntimeErrorReport({
+    code: 'PROVIDER_QUOTA_EXHAUSTED',
+    userMessage: 'The provider request failed.',
+    severity: 'WARNING',
+    operation: 'model.invoke',
+    retryable: true,
+    correlationId: 'corr-diagnosed1',
+  });
+  assert.notEqual(report.fingerprint, legacy.fingerprint);
+});
+
+test('unresolved diagnosed errors say root cause is unresolved without inventing retry time', () => {
+  const report = createRuntimeErrorReport({
+    code: 'INTERNAL_FAILURE',
+    userMessage: 'An internal operation failed.',
+    correlationId: 'corr-unresolved1',
+    diagnosis: {
+      causeCode: 'ROOT_CAUSE_UNRESOLVED',
+      causeKind: 'UNKNOWN',
+      certainty: 'UNRESOLVED',
+      headline: 'Internal failure needs diagnosis',
+      sourceComponent: 'control-plane',
+      sourceOperation: 'run-transition',
+      failedStep: 'Complete orchestration transition',
+      rootCause: 'The exact root cause could not be established from the available typed signals.',
+      observedSignal: 'An internal invariant failed without a registered causal signal.',
+      nextAction: 'Inspect the correlation evidence and registered internal diagnostics',
+      redactionStatus: 'APPLIED',
+    },
+  });
+
+  const rendered = formatRuntimeErrorForUser(report);
+  assert.match(rendered, /exact root cause could not be established/);
+  assert.doesNotMatch(rendered, /Retry at:/);
+  assert.equal(report.diagnosis?.causeKind, 'UNKNOWN');
+  assert.equal(report.diagnosis?.certainty, 'UNRESOLVED');
+});
+
+test('diagnosis validation rejects unsupported or contradictory causal claims', () => {
+  const base = {
+    causeCode: 'TRANSPORT_FAILURE',
+    causeKind: 'TRANSPORT',
+    certainty: 'CONFIRMED_SIGNAL',
+    headline: 'Provider transport failed',
+    sourceComponent: 'provider-adapter',
+    sourceOperation: 'invoke',
+    failedStep: 'Send provider request',
+    rootCause: 'The provider connection failed before a response was received.',
+    observedSignal: 'transport_failure from the provider adapter',
+    nextAction: 'Retry after the provider connection recovers',
+    redactionStatus: 'NOT_REQUIRED',
+  };
+
+  const create = (diagnosis) =>
+    createRuntimeErrorReport({
+      code: 'PROVIDER_FAILURE',
+      userMessage: 'Provider failure detected.',
+      correlationId: 'corr-validation1',
+      diagnosis,
+    });
+
+  assert.throws(() => create({ ...base, causeKind: 'NOPE' }), /causeKind is invalid/);
+  assert.throws(() => create({ ...base, certainty: 'NOPE' }), /certainty is invalid/);
+  assert.throws(
+    () => create({ ...base, causeKind: 'UNKNOWN', certainty: 'CONFIRMED_SIGNAL' }),
+    /UNKNOWN diagnosis cause must remain UNRESOLVED/,
+  );
+  assert.throws(
+    () => create({ ...base, causeKind: 'TRANSPORT', certainty: 'UNRESOLVED' }),
+    /UNRESOLVED diagnosis must use UNKNOWN cause/,
+  );
+  assert.throws(
+    () => create({ ...base, redactionStatus: 'RAW' }),
+    /redactionStatus is invalid/,
+  );
+});
+
+test('diagnosis rejects unsafe text malformed source and invalid retry timestamp', () => {
+  const base = {
+    causeCode: 'AUTH_FAILURE',
+    causeKind: 'AUTHENTICATION',
+    certainty: 'DETERMINISTIC_RULE',
+    headline: 'Provider authentication failed',
+    sourceComponent: 'provider-adapter',
+    sourceOperation: 'invoke',
+    failedStep: 'Authenticate provider request',
+    rootCause: 'The configured provider credential was rejected.',
+    observedSignal: 'authentication failure returned by provider adapter',
+    nextAction: 'Reauthenticate the provider before retrying',
+    redactionStatus: 'APPLIED',
+  };
+
+  const create = (diagnosis) =>
+    createRuntimeErrorReport({
+      code: 'AUTH_FAILURE',
+      userMessage: 'Authentication failed.',
+      correlationId: 'corr-validation2',
+      diagnosis,
+    });
+
+  assert.throws(
+    () => create({ ...base, observedSignal: 'token=super-secret-value' }),
+    /secret-like material/,
+  );
+  assert.throws(() => create({ ...base, headline: 'bad' }), /headline length is invalid/);
+  assert.throws(
+    () => create({ ...base, rootCause: 'x'.repeat(361) }),
+    /rootCause length is invalid/,
+  );
+  assert.throws(
+    () => create({ ...base, sourceComponent: 'bad component!' }),
+    /operation contains unsupported characters/,
+  );
+  assert.throws(
+    () => create({ ...base, retryAt: 'not-a-timestamp' }),
+    /retryAt must be an ISO timestamp/,
+  );
+});
