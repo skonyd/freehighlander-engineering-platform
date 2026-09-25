@@ -160,6 +160,60 @@ export async function doctorLocalSecrets(profile, requirements, options = {}) {
   };
 }
 
+export async function doctorResumeSecretHandles(
+  profile,
+  requirements,
+  requiredHandleIds,
+  options = {},
+) {
+  validateSecretBindingProfileV1(profile);
+  const normalizedRequirements = validateSecretRequirements(requirements);
+  const required = normalizeRequiredHandleIds(requiredHandleIds);
+  const requirementById = new Map(
+    normalizedRequirements.map((requirement) => [requirement.handleId, requirement]),
+  );
+  const selectedRequirements = [];
+  const missingRequirementIds = [];
+
+  for (const handleId of required) {
+    const requirement = requirementById.get(handleId);
+    if (requirement) selectedRequirements.push(requirement);
+    else missingRequirementIds.push(handleId);
+  }
+
+  const doctor = await doctorLocalSecrets(profile, selectedRequirements, options);
+  const resolutions = [
+    ...doctor.resolutions,
+    ...missingRequirementIds.map((handleId) => ({
+      handleId,
+      status: 'BLOCKED_CONFIGURATION',
+      profileId: profile.profileId,
+      resolverKind: null,
+      reasons: ['secret requirement metadata is missing'],
+    })),
+  ].sort((left, right) => left.handleId.localeCompare(right.handleId));
+
+  const resolvableHandleIds = resolutions
+    .filter((resolution) => resolution.status === 'RESOLVABLE')
+    .map((resolution) => resolution.handleId);
+  const blockedHandleIds = resolutions
+    .filter((resolution) => resolution.status !== 'RESOLVABLE')
+    .map((resolution) => resolution.handleId);
+  const status = missingRequirementIds.length > 0 ? 'BLOCKED_CONFIGURATION' : doctor.status;
+
+  return {
+    profileId: profile.profileId,
+    status,
+    requiredHandleIds: required,
+    resolvableHandleIds,
+    blockedHandleIds,
+    secretDependentWorkReady: blockedHandleIds.length === 0,
+    resolutions,
+    authority: 'NONE',
+    secretValuesPresent: false,
+  };
+}
+
 export async function loadSecretRequirements(filePath) {
   let raw;
   try {
@@ -260,6 +314,21 @@ export function portableSecretsCliCanPersistSecretValues() {
 
 export function portableSecretsCliCanGrantAuthority() {
   return false;
+}
+
+function normalizeRequiredHandleIds(requiredHandleIds) {
+  if (!Array.isArray(requiredHandleIds)) {
+    throw new Error('required secret handle ids must be an array');
+  }
+  const seen = new Set();
+  for (const handleId of requiredHandleIds) {
+    requireText(handleId, 'required secret handle id');
+    if (seen.has(handleId)) {
+      throw new Error(`duplicate required secret handle id: ${handleId}`);
+    }
+    seen.add(handleId);
+  }
+  return [...seen].sort();
 }
 
 function validateSecretRequirements(requirements) {
