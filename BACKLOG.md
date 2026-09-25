@@ -74,6 +74,20 @@ Umbrella: #88.
 - [x] Privacy export/delete manifest planning — issue #140 / PR #141
 - [x] Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143
 
+## Optional FH-KUIKA productization module — proposed
+- [ ] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0
+- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0
+- [ ] FH-KUIKA-03 Engineering Blueprint Catalog — P0
+- [ ] FH-KUIKA-04 Visual Workflow Studio — P0
+- [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
+- [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
+- [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1
+- [ ] FH-KUIKA-08 Routines / Trigger Engine — P1
+- [ ] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1
+- [ ] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 / ADR-required
+
+Detailed decomposition and authority boundary: [FH-KUIKA module roadmap](docs/modules/kuika-inspired-productization/ROADMAP.md).
+
 ## Current blocker
 
 Creator Marketplace #207 is satisfied. The remaining authority blocker is the explicit FH-20 cutover gate: exact human approval, SYSTEM_POLICY=ALLOW, current final-reference-bound parity, and explicit V3 promotion review.

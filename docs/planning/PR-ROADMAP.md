@@ -13,6 +13,7 @@ FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 - FH-20 readiness gate complete; Creator Marketplace external blocker cleared; explicit cutover still pending.
 - FH-30A..FH-37A complete and authority-neutral.
 - FH-30B..FH-37B remain post-cutover.
+- FH-KUIKA optional productization module is proposed; authority-neutral preparation may proceed before cutover while mutation activation remains gated.
 - Pre-cutover hardening through reproducible CI, repository hygiene, tracked-secret enforcement, 19/19 measured native coverage, opaque SecretHandle/EPHEMERAL injection, lockfile provenance, safe vulnerability reporting, deterministic build-output integrity accidental-publish safety, internal workspace dependency-confusion prevention and workspace package entrypoint integrity enforcement, source-to-dist build completeness enforcement, privacy export/delete manifest planning and fail-closed provider-egress preparation are complete.
 
 ```text
@@ -88,3 +89,83 @@ FH-30B..FH-37B activation
 ```
 
 This ordering preserves the distinction between preparation/readiness evidence and authority-bearing activation.
+
+
+## Optional productization module — FH-KUIKA
+
+Canonical detailed plan: [FH-KUIKA module roadmap](../modules/kuika-inspired-productization/ROADMAP.md).
+
+| Work item | Product capability | Priority | Pre-cutover scope | Activation dependency |
+| --- | --- | --- | --- | --- |
+| **FH-KUIKA-01** | Studio shell + Explainable Operations Console | P0 | read-only/read-model/control-intent UX | none for read-only surfaces |
+| **FH-KUIKA-02** | ASK / PLAN / EXECUTE / REVIEW Workbench | P0 | ASK/PLAN/REVIEW preparation | EXECUTE obeys authority/cutover |
+| **FH-KUIKA-03** | Engineering Blueprint Catalog | P0 | schema/catalog/validate/simulate | execution via normal workflow authority |
+| **FH-KUIKA-04** | Visual Workflow Studio | P0 | draft/validate/simulate | publish/execute obeys governance |
+| **FH-KUIKA-05** | Connector Hub / MCP Tool Manager | P0 | discovery/config/permission review | write-capable invocation obeys authority |
+| **FH-KUIKA-06** | Role Marketplace + Engineering Solution Packs | P1 | package/catalog/install planning | role authority remains policy-bounded |
+| **FH-KUIKA-07** | Engineering Knowledge Vault / Lineage-RAG | P1 | retrieval/read-only | no authority from semantic similarity |
+| **FH-KUIKA-08** | Routines / Trigger Engine | P1 | trigger/routine definitions and UI | authority-bearing activation post-gate |
+| **FH-KUIKA-09** | Constraint-aware model/work router optimizer | P1 | simulation/pre-call routing | must preserve availability-only semantic policy |
+| **FH-KUIKA-10** | Enterprise collaboration / identity boundary | P2 | planning only | ADR + architecture version bump required |
+
+### Recommended PR sequence
+
+~~~text
+FH-KUIKA-01.1 Studio shell/navigation
+  ↓
+FH-KUIKA-01.2 Explainable Operations read model
+  ↓
+FH-KUIKA-01.3 Run detail + evidence/routing/error UX
+  ↓
+FH-KUIKA-01.4 Approval Inbox
+  ↓
+FH-KUIKA-02.1 Interaction-mode contracts
+  ↓
+FH-KUIKA-02.2 Workbench + context chips
+  ↓
+FH-KUIKA-02.3 PLAN structured outputs
+  ↓
+FH-KUIKA-02.4 REVIEW exact-revision flow
+  ↓
+FH-KUIKA-03.1 Blueprint schema/versioning
+  ↓
+FH-KUIKA-03.2 Deterministic blueprint matcher
+  ↓
+FH-KUIKA-03.3 Curated blueprint pack
+  ↓
+FH-KUIKA-03.4 Catalog/detail UX
+  ↓
+FH-KUIKA-03.5 Blueprint → workflow draft/simulation
+  ↓
+FH-KUIKA-04.1 Workflow canonical draft round-trip
+  ↓
+FH-KUIKA-04.2 Canvas/node palette
+  ↓
+FH-KUIKA-04.3 Inspector: role/risk/budget/evidence/tools
+  ↓
+FH-KUIKA-04.4 Validation visualization
+  ↓
+FH-KUIKA-04.5 Simulation/replay
+  ↓
+FH-KUIKA-04.6 Publish/version diff
+  ↓
+FH-KUIKA-05.1 ToolAdapter registry projection
+  ↓
+FH-KUIKA-05.2 MCP normalization
+  ↓
+FH-KUIKA-05.3 Install/permission-diff contract
+  ↓
+FH-KUIKA-05.4 Connector Hub UX
+  ↓
+FH-KUIKA-05.5 SecretHandle credential configuration
+  ↓
+FH-KUIKA-06 / FH-KUIKA-07 / FH-KUIKA-09
+  ↓
+FH-KUIKA-08 routine definitions/UI
+  ↓
+FH-20 + relevant authority gates
+  ↓
+FH-KUIKA-02.5 / FH-KUIKA-05.6 / FH-KUIKA-08.5 authority-bearing activation
+~~~
+
+FH-KUIKA is an optional module and must not become a dependency required for core runtime correctness. This module must not weaken the frozen authority rules. Studio modes, visual editors, blueprints, marketplace metadata, semantic retrieval and connector metadata are never authority by themselves.
