@@ -43,6 +43,15 @@ export interface ProjectSchedulePlan {
   readonly authority: 'NONE';
 }
 
+export interface HumanDecisionCurrentness {
+  readonly workflowHash: string;
+  readonly runSnapshotHash: string;
+  readonly policyHash: string;
+  readonly catalogSnapshotHash: string;
+  readonly bindingSnapshotHash: string;
+  readonly dependencyGraphHash: string;
+}
+
 export interface HumanDecisionQueueEntryInput {
   readonly decisionId: string;
   readonly projectId: string;
@@ -52,6 +61,7 @@ export interface HumanDecisionQueueEntryInput {
   readonly nodeId: string;
   readonly exactRevision: string;
   readonly scopeHash: string;
+  readonly currentness: HumanDecisionCurrentness;
   readonly decisionType: string;
   readonly reason: string;
   readonly choices: readonly string[];
@@ -72,6 +82,7 @@ export interface HumanDecisionQueueEntry extends HumanDecisionQueueEntryInput {
 
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/;
 const HASH_PATTERN = /^[a-f0-9]{64}$/;
+const GIT_REVISION_PATTERN = /^[a-f0-9]{40,64}$/;
 const WORK_ITEM_STATES = new Set<ProjectWorkItemState>([
   'PENDING',
   'ACTIVE',
@@ -150,8 +161,9 @@ export function createHumanDecisionQueueEntry(
     requireIdentifier(value, name);
   }
   requireText(input.repositoryIdentity, 'repositoryIdentity');
-  requireText(input.exactRevision, 'exactRevision');
+  requireRevision(input.exactRevision, 'exactRevision');
   requireHash(input.scopeHash, 'scopeHash');
+  const currentness = normalizeHumanDecisionCurrentness(input.currentness);
   requireText(input.decisionType, 'decisionType');
   requireText(input.reason, 'reason');
   requireTimestamp(input.createdAt, 'createdAt');
@@ -177,6 +189,7 @@ export function createHumanDecisionQueueEntry(
     nodeId: input.nodeId,
     exactRevision: input.exactRevision,
     scopeHash: input.scopeHash,
+    currentness,
     decisionType: input.decisionType,
     reason: input.reason,
     choices,
@@ -192,6 +205,201 @@ export function createHumanDecisionQueueEntry(
     decisionHash: sha256(canonicalJson(identity)),
     authority: 'NONE',
   };
+}
+
+export function validateHumanDecisionQueueEntry(entry: HumanDecisionQueueEntry): void {
+  if (entry.schemaVersion !== 1) throw new Error('human decision schemaVersion must be 1');
+  if (entry.authority !== 'NONE') throw new Error('human decision queue authority must be NONE');
+
+  const rebuilt = createHumanDecisionQueueEntry({
+    decisionId: entry.decisionId,
+    projectId: entry.projectId,
+    repositoryIdentity: entry.repositoryIdentity,
+    workItemId: entry.workItemId,
+    runId: entry.runId,
+    nodeId: entry.nodeId,
+    exactRevision: entry.exactRevision,
+    scopeHash: entry.scopeHash,
+    currentness: entry.currentness,
+    decisionType: entry.decisionType,
+    reason: entry.reason,
+    choices: entry.choices,
+    consequences: entry.consequences,
+    evidenceHashes: entry.evidenceHashes,
+    createdAt: entry.createdAt,
+    blockedWorkItemIds: entry.blockedWorkItemIds,
+    otherWorkContinuing: entry.otherWorkContinuing,
+  });
+  if (rebuilt.decisionHash !== entry.decisionHash) {
+    throw new Error('human decision queue entry hash mismatch');
+  }
+  if (canonicalJson(rebuilt) !== canonicalJson(entry)) {
+    throw new Error('human decision queue entry is not canonical');
+  }
+}
+
+export interface HumanDecisionResponseInput {
+  readonly decisionId: string;
+  readonly decisionHash: string;
+  readonly principalId: string;
+  readonly principalKind: 'HUMAN';
+  readonly selectedChoice: string;
+  readonly exactRevision: string;
+  readonly scopeHash: string;
+  readonly respondedAt: string;
+}
+
+export interface HumanDecisionResponseV1 extends HumanDecisionResponseInput {
+  readonly schemaVersion: 1;
+  readonly responseHash: string;
+  readonly authority: 'NONE';
+}
+
+export type HumanDecisionResumeStatus =
+  'RESUME_READY' | 'UNAUTHORIZED' | 'INVALID_RESPONSE' | 'STALE';
+
+export interface HumanDecisionResumeContext {
+  readonly authorityVerified: boolean;
+  readonly exactRevision: string;
+  readonly scopeHash: string;
+  readonly currentness: HumanDecisionCurrentness;
+}
+
+export interface HumanDecisionResumeDecision {
+  readonly status: HumanDecisionResumeStatus;
+  readonly reasons: readonly string[];
+  readonly staleDimensions: readonly string[];
+  readonly authority: 'NONE';
+}
+
+export function createHumanDecisionResponseV1(
+  input: HumanDecisionResponseInput,
+): HumanDecisionResponseV1 {
+  requireIdentifier(input.decisionId, 'decisionId');
+  requireHash(input.decisionHash, 'decisionHash');
+  requireIdentifier(input.principalId, 'principalId');
+  if (input.principalKind !== 'HUMAN') {
+    throw new Error('human decision response principalKind must be HUMAN');
+  }
+  requireText(input.selectedChoice, 'selectedChoice');
+  requireRevision(input.exactRevision, 'exactRevision');
+  requireHash(input.scopeHash, 'scopeHash');
+  requireTimestamp(input.respondedAt, 'respondedAt');
+
+  const identity = {
+    schemaVersion: 1,
+    decisionId: input.decisionId,
+    decisionHash: input.decisionHash,
+    principalId: input.principalId,
+    principalKind: input.principalKind,
+    selectedChoice: input.selectedChoice,
+    exactRevision: input.exactRevision,
+    scopeHash: input.scopeHash,
+    respondedAt: input.respondedAt,
+  } as const;
+
+  return {
+    ...identity,
+    responseHash: sha256(canonicalJson(identity)),
+    authority: 'NONE',
+  };
+}
+
+export function validateHumanDecisionResponseV1(response: HumanDecisionResponseV1): void {
+  if (response.schemaVersion !== 1) throw new Error('human response schemaVersion must be 1');
+  if (response.authority !== 'NONE') throw new Error('human response authority must be NONE');
+  const rebuilt = createHumanDecisionResponseV1({
+    decisionId: response.decisionId,
+    decisionHash: response.decisionHash,
+    principalId: response.principalId,
+    principalKind: response.principalKind,
+    selectedChoice: response.selectedChoice,
+    exactRevision: response.exactRevision,
+    scopeHash: response.scopeHash,
+    respondedAt: response.respondedAt,
+  });
+  if (rebuilt.responseHash !== response.responseHash) {
+    throw new Error('human decision response hash mismatch');
+  }
+  if (canonicalJson(rebuilt) !== canonicalJson(response)) {
+    throw new Error('human decision response is not canonical');
+  }
+}
+
+export function evaluateHumanDecisionResume(
+  entry: HumanDecisionQueueEntry,
+  response: HumanDecisionResponseV1,
+  context: HumanDecisionResumeContext,
+): HumanDecisionResumeDecision {
+  validateHumanDecisionQueueEntry(entry);
+  validateHumanDecisionResponseV1(response);
+  if (typeof context.authorityVerified !== 'boolean') {
+    throw new Error('authorityVerified must be boolean');
+  }
+  requireRevision(context.exactRevision, 'current exactRevision');
+  requireHash(context.scopeHash, 'current scopeHash');
+  const currentness = normalizeHumanDecisionCurrentness(context.currentness);
+
+  const reasons: string[] = [];
+  if (response.decisionId !== entry.decisionId || response.decisionHash !== entry.decisionHash) {
+    reasons.push('response is bound to a different decision identity');
+  }
+  if (!entry.choices.includes(response.selectedChoice)) {
+    reasons.push('response selectedChoice is not allowed by the parked decision');
+  }
+  if (reasons.length > 0) {
+    return {
+      status: 'INVALID_RESPONSE',
+      reasons,
+      staleDimensions: [],
+      authority: 'NONE',
+    };
+  }
+  if (!context.authorityVerified) {
+    return {
+      status: 'UNAUTHORIZED',
+      reasons: ['human principal authority is not verified'],
+      staleDimensions: [],
+      authority: 'NONE',
+    };
+  }
+
+  const staleDimensions: string[] = [];
+  if (
+    response.exactRevision !== entry.exactRevision ||
+    context.exactRevision !== entry.exactRevision
+  ) {
+    staleDimensions.push('revision');
+  }
+  if (response.scopeHash !== entry.scopeHash || context.scopeHash !== entry.scopeHash) {
+    staleDimensions.push('scope');
+  }
+  for (const key of HUMAN_CURRENTNESS_KEYS) {
+    if (currentness[key] !== entry.currentness[key]) staleDimensions.push(key);
+  }
+  if (staleDimensions.length > 0) {
+    return {
+      status: 'STALE',
+      reasons: ['parked decision currentness changed before human response resume'],
+      staleDimensions: [...new Set(staleDimensions)].sort(),
+      authority: 'NONE',
+    };
+  }
+
+  return {
+    status: 'RESUME_READY',
+    reasons: [],
+    staleDimensions: [],
+    authority: 'NONE',
+  };
+}
+
+export function humanDecisionResponseCanGrantAuthority(): false {
+  return false;
+}
+
+export function modelCanSubmitHumanDecisionResponse(): false {
+  return false;
 }
 
 export function parkedHumanRequiredCancelsProject(): false {
@@ -326,6 +534,33 @@ function compareReadyItems(left: ProjectWorkItem, right: ProjectWorkItem): numbe
   return left.id.localeCompare(right.id);
 }
 
+const HUMAN_CURRENTNESS_KEYS = [
+  'workflowHash',
+  'runSnapshotHash',
+  'policyHash',
+  'catalogSnapshotHash',
+  'bindingSnapshotHash',
+  'dependencyGraphHash',
+] as const;
+
+function normalizeHumanDecisionCurrentness(
+  value: HumanDecisionCurrentness,
+): HumanDecisionCurrentness {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('human decision currentness must be an object');
+  }
+  const normalized = {
+    workflowHash: value.workflowHash,
+    runSnapshotHash: value.runSnapshotHash,
+    policyHash: value.policyHash,
+    catalogSnapshotHash: value.catalogSnapshotHash,
+    bindingSnapshotHash: value.bindingSnapshotHash,
+    dependencyGraphHash: value.dependencyGraphHash,
+  };
+  for (const key of HUMAN_CURRENTNESS_KEYS) requireHash(normalized[key], key);
+  return normalized;
+}
+
 function validatedTextList(values: readonly string[], label: string): readonly string[] {
   return values.map((value) => {
     requireText(value, label);
@@ -363,6 +598,10 @@ function requireText(value: string, name: string): void {
 
 function requireHash(value: string, name: string): void {
   if (!HASH_PATTERN.test(value)) throw new Error(name + ' must be a SHA-256 hex hash');
+}
+
+function requireRevision(value: string, name: string): void {
+  if (!GIT_REVISION_PATTERN.test(value)) throw new Error(name + ' must be a Git revision hash');
 }
 
 function requireTimestamp(value: string, name: string): void {
