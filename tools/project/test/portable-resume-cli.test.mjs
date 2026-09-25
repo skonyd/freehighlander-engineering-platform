@@ -121,7 +121,11 @@ test('reconciliation reports repository drift and missing remote branch determin
 test('resume inspection returns not found or currentness result without authority', async () => {
   const candidate = manifest();
   const missing = await inspectPortableResume({
-    store: { async getLatest() { return null; } },
+    store: {
+      async getLatest() {
+        return null;
+      },
+    },
     repositoryIdentity: candidate.repositoryIdentity,
     projectId: candidate.projectId,
     readRemoteHead: async () => {
@@ -132,7 +136,11 @@ test('resume inspection returns not found or currentness result without authorit
   assert.equal(missing.authority, 'NONE');
 
   const ready = await inspectPortableResume({
-    store: { async getLatest() { return candidate; } },
+    store: {
+      async getLatest() {
+        return candidate;
+      },
+    },
     repositoryIdentity: candidate.repositoryIdentity,
     projectId: candidate.projectId,
     readRemoteHead: async (branch) => {
