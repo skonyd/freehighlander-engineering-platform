@@ -111,8 +111,7 @@ function findPublication(state, logicalRole, riskTier) {
   }
 
   const matches = state.publications.filter(
-    (publication) =>
-      publication.logicalRole === logicalRole && publication.riskTier === riskTier,
+    (publication) => publication.logicalRole === logicalRole && publication.riskTier === riskTier,
   );
   if (matches.length > 1) {
     throw new Error(`multiple binding publications found for ${logicalRole}/${riskTier}`);
@@ -166,8 +165,9 @@ function normalizeMaxDebateRounds(value) {
 
 function normalizeCustomRiskTiers(values) {
   const normalized = Array.isArray(values) ? values : [values];
-  return [...new Set(normalized.map((value) => requireEnum(value, RISK_TIERS, 'customRiskTier')))]
-    .sort();
+  return [
+    ...new Set(normalized.map((value) => requireEnum(value, RISK_TIERS, 'customRiskTier'))),
+  ].sort();
 }
 
 function requireEnum(value, allowed, field) {
