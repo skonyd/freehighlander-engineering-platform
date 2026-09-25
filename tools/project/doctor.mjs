@@ -12,6 +12,7 @@ import {
 import {
   buildResumeDoctorSummary,
   inspectResumeHostCapabilities,
+  inspectResumeProviderReadiness,
   parseResumeDoctorArgs,
 } from './lib/resume-doctor.mjs';
 import { assertStateContract, findRepoRoot, loadProjectState } from './lib/state.mjs';
@@ -101,6 +102,11 @@ if (doctorArgs.resume) {
       loadSecretRequirements,
       readLocalSecretProfile,
     } = await import('./lib/secrets.mjs');
+    const {
+      createManagedProviderAdapter,
+      createModelManagementStore,
+      readModelManagementState,
+    } = await import('./lib/model-management.mjs');
 
     const resumeStore = createPortableResumeStore(root, doctorArgs.remote);
     const projectId = await resolvePortableResumeProjectId(resumeStore, doctorArgs.projectId);
@@ -116,16 +122,30 @@ if (doctorArgs.resume) {
       manifest.requiredSecretHandleIds,
     );
 
+    const modelStore = createModelManagementStore(root);
+    const managedModelState = readModelManagementState(modelStore);
+    const providerReadiness = await inspectResumeProviderReadiness({
+      managedState: managedModelState.state,
+      requiredProviderCapabilities: manifest.requiredProviderCapabilities,
+      adapterFactory: (provider) => createManagedProviderAdapter(provider),
+    });
+
     resumeSummary = buildResumeDoctorSummary({
       projectId,
       manifest,
       secretReadiness,
+      providerReadiness,
       host,
     });
 
     if (resumeSummary.blockedSecretHandleIds.length > 0) {
       failures.push(
         'resume secrets unresolved: ' + resumeSummary.blockedSecretHandleIds.join(', '),
+      );
+    }
+    if (resumeSummary.blockedProviderIds.length > 0) {
+      failures.push(
+        'resume providers unavailable: ' + resumeSummary.blockedProviderIds.join(', '),
       );
     }
   } catch (error) {
@@ -151,5 +171,8 @@ if (resumeSummary !== null) {
   );
   console.log(
     `resume_secrets=${resumeSummary.requiredSecretHandleIds.length - resumeSummary.blockedSecretHandleIds.length}/${resumeSummary.requiredSecretHandleIds.length}`,
+  );
+  console.log(
+    `resume_providers=${Object.keys(resumeSummary.requiredProviderCapabilities).length - resumeSummary.blockedProviderIds.length}/${Object.keys(resumeSummary.requiredProviderCapabilities).length}`,
   );
 }
