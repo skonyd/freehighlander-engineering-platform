@@ -367,8 +367,8 @@ test('managed binding publish validates multi-provider fallbacks and persists re
 
     const specs = [
       ['anthropic', 'opus-5.5', 'e', 'f', '1'],
-      ['openai', 'gpt-6', '2', '3', '4'],
       ['google', 'gemini-pro', '5', '6', '7'],
+      ['openai', 'gpt-6', '2', '3', '4'],
     ];
     const qualifications = specs.map(([providerId, modelId, probe, shadowHash, decision]) => {
       const snapshot = state.catalogs.find((catalog) => catalog.providerId === providerId);
