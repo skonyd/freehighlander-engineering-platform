@@ -183,7 +183,10 @@ test('Economy pipeline composes deterministic reduction JIT lazy tools local opt
     'REMOTE_NECESSITY',
     'ECONOMY_LEDGER',
   ]);
-  assert.equal(plan.reductionPlan.items.find((item) => item.id === 'duplicate-b').action, 'DROP_EXACT_DUPLICATE');
+  assert.equal(
+    plan.reductionPlan.items.find((item) => item.id === 'duplicate-b').action,
+    'DROP_EXACT_DUPLICATE',
+  );
   assert.equal(plan.repositorySelection.selectedPaths.includes('src/required.ts'), true);
   assert.equal(plan.toolExposurePlan.profile, 'MEDIUM');
   assert.equal(plan.toolActivation.activatedToolIds.includes('core.read'), true);
