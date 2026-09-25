@@ -589,9 +589,7 @@ export function restorePortableCompletedNodeResults({ manifest, eventBundle }) {
     throw new Error('portable NodeResult bundle revision mismatch');
   }
 
-  const expected = new Map(
-    manifest.completedNodeResults.map((entry) => [entry.nodeId, entry]),
-  );
+  const expected = new Map(manifest.completedNodeResults.map((entry) => [entry.nodeId, entry]));
   const resultsByNode = new Map();
 
   for (const record of eventBundle.events) {
