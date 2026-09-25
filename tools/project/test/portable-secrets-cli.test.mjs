@@ -4,9 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import {
-  createSecretRequirementV1,
-} from '../../../packages/governance/dist/index.js';
+import { createSecretRequirementV1 } from '../../../packages/governance/dist/index.js';
 import {
   bindLocalSecret,
   createLocalSecretProfileStore,
@@ -29,13 +27,7 @@ test('local secret profiles persist only resolver metadata under the gitignored 
     const file = localSecretProfileFile(root, 'work-laptop');
     assert.equal(
       file,
-      path.join(
-        root,
-        '.freehighlander',
-        'runtime',
-        'secret-bindings',
-        'work-laptop.json',
-      ),
+      path.join(root, '.freehighlander', 'runtime', 'secret-bindings', 'work-laptop.json'),
     );
 
     const store = createLocalSecretProfileStore(root, 'work-laptop');
@@ -89,19 +81,14 @@ test('secret profile writes are generation-CAS protected and unbind removes only
     });
     const written = writeLocalSecretProfile(store, 0, second);
 
-    assert.throws(
-      () => writeLocalSecretProfile(store, 0, written.profile),
-      /GENERATION_CONFLICT/,
-    );
+    assert.throws(() => writeLocalSecretProfile(store, 0, written.profile), /GENERATION_CONFLICT/);
 
     const after = unbindLocalSecret(written.profile, 'provider.openai.api');
-    assert.deepEqual(after.bindings.map((binding) => binding.handleId), [
-      'github.repo.auth',
-    ]);
-    assert.throws(
-      () => unbindLocalSecret(after, 'provider.openai.api'),
-      /does not exist/,
+    assert.deepEqual(
+      after.bindings.map((binding) => binding.handleId),
+      ['github.repo.auth'],
     );
+    assert.throws(() => unbindLocalSecret(after, 'provider.openai.api'), /does not exist/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -156,8 +143,7 @@ test('doctor blocks missing required handle without exposing configured referenc
   });
   assert.equal(blocked.status, 'BLOCKED_CONFIGURATION');
   assert.equal(
-    blocked.resolutions.find((entry) => entry.handleId === 'provider.openai.api')
-      .status,
+    blocked.resolutions.find((entry) => entry.handleId === 'provider.openai.api').status,
     'BLOCKED_CONFIGURATION',
   );
 });
