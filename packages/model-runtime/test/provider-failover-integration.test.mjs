@@ -8,6 +8,7 @@ import {
   ProviderRegistry,
   applyProviderInvocationFailure,
   createRoleBindingFailoverState,
+  diagnoseProviderInvocationFailure,
   normalizeProviderInvocationFailure,
   providerFailureIntegrationCanGrantAuthority,
   providerFailureScope,
@@ -167,4 +168,170 @@ test('unrecognized or malformed failure metadata cannot trigger fallback', () =>
 
 test('provider failure integration remains authority-neutral', () => {
   assert.equal(providerFailureIntegrationCanGrantAuthority(), false);
+});
+
+
+test('provider quota failure produces precise safe causal diagnosis with fallback and reset time', () => {
+  const diagnosis = diagnoseProviderInvocationFailure(
+    new ProviderInvocationError('quota exhausted', 'quota_exhausted', 429, 1_800_000),
+    {
+      providerId: 'anthropic',
+      bindingId: 'opus',
+      fallbackBindingId: 'gpt',
+      recoveryAt: '2026-09-25T23:00:00+03:00',
+    },
+  );
+
+  assert.deepEqual(diagnosis, {
+    schemaVersion: 1,
+    causeCode: 'PROVIDER_QUOTA_EXHAUSTED',
+    causeKind: 'QUOTA_EXHAUSTED',
+    certainty: 'CONFIRMED_SIGNAL',
+    headline: 'Selected model quota exhausted',
+    sourceComponent: 'anthropic',
+    sourceOperation: 'provider-invoke',
+    failedStep: 'Invoke selected model binding',
+    rootCause: 'Provider anthropic rejected binding opus because its current quota is exhausted.',
+    observedSignal: 'quota_exhausted; HTTP 429; Retry-After 1800000ms',
+    nextAction:
+      'Continue with fallback binding gpt; retry the preferred binding after 2026-09-25T20:00:00.000Z',
+    retryAt: '2026-09-25T20:00:00.000Z',
+    authority: 'NONE',
+  });
+});
+
+test('rate-limit transport auth unavailable and malformed output have distinct root causes', () => {
+  const cases = [
+    [
+      new ProviderInvocationError('rate', 'rate_limited', 429, 5000),
+      'RATE_LIMITED',
+      'Provider rate limit reached',
+    ],
+    [
+      new ProviderInvocationError('auth', 'auth_unavailable', 401),
+      'AUTHENTICATION',
+      'Provider authentication unavailable',
+    ],
+    [
+      new ProviderInvocationError('down', 'provider_unavailable', 503),
+      'PROVIDER_UNAVAILABLE',
+      'Provider is unavailable',
+    ],
+    [
+      new ProviderInvocationError('network', 'transport_failure'),
+      'TRANSPORT',
+      'Provider connection failed',
+    ],
+    [
+      new ProviderInvocationError('bad', 'malformed_output', 200),
+      'MALFORMED_OUTPUT',
+      'Provider returned invalid output',
+    ],
+  ];
+
+  for (const [error, causeKind, headline] of cases) {
+    const diagnosis = diagnoseProviderInvocationFailure(error, {
+      providerId: 'provider-a',
+      bindingId: 'binding-a',
+    });
+    assert.ok(diagnosis);
+    assert.equal(diagnosis.causeKind, causeKind);
+    assert.equal(diagnosis.headline, headline);
+    assert.equal(diagnosis.authority, 'NONE');
+  }
+});
+
+test('semantic failure and unrecognized errors do not become runtime causal diagnoses', () => {
+  assert.equal(
+    diagnoseProviderInvocationFailure(
+      new ProviderInvocationError('semantic negative', 'semantic_failure'),
+      { providerId: 'provider-a', bindingId: 'binding-a' },
+    ),
+    null,
+  );
+  assert.equal(
+    diagnoseProviderInvocationFailure(new Error('plain error'), {
+      providerId: 'provider-a',
+      bindingId: 'binding-a',
+    }),
+    null,
+  );
+});
+
+test('provider diagnosis does not invent a recovery timestamp when none is known', () => {
+  const diagnosis = diagnoseProviderInvocationFailure(
+    new ProviderInvocationError('quota', 'quota_exhausted', 429),
+    {
+      providerId: 'anthropic',
+      bindingId: 'opus',
+      fallbackBindingId: 'gpt',
+    },
+  );
+
+  assert.ok(diagnosis);
+  assert.equal(diagnosis.retryAt, undefined);
+  assert.match(diagnosis.nextAction, /bounded recovery check/);
+  assert.equal(diagnosis.observedSignal, 'quota_exhausted; HTTP 429');
+});
+
+test('provider diagnosis uses explicit retry action when no fallback is configured', () => {
+  const withReset = diagnoseProviderInvocationFailure(
+    new ProviderInvocationError('rate', 'rate_limited', 429),
+    {
+      providerId: 'provider-a',
+      bindingId: 'binding-a',
+      recoveryAt: '2026-09-25T23:00:00+03:00',
+    },
+  );
+  assert.ok(withReset);
+  assert.equal(withReset.nextAction, 'Retry after 2026-09-25T20:00:00.000Z');
+
+  const unknownReset = diagnoseProviderInvocationFailure(
+    new ProviderInvocationError('down', 'provider_unavailable', 503),
+    {
+      providerId: 'provider-a',
+      bindingId: 'binding-a',
+    },
+  );
+  assert.ok(unknownReset);
+  assert.match(unknownReset.nextAction, /no reset time was reported/);
+});
+
+test('provider diagnosis rejects unsafe identifiers and invalid recovery timestamps', () => {
+  const error = new ProviderInvocationError('quota', 'quota_exhausted', 429);
+
+  assert.throws(
+    () =>
+      diagnoseProviderInvocationFailure(error, {
+        providerId: 'bad provider!',
+        bindingId: 'opus',
+      }),
+    /providerId must be a safe bounded identifier/,
+  );
+  assert.throws(
+    () =>
+      diagnoseProviderInvocationFailure(error, {
+        providerId: 'provider-a',
+        bindingId: 'x',
+      }),
+    /bindingId must be a safe bounded identifier/,
+  );
+  assert.throws(
+    () =>
+      diagnoseProviderInvocationFailure(error, {
+        providerId: 'provider-a',
+        bindingId: 'binding-a',
+        fallbackBindingId: 'bad fallback!',
+      }),
+    /fallbackBindingId must be a safe bounded identifier/,
+  );
+  assert.throws(
+    () =>
+      diagnoseProviderInvocationFailure(error, {
+        providerId: 'provider-a',
+        bindingId: 'binding-a',
+        recoveryAt: 'not-a-time',
+      }),
+    /recoveryAt must be an ISO timestamp/,
+  );
 });
