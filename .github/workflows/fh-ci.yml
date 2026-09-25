@@ -33,4 +33,7 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: npm run verify
+        run: |
+          npm run format:write
+          git diff -- packages/model-runtime/test/role-binding-management.test.mjs tools/project/lib/model-management.mjs tools/project/test/model-management-cli.test.mjs
+          exit 1
