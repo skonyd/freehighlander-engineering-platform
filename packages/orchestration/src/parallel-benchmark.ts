@@ -47,25 +47,23 @@ export function buildParallelBenchmarkReport(
   const seen = new Set<string>();
   const results = samples.map((sample) => {
     validateSample(sample);
-    if (seen.has(sample.id)) throw new Error('duplicate parallel benchmark sample id: ' + sample.id);
+    if (seen.has(sample.id))
+      throw new Error('duplicate parallel benchmark sample id: ' + sample.id);
     seen.add(sample.id);
 
     const branches = Object.entries(sample.branchDurationsMs).sort(([left], [right]) =>
       left.localeCompare(right),
     );
     const serialBranchesMs = branches.reduce((sum, [, duration]) => sum + duration, 0);
-    const [criticalBranchId, criticalBranchMs] = branches.reduce(
-      (best, current) => {
-        if (
-          current[1] > best[1] ||
-          (current[1] === best[1] && current[0].localeCompare(best[0]) < 0)
-        ) {
-          return current;
-        }
-        return best;
-      },
-      branches[0]!,
-    );
+    const [criticalBranchId, criticalBranchMs] = branches.reduce((best, current) => {
+      if (
+        current[1] > best[1] ||
+        (current[1] === best[1] && current[0].localeCompare(best[0]) < 0)
+      ) {
+        return current;
+      }
+      return best;
+    }, branches[0]!);
 
     const commonMs = sample.beforeFanoutMs + sample.joinMs + sample.afterJoinMs;
     const serialWallClockMs = commonMs + serialBranchesMs;
