@@ -33,4 +33,7 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: npm run verify
+        run: |
+          npm run format:write
+          git diff -- packages/orchestration/src/full-auto-quorum.ts packages/orchestration/test/full-auto-quorum.test.mjs
+          exit 1
