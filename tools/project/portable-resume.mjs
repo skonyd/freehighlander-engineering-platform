@@ -2,11 +2,13 @@
 
 import path from 'node:path';
 
+import { GitPortableOwnershipStore } from './lib/portable-ownership-store.mjs';
 import { assertSafeCheckpointWorktree } from './lib/reconciliation.mjs';
 import {
   createPortableResumeStore,
   inspectPortableResume,
   publishPreparedResumeCheckpoint,
+  publishPreparedResumeHandoff,
   readCheckpointWorktreeStatus,
   readPreparedResumeManifest,
   readRemoteBranchHead,
@@ -28,14 +30,32 @@ try {
     const manifest = await readPreparedResumeManifest(path.resolve(process.cwd(), manifestFile));
     const store = createPortableResumeStore(root, remote);
     const remoteHead = readRemoteBranchHead(root, remote, manifest.branch);
-    const result = await publishPreparedResumeCheckpoint({
-      store,
-      manifest,
-      repositoryIdentity: state.repository,
-      remoteHead,
-    });
+    const handoff = parsed.flags.has('handoff');
+    if (!handoff && option(parsed.options, 'lease-id') !== null) {
+      throw new Error('--lease-id requires --handoff');
+    }
+
+    const result = handoff
+      ? await publishPreparedResumeHandoff({
+          resumeStore: store,
+          ownershipStore: new GitPortableOwnershipStore(root, remote),
+          manifest,
+          repositoryIdentity: state.repository,
+          remoteHead,
+          leaseId:
+            manifest.activeWorkItemId === null ? null : requireOption(parsed.options, 'lease-id'),
+          releasedAt: new Date().toISOString(),
+        })
+      : await publishPreparedResumeCheckpoint({
+          store,
+          manifest,
+          repositoryIdentity: state.repository,
+          remoteHead,
+        });
     printJson(result);
-    if (result.status !== 'PORTABLE_READY') process.exitCode = 2;
+    if (result.status !== 'PORTABLE_READY' || result.handoffComplete === false) {
+      process.exitCode = 2;
+    }
   } else if (parsed.command === 'resume') {
     const projectId = requireOption(parsed.options, 'project');
     const store = createPortableResumeStore(root, remote);
@@ -61,13 +81,18 @@ try {
 function parseArgs(args) {
   const [command, ...rest] = args;
   const options = {};
+  const flags = new Set();
 
   for (let index = 0; index < rest.length; index += 1) {
     const token = rest[index];
     if (!token.startsWith('--')) throw new Error(`unexpected argument: ${token}`);
     const name = token.slice(2);
-    if (!name || Object.hasOwn(options, name)) {
+    if (!name || Object.hasOwn(options, name) || flags.has(name)) {
       throw new Error(`invalid or duplicate option: ${token}`);
+    }
+    if (name === 'handoff') {
+      flags.add(name);
+      continue;
     }
     const value = rest[index + 1];
     if (value === undefined || value.startsWith('--')) {
@@ -77,7 +102,7 @@ function parseArgs(args) {
     index += 1;
   }
 
-  return { command, options };
+  return { command, options, flags };
 }
 
 function requireOption(options, name) {
@@ -104,6 +129,7 @@ function printHelp() {
 
 Usage:
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> [--remote origin]
+  npm run project:portable-resume -- checkpoint --manifest <manifest.json> --handoff --lease-id <lease-id> [--remote origin]
   npm run project:portable-resume -- resume --project <project-id> [--remote origin]
 
 Checkpoint safety:
@@ -112,6 +138,8 @@ Checkpoint safety:
   - verifies manifest remote HEAD is current before publication
   - publishes with generation/CAS semantics
   - verifies remote read-back/hash
+  - --handoff releases the exact active ownership lease only after checkpoint verification
+  - handoff lease release uses exact Git revision CAS and read-back verification
   - never infers semantic gate PASS or authority
 
 Resume safety:
