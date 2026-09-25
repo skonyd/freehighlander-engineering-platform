@@ -9,8 +9,5 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json",
     "test": "node --test test/*.test.mjs"
-  },
-  "dependencies": {
-    "@freehighlander/orchestration": "0.0.0"
   }
 }
