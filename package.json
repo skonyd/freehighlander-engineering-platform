@@ -26,6 +26,7 @@
     "project:portable-resume": "npm run build -w @freehighlander/governance -w @freehighlander/orchestration -w @freehighlander/persistence && node tools/project/portable-resume.mjs",
     "project:architecture": "node tools/project/architecture.mjs",
     "dashboard:start": "npm run start -w @freehighlander/web",
+    "benchmark:orchestration": "npm run build -w @freehighlander/orchestration && node tools/project/orchestration-benchmark.mjs",
     "models": "npm run build -w @freehighlander/model-runtime -w @freehighlander/persistence && node tools/project/models.mjs",
     "verify": "npm run format && npm run typecheck && npm run build && npm run test && npm run check:coverage && npm run check:build-integrity && npm run check:build-completeness && npm run check:dependencies && npm run check:workspace-resolution && npm run check:entrypoints && npm run check:docs && npm run check:ci && npm run check:lockfile && npm run check:publish-safety && npm run check:secrets && npm run check:architecture && npm run project:doctor",
     "check:dependencies": "node tools/project/check-dependencies.mjs",
