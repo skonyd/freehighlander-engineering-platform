@@ -294,6 +294,24 @@ export {
 } from './token-economy.js';
 
 export {
+  buildIntegratedEconomyRuntimePlan,
+  economyPipelineCanInvokeRemoteWithInvalidProtectedAnchors,
+  economyPipelineUsesLossyOptimizationBeforeDeterministicStages,
+  integratedEconomyRuntimeCanGrantAuthority,
+  type EconomyLocalOptimizerInput,
+  type EconomyProtectedContextInput,
+  type EconomyRepositorySelectionInput,
+  type EconomyToolSelectionInput,
+  type IntegratedEconomyRuntimeInput,
+  type IntegratedEconomyRuntimePlan,
+  type StandardRuntimePipelineInput,
+  type TokenEconomyPipelineStage,
+  type TokenEconomyPipelineStatus,
+  type TokenEconomyRemoteNecessityInput,
+  type TokenEconomyRuntimePipelineInput,
+} from './economy-runtime-pipeline.js';
+
+export {
   contextEconomyCanDropRequiredEvidence,
   contextEconomyCanGrantAuthority,
   contextOptimizerCanReclassifyProtectedDownward,
