@@ -94,6 +94,29 @@ export {
 } from './model-catalog.js';
 
 export {
+  createRoleBindingFailoverState,
+  evaluatePreferredBindingReturn,
+  listDueBindingChecks,
+  quotaAwareFailoverCanGrantAuthority,
+  recordActiveBindingFailure,
+  recordBindingRecoveryObservation,
+  semanticFailureCanAdvanceFallbackChain,
+  validateRoleBindingFailoverState,
+  type BindingCooldownV1,
+  type BindingFailureObservation,
+  type BindingFailureScope,
+  type BindingFailoverPolicyV1,
+  type BindingFailoverStatus,
+  type BindingFailoverTransition,
+  type BindingRecoveryObservation,
+  type BindingReturnPolicy,
+  type PreferredBindingReturnInput,
+  type PreferredBindingReturnTransition,
+  type PreferredReturnStatus,
+  type RoleBindingFailoverStateV1,
+} from './quota-aware-failover.js';
+
+export {
   BindingRegistry,
   ProviderRegistry,
   bindingRegistryCanGrantAuthority,
