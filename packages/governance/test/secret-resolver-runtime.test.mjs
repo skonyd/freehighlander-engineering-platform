@@ -240,6 +240,21 @@ test('OS_KEYCHAIN uses native command adapters and fails closed without a secure
   assert.match(windowsCall.args.at(-1), /\.Retrieve\('fh','openai'\)/);
   assert.doesNotMatch(JSON.stringify(windowsCall.args), /windows-keychain-material/);
 
+  const unsafeBinding = binding(
+    'provider.unsafe-keychain.api',
+    'OS_KEYCHAIN',
+    'keychain://fh/openai;Write-Output',
+  );
+  await assert.rejects(
+    () =>
+      windowsRegistry.inject(
+        unsafeBinding,
+        plan('provider.unsafe-keychain.api', 'OS_KEYCHAIN'),
+        sink,
+      ),
+    /keychain account is invalid/,
+  );
+
   const unsupportedRegistry = createDefaultSecretResolverRegistry({
     platform: 'aix',
     commandRunner: new FakeRunner(),
