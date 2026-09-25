@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-21T18:26:00+03:00"
+updated_at: "2026-09-25T19:35:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -9,16 +9,16 @@ mode:
 
 phase:
   id: PRE-CUTOVER
-  name: preparation-and-hardening-complete
-  status: blocked_on_external_dependency
+  name: accepted-v2-reference-and-pre-cutover-hardening
+  status: external_dependency_satisfied_cutover_not_applied
 
 active_work:
   repository: skonyd/freehighlander-engineering-platform
   branch: main
   pull_request: null
-  issue: 19
-  objective: preserve the completed authority-neutral pre-cutover baseline until final V2 reference acceptance
-  next_action: await Creator Marketplace #207 final acceptance/merge/smoke, then execute FH-01B2 exact reconciliation before FH-20 authority cutover
+  issue: null
+  objective: preserve accepted V2 compatibility while continuing independent hardening before explicit FH-20 cutover
+  next_action: continue #147/#149; keep V3 SHADOW_ONLY until exact FH-20 human/policy cutover prerequisites are satisfied
 
 fh01a:
   issue: 15
@@ -27,7 +27,7 @@ fh01a:
 
 fh01b:
   issue: 16
-  status: provisional_complete_promotion_blocked
+  status: complete
   provisional:
     issue: 18
     pull_request: 21
@@ -37,8 +37,15 @@ fh01b:
     authority: DISABLED
   promotion:
     issue: 19
-    status: blocked
-    blocker: creator-marketplace-pr-207-not-fully-accepted
+    pull_request: 237
+    status: complete
+    merge_sha: 469b99ff54811d7f638dc4d50576442aeb6a3810
+    reference_status: ACCEPTED
+    accepted_reference_sha: 1a8e215b78a3a5008aae6aae36488b3273733b19
+    source_merge_sha: e4707a3c4267db9d2aadd452782b91045b96724d
+    post_merge_hardening_pr: 209
+    compatibility_authority: ENABLED
+    full_verify_run: 36159166117
 
 fh02:
   issue: 22
@@ -150,7 +157,7 @@ fh15:
   status: complete
   merge_sha: 8a22363b15f3e37bb2055c14b7893d70c9f8fcea
   default_policy: DENY
-  decision_precedence: DENY>HUMAN_REQUIRED>ALLOW
+  decision_precedence: DENY>HUMAN_REQUIRED>MODEL_QUORUM_REQUIRED>ALLOW
   exact_approval_binding: true
   model_human_approver: false
 
@@ -190,7 +197,8 @@ fh19:
   status: complete
   merge_sha: 102e508288c3caa76e59008ed0cfdd425056ccdb
   authority_effect: none
-  reference_status: PROVISIONAL
+  reference_status: ACCEPTED
+  final_reference_sha: 1a8e215b78a3a5008aae6aae36488b3273733b19
   parity_authority: none
   cutover_allowed: false
   v3_authority: SHADOW_ONLY
@@ -217,12 +225,15 @@ evidence_policy:
 fh20:
   issue: 64
   pull_request: 65
-  status: readiness_complete_cutover_blocked
+  status: readiness_complete_external_blocker_cleared
   merge_sha: 1193d572ff2c0323a79ea2b44eac3df2ccfaebaf
   readiness_gate: complete
+  external_dependency_satisfied: true
+  final_reference_sha: 1a8e215b78a3a5008aae6aae36488b3273733b19
   cutover_allowed: false
+  cutover_applied: false
   v3_authority: SHADOW_ONLY
-  blocker: creator-marketplace-pr-207-not-fully-accepted
+  remaining_gate: exact-human-approval-plus-system-policy-allow-and-explicit-v3-promotion-review
 
 module_preparation_lane:
   issue: 67
@@ -230,7 +241,7 @@ module_preparation_lane:
   status: complete
   merge_sha: 262173216860ea30a63324d7e5f962db3cf6abbe
   authority_effect: none
-  activation_blocked_by: FH-01B2/FH-20
+  activation_blocked_by: FH-20
   planned:
     - FH-30A
     - FH-31A
@@ -414,24 +425,26 @@ pre_cutover_hardening:
 external_dependency:
   repository: skonyd/creator-marketplace
   pull_request: 207
-  expected_head: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
-  last_verified_state: open_mergeable_ci_green_acceptance_incomplete
-  known_pending:
-    - sonnet-candidate-adjudication
-    - astra-final-review
-    - human-decision
-    - merge
-    - post-merge-smoke
+  status: SATISFIED
+  provisional_reference_sha: 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
+  merged_head_sha: f5455f56f7c0b91517cac4cbd9e1bc7d16832cd4
+  merge_sha: e4707a3c4267db9d2aadd452782b91045b96724d
+  post_merge_hardening_pull_request: 209
+  final_accepted_reference_sha: 1a8e215b78a3a5008aae6aae36488b3273733b19
+  final_state: merged_hardened_reconciled
 
-promotion_confirmation_required:
-  - provisional_reference_sha_recorded
-  - final_accepted_reference_sha_recorded
-  - delta_reviewed
-  - parity_suite_passed
-  - post_port_smoke_passed
-  - authority_promotion_reviewed
+promotion_confirmation:
+  status: complete
+  provisional_reference_sha_recorded: true
+  final_accepted_reference_sha_recorded: true
+  delta_reviewed: true
+  parity_suite_passed: true
+  post_port_smoke_passed: true
+  authority_promotion_reviewed: true
+  v3_authority_remains_shadow_only: true
 
 accepted_direction:
+  architecture_contract: 1.10.0
   product_mode: local-first-single-user
   implementation_language: TypeScript
   repository_shape: bounded-context-monorepo
