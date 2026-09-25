@@ -132,12 +132,7 @@ function resumeManifest(remoteHead, events) {
   });
 }
 
-async function resumeOnDestination({
-  repositoryRoot,
-  machineInstanceId,
-  leaseId,
-  now,
-}) {
+async function resumeOnDestination({ repositoryRoot, machineInstanceId, leaseId, now }) {
   const resumeStore = createPortableResumeStore(repositoryRoot);
   const ownershipStore = new GitPortableOwnershipStore(repositoryRoot);
 
@@ -189,7 +184,12 @@ async function resumeOnDestination({
   assert.equal(plan.localSqliteRequired, false);
   assert.equal(plan.localOnlyCacheRequired, false);
 
-  const readModelFile = path.join(repositoryRoot, '.freehighlander', 'runtime', 'acceptance.sqlite');
+  const readModelFile = path.join(
+    repositoryRoot,
+    '.freehighlander',
+    'runtime',
+    'acceptance.sqlite',
+  );
   assert.equal(existsSync(readModelFile), false);
   const rebuilt = await rebuildPortableResumeReadModel({
     store: resumeStore,
