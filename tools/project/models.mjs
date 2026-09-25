@@ -185,7 +185,14 @@ async function execute(parsed, current, store) {
     return {
       status: 'OK',
       plan: preview.plan,
+      failoverPolicy: preview.input.failoverPolicy ?? null,
       qualificationHash: preview.qualification.hash,
+      qualificationHashes: Object.fromEntries(
+        Object.entries(preview.qualifications).map(([bindingId, qualification]) => [
+          bindingId,
+          qualification.hash,
+        ]),
+      ),
       authority: 'NONE',
     };
   }
