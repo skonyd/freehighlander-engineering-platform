@@ -71,16 +71,6 @@ export function applyRepairEvent(
 ): RepairAccountingDecision {
   validateRepairAccountingState(state);
 
-  if (state.exhausted) {
-    return {
-      state,
-      nextAction: 'HUMAN_REQUIRED',
-      semanticBudgetConsumed: false,
-      reason: 'semantic repair budget is already exhausted',
-      authority: 'NONE',
-    };
-  }
-
   if (event.kind === 'TRANSPORT_FAILURE') {
     const transportRetries = state.transportRetries + 1;
     const nextState = {
@@ -145,6 +135,16 @@ export function applyRepairEvent(
     };
   }
 
+  if (state.semanticRepairs >= state.maxSemanticRepairs) {
+    return {
+      state,
+      nextAction: 'HUMAN_REQUIRED',
+      semanticBudgetConsumed: false,
+      reason: 'semantic repair budget is exhausted before another repaired revision',
+      authority: 'NONE',
+    };
+  }
+
   const semanticRepairs = state.semanticRepairs + 1;
   const exhausted = semanticRepairs >= state.maxSemanticRepairs;
   const nextState: RepairAccountingStateV1 = {
@@ -156,10 +156,10 @@ export function applyRepairEvent(
 
   return {
     state: nextState,
-    nextAction: exhausted ? 'HUMAN_REQUIRED' : 'REVIEW_REPAIRED_REVISION',
+    nextAction: 'REVIEW_REPAIRED_REVISION',
     semanticBudgetConsumed: true,
     reason: exhausted
-      ? 'semantic repair budget reached its configured bound'
+      ? 'current repaired revision consumed the final allowed semantic repair round'
       : 'current new repaired revision consumed one semantic repair round',
     authority: 'NONE',
   };
