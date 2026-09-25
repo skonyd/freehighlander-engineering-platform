@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 
+import { releasePortableOwnershipLease } from '../../../packages/orchestration/dist/index.js';
 import {
   GitResumeStore,
   validateResumeManifestV1,
@@ -103,6 +104,108 @@ export async function publishPreparedResumeCheckpoint({
     published: true,
     semanticGatePassInferred: false,
     authority: 'NONE',
+  };
+}
+
+export async function publishPreparedResumeHandoff({
+  resumeStore,
+  ownershipStore,
+  manifest,
+  repositoryIdentity,
+  remoteHead,
+  leaseId,
+  releasedAt,
+}) {
+  const checkpoint = await publishPreparedResumeCheckpoint({
+    store: resumeStore,
+    manifest,
+    repositoryIdentity,
+    remoteHead,
+  });
+  if (checkpoint.status !== 'PORTABLE_READY') {
+    return {
+      ...checkpoint,
+      handoffRequested: true,
+      handoffComplete: false,
+      ownershipRelease: 'NOT_ATTEMPTED',
+    };
+  }
+
+  if (manifest.activeWorkItemId === null) {
+    return {
+      ...checkpoint,
+      handoffRequested: true,
+      handoffComplete: true,
+      ownershipRelease: 'NOT_REQUIRED',
+    };
+  }
+
+  if (typeof leaseId !== 'string' || !leaseId.trim()) {
+    throw new Error('leaseId is required for active-work handoff');
+  }
+
+  const current = await ownershipStore.getLatest(
+    repositoryIdentity,
+    manifest.projectId,
+    manifest.activeWorkItemId,
+  );
+  if (current === null) {
+    return {
+      ...checkpoint,
+      status: 'HANDOFF_OWNERSHIP_REQUIRED',
+      handoffRequested: true,
+      handoffComplete: false,
+      ownershipRelease: 'NOT_FOUND',
+    };
+  }
+
+  if (current.lease.state === 'RELEASED') {
+    return {
+      ...checkpoint,
+      handoffRequested: true,
+      handoffComplete: true,
+      ownershipRelease: 'ALREADY_RELEASED',
+      ownershipRevision: current.revision,
+    };
+  }
+
+  const released = releasePortableOwnershipLease(
+    current.lease,
+    leaseId,
+    current.lease.generation,
+    releasedAt,
+  );
+  const decision = await ownershipStore.publishCas(released, current.revision);
+  if (decision.status === 'CONFLICT') {
+    return {
+      ...checkpoint,
+      status: 'HANDOFF_CONFLICT',
+      handoffRequested: true,
+      handoffComplete: false,
+      ownershipRelease: 'CONFLICT',
+    };
+  }
+
+  const verified = await ownershipStore.getLatest(
+    repositoryIdentity,
+    manifest.projectId,
+    manifest.activeWorkItemId,
+  );
+  if (
+    verified === null ||
+    verified.revision !== decision.revision ||
+    verified.lease.state !== 'RELEASED' ||
+    verified.lease.leaseHash !== released.leaseHash
+  ) {
+    throw new Error('portable ownership handoff read-back verification failed');
+  }
+
+  return {
+    ...checkpoint,
+    handoffRequested: true,
+    handoffComplete: true,
+    ownershipRelease: 'RELEASED',
+    ownershipRevision: decision.revision,
   };
 }
 
