@@ -135,22 +135,13 @@ test('checkpoint and reset remain authority-neutral and cannot replace required 
 });
 
 test('checkpoint validation fails closed on malformed or tampered state', () => {
-  assert.throws(
-    () => checkpoint({ boundary: 'UNKNOWN' }),
-    /boundary is invalid/,
-  );
-  assert.throws(
-    () => checkpoint({ logicalRole: ' ' }),
-    /logicalRole is required/,
-  );
+  assert.throws(() => checkpoint({ boundary: 'UNKNOWN' }), /boundary is invalid/);
+  assert.throws(() => checkpoint({ logicalRole: ' ' }), /logicalRole is required/);
   assert.throws(
     () => checkpoint({ runSnapshotHash: 'bad' }),
     /runSnapshotHash must be lowercase sha256/,
   );
-  assert.throws(
-    () => checkpoint({ authoritativeStateHashes: [] }),
-    /requires authoritative state/,
-  );
+  assert.throws(() => checkpoint({ authoritativeStateHashes: [] }), /requires authoritative state/);
 
   const valid = checkpoint();
   assert.throws(
