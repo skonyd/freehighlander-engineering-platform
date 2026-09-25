@@ -128,10 +128,7 @@ test('portable event bundle is strict hash-bound and exact-revision-bound', () =
 
   const tampered = structuredClone(portable);
   tampered.events[0].event.payload = { changed: true };
-  assert.throws(
-    () => validatePortableCanonicalEventBundleV1(tampered),
-    /record hash mismatch/,
-  );
+  assert.throws(() => validatePortableCanonicalEventBundleV1(tampered), /record hash mismatch/);
 
   assert.throws(
     () =>
