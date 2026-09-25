@@ -105,9 +105,7 @@ export function verifyProtectedContextAnchors(
   };
 }
 
-export function assertProtectedContextAnchors(
-  verification: ProtectedAnchorVerification,
-): void {
+export function assertProtectedContextAnchors(verification: ProtectedAnchorVerification): void {
   validateProtectedAnchorVerification(verification);
   if (verification.status !== 'PASS') {
     const missing = [
@@ -172,9 +170,7 @@ export function tokenEconomyCanInvokeRemoteWithMissingProtectedAnchor(): false {
   return false;
 }
 
-function normalizeAnchor(
-  anchor: ProtectedContextAnchor,
-): Required<ProtectedContextAnchor> {
+function normalizeAnchor(anchor: ProtectedContextAnchor): Required<ProtectedContextAnchor> {
   const id = requireText(anchor.id, 'protected anchor id');
   const value = requireText(anchor.value, `protected anchor ${id} value`);
   const minimumOccurrences = anchor.minimumOccurrences ?? 1;
