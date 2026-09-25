@@ -7,6 +7,7 @@ import { assertSafeCheckpointWorktree } from './lib/reconciliation.mjs';
 import {
   createPortableResumeStore,
   inspectPortableResume,
+  inspectPortableResumeWithOwnership,
   publishPreparedResumeCheckpoint,
   publishPreparedResumeHandoff,
   readCheckpointWorktreeStatus,
@@ -59,14 +60,17 @@ try {
   } else if (parsed.command === 'resume') {
     const projectId = requireOption(parsed.options, 'project');
     const store = createPortableResumeStore(root, remote);
-    const result = await inspectPortableResume({
-      store,
+    const result = await inspectPortableResumeWithOwnership({
+      resumeStore: store,
+      ownershipStore: new GitPortableOwnershipStore(root, remote),
       repositoryIdentity: state.repository,
       projectId,
       readRemoteHead: async (branch) => readRemoteBranchHead(root, remote, branch),
+      leaseId: option(parsed.options, 'lease-id'),
+      now: new Date().toISOString(),
     });
     printJson(result);
-    if (result.status !== 'READY') process.exitCode = 2;
+    if (result.status !== 'READY' || result.readyToMutate !== true) process.exitCode = 2;
   } else if (parsed.command === 'help' || parsed.command === undefined) {
     printHelp();
   } else {
@@ -130,7 +134,7 @@ function printHelp() {
 Usage:
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> [--remote origin]
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> --handoff --lease-id <lease-id> [--remote origin]
-  npm run project:portable-resume -- resume --project <project-id> [--remote origin]
+  npm run project:portable-resume -- resume --project <project-id> [--lease-id <current-lease-id>] [--remote origin]
 
 Checkpoint safety:
   - requires a clean product worktree
@@ -145,6 +149,9 @@ Checkpoint safety:
 Resume safety:
   - fetches the latest portable generation explicitly
   - verifies repository identity and current remote branch HEAD
+  - verifies active-work ownership before reporting mutation-ready state
+  - a live lease requires the exact current lease id; machine identity alone is never sufficient
+  - missing/released/expired ownership reports OWNERSHIP_CLAIM_REQUIRED
   - reports RECONCILIATION_REQUIRED instead of guessing continuation
   - never mutates or cleans the product worktree
 `);
