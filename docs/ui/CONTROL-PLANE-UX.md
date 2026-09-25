@@ -5,6 +5,29 @@
 ## FH-04 read-only UI
 Runs, timeline, model calls, token/latency, artifacts, findings, failures/quota, benchmark. Authority/config write yok.
 
+## Core Home Dashboard
+
+The default FreeHighlander landing page is planned as FH-04B Zero-Token Core Home.
+
+Primary path:
+
+~~~text
+Home → Work → Run / Result
+~~~
+
+Home shows a compact deterministic view of:
+
+- project / branch / exact revision;
+- running/current work;
+- attention / approvals / errors;
+- provider + active/fallback model state;
+- token/cost already consumed;
+- continuity/checkpoint health.
+
+Rendering/refreshing Home must never invoke an LLM or consume model quota.
+
+Detailed plan: [FH-04B Zero-Token Core Home](../planning/FH-04B-ZERO-TOKEN-CORE-HOME.md).
+
 ## V3 management
 Dashboard, Projects, Runs, Workflows, Roles, Models, Providers, Policies, Artifacts, Metrics, Benchmarks, Settings.
 
