@@ -197,6 +197,22 @@ export {
 } from './context-reduction-plan.js';
 
 export {
+  buildEconomyLedger,
+  economyLedgerCanGrantAuthority,
+  evaluateRemoteCallNecessity,
+  tokenEconomyCanEscalateSemanticNegativeForShopping,
+  tokenEconomyCanSuppressPolicyRequiredRemoteCall,
+  type EconomyLedger,
+  type EconomyLedgerInput,
+  type EconomyLedgerReduction,
+  type EconomyMode,
+  type RemoteCallDecisionReason,
+  type RemoteCallDecisionStatus,
+  type RemoteCallNecessityDecision,
+  type RemoteCallNecessityInput,
+} from './token-economy.js';
+
+export {
   contextEconomyCanDropRequiredEvidence,
   contextEconomyCanGrantAuthority,
   contextOptimizerCanReclassifyProtectedDownward,
