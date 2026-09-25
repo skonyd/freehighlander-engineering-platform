@@ -26,11 +26,7 @@ export function createPortableResumeStore(root, remote = 'origin') {
   return new GitResumeStore({ repositoryRoot: root, remote });
 }
 
-export function evaluatePortableResumeReconciliation({
-  manifest,
-  repositoryIdentity,
-  remoteHead,
-}) {
+export function evaluatePortableResumeReconciliation({ manifest, repositoryIdentity, remoteHead }) {
   validateResumeManifestV1(manifest);
   const errors = [];
 
