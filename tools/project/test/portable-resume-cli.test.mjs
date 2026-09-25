@@ -9,6 +9,7 @@ import { createResumeManifestV1 } from '../../../packages/persistence/dist/index
 import {
   evaluatePortableResumeReconciliation,
   inspectPortableResume,
+  inspectPortableResumeWithOwnership,
   publishPreparedResumeCheckpoint,
   publishPreparedResumeHandoff,
   readPreparedResumeManifest,
@@ -362,4 +363,195 @@ test('portable handoff needs no ownership lease when there is no active work ite
   assert.equal(result.handoffComplete, true);
   assert.equal(result.ownershipRelease, 'NOT_REQUIRED');
   assert.equal(ownershipCalls, 0);
+});
+
+
+test('portable resume blocks a live ownership lease without exact lease continuity', async () => {
+  const candidate = manifest();
+  const active = acquirePortableOwnershipLease(
+    {
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      workItemId: candidate.activeWorkItemId,
+      runId: 'run-151',
+      leaseId: 'lease-machine-a',
+      machineInstanceId: 'machine-a',
+      now: '2026-09-25T07:00:00.000Z',
+      ttlMs: 120_000,
+      lastCheckpointGeneration: candidate.generation,
+    },
+    null,
+  ).lease;
+
+  const result = await inspectPortableResumeWithOwnership({
+    resumeStore: {
+      async getLatest() {
+        return candidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        return { lease: active, revision: 'd'.repeat(40), authority: 'NONE' };
+      },
+    },
+    repositoryIdentity: candidate.repositoryIdentity,
+    projectId: candidate.projectId,
+    readRemoteHead: async () => REMOTE_HEAD,
+    leaseId: null,
+    now: '2026-09-25T07:00:30.000Z',
+  });
+
+  assert.equal(result.status, 'OWNERSHIP_ACTIVE');
+  assert.equal(result.ownershipStatus, 'ACTIVE_OTHER_OR_UNPROVEN');
+  assert.equal(result.readyToMutate, false);
+  assert.equal(result.authority, 'NONE');
+});
+
+test('portable resume accepts only exact active lease continuity for mutation readiness', async () => {
+  const candidate = manifest();
+  const active = acquirePortableOwnershipLease(
+    {
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      workItemId: candidate.activeWorkItemId,
+      runId: 'run-151',
+      leaseId: 'lease-machine-a',
+      machineInstanceId: 'machine-a',
+      now: '2026-09-25T07:00:00.000Z',
+      ttlMs: 120_000,
+      lastCheckpointGeneration: candidate.generation,
+    },
+    null,
+  ).lease;
+
+  for (const [leaseId, expectedStatus, ready] of [
+    ['lease-other', 'OWNERSHIP_ACTIVE', false],
+    [active.leaseId, 'READY', true],
+  ]) {
+    const result = await inspectPortableResumeWithOwnership({
+      resumeStore: {
+        async getLatest() {
+          return candidate;
+        },
+      },
+      ownershipStore: {
+        async getLatest() {
+          return { lease: active, revision: 'd'.repeat(40), authority: 'NONE' };
+        },
+      },
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      readRemoteHead: async () => REMOTE_HEAD,
+      leaseId,
+      now: '2026-09-25T07:00:30.000Z',
+    });
+
+    assert.equal(result.status, expectedStatus);
+    assert.equal(result.readyToMutate, ready);
+    assert.equal(result.ownershipStatus, ready ? 'HELD' : 'ACTIVE_OTHER_OR_UNPROVEN');
+    assert.equal(result.authority, 'NONE');
+  }
+});
+
+test('portable resume requires ownership claim when lease is missing released or expired', async () => {
+  const candidate = manifest();
+  const active = acquirePortableOwnershipLease(
+    {
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      workItemId: candidate.activeWorkItemId,
+      runId: 'run-151',
+      leaseId: 'lease-machine-a',
+      machineInstanceId: 'machine-a',
+      now: '2026-09-25T07:00:00.000Z',
+      ttlMs: 60_000,
+      lastCheckpointGeneration: candidate.generation,
+    },
+    null,
+  ).lease;
+  const released = releasePortableOwnershipLease(
+    active,
+    active.leaseId,
+    active.generation,
+    '2026-09-25T07:00:30.000Z',
+  );
+
+  for (const [stored, now, ownershipStatus] of [
+    [null, '2026-09-25T07:00:30.000Z', 'MISSING'],
+    [{ lease: released, revision: 'e'.repeat(40), authority: 'NONE' }, '2026-09-25T07:00:40.000Z', 'RELEASED'],
+    [{ lease: active, revision: 'd'.repeat(40), authority: 'NONE' }, '2026-09-25T07:01:00.000Z', 'EXPIRED'],
+  ]) {
+    const result = await inspectPortableResumeWithOwnership({
+      resumeStore: {
+        async getLatest() {
+          return candidate;
+        },
+      },
+      ownershipStore: {
+        async getLatest() {
+          return stored;
+        },
+      },
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      readRemoteHead: async () => REMOTE_HEAD,
+      leaseId: null,
+      now,
+    });
+
+    assert.equal(result.status, 'OWNERSHIP_CLAIM_REQUIRED');
+    assert.equal(result.ownershipStatus, ownershipStatus);
+    assert.equal(result.readyToMutate, false);
+  }
+});
+
+test('portable resume skips ownership reads when reconciliation is stale or no work is active', async () => {
+  let ownershipReads = 0;
+  const staleCandidate = manifest();
+
+  const stale = await inspectPortableResumeWithOwnership({
+    resumeStore: {
+      async getLatest() {
+        return staleCandidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        ownershipReads += 1;
+        return null;
+      },
+    },
+    repositoryIdentity: staleCandidate.repositoryIdentity,
+    projectId: staleCandidate.projectId,
+    readRemoteHead: async () => 'f'.repeat(40),
+    leaseId: null,
+    now: '2026-09-25T07:00:30.000Z',
+  });
+  assert.equal(stale.status, 'RECONCILIATION_REQUIRED');
+  assert.equal(stale.ownershipStatus, 'NOT_CHECKED');
+  assert.equal(ownershipReads, 0);
+
+  const idleCandidate = manifest({ activeWorkItemId: null });
+  const idle = await inspectPortableResumeWithOwnership({
+    resumeStore: {
+      async getLatest() {
+        return idleCandidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        ownershipReads += 1;
+        return null;
+      },
+    },
+    repositoryIdentity: idleCandidate.repositoryIdentity,
+    projectId: idleCandidate.projectId,
+    readRemoteHead: async () => REMOTE_HEAD,
+    leaseId: null,
+    now: '2026-09-25T07:00:30.000Z',
+  });
+  assert.equal(idle.status, 'READY');
+  assert.equal(idle.ownershipStatus, 'NOT_REQUIRED');
+  assert.equal(idle.readyToMutate, true);
+  assert.equal(ownershipReads, 0);
 });
