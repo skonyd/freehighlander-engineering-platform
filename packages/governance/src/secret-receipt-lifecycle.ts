@@ -133,7 +133,7 @@ export class SecretReceiptScope {
       revokedReceiptIds,
       failures,
       activeReceiptCount: this.#entries.size,
-      complete: failures.length === 0 && this.#entries.size === 0,
+      complete: failures.length === 0,
       authority: 'NONE',
       secretValuesPresent: false,
     };
@@ -168,8 +168,11 @@ function validateReleaseReason(reason: SecretReceiptReleaseReason): void {
 }
 
 function requireTimestamp(value: string, name: string): number {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(name + ' must be a canonical ISO timestamp');
+  }
   const parsed = Date.parse(value);
-  if (!value.trim() || Number.isNaN(parsed) || new Date(parsed).toISOString() !== value) {
+  if (Number.isNaN(parsed) || new Date(parsed).toISOString() !== value) {
     throw new Error(name + ' must be a canonical ISO timestamp');
   }
   return parsed;
