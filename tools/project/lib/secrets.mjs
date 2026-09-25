@@ -181,7 +181,12 @@ export async function doctorResumeSecretHandles(
     else missingRequirementIds.push(handleId);
   }
 
-  const doctor = await doctorLocalSecrets(profile, selectedRequirements, options);
+  const requiredSet = new Set(required);
+  const scopedProfile = createSecretBindingProfileV1(
+    profile.profileId,
+    profile.bindings.filter((binding) => requiredSet.has(binding.handleId)),
+  );
+  const doctor = await doctorLocalSecrets(scopedProfile, selectedRequirements, options);
   const resolutions = [
     ...doctor.resolutions,
     ...missingRequirementIds.map((handleId) => ({
