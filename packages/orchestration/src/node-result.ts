@@ -223,7 +223,7 @@ export function evaluateNodeResultReuse(
   result: NodeResultV1,
   context: NodeReuseContext,
 ): NodeReuseDecision {
-  validateNodeResult(result);
+  validateNodeResultV1(result);
   validateNodeExecutionIdentity(context.expectedIdentity);
 
   const reasons: string[] = [];
@@ -309,7 +309,7 @@ export function semanticNegativeCanTriggerModelShopping(): false {
   return false;
 }
 
-function validateNodeResult(result: NodeResultV1): void {
+export function validateNodeResultV1(result: NodeResultV1): void {
   if (result.schemaVersion !== 1) throw new Error('node result schemaVersion must be 1');
   validateNodeExecutionIdentity(result.identity);
   requireHash(result.outputHash, 'outputHash');
