@@ -134,7 +134,10 @@ export class GitResumeStore implements ResumeStore {
       'resume state commit',
     );
 
-    const lease = currentHead === null ? `--force-with-lease=${stateRef}:` : `--force-with-lease=${stateRef}:${currentHead}`;
+    const lease =
+      currentHead === null
+        ? `--force-with-lease=${stateRef}:`
+        : `--force-with-lease=${stateRef}:${currentHead}`;
     const push = await this.#runner.run([
       'push',
       this.#remote,
@@ -170,7 +173,11 @@ export class GitResumeStore implements ResumeStore {
     const line = result.stdout.trim();
     if (!line) return null;
     const parts = line.split(/\s+/);
-    if (parts.length !== 2 || parts[1] !== stateRef || !GIT_OBJECT_ID_PATTERN.test(parts[0] ?? '')) {
+    if (
+      parts.length !== 2 ||
+      parts[1] !== stateRef ||
+      !GIT_OBJECT_ID_PATTERN.test(parts[0] ?? '')
+    ) {
       throw new Error('resume state remote lookup returned malformed ref data');
     }
     return parts[0] as string;
