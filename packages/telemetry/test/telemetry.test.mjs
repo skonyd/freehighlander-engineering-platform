@@ -429,7 +429,6 @@ test('model catalog telemetry validates bounded optional metadata branches', () 
   );
 });
 
-
 test('orchestration trace telemetry emits strict metadata-only span and run summary events', () => {
   const span = createOrchestrationTraceEvent({
     type: 'orchestration.span.completed',
