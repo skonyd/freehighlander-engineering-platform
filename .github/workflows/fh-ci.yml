@@ -33,7 +33,4 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: |
-          npm run format:write
-          git diff -- packages/orchestration/src/local-context-optimizer.ts packages/orchestration/test/local-context-optimizer.test.mjs
-          exit 1
+        run: npm run verify
