@@ -161,7 +161,10 @@ test('fh resume bootstrap mode clones or reattaches then installs builds doctors
       'npm run project:doctor -- --resume --project project-151',
     ]);
     assert.match(commands[4], /^npm run project:portable-resume -- resume --project project-151$/);
-    assert.equal(commands.some((command) => /token|credential/i.test(command)), false);
+    assert.equal(
+      commands.some((command) => /token|credential/i.test(command)),
+      false,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -195,7 +198,11 @@ test('fh resume keeps inspection available with blockers but claim requires doct
   const root = mkdtempSync(path.join(os.tmpdir(), 'fh-command-blockers-'));
   try {
     const repositoryRoot = createRepo(root);
-    const inspectRunner = new FixtureRunner({ repositoryRoot, doctorExitCode: 1, resumeExitCode: 2 });
+    const inspectRunner = new FixtureRunner({
+      repositoryRoot,
+      doctorExitCode: 1,
+      resumeExitCode: 2,
+    });
     const inspected = runFhResume({
       parsed: parseFhResumeArgs(['resume']),
       currentDirectory: repositoryRoot,
