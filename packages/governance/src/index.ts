@@ -156,6 +156,19 @@ export {
 } from './cutover-readiness.js';
 
 export {
+  evaluateFullAutoMergeIntent,
+  fullAutoMergeIntentCanExecuteInShadowMode,
+  fullAutoProfileCanDelegateRisk,
+  type FullAutoMergeIntentDecision,
+  type FullAutoMergeIntentInput,
+  type FullAutoMergeIntentReason,
+  type FullAutoMergeIntentStatus,
+  type FullAutoPolicyConfiguration,
+  type FullAutoProfile,
+  type FullAutoQuorumStatus,
+} from './full-auto-policy.js';
+
+export {
   createHumanApprovalRequest,
   evaluatePolicy,
   modelCanActAsHumanApprover,
