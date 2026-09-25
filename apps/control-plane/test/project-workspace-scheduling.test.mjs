@@ -251,6 +251,159 @@ test('scheduler workspace bridge fails closed on missing extra or shared workspa
   );
 });
 
+test('workspace bridge validates every runtime identity input before backend mutation', async () => {
+  const schedule = buildProjectSchedulePlan([workItem('work-a')], 1);
+  let backendCalls = 0;
+  const backend = {
+    async create() {
+      backendCalls += 1;
+      throw new Error('must not be reached');
+    },
+    async reattach() {
+      backendCalls += 1;
+      throw new Error('must not be reached');
+    },
+  };
+
+  await assert.rejects(
+    () =>
+      materializeSelectedProjectWorkspaces({
+        schedule: { selectedIds: ['work-a'], authority: 'SYSTEM_POLICY' },
+        requests: [request('work-a', 'a'.repeat(40))],
+        repositoryRoot: '/repo',
+        backend,
+      }),
+    /authority-neutral/,
+  );
+  await assert.rejects(
+    () =>
+      materializeSelectedProjectWorkspaces({
+        schedule,
+        requests: [request('work-a', 'a'.repeat(40))],
+        repositoryRoot: '',
+        backend,
+      }),
+    /repositoryRoot is required/,
+  );
+  await assert.rejects(
+    () =>
+      materializeSelectedProjectWorkspaces({
+        schedule,
+        requests: null,
+        repositoryRoot: '/repo',
+        backend,
+      }),
+    /requests must be an array/,
+  );
+
+  for (const invalid of [
+    request('work-a', 'a'.repeat(40), { workItemId: 'x' }),
+    request('work-a', 'a'.repeat(40), { workspaceId: 'x' }),
+    request('work-a', 'a'.repeat(40), { runId: 'x' }),
+    request('work-a', 'a'.repeat(40), { repositoryIdentity: ' ' }),
+    request('work-a', 'bad'),
+    request('work-a', 'a'.repeat(40), { runSnapshotHash: 'bad' }),
+    request('work-a', 'a'.repeat(40), { mode: 'UNKNOWN' }),
+  ]) {
+    await assert.rejects(() =>
+      materializeSelectedProjectWorkspaces({
+        schedule,
+        requests: [invalid],
+        repositoryRoot: '/repo',
+        backend,
+      }),
+    );
+  }
+
+  await assert.rejects(
+    () =>
+      materializeSelectedProjectWorkspaces({
+        schedule,
+        requests: [
+          request('work-a', 'a'.repeat(40)),
+          request('work-a', 'a'.repeat(40), { workspaceId: 'workspace-other' }),
+        ],
+        repositoryRoot: '/repo',
+        backend,
+      }),
+    /duplicate workspace request workItemId/,
+  );
+
+  assert.equal(backendCalls, 0);
+});
+
+test('workspace bridge rejects forged successful backend handles as item-local allocation failures', async () => {
+  const schedule = buildProjectSchedulePlan([workItem('work-a')], 1);
+  const baseRequest = request('work-a', 'a'.repeat(40));
+
+  async function activateWithForge(forge) {
+    return materializeSelectedProjectWorkspaces({
+      schedule,
+      requests: [baseRequest],
+      repositoryRoot: '/repo',
+      backend: {
+        async create(descriptor) {
+          return forge({
+            descriptor,
+            repositoryRoot: '/repo',
+            workspacePath: '/runtime/work-a',
+            metadataPath: '/runtime/work-a.json',
+            authority: 'NONE',
+          });
+        },
+        async reattach() {
+          throw new Error('not used');
+        },
+      },
+    });
+  }
+
+  for (const forge of [
+    (handle) => ({ ...handle, authority: 'SYSTEM_POLICY' }),
+    (handle) => ({
+      ...handle,
+      descriptor: { ...handle.descriptor, workspaceHash: 'f'.repeat(64) },
+    }),
+    (handle) => ({
+      ...handle,
+      descriptor: {
+        ...handle.descriptor,
+        workspaceId: 'workspace-forged',
+        workspaceHash: handle.descriptor.workspaceHash,
+      },
+    }),
+    (handle) => ({
+      ...handle,
+      descriptor: {
+        ...handle.descriptor,
+        accessMode: 'IMMUTABLE_REVIEW',
+        workspaceHash: handle.descriptor.workspaceHash,
+      },
+    }),
+  ]) {
+    const result = await activateWithForge(forge);
+    assert.deepEqual(result.startableIds, []);
+    assert.deepEqual(result.blockedWorkspaceIds, ['work-a']);
+    assert.equal(result.results[0].failureClass, 'WORKSPACE_ALLOCATION_FAILED');
+  }
+
+  const empty = await materializeSelectedProjectWorkspaces({
+    schedule: { selectedIds: [], authority: 'NONE' },
+    requests: [],
+    repositoryRoot: '/repo',
+    backend: {
+      async create() {
+        throw new Error('not used');
+      },
+      async reattach() {
+        throw new Error('not used');
+      },
+    },
+  });
+  assert.deepEqual(empty.results, []);
+  assert.equal(empty.allSelectedItemsHaveIsolatedWorkspace, true);
+});
+
 test('project scheduling cannot start without isolated workspace or grant authority', () => {
   assert.equal(projectSchedulerCanStartWithoutIsolatedWorkspace(), false);
   assert.equal(projectWorkspaceActivationCanGrantAuthority(), false);
