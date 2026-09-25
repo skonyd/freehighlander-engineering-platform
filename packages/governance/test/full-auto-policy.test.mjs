@@ -39,9 +39,7 @@ function input(overrides = {}) {
 }
 
 test('Full Auto defaults can remain OFF and OFF never creates merge intent', () => {
-  const decision = evaluateFullAutoMergeIntent(
-    input({ configuration: { profile: 'OFF' } }),
-  );
+  const decision = evaluateFullAutoMergeIntent(input({ configuration: { profile: 'OFF' } }));
 
   assert.equal(decision.status, 'BLOCKED');
   assert.equal(decision.reason, 'PROFILE_OFF');
@@ -160,9 +158,7 @@ test('risk outside the selected profile is blocked before quorum use', () => {
 test('decision identity changes when exact quorum or currentness inputs change', () => {
   const baseline = evaluateFullAutoMergeIntent(input());
   const changedQuorum = evaluateFullAutoMergeIntent(input({ quorumHash: hash('5') }));
-  const changedCurrentness = evaluateFullAutoMergeIntent(
-    input({ exactCurrent: false }),
-  );
+  const changedCurrentness = evaluateFullAutoMergeIntent(input({ exactCurrent: false }));
 
   assert.notEqual(baseline.decisionHash, changedQuorum.decisionHash);
   assert.notEqual(baseline.decisionHash, changedCurrentness.decisionHash);
