@@ -49,14 +49,8 @@ function opinion(reviewerId, round, verdict, peerContextUsed = false) {
 
 test('round zero remains independent and unanimous APPROVE creates non-authoritative evidence', () => {
   let session = createFullAutoReviewSession(council());
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-a', 0, 'APPROVE'),
-  );
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-b', 0, 'APPROVE'),
-  );
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 0, 'APPROVE'));
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-b', 0, 'APPROVE'));
 
   const outcome = evaluateFullAutoReviewCouncil(session);
   assert.equal(outcome.status, 'APPROVED');
@@ -69,14 +63,8 @@ test('round zero remains independent and unanimous APPROVE creates non-authorita
 
 test('round-zero disagreement requests one bounded peer-aware round when available', () => {
   let session = createFullAutoReviewSession(council(2));
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-a', 0, 'APPROVE'),
-  );
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-b', 0, 'REJECT'),
-  );
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 0, 'APPROVE'));
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-b', 0, 'REJECT'));
 
   const outcome = evaluateFullAutoReviewCouncil(session);
   assert.equal(outcome.status, 'PEER_ROUND_REQUIRED');
@@ -86,22 +74,10 @@ test('round-zero disagreement requests one bounded peer-aware round when availab
 
 test('peer-aware final round may approve only with unanimous APPROVE', () => {
   let session = createFullAutoReviewSession(council(2));
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-a', 0, 'APPROVE'),
-  );
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-b', 0, 'REJECT'),
-  );
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-a', 1, 'APPROVE', true),
-  );
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-b', 1, 'APPROVE', true),
-  );
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 0, 'APPROVE'));
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-b', 0, 'REJECT'));
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 1, 'APPROVE', true));
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-b', 1, 'APPROVE', true));
 
   const outcome = evaluateFullAutoReviewCouncil(session);
   assert.equal(outcome.status, 'APPROVED');
@@ -111,22 +87,10 @@ test('peer-aware final round may approve only with unanimous APPROVE', () => {
 
 test('bounded disagreement exhaustion becomes HUMAN_REQUIRED', () => {
   let session = createFullAutoReviewSession(council(2));
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-a', 0, 'APPROVE'),
-  );
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-b', 0, 'REJECT'),
-  );
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-a', 1, 'APPROVE', true),
-  );
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-b', 1, 'REJECT', true),
-  );
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 0, 'APPROVE'));
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-b', 0, 'REJECT'));
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 1, 'APPROVE', true));
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-b', 1, 'REJECT', true));
 
   const outcome = evaluateFullAutoReviewCouncil(session);
   assert.equal(outcome.status, 'HUMAN_REQUIRED');
@@ -136,14 +100,8 @@ test('bounded disagreement exhaustion becomes HUMAN_REQUIRED', () => {
 test('unanimous non-approve consensus is terminal and cannot merge', () => {
   for (const verdict of ['REJECT', 'BLOCKED', 'INSUFFICIENT']) {
     let session = createFullAutoReviewSession(council());
-    session = recordFullAutoReviewerOpinion(
-      session,
-      opinion('reviewer-a', 0, verdict),
-    );
-    session = recordFullAutoReviewerOpinion(
-      session,
-      opinion('reviewer-b', 0, verdict),
-    );
+    session = recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 0, verdict));
+    session = recordFullAutoReviewerOpinion(session, opinion('reviewer-b', 0, verdict));
 
     const outcome = evaluateFullAutoReviewCouncil(session);
     assert.equal(outcome.status, 'BLOCKED_BY_REVIEW');
@@ -155,24 +113,13 @@ test('unanimous non-approve consensus is terminal and cannot merge', () => {
 test('round zero peer context and skipped rounds remain rejected by debate engine', () => {
   let session = createFullAutoReviewSession(council(2));
   assert.throws(
-    () =>
-      recordFullAutoReviewerOpinion(
-        session,
-        opinion('reviewer-a', 0, 'APPROVE', true),
-      ),
+    () => recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 0, 'APPROVE', true)),
     /round zero must be independent/,
   );
 
-  session = recordFullAutoReviewerOpinion(
-    session,
-    opinion('reviewer-a', 0, 'APPROVE'),
-  );
+  session = recordFullAutoReviewerOpinion(session, opinion('reviewer-a', 0, 'APPROVE'));
   assert.throws(
-    () =>
-      recordFullAutoReviewerOpinion(
-        session,
-        opinion('reviewer-b', 1, 'APPROVE', true),
-      ),
+    () => recordFullAutoReviewerOpinion(session, opinion('reviewer-b', 1, 'APPROVE', true)),
     /previous debate round must be complete/,
   );
 });
@@ -251,10 +198,7 @@ test('council identity changes with exact scope or binding snapshot', () => {
     reviewScopeHash: hash('1'),
     runSnapshotHash: hash('2'),
     producerIndependenceGroup: 'producer',
-    reviewers: [
-      first.reviewers[0],
-      { ...first.reviewers[1], bindingSnapshotHash: hash('e') },
-    ],
+    reviewers: [first.reviewers[0], { ...first.reviewers[1], bindingSnapshotHash: hash('e') }],
   });
 
   assert.notEqual(first.councilHash, changedScope.councilHash);
