@@ -77,7 +77,10 @@ test('portable resume bootstrap clones through existing GitHub CLI auth and veri
       '--',
       '--no-tags',
     ]);
-    assert.equal(runner.calls.some((call) => call.args.includes('token')), false);
+    assert.equal(
+      runner.calls.some((call) => call.args.includes('token')),
+      false,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
