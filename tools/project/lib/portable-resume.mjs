@@ -470,6 +470,60 @@ export async function claimPortableResumeOwnership({
   };
 }
 
+export function buildPortableResumePlan({
+  manifest,
+  reconciliation,
+  secrets,
+}) {
+  validateResumeManifestV1(manifest);
+  if (reconciliation === null || typeof reconciliation !== 'object') {
+    throw new Error('portable resume reconciliation result is required');
+  }
+  if (secrets === null || typeof secrets !== 'object') {
+    throw new Error('portable resume secret readiness result is required');
+  }
+
+  const parkedDecisionIds = [...manifest.parkedDecisionIds];
+  const readyNodeIds = [...manifest.readyNodeIds];
+  const waitingNodeIds = [...manifest.waitingNodeIds];
+  const completedNodeIds = manifest.completedNodeResults.map((entry) => entry.nodeId).sort();
+  const secretBlockedHandleIds = Array.isArray(secrets.blockedHandleIds)
+    ? [...secrets.blockedHandleIds].sort()
+    : [];
+
+  const reconciliationReady =
+    reconciliation.status === 'READY' && reconciliation.readyToMutate === true;
+  const status = !reconciliationReady
+    ? 'RECONCILIATION_REQUIRED'
+    : readyNodeIds.length > 0
+      ? 'READY'
+      : parkedDecisionIds.length > 0 || waitingNodeIds.length > 0
+        ? 'BLOCKED'
+        : 'IDLE';
+
+  return {
+    status,
+    repositoryIdentity: manifest.repositoryIdentity,
+    projectId: manifest.projectId,
+    branch: manifest.branch,
+    generation: manifest.generation,
+    manifestHash: manifest.manifestHash,
+    checkpointHash: manifest.checkpointHash,
+    replayManifestHash: manifest.replayManifestHash,
+    parkedDecisionIds,
+    readyNodeIds,
+    waitingNodeIds,
+    completedNodeIds,
+    secretBlockedHandleIds,
+    secretDependentWorkReady: secrets.secretDependentWorkReady === true,
+    canContinueIndependentWork: reconciliationReady && readyNodeIds.length > 0,
+    localSqliteRequired: false,
+    localOnlyCacheRequired: false,
+    semanticGatePassInferred: false,
+    authority: 'NONE',
+  };
+}
+
 export function readRemoteBranchHead(root, remote, branch) {
   requireRemoteName(remote);
   requireBranchName(root, branch);
