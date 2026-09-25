@@ -4,7 +4,7 @@ import type { RiskTier } from '@freehighlander/contracts';
 
 export type PolicyPrincipalKind = 'MODEL' | 'HUMAN' | 'SYSTEM';
 export type DataClassification = 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'SECRET';
-export type PolicyEffect = 'ALLOW' | 'DENY' | 'HUMAN_REQUIRED';
+export type PolicyEffect = 'ALLOW' | 'MODEL_QUORUM_REQUIRED' | 'HUMAN_REQUIRED' | 'DENY';
 
 export interface PolicyRule {
   readonly id: string;
@@ -65,8 +65,9 @@ export interface HumanDecision {
 
 const precedence: Readonly<Record<PolicyEffect, number>> = {
   ALLOW: 1,
-  HUMAN_REQUIRED: 2,
-  DENY: 3,
+  MODEL_QUORUM_REQUIRED: 2,
+  HUMAN_REQUIRED: 3,
+  DENY: 4,
 };
 
 export function publishPolicy(definition: PolicyDefinition): PublishedPolicy {
@@ -213,6 +214,14 @@ export function policyConfigurationCanSelfApprove(): false {
 }
 
 export function modelCanActAsHumanApprover(): false {
+  return false;
+}
+
+export function modelQuorumCanSatisfyHumanRequired(): false {
+  return false;
+}
+
+export function modelQuorumCanOverrideDeny(): false {
   return false;
 }
 
