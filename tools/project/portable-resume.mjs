@@ -21,6 +21,7 @@ import {
   publishPreparedResumeHandoff,
   readCheckpointWorktreeStatus,
   readPreparedResumeManifest,
+  resolvePortableResumeProjectId,
   readRemoteBranchHead,
 } from './lib/portable-resume.mjs';
 import { assertStateContract, findRepoRoot, loadProjectState } from './lib/state.mjs';
@@ -72,8 +73,11 @@ try {
     }
   } else if (parsed.command === 'resume') {
     if (parsed.flags.has('handoff')) throw new Error('--handoff is valid only with checkpoint');
-    const projectId = requireOption(parsed.options, 'project');
     const store = createPortableResumeStore(root, remote);
+    const projectId = await resolvePortableResumeProjectId(
+      store,
+      option(parsed.options, 'project'),
+    );
     const ownershipStore = new GitPortableOwnershipStore(root, remote);
     const claim = parsed.flags.has('claim');
     const now = new Date().toISOString();
@@ -219,8 +223,8 @@ function printHelp() {
 Usage:
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> [--remote origin]
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> --handoff --lease-id <lease-id> [--remote origin]
-  npm run project:portable-resume -- resume --project <project-id> [--lease-id <current-lease-id>] [--secret-profile <profile>] [--remote origin]
-  npm run project:portable-resume -- resume --project <project-id> --claim \
+  npm run project:portable-resume -- resume [--project <project-id>] [--lease-id <current-lease-id>] [--secret-profile <profile>] [--remote origin]
+  npm run project:portable-resume -- resume [--project <project-id>] --claim \
     --run-id <run-id> --lease-id <new-lease-id> --machine-instance <machine-id> --ttl-ms <milliseconds> [--secret-profile <profile>] [--remote origin]
 
 Checkpoint safety:
@@ -234,6 +238,8 @@ Checkpoint safety:
   - never infers semantic gate PASS or authority
 
 Resume safety:
+  - discovers a single portable project automatically when --project is omitted
+  - multiple portable projects require explicit --project selection
   - fetches the latest portable generation explicitly
   - verifies repository identity and current remote branch HEAD
   - verifies active-work ownership before reporting mutation-ready state
