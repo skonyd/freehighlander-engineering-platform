@@ -1,9 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export type SemanticCheckpointBoundary =
-  | 'IMPLEMENTATION_TO_REVIEW'
-  | 'REPAIR_TO_REVIEW'
-  | 'STABLE_COMMIT';
+  'IMPLEMENTATION_TO_REVIEW' | 'REPAIR_TO_REVIEW' | 'STABLE_COMMIT';
 
 export interface SemanticCheckpointInput {
   readonly boundary: SemanticCheckpointBoundary;
