@@ -4,11 +4,13 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
+import { acquirePortableOwnershipLease } from '../../../packages/orchestration/dist/index.js';
 import { createResumeManifestV1 } from '../../../packages/persistence/dist/index.js';
 import {
   evaluatePortableResumeReconciliation,
   inspectPortableResume,
   publishPreparedResumeCheckpoint,
+  publishPreparedResumeHandoff,
   readPreparedResumeManifest,
 } from '../lib/portable-resume.mjs';
 
@@ -171,4 +173,194 @@ test('prepared manifest file must satisfy the strict persisted contract', async 
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+
+test('portable handoff publishes checkpoint before releasing exact ownership lease', async () => {
+  const candidate = manifest();
+  const active = acquirePortableOwnershipLease(
+    {
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      workItemId: candidate.activeWorkItemId,
+      runId: 'run-151',
+      leaseId: 'lease-machine-a',
+      machineInstanceId: 'machine-a',
+      now: '2026-09-25T07:00:00.000Z',
+      ttlMs: 120_000,
+      lastCheckpointGeneration: candidate.generation,
+    },
+    null,
+  ).lease;
+  const events = [];
+  let releasedLease = null;
+
+  const result = await publishPreparedResumeHandoff({
+    resumeStore: {
+      async publishCas(value, expectedGeneration) {
+        events.push('resume-publish');
+        assert.deepEqual(value, candidate);
+        assert.equal(expectedGeneration, null);
+        return { status: 'ACCEPT', reasons: [], acceptedGeneration: 1, authority: 'NONE' };
+      },
+      async getLatest() {
+        events.push('resume-read');
+        return candidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        events.push(releasedLease === null ? 'ownership-read-active' : 'ownership-read-released');
+        return {
+          lease: releasedLease ?? active,
+          revision: releasedLease === null ? 'd'.repeat(40) : 'e'.repeat(40),
+          authority: 'NONE',
+        };
+      },
+      async publishCas(value, expectedRevision) {
+        events.push('ownership-publish');
+        assert.equal(expectedRevision, 'd'.repeat(40));
+        assert.equal(value.state, 'RELEASED');
+        assert.equal(value.leaseId, active.leaseId);
+        releasedLease = value;
+        return { status: 'ACCEPT', revision: 'e'.repeat(40), authority: 'NONE' };
+      },
+    },
+    manifest: candidate,
+    repositoryIdentity: candidate.repositoryIdentity,
+    remoteHead: REMOTE_HEAD,
+    leaseId: active.leaseId,
+    releasedAt: '2026-09-25T07:00:30.000Z',
+  });
+
+  assert.equal(result.status, 'PORTABLE_READY');
+  assert.equal(result.published, true);
+  assert.equal(result.handoffRequested, true);
+  assert.equal(result.handoffComplete, true);
+  assert.equal(result.ownershipRelease, 'RELEASED');
+  assert.equal(result.ownershipRevision, 'e'.repeat(40));
+  assert.deepEqual(events, [
+    'resume-publish',
+    'resume-read',
+    'ownership-read-active',
+    'ownership-publish',
+    'ownership-read-released',
+  ]);
+});
+
+test('portable handoff never releases ownership when checkpoint reconciliation fails', async () => {
+  const candidate = manifest();
+  let ownershipCalls = 0;
+  const result = await publishPreparedResumeHandoff({
+    resumeStore: {
+      async publishCas() {
+        throw new Error('stale checkpoint must not publish');
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        ownershipCalls += 1;
+        throw new Error('ownership must not be touched');
+      },
+      async publishCas() {
+        ownershipCalls += 1;
+        throw new Error('ownership must not be touched');
+      },
+    },
+    manifest: candidate,
+    repositoryIdentity: candidate.repositoryIdentity,
+    remoteHead: 'f'.repeat(40),
+    leaseId: 'lease-machine-a',
+    releasedAt: '2026-09-25T07:00:30.000Z',
+  });
+
+  assert.equal(result.status, 'RECONCILIATION_REQUIRED');
+  assert.equal(result.published, false);
+  assert.equal(result.handoffComplete, false);
+  assert.equal(result.ownershipRelease, 'NOT_ATTEMPTED');
+  assert.equal(ownershipCalls, 0);
+});
+
+test('portable handoff preserves published checkpoint when ownership CAS conflicts', async () => {
+  const candidate = manifest();
+  const active = acquirePortableOwnershipLease(
+    {
+      repositoryIdentity: candidate.repositoryIdentity,
+      projectId: candidate.projectId,
+      workItemId: candidate.activeWorkItemId,
+      runId: 'run-151',
+      leaseId: 'lease-machine-a',
+      machineInstanceId: 'machine-a',
+      now: '2026-09-25T07:00:00.000Z',
+      ttlMs: 120_000,
+      lastCheckpointGeneration: candidate.generation,
+    },
+    null,
+  ).lease;
+
+  const result = await publishPreparedResumeHandoff({
+    resumeStore: {
+      async publishCas() {
+        return { status: 'ACCEPT', reasons: [], acceptedGeneration: 1, authority: 'NONE' };
+      },
+      async getLatest() {
+        return candidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        return { lease: active, revision: 'd'.repeat(40), authority: 'NONE' };
+      },
+      async publishCas() {
+        return {
+          status: 'CONFLICT',
+          reason: 'remote portable ownership state changed during publish',
+          revision: null,
+          authority: 'NONE',
+        };
+      },
+    },
+    manifest: candidate,
+    repositoryIdentity: candidate.repositoryIdentity,
+    remoteHead: REMOTE_HEAD,
+    leaseId: active.leaseId,
+    releasedAt: '2026-09-25T07:00:30.000Z',
+  });
+
+  assert.equal(result.status, 'HANDOFF_CONFLICT');
+  assert.equal(result.published, true);
+  assert.equal(result.handoffComplete, false);
+  assert.equal(result.ownershipRelease, 'CONFLICT');
+});
+
+test('portable handoff needs no ownership lease when there is no active work item', async () => {
+  const candidate = manifest({ activeWorkItemId: null });
+  let ownershipCalls = 0;
+
+  const result = await publishPreparedResumeHandoff({
+    resumeStore: {
+      async publishCas() {
+        return { status: 'ACCEPT', reasons: [], acceptedGeneration: 1, authority: 'NONE' };
+      },
+      async getLatest() {
+        return candidate;
+      },
+    },
+    ownershipStore: {
+      async getLatest() {
+        ownershipCalls += 1;
+        return null;
+      },
+    },
+    manifest: candidate,
+    repositoryIdentity: candidate.repositoryIdentity,
+    remoteHead: REMOTE_HEAD,
+    leaseId: null,
+    releasedAt: '2026-09-25T07:00:30.000Z',
+  });
+
+  assert.equal(result.status, 'PORTABLE_READY');
+  assert.equal(result.handoffComplete, true);
+  assert.equal(result.ownershipRelease, 'NOT_REQUIRED');
+  assert.equal(ownershipCalls, 0);
 });
