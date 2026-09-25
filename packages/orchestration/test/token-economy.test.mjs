@@ -46,14 +46,11 @@ test('Standard mode preserves existing remote-call behavior', () => {
 });
 
 test('policy-required and independent remote review cannot be suppressed by Economy Mode', () => {
-  assert.deepEqual(
-    evaluateRemoteCallNecessity(necessity({ policyRequiresRemote: true })),
-    {
-      status: 'CALL_REMOTE',
-      reason: 'POLICY_REQUIRES_REMOTE',
-      authority: 'NONE',
-    },
-  );
+  assert.deepEqual(evaluateRemoteCallNecessity(necessity({ policyRequiresRemote: true })), {
+    status: 'CALL_REMOTE',
+    reason: 'POLICY_REQUIRES_REMOTE',
+    authority: 'NONE',
+  });
   assert.deepEqual(
     evaluateRemoteCallNecessity(necessity({ independentRemoteReviewRequired: true })),
     {
@@ -94,9 +91,7 @@ test('exact reuse local result and deterministic work avoid a new remote call in
 });
 
 test('pending batchable read-only work defers the remote call until local batching finishes', () => {
-  const result = evaluateRemoteCallNecessity(
-    necessity({ batchableReadOnlyWorkPending: true }),
-  );
+  const result = evaluateRemoteCallNecessity(necessity({ batchableReadOnlyWorkPending: true }));
   assert.equal(result.status, 'DEFER_FOR_LOCAL_BATCH');
   assert.equal(result.reason, 'BATCH_READ_ONLY_WORK_FIRST');
 });
