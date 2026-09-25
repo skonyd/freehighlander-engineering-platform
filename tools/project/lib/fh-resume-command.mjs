@@ -115,7 +115,8 @@ export function runFhResume({
   runner = new ExecFileFhResumeRunner(),
   bootstrap = preparePortableResumeRepository,
 }) {
-  if (!parsed || typeof parsed !== 'object') throw new Error('parsed fh resume request is required');
+  if (!parsed || typeof parsed !== 'object')
+    throw new Error('parsed fh resume request is required');
 
   let repositoryRoot = path.resolve(currentDirectory);
   let bootstrapResult = null;
@@ -181,11 +182,7 @@ export function runFhResume({
     appendOption(resumeArgs, '--run-id', parsed.runId);
     appendOption(resumeArgs, '--machine-instance', parsed.machineInstanceId);
     appendOption(resumeArgs, '--ttl-ms', parsed.ttlMs);
-  } else if (
-    parsed.runId !== null ||
-    parsed.machineInstanceId !== null ||
-    parsed.ttlMs !== null
-  ) {
+  } else if (parsed.runId !== null || parsed.machineInstanceId !== null || parsed.ttlMs !== null) {
     throw new Error('--run-id/--machine-instance/--ttl-ms require --claim');
   }
 
@@ -230,7 +227,8 @@ function commandSummary(result) {
 
 function appendOption(args, name, value) {
   if (value === null || value === undefined) return;
-  if (typeof value !== 'string' || !value.trim()) throw new Error(name + ' must be a non-empty value');
+  if (typeof value !== 'string' || !value.trim())
+    throw new Error(name + ' must be a non-empty value');
   args.push(name, value);
 }
 
