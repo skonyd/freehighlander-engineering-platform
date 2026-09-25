@@ -8,6 +8,7 @@ import {
   acquirePortableOwnershipLease,
   buildCanonicalExecutionScope,
   buildNodeExecutionIdentity,
+  createHumanDecisionQueueEntry,
   createNodeResultV1,
   evaluateNodeResultReuse,
   releasePortableOwnershipLease,
@@ -29,6 +30,7 @@ import {
   readPreparedResumeManifest,
   rebuildPortableResumeReadModel,
   restorePortableCompletedNodeResults,
+  restorePortableHumanDecisionQueue,
   resolvePortableResumeProjectId,
 } from '../lib/portable-resume.mjs';
 
@@ -37,6 +39,9 @@ const H2 = '2'.repeat(64);
 const H3 = '3'.repeat(64);
 const H4 = '4'.repeat(64);
 const H5 = '5'.repeat(64);
+const H6 = '6'.repeat(64);
+const H7 = '7'.repeat(64);
+const H8 = '8'.repeat(64);
 const REMOTE_HEAD = 'a'.repeat(40);
 
 function manifest(overrides = {}) {
@@ -104,6 +109,87 @@ function portableEventBundle() {
 
 function manifestWithPortableEvents(bundle = portableEventBundle()) {
   return manifest({
+    artifactManifest: [
+      {
+        artifactId: portableEventArtifactId(bundle.runId),
+        contentHash: bundle.bundleHash,
+        classification: 'PORTABLE_REQUIRED',
+      },
+    ],
+  });
+}
+
+function exactHumanDecision(overrides = {}) {
+  return createHumanDecisionQueueEntry({
+    decisionId: 'decision-017',
+    projectId: 'project-151',
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    workItemId: 'issue-151',
+    runId: 'run-151',
+    nodeId: 'human-gate',
+    exactRevision: REMOTE_HEAD,
+    scopeHash: H6,
+    currentness: {
+      workflowHash: H1,
+      runSnapshotHash: H2,
+      policyHash: H3,
+      catalogSnapshotHash: H4,
+      bindingSnapshotHash: H5,
+      dependencyGraphHash: H7,
+    },
+    decisionType: 'OPERATOR_APPROVAL',
+    reason: 'Protected continuation requires human approval.',
+    choices: ['approve', 'reject'],
+    consequences: ['approve resumes the parked branch', 'reject leaves it parked'],
+    evidenceHashes: [H1, H2],
+    createdAt: '2026-09-25T07:00:01.000Z',
+    blockedWorkItemIds: ['issue-152'],
+    otherWorkContinuing: true,
+    ...overrides,
+  });
+}
+
+function portableHumanDecisionBundle(entry = exactHumanDecision()) {
+  return createPortableCanonicalEventBundleV1({
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    projectId: 'project-151',
+    runId: 'run-151',
+    exactRevision: REMOTE_HEAD,
+    events: [
+      {
+        schemaVersion: 1,
+        type: 'human.required',
+        timestamp: '2026-09-25T07:00:01.000Z',
+        runId: 'run-151',
+        taskId: 'task-151',
+        revision: {
+          repository: 'skonyd/freehighlander-engineering-platform',
+          pullRequest: 151,
+          branch: 'feature/resume',
+          baseSha: 'b'.repeat(40),
+          headSha: REMOTE_HEAD,
+        },
+        workflow: {
+          id: 'project-execution',
+          version: '1.0.0',
+          hash: H1,
+        },
+        node: {
+          id: entry.nodeId,
+          type: 'HUMAN',
+        },
+        payload: {
+          portableHumanDecisionQueueEntry: entry,
+        },
+      },
+    ],
+  });
+}
+
+function manifestWithParkedDecision(entry, bundle) {
+  return manifest({
+    parkedDecisionIds: [entry.decisionId],
+    readyNodeIds: ['node-independent'],
     artifactManifest: [
       {
         artifactId: portableEventArtifactId(bundle.runId),
@@ -207,6 +293,107 @@ function manifestWithCompletedNodeResult(result, bundle) {
     ],
   });
 }
+
+test('portable human decision queue restores exact parked metadata across machines', () => {
+  const entry = exactHumanDecision();
+  const bundle = portableHumanDecisionBundle(entry);
+  const candidate = manifestWithParkedDecision(entry, bundle);
+
+  const restored = restorePortableHumanDecisionQueue({
+    manifest: candidate,
+    eventBundle: bundle,
+  });
+
+  assert.equal(restored.status, 'RESTORED');
+  assert.deepEqual(restored.restoredDecisionIds, ['decision-017']);
+  assert.equal(restored.decisionCount, 1);
+  assert.deepEqual(restored.entries, [entry]);
+  assert.equal(restored.semanticGatePassInferred, false);
+  assert.equal(restored.authority, 'NONE');
+});
+
+test('portable parked decisions require full event metadata and exact currentness', () => {
+  const entry = exactHumanDecision();
+  const bundle = portableHumanDecisionBundle(entry);
+  const candidate = manifestWithParkedDecision(entry, bundle);
+
+  assert.throws(
+    () => restorePortableHumanDecisionQueue({ manifest: candidate, eventBundle: null }),
+    /require an event bundle/,
+  );
+
+  const metadataMissingBundle = portableEventBundle();
+  const metadataMissingManifest = manifestWithParkedDecision(entry, metadataMissingBundle);
+  assert.throws(
+    () =>
+      restorePortableHumanDecisionQueue({
+        manifest: metadataMissingManifest,
+        eventBundle: metadataMissingBundle,
+      }),
+    /human decision is missing/,
+  );
+
+  const staleEntry = exactHumanDecision({
+    currentness: {
+      ...entry.currentness,
+      policyHash: H8,
+    },
+  });
+  const staleBundle = portableHumanDecisionBundle(staleEntry);
+  const staleManifest = manifestWithParkedDecision(staleEntry, staleBundle);
+  assert.throws(
+    () =>
+      restorePortableHumanDecisionQueue({
+        manifest: staleManifest,
+        eventBundle: staleBundle,
+      }),
+    /policy mismatch/,
+  );
+});
+
+test('portable checkpoint refuses parked decision ids without exact portable queue entries', async () => {
+  const entry = exactHumanDecision();
+  const bundle = portableHumanDecisionBundle(entry);
+  const candidate = manifestWithParkedDecision(entry, bundle);
+
+  const accepted = await publishPreparedResumeCheckpoint({
+    store: {
+      async publishCasWithEventBundle() {
+        return { status: 'ACCEPT', reasons: [], acceptedGeneration: 1, authority: 'NONE' };
+      },
+      async getLatest() {
+        return candidate;
+      },
+      async getLatestEventBundle() {
+        return bundle;
+      },
+    },
+    manifest: candidate,
+    repositoryIdentity: candidate.repositoryIdentity,
+    remoteHead: REMOTE_HEAD,
+    eventBundle: bundle,
+  });
+
+  assert.equal(accepted.status, 'PORTABLE_READY');
+  assert.equal(accepted.parkedDecisionCount, 1);
+  assert.deepEqual(accepted.parkedDecisionIds, ['decision-017']);
+
+  await assert.rejects(
+    () =>
+      publishPreparedResumeCheckpoint({
+        store: {
+          async publishCas() {
+            throw new Error('must not publish incomplete parked decision state');
+          },
+        },
+        manifest: candidate,
+        repositoryIdentity: candidate.repositoryIdentity,
+        remoteHead: REMOTE_HEAD,
+        eventBundle: null,
+      }),
+    /parked human decisions require an event bundle/,
+  );
+});
 
 test('portable checkpoint publishes only when repository and remote HEAD are current', async () => {
   const candidate = manifest();
