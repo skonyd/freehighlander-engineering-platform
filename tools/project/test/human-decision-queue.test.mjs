@@ -203,6 +203,10 @@ test('exact authorized response resolves once and persists response audit metada
     assert.deepEqual(restored.state.responses, [answer]);
 
     assert.throws(
+      () => enqueueHumanDecision(reopened, 2, entry),
+      /portable state still parks a locally resolved human decision/,
+    );
+    assert.throws(
       () => resolveHumanDecision(reopened, 2, answer, currentContext(entry)),
       /unknown parked decision/,
     );
