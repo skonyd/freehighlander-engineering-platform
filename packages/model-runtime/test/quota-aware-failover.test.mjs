@@ -137,31 +137,23 @@ test('provider-scoped failure skips fallbacks on the same provider', () => {
 test('retry-after reset-at and bounded unknown reset produce deterministic nextCheckAt', () => {
   const plan = planWithThreeBindings();
 
-  const retry = recordActiveBindingFailure(
-    createRoleBindingFailoverState(plan, askPolicy),
-    plan,
-    {
-      failureKind: 'rate_limited',
-      scope: 'BINDING',
-      observedAt: '2026-09-25T18:00:00.000Z',
-      retryAfterMs: 90_000,
-      availabilityByBinding: { opus: false, gpt: true, gemini: true },
-    },
-  ).state;
+  const retry = recordActiveBindingFailure(createRoleBindingFailoverState(plan, askPolicy), plan, {
+    failureKind: 'rate_limited',
+    scope: 'BINDING',
+    observedAt: '2026-09-25T18:00:00.000Z',
+    retryAfterMs: 90_000,
+    availabilityByBinding: { opus: false, gpt: true, gemini: true },
+  }).state;
   assert.equal(retry.cooldowns[0].timingSource, 'RETRY_AFTER');
   assert.equal(retry.cooldowns[0].nextCheckAt, '2026-09-25T18:01:30.000Z');
 
-  const reset = recordActiveBindingFailure(
-    createRoleBindingFailoverState(plan, askPolicy),
-    plan,
-    {
-      failureKind: 'quota_exhausted',
-      scope: 'BINDING',
-      observedAt: '2026-09-25T18:00:00.000Z',
-      resetAt: '2026-09-25T20:00:00.000Z',
-      availabilityByBinding: { opus: false, gpt: true, gemini: true },
-    },
-  ).state;
+  const reset = recordActiveBindingFailure(createRoleBindingFailoverState(plan, askPolicy), plan, {
+    failureKind: 'quota_exhausted',
+    scope: 'BINDING',
+    observedAt: '2026-09-25T18:00:00.000Z',
+    resetAt: '2026-09-25T20:00:00.000Z',
+    availabilityByBinding: { opus: false, gpt: true, gemini: true },
+  }).state;
   assert.equal(reset.cooldowns[0].timingSource, 'RESET_AT');
   assert.equal(reset.nextCheckAt, '2026-09-25T20:00:00.000Z');
 
@@ -181,17 +173,13 @@ test('retry-after reset-at and bounded unknown reset produce deterministic nextC
 
 test('due checks do not silently mark a binding recovered', () => {
   const plan = planWithThreeBindings();
-  const state = recordActiveBindingFailure(
-    createRoleBindingFailoverState(plan, askPolicy),
-    plan,
-    {
-      failureKind: 'rate_limited',
-      scope: 'BINDING',
-      observedAt: '2026-09-25T18:00:00.000Z',
-      retryAfterMs: 10_000,
-      availabilityByBinding: { opus: false, gpt: true, gemini: true },
-    },
-  ).state;
+  const state = recordActiveBindingFailure(createRoleBindingFailoverState(plan, askPolicy), plan, {
+    failureKind: 'rate_limited',
+    scope: 'BINDING',
+    observedAt: '2026-09-25T18:00:00.000Z',
+    retryAfterMs: 10_000,
+    availabilityByBinding: { opus: false, gpt: true, gemini: true },
+  }).state;
 
   assert.equal(listDueBindingChecks(state, '2026-09-25T18:00:09.000Z').length, 0);
   assert.equal(listDueBindingChecks(state, '2026-09-25T18:00:10.000Z').length, 1);
@@ -205,17 +193,13 @@ test('due checks do not silently mark a binding recovered', () => {
 
 test('successful recovery observation clears cooldown and ASK policy requires approval', () => {
   const plan = planWithThreeBindings();
-  let state = recordActiveBindingFailure(
-    createRoleBindingFailoverState(plan, askPolicy),
-    plan,
-    {
-      failureKind: 'quota_exhausted',
-      scope: 'BINDING',
-      observedAt: '2026-09-25T18:00:00.000Z',
-      resetAt: '2026-09-25T19:00:00.000Z',
-      availabilityByBinding: { opus: false, gpt: true, gemini: true },
-    },
-  ).state;
+  let state = recordActiveBindingFailure(createRoleBindingFailoverState(plan, askPolicy), plan, {
+    failureKind: 'quota_exhausted',
+    scope: 'BINDING',
+    observedAt: '2026-09-25T18:00:00.000Z',
+    resetAt: '2026-09-25T19:00:00.000Z',
+    availabilityByBinding: { opus: false, gpt: true, gemini: true },
+  }).state;
 
   state = recordBindingRecoveryObservation(state, plan, {
     bindingId: 'opus',
@@ -277,17 +261,13 @@ test('AUTO_RETURN and STAY_ON_FALLBACK honor configured return policy', () => {
 
 test('failed recovery probe reschedules the next check instead of assuming recovery', () => {
   const plan = planWithThreeBindings();
-  let state = recordActiveBindingFailure(
-    createRoleBindingFailoverState(plan, askPolicy),
-    plan,
-    {
-      failureKind: 'rate_limited',
-      scope: 'BINDING',
-      observedAt: '2026-09-25T18:00:00.000Z',
-      retryAfterMs: 1_000,
-      availabilityByBinding: { opus: false, gpt: true, gemini: true },
-    },
-  ).state;
+  let state = recordActiveBindingFailure(createRoleBindingFailoverState(plan, askPolicy), plan, {
+    failureKind: 'rate_limited',
+    scope: 'BINDING',
+    observedAt: '2026-09-25T18:00:00.000Z',
+    retryAfterMs: 1_000,
+    availabilityByBinding: { opus: false, gpt: true, gemini: true },
+  }).state;
 
   state = recordBindingRecoveryObservation(state, plan, {
     bindingId: 'opus',
