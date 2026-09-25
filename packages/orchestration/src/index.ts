@@ -214,6 +214,19 @@ export {
 } from './context-reduction-plan.js';
 
 export {
+  assertProtectedContextAnchors,
+  protectedAnchorVerifierCanGrantAuthority,
+  tokenEconomyCanInvokeRemoteWithMissingProtectedAnchor,
+  validateProtectedAnchorVerification,
+  verifyProtectedContextAnchors,
+  type ProtectedAnchorCheck,
+  type ProtectedAnchorVerification,
+  type ProtectedAnchorVerificationInput,
+  type ProtectedAnchorVerificationStatus,
+  type ProtectedContextAnchor,
+} from './protected-anchor-verifier.js';
+
+export {
   buildEconomyLedger,
   economyLedgerCanGrantAuthority,
   evaluateRemoteCallNecessity,
