@@ -39,7 +39,8 @@
     "check:workspace-resolution": "node tools/project/check-workspace-resolution.mjs",
     "check:entrypoints": "node tools/project/check-entrypoints.mjs",
     "check:build-completeness": "node tools/project/check-build-completeness.mjs",
-    "secrets": "npm run build -w @freehighlander/governance -w @freehighlander/persistence && node tools/project/secrets.mjs"
+    "secrets": "npm run build -w @freehighlander/governance -w @freehighlander/persistence && node tools/project/secrets.mjs",
+    "project:portable-resume-bootstrap": "node tools/project/portable-resume-bootstrap.mjs"
   },
   "dependencies": {
     "yaml": "2.9.1"
