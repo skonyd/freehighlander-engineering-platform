@@ -17,8 +17,8 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 8 | V2/V3 parity + authority cutover | **READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED** |
 | 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane BLOCKED** |
 | 10 | Authority-bearing full lifecycle | **BLOCKED until explicit FH-20 cutover** |
-| 11 | Studio/productization layer — FH-40..FH-48 | **PROPOSED; authority-neutral preparation can proceed** |
-| 12 | Enterprise collaboration boundary — FH-49 | **DEFERRED; ADR required** |
+| 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PROPOSED; authority-neutral preparation can proceed** |
+| 12 | FH-KUIKA-10 enterprise collaboration submodule | **DEFERRED; ADR required** |
 
 Current authority state remains:
 
@@ -172,26 +172,26 @@ INCIDENT
 The read-only/evidence contracts for this thread exist today; production mutation authority does not.
 
 
-## Phase 11 — Studio / Productization Layer
+## Phase 11 — Optional FH-KUIKA Productization Module
 
-Detailed plan: [FH-40..FH-49 Productization / Studio Roadmap](planning/FH-40-49-PRODUCTIZATION-ROADMAP.md).
+Detailed plan: [FH-KUIKA module roadmap](modules/kuika-inspired-productization/ROADMAP.md).
 
-The productization lane exposes existing control-plane capabilities through a coherent Studio UX:
+FH-KUIKA is an optional module that exposes existing control-plane capabilities through a coherent Studio UX. Core runtime correctness must not depend on the presence of this module:
 
-- FH-40 Studio shell + Explainable Operations Console
-- FH-41 ASK / PLAN / EXECUTE / REVIEW Workbench
-- FH-42 Engineering Blueprint Catalog
-- FH-43 Visual Workflow Studio
-- FH-44 Connector Hub / MCP Tool Manager
-- FH-45 Role Marketplace + Engineering Solution Packs
-- FH-46 Engineering Knowledge Vault / Lineage-RAG
-- FH-47 Routines / Trigger Engine
-- FH-48 Constraint-aware pre-call model/work router optimizer
+- FH-KUIKA-01 Studio shell + Explainable Operations Console
+- FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench
+- FH-KUIKA-03 Engineering Blueprint Catalog
+- FH-KUIKA-04 Visual Workflow Studio
+- FH-KUIKA-05 Connector Hub / MCP Tool Manager
+- FH-KUIKA-06 Role Marketplace + Engineering Solution Packs
+- FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG
+- FH-KUIKA-08 Routines / Trigger Engine
+- FH-KUIKA-09 Constraint-aware pre-call model/work router optimizer
 
 Authority-neutral schema, read-model, draft, validation, simulation and inspection work can proceed while V3 remains `SHADOW_ONLY`. Any mutation-capable activation must continue to respect FH-20, role authority, sandbox/data policy and system-policy/human gates.
 
 ## Phase 12 — Enterprise collaboration boundary
 
-FH-49 covers possible OIDC, teams, RBAC, organization policy and multi-user collaboration.
+FH-KUIKA-10 covers possible OIDC, teams, RBAC, organization policy and multi-user collaboration.
 
-It is intentionally deferred because the frozen architecture currently defines the initial product as local-first single-user. FH-49 requires a dedicated ADR, architecture-contract version bump and threat-model/data-model work before implementation.
+It is intentionally deferred because the frozen architecture currently defines the initial product as local-first single-user. FH-KUIKA-10 requires a dedicated ADR, architecture-contract version bump and threat-model/data-model work before implementation.
