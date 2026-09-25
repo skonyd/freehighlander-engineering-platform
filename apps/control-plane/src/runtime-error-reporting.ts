@@ -26,10 +26,7 @@ export type RuntimeErrorCauseKind =
   | 'INTERNAL_INVARIANT'
   | 'UNKNOWN';
 
-export type RuntimeErrorCauseCertainty =
-  | 'CONFIRMED_SIGNAL'
-  | 'DETERMINISTIC_RULE'
-  | 'UNRESOLVED';
+export type RuntimeErrorCauseCertainty = 'CONFIRMED_SIGNAL' | 'DETERMINISTIC_RULE' | 'UNRESOLVED';
 
 export interface RuntimeErrorDiagnosisInput {
   readonly causeCode: string;
@@ -238,11 +235,7 @@ function normalizeDiagnosis(
     sourceComponent: normalizeOperation(input.sourceComponent),
     sourceOperation: normalizeOperation(input.sourceOperation),
     failedStep: normalizeDiagnosisText(input.failedStep, 'failedStep', 160),
-    rootCause: normalizeDiagnosisText(
-      input.rootCause,
-      'rootCause',
-      Math.min(maxValueChars, 360),
-    ),
+    rootCause: normalizeDiagnosisText(input.rootCause, 'rootCause', Math.min(maxValueChars, 360)),
     observedSignal: normalizeDiagnosisText(
       input.observedSignal,
       'observedSignal',
@@ -265,11 +258,7 @@ function normalizeDiagnosis(
   return diagnosis;
 }
 
-function normalizeDiagnosisText(
-  value: string,
-  field: string,
-  maxLength: number,
-): string {
+function normalizeDiagnosisText(value: string, field: string, maxLength: number): string {
   const normalized = value.replace(/[\r\n\t]+/g, ' ').trim();
   if (normalized.length < 4 || normalized.length > maxLength) {
     throw new Error(`diagnosis ${field} length is invalid`);
