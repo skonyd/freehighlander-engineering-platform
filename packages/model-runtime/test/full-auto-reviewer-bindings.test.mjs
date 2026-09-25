@@ -86,7 +86,14 @@ function setup() {
   return { providers, bindings };
 }
 
-function plan(providers, bindings, logicalRole, primaryBindingId, fallbackBindingIds = [], riskTier = 'NORMAL') {
+function plan(
+  providers,
+  bindings,
+  logicalRole,
+  primaryBindingId,
+  fallbackBindingIds = [],
+  riskTier = 'NORMAL',
+) {
   return resolveBindingPlan(providers, bindings, {
     logicalRole,
     riskTier,
@@ -97,19 +104,10 @@ function plan(providers, bindings, logicalRole, primaryBindingId, fallbackBindin
 
 test('Full Auto reviewer snapshot binds exact plans and preserves fallback independence', () => {
   const { providers, bindings } = setup();
-  const reviewerA = plan(
-    providers,
-    bindings,
-    'autonomous-merge-reviewer-a',
-    'a-primary',
-    ['a-fallback'],
-  );
-  const reviewerB = plan(
-    providers,
-    bindings,
-    'autonomous-merge-reviewer-b',
-    'b-primary',
-  );
+  const reviewerA = plan(providers, bindings, 'autonomous-merge-reviewer-a', 'a-primary', [
+    'a-fallback',
+  ]);
+  const reviewerB = plan(providers, bindings, 'autonomous-merge-reviewer-b', 'b-primary');
 
   const first = buildFullAutoReviewerBindingSnapshot({
     reviewerA,
@@ -189,13 +187,7 @@ test('every fallback path must preserve reviewer-to-reviewer independence', () =
 
 test('every reviewer primary or fallback binding must remain independent from producer', () => {
   const { providers, bindings } = setup();
-  const reviewerA = plan(
-    providers,
-    bindings,
-    'reviewer-a',
-    'a-primary',
-    ['producer-conflict'],
-  );
+  const reviewerA = plan(providers, bindings, 'reviewer-a', 'a-primary', ['producer-conflict']);
   const reviewerB = plan(providers, bindings, 'reviewer-b', 'b-primary');
 
   assert.throws(
@@ -212,13 +204,9 @@ test('every reviewer primary or fallback binding must remain independent from pr
 test('binding-plan change creates a new Full Auto reviewer snapshot identity', () => {
   const { providers, bindings } = setup();
   const reviewerA = plan(providers, bindings, 'reviewer-a', 'a-primary');
-  const reviewerAWithFallback = plan(
-    providers,
-    bindings,
-    'reviewer-a',
-    'a-primary',
-    ['a-fallback'],
-  );
+  const reviewerAWithFallback = plan(providers, bindings, 'reviewer-a', 'a-primary', [
+    'a-fallback',
+  ]);
   const reviewerB = plan(providers, bindings, 'reviewer-b', 'b-primary');
 
   const first = buildFullAutoReviewerBindingSnapshot({
