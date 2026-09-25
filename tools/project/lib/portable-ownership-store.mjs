@@ -28,7 +28,7 @@ export class GitPortableOwnershipStore {
 
     const cacheRef = portableOwnershipCacheRef(projectId, workItemId);
     requireGitSuccess(
-      this.#runner.run(['fetch', '--no-tags', this.#remote, `+${stateRef}:${cacheRef}`]),
+      this.#runner.run(['fetch', '--no-tags', this.#remote, `+${remoteHead}:${cacheRef}`]),
       'portable ownership state fetch failed',
     );
 
