@@ -1,7 +1,4 @@
-import {
-  buildFullAutoReviewerBindingSnapshot,
-  validateRoleBindingPublicationV1,
-} from '../../../packages/model-runtime/dist/index.js';
+import { buildFullAutoReviewerBindingSnapshot } from '../../../packages/model-runtime/dist/index.js';
 import {
   fullAutoProfileCanDelegateRisk,
   modelQuorumCanOverrideDeny,
@@ -122,7 +119,6 @@ function findPublication(state, logicalRole, riskTier) {
   }
   if (matches.length === 0) return null;
 
-  validateRoleBindingPublicationV1(matches[0]);
   return matches[0];
 }
 
