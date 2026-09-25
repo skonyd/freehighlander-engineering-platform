@@ -132,11 +132,7 @@ test('remote or non-eligible binding cannot act as local optimizer', () => {
   );
   assert.throws(
     () =>
-      evaluateLocalOptimizerPass(
-        binding({ eligibleForRoleRisk: false }),
-        policy(),
-        observation(),
-      ),
+      evaluateLocalOptimizerPass(binding({ eligibleForRoleRisk: false }), policy(), observation()),
     /must be eligible for role\/risk/,
   );
 
@@ -150,11 +146,7 @@ test('decision identity is exact-bound to binding qualification and pass observa
     policy(),
     observation(),
   );
-  const differentPass = evaluateLocalOptimizerPass(
-    binding(),
-    policy(),
-    observation({ pass: 2 }),
-  );
+  const differentPass = evaluateLocalOptimizerPass(binding(), policy(), observation({ pass: 2 }));
 
   assert.notEqual(first.decisionHash, differentQualification.decisionHash);
   assert.notEqual(first.decisionHash, differentPass.decisionHash);
@@ -196,12 +188,7 @@ test('invalid policies observations and binding identities fail closed', () => {
     /cannot exceed outputTokens/,
   );
   assert.throws(
-    () =>
-      evaluateLocalOptimizerPass(
-        binding({ bindingPlanHash: 'bad' }),
-        policy(),
-        observation(),
-      ),
+    () => evaluateLocalOptimizerPass(binding({ bindingPlanHash: 'bad' }), policy(), observation()),
     /bindingPlanHash/,
   );
 });
