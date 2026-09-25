@@ -129,13 +129,15 @@ export function renewPortableOwnershipLease(
   if (lease.leaseId !== leaseId || lease.generation !== generation) {
     throw new Error('portable ownership lease ownership mismatch');
   }
-  if (lease.state !== 'ACTIVE') throw new Error('released portable ownership lease cannot be renewed');
+  if (lease.state !== 'ACTIVE')
+    throw new Error('released portable ownership lease cannot be renewed');
 
   const nowMs = timestampMs(now, 'now');
   const acquiredAtMs = timestampMs(lease.acquiredAt, 'acquiredAt');
   const currentExpiryMs = timestampMs(lease.expiresAt, 'expiresAt');
   if (nowMs < acquiredAtMs) throw new Error('portable ownership renewal predates acquisition');
-  if (nowMs >= currentExpiryMs) throw new Error('expired portable ownership lease cannot be renewed');
+  if (nowMs >= currentExpiryMs)
+    throw new Error('expired portable ownership lease cannot be renewed');
   if (lastCheckpointGeneration < lease.lastCheckpointGeneration) {
     throw new Error('portable ownership checkpoint generation cannot move backwards');
   }
@@ -309,9 +311,7 @@ function assertSameScope(
   }
 }
 
-function clonePortableOwnershipLease(
-  lease: PortableOwnershipLeaseV1,
-): PortableOwnershipLeaseV1 {
+function clonePortableOwnershipLease(lease: PortableOwnershipLeaseV1): PortableOwnershipLeaseV1 {
   return { ...lease };
 }
 
