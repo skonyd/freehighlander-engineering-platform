@@ -38,6 +38,7 @@ export {
   evaluateNodeResultReuse,
   nodeResultReuseCanGrantAuthority,
   semanticNegativeCanTriggerModelShopping,
+  validateNodeResultV1,
   type CanonicalExecutionScope,
   type CanonicalExecutionScopeInput,
   type MandatoryJoinRequirement,
