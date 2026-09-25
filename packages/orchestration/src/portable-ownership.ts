@@ -73,6 +73,13 @@ export function acquirePortableOwnershipLease(
     if (request.lastCheckpointGeneration < existing.lastCheckpointGeneration) {
       throw new Error('portable ownership checkpoint generation cannot move backwards');
     }
+    if (
+      existing.state === 'RELEASED' &&
+      existing.releasedAt !== null &&
+      nowMs < timestampMs(existing.releasedAt, 'releasedAt')
+    ) {
+      throw new Error('portable ownership acquisition predates release');
+    }
 
     if (existing.state === 'ACTIVE' && nowMs < timestampMs(existing.expiresAt, 'expiresAt')) {
       return {
