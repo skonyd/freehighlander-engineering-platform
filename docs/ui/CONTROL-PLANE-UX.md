@@ -2,7 +2,7 @@
 
 **Status:** PROPOSED PRODUCT UX DIRECTION  
 **Product surface:** FreeHighlander Studio  
-**Roadmap:** [FH-40..FH-49 Productization Roadmap](../planning/FH-40-49-PRODUCTIZATION-ROADMAP.md)
+**Optional module roadmap:** [FH-KUIKA — Kuika-inspired Productization Module](../modules/kuika-inspired-productization/ROADMAP.md)
 
 ## Product UX goal
 
