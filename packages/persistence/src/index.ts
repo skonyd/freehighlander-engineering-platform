@@ -44,12 +44,27 @@ export {
 } from './resume-manifest.js';
 
 export {
+  createPortableCanonicalEventBundleV1,
+  portableCanonicalEventsCanContainSecretValues,
+  portableCanonicalEventsCanRequireSourceMachinePath,
+  portableSqliteWalCanBeHandoffProtocol,
+  rebuildSqliteReadModelFromPortableEventBundle,
+  validatePortableCanonicalEventBundleV1,
+  type PortableCanonicalEventBundleV1,
+  type PortableCanonicalEventBundleV1Input,
+  type PortableCanonicalEventRecordV1,
+  type PortableReadModelRebuildResult,
+} from './portable-event-bundle.js';
+
+export {
   SQLITE_SCHEMA_VERSION,
+  indexedEngineeringEventHash,
   inspectSqliteTelemetryFile,
   inspectTelemetryJsonlFile,
   jsonlTornTailCanBecomeEvent,
   restoreSqliteTelemetryBackupToNewFile,
   SqliteTelemetryStore,
+  validateIndexedEngineeringEvent,
   type ArtifactIndexRecord,
   type ImportResult,
   type JsonlRecoveryImportResult,
