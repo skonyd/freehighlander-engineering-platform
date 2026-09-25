@@ -102,15 +102,15 @@ export function preparePortableResumeRepository({
   return bootstrapResult(repository, repositoryRoot, metadata.defaultBranch, true);
 }
 
-export function portableResumeBootstrapCanDeleteExistingWork(): false {
+export function portableResumeBootstrapCanDeleteExistingWork() {
   return false;
 }
 
-export function portableResumeBootstrapCanCopyCredentials(): false {
+export function portableResumeBootstrapCanCopyCredentials() {
   return false;
 }
 
-export function portableResumeBootstrapCanGrantAuthority(): false {
+export function portableResumeBootstrapCanGrantAuthority() {
   return false;
 }
 
