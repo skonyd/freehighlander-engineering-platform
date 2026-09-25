@@ -33,4 +33,7 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: npm run verify
+        run: |
+          npm run format:write
+          git diff -- packages/model-runtime/src/provider-failover-integration.ts packages/model-runtime/test/provider-failover-integration.test.mjs
+          exit 1
