@@ -64,33 +64,53 @@ try {
   failures.push('automation/legacy-v2 placeholder is required');
 }
 
-// FH-01B1 provisional guard: compatibility code may exist, but it must stay
-// explicitly non-authoritative until FH-01B2 reconciles the final accepted #207.
+// FH-01B2 accepted-reference guard: V2 compatibility may be promoted only to
+// the explicitly reconciled #207/#209 source state. This does not activate V3.
 try {
   const v2CompatSource = await fs.readFile(
     path.join(root, 'packages', 'v2-compat', 'src', 'index.ts'),
     'utf8',
   );
+  const architectureSource = await fs.readFile(
+    path.join(root, '.freehighlander', 'architecture.yaml'),
+    'utf8',
+  );
   const requiredFragments = [
-    "sha: '0e70f4a9680fcc5c287b7926f2aa20170c79f47d'",
-    "referenceStatus: 'PROVISIONAL'",
-    "authority: 'DISABLED'",
+    "provisionalSha: '0e70f4a9680fcc5c287b7926f2aa20170c79f47d'",
+    "mergeSha: 'e4707a3c4267db9d2aadd452782b91045b96724d'",
+    "sha: '1a8e215b78a3a5008aae6aae36488b3273733b19'",
+    'postMergeHardeningPullRequest: 209',
+    "referenceStatus: 'ACCEPTED'",
+    "authority: 'ENABLED'",
     "export const AUTHORITATIVE_ARTIFACT_KIND = 'full' as const",
-    'export function authorityPromotionAllowed(): false',
+    "model: 'claude-opus-5-5'",
+    "normal: { model: 'gpt-6-sol', effort: 'medium' }",
+    "high: { model: 'gpt-6-sol', effort: 'medium' }",
+    "critical: { model: 'gpt-6-sol', effort: 'medium' }",
+    'export async function testReviewScopeHash',
+    'export async function finalReviewScopeHash',
+    'export function contextTriageHasSignal',
+    'export function authorityPromotionAllowed(): true',
+    'export function assertAcceptedReference(): void',
   ];
   for (const fragment of requiredFragments) {
     if (!v2CompatSource.includes(fragment)) {
-      failures.push(`FH-01B1 provisional guard missing: ${fragment}`);
+      failures.push(`FH-01B2 accepted-reference guard missing: ${fragment}`);
     }
   }
-  if (/referenceStatus:\s*'ACCEPTED'/.test(v2CompatSource)) {
-    failures.push('FH-01B1 cannot mark the V2 reference ACCEPTED');
-  }
-  if (/authority:\s*'ENABLED'/.test(v2CompatSource)) {
-    failures.push('FH-01B1 cannot enable V2 authority');
+  for (const invariant of [
+    'v2_reference_status: ACCEPTED',
+    'v2_compatibility_authority: ENABLED',
+    'v3_authority: SHADOW_ONLY',
+    'v3_authority_cutover_phase: FH-20',
+    'fh01b2_dependency_status: SATISFIED',
+  ]) {
+    if (!architectureSource.includes(invariant)) {
+      failures.push(`FH-01B2 architecture migration invariant missing: ${invariant}`);
+    }
   }
 } catch {
-  failures.push('missing FH-01B1 provisional compatibility source');
+  failures.push('missing FH-01B2 accepted compatibility source');
 }
 
 try {

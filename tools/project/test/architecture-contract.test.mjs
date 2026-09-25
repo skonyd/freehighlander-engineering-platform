@@ -18,7 +18,7 @@ test('repository V3 architecture contract validates and hashes deterministically
 
   assert.match(first, /^[a-f0-9]{64}$/);
   assert.equal(first, second);
-  assert.equal(contract.contract_version, '1.8.0');
+  assert.equal(contract.contract_version, '1.9.0');
   assert.equal(contract.status, 'FROZEN_BASELINE');
   assert.equal(contract.bounded_contexts.packages.includes('planning'), true);
   assert.equal(contract.bounded_contexts.packages.includes('development'), true);
@@ -28,6 +28,10 @@ test('repository V3 architecture contract validates and hashes deterministically
   assert.equal(contract.bounded_contexts.packages.includes('operations'), true);
   assert.equal(contract.bounded_contexts.packages.includes('incident'), true);
   assert.equal(contract.bounded_contexts.packages.includes('lineage'), true);
+  assert.equal(contract.accepted_adrs.includes('ADR-0021'), true);
+  assert.equal(contract.migration.v2_reference_status, 'ACCEPTED');
+  assert.equal(contract.migration.v2_reference_sha, '1a8e215b78a3a5008aae6aae36488b3273733b19');
+  assert.equal(contract.migration.v2_compatibility_authority, 'ENABLED');
   assert.equal(contract.migration.v3_authority, 'SHADOW_ONLY');
 });
 
@@ -122,5 +126,18 @@ test('architecture freeze rejects weakened sandbox or automatic authority promot
   assert.throws(
     () => assertArchitectureContract(autoPromotion),
     /automatic authority promotion must be false/,
+  );
+});
+
+test('architecture freeze rejects accepted V2 reference drift without a new contract', async () => {
+  const changedReference = structuredClone(await loadArchitectureContract(root));
+  changedReference.migration.v2_reference_sha = '0'.repeat(40);
+  assert.throws(() => assertArchitectureContract(changedReference), /V2 accepted reference SHA/);
+
+  const changedCompatibilityAuthority = structuredClone(await loadArchitectureContract(root));
+  changedCompatibilityAuthority.migration.v2_compatibility_authority = 'DISABLED';
+  assert.throws(
+    () => assertArchitectureContract(changedCompatibilityAuthority),
+    /V2 compatibility authority/,
   );
 });

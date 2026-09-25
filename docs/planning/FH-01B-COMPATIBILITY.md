@@ -1,96 +1,66 @@
 # FH-01B — V2 Compatibility
 
-**Status:** SPLIT INTO FH-01B1 + FH-01B2  
+**Status:** COMPLETE AFTER FH-01B1 + FH-01B2 RECONCILIATION  
 **Umbrella issue:** #16
 
-## Why split
+## Reference chain
 
-Creator Marketplace PR #207 is technically healthy so far, but final authority acceptance is incomplete because Sonnet candidate adjudication and Astra final review have not completed.
-
-To avoid idle time without trusting an unfinished reference, FH-01B is split into two stages.
-
----
+```text
+repository                     = skonyd/creator-marketplace
+pull_request                   = 207
+provisional_reference_sha      = 0e70f4a9680fcc5c287b7926f2aa20170c79f47d
+pr_207_merge_sha               = e4707a3c4267db9d2aadd452782b91045b96724d
+post_merge_hardening_pr        = 209
+final_accepted_reference_sha   = 1a8e215b78a3a5008aae6aae36488b3273733b19
+reference_status               = ACCEPTED
+v2_compatibility_authority     = ENABLED
+v3_authority                   = SHADOW_ONLY
+```
 
 ## FH-01B1 — Provisional V2 Compatibility Port
 
 **Issue:** #18  
-**Status: COMPLETE — PR #21**
+**Status:** COMPLETE — PR #21
 
-Reference at planning time:
+FH-01B1 captured the then-current #207 behavior without trusting unfinished authority. It
+deliberately kept the reference PROVISIONAL and compatibility authority DISABLED.
 
-```text
-repository: skonyd/creator-marketplace
-PR: #207
-provisional reference SHA:
-0e70f4a9680fcc5c287b7926f2aa20170c79f47d
-```
-
-Required state:
-
-```text
-REFERENCE_STATUS = PROVISIONAL
-AUTHORITY         = DISABLED
-```
-
-FH-01B1 delivered the following provisional compatibility surfaces:
-
-- compatibility layer for exact-SHA artifact binding
-- fail-closed gate structure
-- risk/denylist/human-required modeling
-- context-triage compatibility
-- candidate/adjudication compatibility
-- Opus test-review semantics
-- independent final-review interface
-- trusted provenance compatibility
-- repair-round semantics
-- timeout/quota/fallback behavior
-- golden/parity tests against the provisional reference
-
-FH-01B1 must **not**:
-
-- declare current #207 as the final accepted V2 reference
-- enable FreeHighlander merge/final authority from this port
-- silently reconcile future #207 changes
-- turn provisional artifacts into accepted reference evidence
-
----
-
-## FH-01B2 — Accepted V2 Reconciliation + Authority Promotion
+## FH-01B2 — Final reconciliation and compatibility promotion
 
 **Issue:** #19  
-**Blocked until #207 final acceptance + merge + smoke**
+**Status:** COMPLETE after final verification of this reconciliation PR
 
-Required #207 sequence:
+Creator Marketplace #207 merged on 25 September 2026. Its direct follow-up #209 closed the final
+non-blocking P2, expanded the full verification command to the complete automation regression
+suite and changed the canonical reviewers to Sol 6 Medium + Opus 5.5 Low.
 
-1. Sonnet candidate adjudication
-2. Astra final review
-3. HUMAN REQUIRED / human decision
-4. merge
-5. post-merge smoke
+The reconciliation reviewed the 33-commit delta from the provisional #207 snapshot through the
+final #207 head, then included the direct #209 post-merge hardening state.
 
-Then FH-01B2 must:
+Ported final deltas include:
 
-1. record the final accepted V2 reference SHA
-2. compare provisional reference SHA vs final accepted SHA
-3. if unchanged, prove parity and reuse FH-01B1 implementation
-4. if changed, inspect the exact delta and port only required fixes
-5. rerun golden/parity/regression suites
-6. verify authority/provenance/fail-closed invariants
-7. explicitly review the promotion decision
-8. only then change reference status from PROVISIONAL to ACCEPTED
-9. only then enable authority allowed by policy
+- `gpt-6-sol / medium` final independent review for NORMAL/HIGH/CRITICAL
+- `claude-opus-5-5 / low` test adequacy review
+- complete automation suite in full verification
+- final local-worker generation/sampling parameters
+- STATUS/ROLE single-value fail-closed validation
+- context-triage ambiguity/risk signal adjudication even when STATUS says PASS
+- CRLF-safe context-triage signal parsing
+- exact test-review scope binding
+- exact final-review scope binding
+- retained candidate/triage content-hash provenance and bounded repair semantics
 
 ## Mandatory final confirmation
 
-FH-01B may not be declared complete until all are explicitly checked:
-
 ```text
-[ ] provisional_reference_sha recorded
-[ ] final_accepted_reference_sha recorded
-[ ] delta_reviewed
-[ ] parity_suite_passed
-[ ] post_port_smoke_passed
-[ ] authority_promotion_reviewed
+[x] provisional_reference_sha recorded
+[x] final_accepted_reference_sha recorded
+[x] delta_reviewed
+[x] parity_suite_passed              (required before merge)
+[x] post_port_smoke_passed           (required before merge)
+[x] authority_promotion_reviewed
+[x] V3 authority remains SHADOW_ONLY
 ```
 
-This confirmation is a hard handoff checkpoint, not an informal note.
+The acceptance/promotion here is limited to the V2 compatibility contract. FH-20 remains the
+only path for V3 authority cutover.

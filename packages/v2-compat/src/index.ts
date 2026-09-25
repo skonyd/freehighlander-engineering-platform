@@ -1,9 +1,12 @@
-export const PROVISIONAL_V2_REFERENCE = {
+export const ACCEPTED_V2_REFERENCE = {
   repository: 'skonyd/creator-marketplace',
   pullRequest: 207,
-  sha: '0e70f4a9680fcc5c287b7926f2aa20170c79f47d',
-  referenceStatus: 'PROVISIONAL',
-  authority: 'DISABLED',
+  provisionalSha: '0e70f4a9680fcc5c287b7926f2aa20170c79f47d',
+  mergeSha: 'e4707a3c4267db9d2aadd452782b91045b96724d',
+  postMergeHardeningPullRequest: 209,
+  sha: '1a8e215b78a3a5008aae6aae36488b3273733b19',
+  referenceStatus: 'ACCEPTED',
+  authority: 'ENABLED',
 } as const;
 
 export type RiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
@@ -12,9 +15,28 @@ export type Effort = 'low' | 'medium' | 'high';
 export const AUTHORITATIVE_ARTIFACT_KIND = 'full' as const;
 
 export const V2_REFERENCE_TEST_REVIEW = {
-  model: 'opus',
-  effort: 'medium',
+  model: 'claude-opus-5-5',
+  effort: 'low',
   maxRepairRounds: 2,
+} as const;
+
+export const V2_REFERENCE_FULL_VERIFICATION = [
+  'npm run verify',
+  'bash scripts/check-docs.sh',
+  'bash automation/tests/run.sh',
+] as const;
+
+export const V2_REFERENCE_LOCAL_WORKER_GENERATION = {
+  temperature: 1,
+  topP: 0.95,
+  topK: 20,
+  minP: 0,
+  presencePenalty: 0,
+  repetitionPenalty: 1,
+  reasoningEffort: 'medium',
+  enableThinking: true,
+  preserveThinking: false,
+  maxTokens: 16_384,
 } as const;
 
 export const V2_REFERENCE_LOCAL_WORKER_LIMITS = {
@@ -69,9 +91,9 @@ export const V2_REFERENCE_PROFILE: V2CompatibilityProfile = {
     critical: { model: 'sonnet', effort: 'medium' },
   },
   finalReview: {
-    normal: { model: 'gpt-6-astra', effort: 'low' },
-    high: { model: 'gpt-6-astra', effort: 'medium' },
-    critical: { model: 'gpt-6-astra', effort: 'medium' },
+    normal: { model: 'gpt-6-sol', effort: 'medium' },
+    high: { model: 'gpt-6-sol', effort: 'medium' },
+    critical: { model: 'gpt-6-sol', effort: 'medium' },
   },
   criticalPaths: [
     'packages/money/**',
@@ -121,16 +143,16 @@ export const V2_REFERENCE_PROFILE: V2CompatibilityProfile = {
   ],
 };
 
-export function authorityPromotionAllowed(): false {
-  return false;
+export function authorityPromotionAllowed(): true {
+  return true;
 }
 
-export function assertProvisionalReference(): void {
+export function assertAcceptedReference(): void {
   if (
-    PROVISIONAL_V2_REFERENCE.referenceStatus !== 'PROVISIONAL' ||
-    PROVISIONAL_V2_REFERENCE.authority !== 'DISABLED'
+    ACCEPTED_V2_REFERENCE.referenceStatus !== 'ACCEPTED' ||
+    ACCEPTED_V2_REFERENCE.authority !== 'ENABLED'
   ) {
-    throw new Error('FH-01B1 must remain provisional with authority disabled');
+    throw new Error('FH-01B2 requires accepted V2 reference with compatibility authority enabled');
   }
 }
 
@@ -146,6 +168,44 @@ export async function sha256Hex(value: string): Promise<string> {
 
 export async function taskFingerprint(repositoryIdentity: string, taskId: string): Promise<string> {
   return sha256Hex(`${repositoryIdentity}|${taskId}`);
+}
+
+async function hashBoundFields(fields: readonly string[]): Promise<string> {
+  const fieldHashes = await Promise.all(fields.map((field) => sha256Hex(field)));
+  return sha256Hex(fieldHashes.join(''));
+}
+
+export async function testReviewScopeHash(
+  baseSha: string,
+  title: string,
+  body: string,
+  triageHash: string,
+): Promise<string> {
+  return hashBoundFields([baseSha, title, body, triageHash]);
+}
+
+export async function finalReviewScopeHash(input: {
+  readonly headSha: string;
+  readonly baseSha: string;
+  readonly title: string;
+  readonly body: string;
+  readonly labels: string;
+  readonly taskId: string;
+  readonly triageHash: string;
+  readonly configHash: string;
+  readonly effectiveRisk: RiskTier;
+}): Promise<string> {
+  return hashBoundFields([
+    input.headSha,
+    input.baseSha,
+    input.title,
+    input.body,
+    input.labels,
+    input.taskId,
+    input.triageHash,
+    input.configHash,
+    input.effectiveRisk,
+  ]);
 }
 
 export function parsePrTaskId(body: string): string | null {
@@ -386,6 +446,17 @@ function section(text: string, key: string): string {
   return match?.[1]?.trimEnd() ?? '';
 }
 
+export function contextTriageHasSignal(text: string): boolean {
+  for (const key of ['AMBIGUITIES', 'RISKS_CANDIDATE']) {
+    const lines = section(text.replaceAll('\r', ''), key)
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (lines.some((line) => !/^-\s*none\s*$/i.test(line))) return true;
+  }
+  return false;
+}
+
 export interface ValidationResult {
   readonly valid: boolean;
   readonly errors: readonly string[];
@@ -397,10 +468,14 @@ function result(errors: string[]): ValidationResult {
 
 export function validateProtocol(text: string, expectedSha?: string): ValidationResult {
   const errors: string[] = [];
-  const status = topValues(text, 'STATUS')[0] ?? null;
-  const role = topValues(text, 'ROLE')[0] ?? null;
+  const statuses = topValues(text, 'STATUS');
+  const rolesFound = topValues(text, 'ROLE');
+  const status = statuses[0] ?? null;
+  const role = rolesFound[0] ?? null;
   const sha = topValues(text, 'SHA')[0] ?? null;
 
+  if (statuses.length !== 1) errors.push('STATUS must appear exactly once');
+  if (rolesFound.length !== 1) errors.push('ROLE must appear exactly once');
   if (!status || !['PASS', 'WARN', 'FAIL', 'CANDIDATE', 'COMPLETE'].includes(status)) {
     errors.push('invalid STATUS');
   }
@@ -547,7 +622,7 @@ const producerByType: Readonly<Partial<Record<ArtifactType, string>>> = {
   'test-review': 'opus-test-review',
   'verify-full': 'automation/verify.sh',
   'verify-fast': 'automation/verify.sh',
-  'final-review': 'gpt-6-astra-final-review',
+  'final-review': 'gpt-6-sol-final-review',
 };
 
 export interface ArtifactValidationOptions {
@@ -555,6 +630,8 @@ export interface ArtifactValidationOptions {
   readonly configHash: string;
   readonly trustedStore?: boolean;
   readonly profile?: V2CompatibilityProfile;
+  readonly expectedTestReviewScopeHash?: string;
+  readonly expectedFinalReviewScopeHash?: string;
 }
 
 export function validateArtifactForStore(
@@ -587,28 +664,46 @@ export function validateArtifactForStore(
     }
   }
 
+  if (type === 'test-review') {
+    const scopeHashes = topValues(text, 'SCOPE_HASH');
+    if (scopeHashes.length !== 1 || !/^[0-9a-f]{64}$/.test(scopeHashes[0] ?? '')) {
+      errors.push('invalid test-review SCOPE_HASH');
+    } else if (
+      options.expectedTestReviewScopeHash !== undefined &&
+      scopeHashes[0] !== options.expectedTestReviewScopeHash
+    ) {
+      errors.push('test-review SCOPE_HASH mismatch');
+    }
+  }
+
   if (type === 'final-review') {
     const initial = topValue(text, 'INITIAL_RISK') as RiskTier | null;
     const final = topValue(text, 'FINAL_RISK') as RiskTier | null;
     const effective = topValue(text, 'EFFECTIVE_RISK') as RiskTier | null;
     const model = topValue(text, 'MODEL');
     const effort = topValue(text, 'EFFORT');
+    const scopeHashes = topValues(text, 'SCOPE_HASH');
     const profile = options.profile ?? V2_REFERENCE_PROFILE;
+
+    if (scopeHashes.length !== 1 || !/^[0-9a-f]{64}$/.test(scopeHashes[0] ?? '')) {
+      errors.push('invalid final-review SCOPE_HASH');
+    } else if (
+      options.expectedFinalReviewScopeHash !== undefined &&
+      scopeHashes[0] !== options.expectedFinalReviewScopeHash
+    ) {
+      errors.push('final-review SCOPE_HASH mismatch');
+    }
 
     if (!initial || !final || !effective || !(initial in riskRank) || !(final in riskRank)) {
       errors.push('invalid final-review risk provenance');
     } else {
       if (effective !== maxRisk(initial, final)) errors.push('EFFECTIVE_RISK mismatch');
       const configured = finalReviewRoute(effective, profile);
-      if (model !== 'gpt-6-astra' || configured.model !== model) {
+      if (model !== 'gpt-6-sol' || configured.model !== model) {
         errors.push('final reviewer model mismatch');
       }
-      if (effective === 'NORMAL') {
-        if (!effort || !['low', 'medium'].includes(effort)) {
-          errors.push('invalid NORMAL final-review effort');
-        }
-      } else if (effort !== 'medium') {
-        errors.push('HIGH/CRITICAL final-review effort must be medium');
+      if (effort !== 'medium') {
+        errors.push('final-review effort must be medium');
       }
     }
   }
@@ -746,9 +841,10 @@ export async function validateContextTriageGate(input: {
   }
 
   const status = topValue(input.triage, 'STATUS');
-  if (status === 'WARN') {
+  const needsAdjudication = status === 'WARN' || contextTriageHasSignal(input.triage);
+  if (needsAdjudication) {
     if (!input.adjudication) {
-      errors.push('WARN context-triage requires adjudication');
+      errors.push('context-triage signal requires adjudication');
     } else {
       errors.push(
         ...validateArtifactForStore('context-triage-adjudication', input.adjudication, {

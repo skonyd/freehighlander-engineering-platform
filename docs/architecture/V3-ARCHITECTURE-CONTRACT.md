@@ -2,12 +2,12 @@
 
 **Status:** FROZEN BASELINE  
 **Machine-readable source:** `.freehighlander/architecture.yaml`  
-**Contract version:** 1.8.0  
+**Contract version:** 1.9.0  
 **Freeze phase:** FH-10
 
 ## Purpose
 
-This document records the accepted architecture direction from ADR-0001 through ADR-0020. Version 1.8.0 adds the Engineering Lineage module alongside the existing pre-cutover module contexts while preserving all V3 foundation authority constraints.
+This document records the accepted architecture direction from ADR-0001 through ADR-0021. Version 1.9.0 accepts the reconciled V2 automation compatibility reference after Creator Marketplace #207/#209 while preserving all V3 foundation authority constraints and SHADOW_ONLY execution.
 
 The machine-readable contract is normative for automated drift checks. Existing ADRs remain the decision rationale.
 
@@ -100,16 +100,19 @@ Version 1.7.0 adds `packages/incident`. Incident lifecycle, evidence timelines, 
 
 Version 1.8.0 adds `packages/lineage`. Stable versioned entities, exact revision bindings, typed evidence-backed relations and bounded read-only traversal form the engineering digital thread. Semantic/vector similarity remains discovery-only and cannot establish authoritative lineage; no graph database is required.
 
+Version 1.9.0 accepts the final V2 compatibility reference at `1a8e215b78a3a5008aae6aae36488b3273733b19`, with #207 merge provenance `e4707a3c4267db9d2aadd452782b91045b96724d` and #209 as the direct post-merge hardening step. This enables the reconciled V2 compatibility authority only; V3 authority remains `SHADOW_ONLY` and FH-20 remains the cutover path.
+
 ### Migration
 
 Until FH-20:
 
 ```text
-V2 reference = PROVISIONAL
-V3 authority = SHADOW_ONLY
+V2 reference             = ACCEPTED
+V2 compatibility authority = ENABLED
+V3 authority             = SHADOW_ONLY
 ```
 
-FH-01B2 remains independently blocked on Creator Marketplace #207.
+FH-01B2's Creator Marketplace #207 dependency is satisfied by the accepted #207 merge plus direct #209 post-merge hardening reference.
 
 ## Change rule
 
