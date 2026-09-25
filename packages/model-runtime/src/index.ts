@@ -28,6 +28,15 @@ export {
 } from './effort-normalization.js';
 
 export {
+  buildFullAutoReviewerBindingSnapshot,
+  fullAutoReviewerBindingSnapshotCanGrantAuthority,
+  fullAutoReviewerFallbackMayBreakIndependence,
+  validateFullAutoReviewerBindingSnapshot,
+  type FullAutoReviewerBindingSnapshot,
+  type FullAutoReviewerBindingSnapshotInput,
+} from './full-auto-reviewer-bindings.js';
+
+export {
   RoleBindingManagementService,
   roleBindingManagementCanGrantAuthority,
   validateRoleBindingPublicationV1,
