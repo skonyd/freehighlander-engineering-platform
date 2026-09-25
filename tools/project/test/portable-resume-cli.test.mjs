@@ -21,6 +21,7 @@ import {
 import {
   buildPortableResumePlan,
   claimPortableResumeOwnership,
+  evaluatePortableResumeCurrentnessEvidence,
   evaluatePortableResumeReconciliation,
   inspectPortableResume,
   inspectPortableResumeWithOwnership,
@@ -76,6 +77,17 @@ function manifest(overrides = {}) {
   });
 }
 
+function portableResumeCurrentness(overrides = {}) {
+  return {
+    workflowHash: H1,
+    runSnapshotHash: H2,
+    policyHash: H3,
+    catalogSnapshotHash: H4,
+    bindingSnapshotHash: H5,
+    ...overrides,
+  };
+}
+
 function portableEventBundle() {
   return createPortableCanonicalEventBundleV1({
     repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
@@ -101,7 +113,10 @@ function portableEventBundle() {
           version: '1.0.0',
           hash: H1,
         },
-        payload: { checkpoint: 'portable' },
+        payload: {
+          checkpoint: 'portable',
+          portableResumeCurrentness: portableResumeCurrentness(),
+        },
       },
     ],
   });
@@ -180,6 +195,7 @@ function portableHumanDecisionBundle(entry = exactHumanDecision()) {
         },
         payload: {
           portableHumanDecisionQueueEntry: entry,
+          portableResumeCurrentness: portableResumeCurrentness(),
         },
       },
     ],
@@ -269,6 +285,7 @@ function portableNodeResultBundle(result = exactNodeResult()) {
         },
         payload: {
           portableNodeResult: result,
+          portableResumeCurrentness: portableResumeCurrentness(),
         },
       },
     ],
@@ -1587,4 +1604,163 @@ test('portable resume project discovery fails closed when no remote state exists
     /does not support project discovery/,
   );
   await assert.rejects(() => resolvePortableResumeProjectId({}, 'x'), /bounded identifier/);
+});
+
+
+test('portable resume currentness evidence verifies all five hash dimensions', () => {
+  const bundle = portableEventBundle();
+  const candidate = manifestWithPortableEvents(bundle);
+
+  const result = evaluatePortableResumeCurrentnessEvidence({
+    manifest: candidate,
+    eventBundle: bundle,
+  });
+
+  assert.equal(result.status, 'VERIFIED');
+  assert.equal(result.verified, true);
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.authority, 'NONE');
+});
+
+test('portable resume currentness evidence fails closed when missing duplicated or drifted', () => {
+  const missing = createPortableCanonicalEventBundleV1({
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    projectId: 'project-151',
+    runId: 'run-151',
+    exactRevision: REMOTE_HEAD,
+    events: [
+      {
+        schemaVersion: 1,
+        type: 'run.started',
+        timestamp: '2026-09-25T07:00:00.000Z',
+        runId: 'run-151',
+        taskId: 'task-151',
+        revision: {
+          repository: 'skonyd/freehighlander-engineering-platform',
+          pullRequest: 151,
+          branch: 'feature/resume',
+          baseSha: 'b'.repeat(40),
+          headSha: REMOTE_HEAD,
+        },
+        workflow: { id: 'project-execution', version: '1.0.0', hash: H1 },
+        payload: { checkpoint: 'portable' },
+      },
+    ],
+  });
+  const missingManifest = manifestWithPortableEvents(missing);
+  const missingResult = evaluatePortableResumeCurrentnessEvidence({
+    manifest: missingManifest,
+    eventBundle: missing,
+  });
+  assert.equal(missingResult.status, 'MISSING');
+  assert.equal(missingResult.verified, false);
+
+  const duplicate = createPortableCanonicalEventBundleV1({
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    projectId: 'project-151',
+    runId: 'run-151',
+    exactRevision: REMOTE_HEAD,
+    events: [
+      {
+        schemaVersion: 1,
+        type: 'run.started',
+        timestamp: '2026-09-25T07:00:00.000Z',
+        runId: 'run-151',
+        revision: {
+          repository: 'skonyd/freehighlander-engineering-platform',
+          headSha: REMOTE_HEAD,
+        },
+        workflow: { id: 'project-execution', version: '1.0.0', hash: H1 },
+        payload: { portableResumeCurrentness: portableResumeCurrentness() },
+      },
+      {
+        schemaVersion: 1,
+        type: 'run.progress',
+        timestamp: '2026-09-25T07:00:01.000Z',
+        runId: 'run-151',
+        revision: {
+          repository: 'skonyd/freehighlander-engineering-platform',
+          headSha: REMOTE_HEAD,
+        },
+        workflow: { id: 'project-execution', version: '1.0.0', hash: H1 },
+        payload: { portableResumeCurrentness: portableResumeCurrentness() },
+      },
+    ],
+  });
+  const duplicateManifest = manifestWithPortableEvents(duplicate);
+  const duplicateResult = evaluatePortableResumeCurrentnessEvidence({
+    manifest: duplicateManifest,
+    eventBundle: duplicate,
+  });
+  assert.equal(duplicateResult.status, 'INVALID');
+  assert.equal(duplicateResult.verified, false);
+
+  const drifted = createPortableCanonicalEventBundleV1({
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    projectId: 'project-151',
+    runId: 'run-151',
+    exactRevision: REMOTE_HEAD,
+    events: [
+      {
+        schemaVersion: 1,
+        type: 'run.started',
+        timestamp: '2026-09-25T07:00:00.000Z',
+        runId: 'run-151',
+        revision: {
+          repository: 'skonyd/freehighlander-engineering-platform',
+          headSha: REMOTE_HEAD,
+        },
+        workflow: { id: 'project-execution', version: '1.0.0', hash: H1 },
+        payload: {
+          portableResumeCurrentness: portableResumeCurrentness({
+            bindingSnapshotHash: H6,
+          }),
+        },
+      },
+    ],
+  });
+  const driftedManifest = manifestWithPortableEvents(drifted);
+  const driftedResult = evaluatePortableResumeCurrentnessEvidence({
+    manifest: driftedManifest,
+    eventBundle: drifted,
+  });
+  assert.equal(driftedResult.status, 'MISMATCH');
+  assert.equal(driftedResult.verified, false);
+  assert.match(driftedResult.errors.join(' '), /bindingSnapshotHash mismatch/);
+});
+
+test('portable resume reconciliation reports event-bundle currentness mismatch', () => {
+  const bundle = portableEventBundle();
+  const candidate = manifestWithPortableEvents(bundle);
+  const driftedBundle = createPortableCanonicalEventBundleV1({
+    repositoryIdentity: bundle.repositoryIdentity,
+    projectId: bundle.projectId,
+    runId: bundle.runId,
+    exactRevision: bundle.exactRevision,
+    events: bundle.events.map((record, index) =>
+      index === 0
+        ? {
+            ...record.event,
+            payload: {
+              ...record.event.payload,
+              portableResumeCurrentness: portableResumeCurrentness({
+                policyHash: H6,
+              }),
+            },
+          }
+        : record.event,
+    ),
+  });
+
+  const result = evaluatePortableResumeReconciliation({
+    manifest: candidate,
+    repositoryIdentity: candidate.repositoryIdentity,
+    remoteHead: REMOTE_HEAD,
+    eventBundle: driftedBundle,
+  });
+
+  assert.equal(result.status, 'RECONCILIATION_REQUIRED');
+  assert.equal(result.currentnessStatus, 'MISMATCH');
+  assert.equal(result.currentnessVerified, false);
+  assert.match(result.errors.join(' '), /policyHash mismatch/);
 });
