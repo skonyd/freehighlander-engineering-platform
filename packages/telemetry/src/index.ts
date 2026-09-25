@@ -52,7 +52,10 @@ export type EventType =
   | 'persistence.integrity.checked'
   | 'persistence.backup.completed'
   | 'persistence.restore.completed'
-  | 'lineage.validation.failed';
+  | 'lineage.validation.failed'
+  | 'full_auto.quorum.completed'
+  | 'full_auto.merge.intent'
+  | 'full_auto.merge.result';
 
 export type OrchestrationTraceEventType =
   'orchestration.span.completed' | 'orchestration.run.summary';
@@ -190,6 +193,183 @@ function validateOrchestrationTracePayload(payload: OrchestrationTraceEventPaylo
       }
       seen.add(spanId);
     }
+  }
+}
+
+export type FullAutoEventType =
+  | 'full_auto.quorum.completed'
+  | 'full_auto.merge.intent'
+  | 'full_auto.merge.result';
+
+export interface FullAutoEventPayload extends Record<string, unknown> {
+  readonly action: 'QUORUM' | 'MERGE_INTENT' | 'MERGE_RESULT';
+  readonly profile: 'OFF' | 'SAFE' | 'BALANCED' | 'CUSTOM';
+  readonly riskTier: 'NORMAL' | 'HIGH' | 'CRITICAL';
+  readonly exactRevision: string;
+  readonly reviewScopeHash: string;
+  readonly bindingSnapshotHash: string;
+  readonly quorumHash?: string;
+  readonly decisionHash?: string;
+  readonly policyHash?: string;
+  readonly reviewerABindingId?: string;
+  readonly reviewerAModel?: string;
+  readonly reviewerAEffort?: string;
+  readonly reviewerAIndependenceGroup?: string;
+  readonly reviewerAVerdict?: 'APPROVE' | 'REJECT' | 'BLOCKED' | 'INSUFFICIENT';
+  readonly reviewerBBindingId?: string;
+  readonly reviewerBModel?: string;
+  readonly reviewerBEffort?: string;
+  readonly reviewerBIndependenceGroup?: string;
+  readonly reviewerBVerdict?: 'APPROVE' | 'REJECT' | 'BLOCKED' | 'INSUFFICIENT';
+  readonly roundCount?: number;
+  readonly quorumStatus?: 'APPROVED' | 'REJECTED' | 'BLOCKED' | 'INSUFFICIENT';
+  readonly policyDecision?: 'ALLOW' | 'MODEL_QUORUM_REQUIRED' | 'HUMAN_REQUIRED' | 'DENY';
+  readonly intentStatus?: 'SHADOW_INTENT_READY' | 'BLOCKED';
+  readonly mergeAttempted?: boolean;
+  readonly mergeSucceeded?: boolean;
+  readonly resultStatus?: 'SUCCEEDED' | 'BLOCKED' | 'FAILED';
+  readonly reasonCode?: string;
+}
+
+const fullAutoPayloadKeys = new Set([
+  'action',
+  'profile',
+  'riskTier',
+  'exactRevision',
+  'reviewScopeHash',
+  'bindingSnapshotHash',
+  'quorumHash',
+  'decisionHash',
+  'policyHash',
+  'reviewerABindingId',
+  'reviewerAModel',
+  'reviewerAEffort',
+  'reviewerAIndependenceGroup',
+  'reviewerAVerdict',
+  'reviewerBBindingId',
+  'reviewerBModel',
+  'reviewerBEffort',
+  'reviewerBIndependenceGroup',
+  'reviewerBVerdict',
+  'roundCount',
+  'quorumStatus',
+  'policyDecision',
+  'intentStatus',
+  'mergeAttempted',
+  'mergeSucceeded',
+  'resultStatus',
+  'reasonCode',
+]);
+
+export function createFullAutoEvent(
+  input: Omit<EngineeringEventInput<FullAutoEventPayload>, 'type'> & {
+    readonly type: FullAutoEventType;
+  },
+): EngineeringEvent<FullAutoEventPayload> {
+  validateFullAutoPayload(input.payload);
+
+  const expectedAction = {
+    'full_auto.quorum.completed': 'QUORUM',
+    'full_auto.merge.intent': 'MERGE_INTENT',
+    'full_auto.merge.result': 'MERGE_RESULT',
+  } as const;
+  if (input.payload.action !== expectedAction[input.type]) {
+    throw new Error(`Full Auto telemetry action does not match event type ${input.type}`);
+  }
+
+  if (input.payload.action === 'QUORUM') {
+    for (const field of [
+      'quorumHash',
+      'reviewerABindingId',
+      'reviewerAModel',
+      'reviewerAIndependenceGroup',
+      'reviewerAVerdict',
+      'reviewerBBindingId',
+      'reviewerBModel',
+      'reviewerBIndependenceGroup',
+      'reviewerBVerdict',
+      'roundCount',
+      'quorumStatus',
+    ] as const) {
+      if (input.payload[field] === undefined) {
+        throw new Error(`Full Auto quorum telemetry requires ${field}`);
+      }
+    }
+  }
+
+  if (input.payload.action === 'MERGE_INTENT') {
+    for (const field of ['quorumHash', 'decisionHash', 'policyHash', 'policyDecision', 'intentStatus'] as const) {
+      if (input.payload[field] === undefined) {
+        throw new Error(`Full Auto merge-intent telemetry requires ${field}`);
+      }
+    }
+  }
+
+  if (input.payload.action === 'MERGE_RESULT') {
+    for (const field of ['decisionHash', 'mergeAttempted', 'mergeSucceeded', 'resultStatus'] as const) {
+      if (input.payload[field] === undefined) {
+        throw new Error(`Full Auto merge-result telemetry requires ${field}`);
+      }
+    }
+    if (input.payload.mergeSucceeded === true && input.payload.mergeAttempted !== true) {
+      throw new Error('Full Auto merge result cannot succeed without an attempted merge');
+    }
+  }
+
+  return createEvent(input);
+}
+
+function validateFullAutoPayload(payload: FullAutoEventPayload): void {
+  const record = payload as unknown as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (!fullAutoPayloadKeys.has(key)) {
+      throw new Error(`Full Auto telemetry field is not allowed: ${key}`);
+    }
+  }
+
+  if (!['OFF', 'SAFE', 'BALANCED', 'CUSTOM'].includes(payload.profile)) {
+    throw new Error('Full Auto telemetry profile is invalid');
+  }
+  if (!['NORMAL', 'HIGH', 'CRITICAL'].includes(payload.riskTier)) {
+    throw new Error('Full Auto telemetry riskTier is invalid');
+  }
+  if (!payload.exactRevision.trim()) {
+    throw new Error('Full Auto telemetry exactRevision is required');
+  }
+
+  for (const [name, value] of [
+    ['reviewScopeHash', payload.reviewScopeHash],
+    ['bindingSnapshotHash', payload.bindingSnapshotHash],
+    ['quorumHash', payload.quorumHash],
+    ['decisionHash', payload.decisionHash],
+    ['policyHash', payload.policyHash],
+  ] as const) {
+    if (value !== undefined && !/^[a-f0-9]{64}$/.test(value)) {
+      throw new Error(`Full Auto telemetry ${name} must be lowercase sha256`);
+    }
+  }
+
+  for (const [name, value] of [
+    ['reviewerABindingId', payload.reviewerABindingId],
+    ['reviewerAModel', payload.reviewerAModel],
+    ['reviewerAEffort', payload.reviewerAEffort],
+    ['reviewerAIndependenceGroup', payload.reviewerAIndependenceGroup],
+    ['reviewerBBindingId', payload.reviewerBBindingId],
+    ['reviewerBModel', payload.reviewerBModel],
+    ['reviewerBEffort', payload.reviewerBEffort],
+    ['reviewerBIndependenceGroup', payload.reviewerBIndependenceGroup],
+    ['reasonCode', payload.reasonCode],
+  ] as const) {
+    if (value !== undefined && !value.trim()) {
+      throw new Error(`Full Auto telemetry ${name} must not be empty`);
+    }
+  }
+
+  if (
+    payload.roundCount !== undefined &&
+    (!Number.isInteger(payload.roundCount) || payload.roundCount < 1)
+  ) {
+    throw new Error('Full Auto telemetry roundCount must be an integer >= 1');
   }
 }
 
