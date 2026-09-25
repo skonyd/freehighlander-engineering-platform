@@ -10,6 +10,7 @@ import {
   createLocalSecretProfileStore,
   defaultSecretRequirementsFile,
   doctorLocalSecrets,
+  doctorResumeSecretHandles,
   inspectLocalSecretProfile,
   loadSecretRequirements,
   localSecretProfileFile,
@@ -195,3 +196,145 @@ async function fsMkdir(directory) {
   const { mkdir } = await import('node:fs/promises');
   await mkdir(directory, { recursive: true });
 }
+
+
+test('resume secret readiness evaluates only handles required by the portable manifest', async () => {
+  const profile = bindLocalSecret(
+    {
+      schemaVersion: 1,
+      profileId: 'work-laptop',
+      bindings: [],
+      authority: 'NONE',
+    },
+    {
+      profileId: 'work-laptop',
+      handleId: 'provider.openai.api',
+      resolverKind: 'LOCAL_ENV',
+      reference: 'OPENAI_API_KEY',
+    },
+  );
+
+  const requirements = [
+    createSecretRequirementV1({
+      handleId: 'provider.openai.api',
+      purpose: 'OpenAI provider authentication',
+      allowedTargets: ['PROVIDER_AUTH'],
+      requiredCapabilities: ['EPHEMERAL_INJECTION'],
+      requiredForRoles: ['controller'],
+      optional: false,
+    }),
+    createSecretRequirementV1({
+      handleId: 'provider.gemini.api',
+      purpose: 'Gemini provider authentication',
+      allowedTargets: ['PROVIDER_AUTH'],
+      requiredCapabilities: ['EPHEMERAL_INJECTION'],
+      requiredForRoles: ['worker'],
+      optional: false,
+    }),
+    createSecretRequirementV1({
+      handleId: 'github.repo.auth',
+      purpose: 'repository authentication',
+      allowedTargets: ['TOOL_AUTH'],
+      requiredCapabilities: ['GITHUB_AUTH'],
+      requiredForRoles: ['controller'],
+      optional: false,
+    }),
+  ];
+
+  const blocked = await doctorResumeSecretHandles(
+    profile,
+    requirements,
+    ['provider.gemini.api', 'provider.openai.api'],
+    {
+      environment: { OPENAI_API_KEY: 'runtime-only-material' },
+      platform: 'linux',
+    },
+  );
+
+  assert.equal(blocked.status, 'BLOCKED_CONFIGURATION');
+  assert.deepEqual(blocked.requiredHandleIds, ['provider.gemini.api', 'provider.openai.api']);
+  assert.deepEqual(blocked.resolvableHandleIds, ['provider.openai.api']);
+  assert.deepEqual(blocked.blockedHandleIds, ['provider.gemini.api']);
+  assert.equal(blocked.secretDependentWorkReady, false);
+  assert.equal(blocked.resolutions.some((entry) => entry.handleId === 'github.repo.auth'), false);
+  assert.equal(blocked.secretValuesPresent, false);
+  assert.doesNotMatch(JSON.stringify(blocked), /runtime-only-material|OPENAI_API_KEY/);
+
+  const ready = await doctorResumeSecretHandles(
+    profile,
+    requirements,
+    ['provider.openai.api'],
+    {
+      environment: { OPENAI_API_KEY: 'runtime-only-material' },
+      platform: 'linux',
+    },
+  );
+  assert.equal(ready.status, 'READY');
+  assert.deepEqual(ready.blockedHandleIds, []);
+  assert.equal(ready.secretDependentWorkReady, true);
+});
+
+test('resume secret readiness fails closed when required handle metadata is absent', async () => {
+  const profile = {
+    schemaVersion: 1,
+    profileId: 'work-laptop',
+    bindings: [],
+    authority: 'NONE',
+  };
+
+  const result = await doctorResumeSecretHandles(
+    profile,
+    [],
+    ['provider.unknown.api'],
+    {
+      environment: {},
+      platform: 'linux',
+    },
+  );
+
+  assert.equal(result.status, 'BLOCKED_CONFIGURATION');
+  assert.deepEqual(result.blockedHandleIds, ['provider.unknown.api']);
+  assert.equal(result.secretDependentWorkReady, false);
+  assert.deepEqual(result.resolutions, [
+    {
+      handleId: 'provider.unknown.api',
+      status: 'BLOCKED_CONFIGURATION',
+      profileId: 'work-laptop',
+      resolverKind: null,
+      reasons: ['secret requirement metadata is missing'],
+    },
+  ]);
+});
+
+test('resume secret readiness with no required handles is READY without probing unrelated bindings', async () => {
+  let probeCalls = 0;
+  const profile = bindLocalSecret(
+    {
+      schemaVersion: 1,
+      profileId: 'work-laptop',
+      bindings: [],
+      authority: 'NONE',
+    },
+    {
+      profileId: 'work-laptop',
+      handleId: 'provider.openai.api',
+      resolverKind: 'LOCAL_ENV',
+      reference: 'OPENAI_API_KEY',
+    },
+  );
+
+  const result = await doctorResumeSecretHandles(profile, [], [], {
+    registry: {
+      async probe() {
+        probeCalls += 1;
+        throw new Error('unrelated binding must not be probed');
+      },
+    },
+  });
+
+  assert.equal(result.status, 'READY');
+  assert.deepEqual(result.requiredHandleIds, []);
+  assert.deepEqual(result.resolutions, []);
+  assert.equal(result.secretDependentWorkReady, true);
+  assert.equal(probeCalls, 0);
+});
