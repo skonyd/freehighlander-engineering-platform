@@ -18,7 +18,9 @@ import {
   publishManagedBinding,
   readModelManagementState,
   refreshManagedProvider,
+  removeManagedProvider,
   requireOption,
+  resolveManagedCredential,
   setManagedProvider,
   writeModelManagementState,
 } from '../lib/model-management.mjs';
@@ -44,6 +46,11 @@ test('model management CLI parser preserves repeated options and validates requi
   assert.deepEqual(parsed.options.capability, ['usage_token_breakdown', 'reasoning_effort']);
   assert.equal(requireOption(parsed.options, 'role'), 'controller');
   assert.throws(() => requireOption(parsed.options, 'missing'), /--missing is required/);
+
+  const optionOnly = parseCliArgs(['status', '--state', '/tmp/model-state.json']);
+  assert.equal(optionOnly.command, 'status');
+  assert.equal(optionOnly.subcommand, undefined);
+  assert.equal(optionOnly.options.state, '/tmp/model-state.json');
 });
 
 test('atomic model management store persists references only and rejects stale CAS writes', async () => {
@@ -300,3 +307,49 @@ async function startModelServer(initialModels) {
       ),
   };
 }
+
+
+test('credential resolution and provider removal fail closed without leaking or guessing', () => {
+  const provider = {
+    schemaVersion: 1,
+    id: 'remote-provider',
+    kind: 'OPENAI_COMPATIBLE',
+    baseUrl: 'https://example.test',
+    locality: 'REMOTE',
+    credential: { resolverKind: 'LOCAL_ENV', reference: 'REMOTE_PROVIDER_API_KEY' },
+    authority: 'NONE',
+  };
+
+  assert.equal(
+    resolveManagedCredential(provider, { REMOTE_PROVIDER_API_KEY: 'runtime-secret' }),
+    'runtime-secret',
+  );
+  assert.throws(
+    () => resolveManagedCredential(provider, {}),
+    /credential environment variable is unavailable/,
+  );
+
+  const state = setManagedProvider(
+    {
+      schemaVersion: 1,
+      providers: [],
+      catalogs: [],
+      qualifications: [],
+      publications: [],
+      authority: 'NONE',
+    },
+    {
+      id: 'remote-provider',
+      kind: 'OPENAI_COMPATIBLE',
+      baseUrl: 'https://example.test',
+      locality: 'REMOTE',
+      credentialEnv: 'REMOTE_PROVIDER_API_KEY',
+    },
+  ).state;
+  const removed = removeManagedProvider(state, 'remote-provider');
+  assert.equal(removed.state.providers.length, 0);
+  assert.throws(
+    () => removeManagedProvider(removed.state, 'remote-provider'),
+    /unknown managed provider/,
+  );
+});
