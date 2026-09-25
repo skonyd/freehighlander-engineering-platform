@@ -125,12 +125,7 @@ test('cancellation revoke is best-effort and failed receipts remain retryable', 
     scope.track(
       secretBinding,
       plan(handleId),
-      receipt(
-        receiptId,
-        handleId,
-        '2026-09-25T08:00:00.000Z',
-        '2026-09-25T08:01:00.000Z',
-      ),
+      receipt(receiptId, handleId, '2026-09-25T08:00:00.000Z', '2026-09-25T08:01:00.000Z'),
     );
   }
 
@@ -190,11 +185,7 @@ test('expiry cleanup revokes only expired receipts and preserves live receipts',
     ),
   );
 
-  const result = await scope.revokeExpired(
-    '2026-09-25T08:01:30.000Z',
-    registry,
-    sink,
-  );
+  const result = await scope.revokeExpired('2026-09-25T08:01:30.000Z', registry, sink);
 
   assert.equal(result.reason, 'EXPIRED');
   assert.equal(result.complete, true);
