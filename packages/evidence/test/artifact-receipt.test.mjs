@@ -184,7 +184,6 @@ test('tampered derived state or receipt hash is rejected', async () => {
   );
 });
 
-
 test('PARTIAL receipt and duplicate excerpt hashes normalize deterministically', async () => {
   const receipt = await buildArtifactReceipt({
     artifactId: 'partial-tool-output',
@@ -247,10 +246,7 @@ test('receipt constructors reject malformed identity enum and failure-state fiel
     () => buildArtifactReceipt({ ...base, artifactHash: 'bad' }),
     /artifactHash must be lowercase sha256/,
   );
-  await assert.rejects(
-    () => buildArtifactReceipt({ ...base, kind: 'UNKNOWN' }),
-    /kind is invalid/,
-  );
+  await assert.rejects(() => buildArtifactReceipt({ ...base, kind: 'UNKNOWN' }), /kind is invalid/);
   await assert.rejects(
     () => buildArtifactReceipt({ ...base, status: 'UNKNOWN' }),
     /status is invalid/,
