@@ -286,7 +286,6 @@ export class ActivityRunner {
   }
 }
 
-
 export interface ParallelActivityWaveResult {
   readonly schemaVersion: 1;
   readonly runId: string;
