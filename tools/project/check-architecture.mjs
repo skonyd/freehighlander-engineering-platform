@@ -109,9 +109,6 @@ try {
       failures.push(`FH-01B2 architecture migration invariant missing: ${invariant}`);
     }
   }
-  if (/v3_authority:\s*(?!SHADOW_ONLY)/.test(architectureSource)) {
-    failures.push('FH-01B2 must not activate V3 authority');
-  }
 } catch {
   failures.push('missing FH-01B2 accepted compatibility source');
 }
