@@ -162,7 +162,8 @@ export function diagnoseProviderInvocationFailure(
         causeKind: 'MALFORMED_OUTPUT',
         headline: 'Provider returned invalid output',
         rootCause: `Provider ${providerId} returned output that does not satisfy the binding ${bindingId} response contract.`,
-        nextAction: 'Inspect the structured-output evidence and correct the provider or adapter contract',
+        nextAction:
+          'Inspect the structured-output evidence and correct the provider or adapter contract',
       };
     case 'semantic_failure':
       return null;
