@@ -467,11 +467,11 @@ function buildManagedBindingRuntime(state, input, env) {
 }
 
 function parseFallbackBinding(spec, index, riskTier, capabilities) {
-  const parts = requireId(spec, `fallback[${index}]`).split(',').map((part) => part.trim());
+  const parts = requireId(spec, `fallback[${index}]`)
+    .split(',')
+    .map((part) => part.trim());
   if (parts.length < 3 || parts.length > 6) {
-    throw new Error(
-      'fallback must be ID,PROVIDER,MODEL[,EFFORT[,INDEPENDENCE_GROUP[,VERSION]]]',
-    );
+    throw new Error('fallback must be ID,PROVIDER,MODEL[,EFFORT[,INDEPENDENCE_GROUP[,VERSION]]]');
   }
 
   const [id, providerId, model, effort, independenceGroup, version] = parts;
