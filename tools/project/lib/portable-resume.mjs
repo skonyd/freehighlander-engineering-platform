@@ -86,7 +86,6 @@ export async function publishPreparedResumeCheckpoint({
     manifest,
     repositoryIdentity,
     remoteHead,
-    eventBundle,
   });
   if (reconciliation.status !== 'READY') {
     return {
@@ -165,6 +164,7 @@ export async function publishPreparedResumeHandoff({
     manifest,
     repositoryIdentity,
     remoteHead,
+    eventBundle,
   });
   if (checkpoint.status !== 'PORTABLE_READY') {
     return {
