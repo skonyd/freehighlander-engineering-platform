@@ -3,15 +3,19 @@ import test from 'node:test';
 
 import {
   AUTHORITATIVE_ARTIFACT_KIND,
-  PROVISIONAL_V2_REFERENCE,
+  ACCEPTED_V2_REFERENCE,
+  V2_REFERENCE_FULL_VERIFICATION,
+  V2_REFERENCE_LOCAL_WORKER_GENERATION,
   V2_REFERENCE_LOCAL_WORKER_LIMITS,
   V2_REFERENCE_PROFILE,
   V2_REFERENCE_TEST_REVIEW,
-  assertProvisionalReference,
+  assertAcceptedReference,
   authorityPromotionAllowed,
   candidateIds,
   classifyRisk,
+  contextTriageHasSignal,
   finalReviewRoute,
+  finalReviewScopeHash,
   maxRisk,
   parsePrTaskId,
   planTestReviewAttempt,
@@ -21,6 +25,7 @@ import {
   stampContextTriageAdjudication,
   taskFingerprint,
   testReviewRequired,
+  testReviewScopeHash,
   v2FallbackAllowed,
   validateArtifactForStore,
   validateCandidateAdjudication,
@@ -105,19 +110,40 @@ CONFIG_HASH: ${configHash}
 `;
 }
 
-test('FH-01B1 cannot promote authority', () => {
-  assert.equal(PROVISIONAL_V2_REFERENCE.referenceStatus, 'PROVISIONAL');
-  assert.equal(PROVISIONAL_V2_REFERENCE.authority, 'DISABLED');
-  assert.equal(authorityPromotionAllowed(), false);
-  assert.doesNotThrow(assertProvisionalReference);
+test('FH-01B2 records the accepted #207 reference and compatibility promotion', () => {
+  assert.equal(ACCEPTED_V2_REFERENCE.provisionalSha, '0e70f4a9680fcc5c287b7926f2aa20170c79f47d');
+  assert.equal(ACCEPTED_V2_REFERENCE.mergeSha, 'e4707a3c4267db9d2aadd452782b91045b96724d');
+  assert.equal(ACCEPTED_V2_REFERENCE.postMergeHardeningPullRequest, 209);
+  assert.equal(ACCEPTED_V2_REFERENCE.sha, '1a8e215b78a3a5008aae6aae36488b3273733b19');
+  assert.equal(ACCEPTED_V2_REFERENCE.referenceStatus, 'ACCEPTED');
+  assert.equal(ACCEPTED_V2_REFERENCE.authority, 'ENABLED');
+  assert.equal(authorityPromotionAllowed(), true);
+  assert.doesNotThrow(assertAcceptedReference);
 });
 
-test('provisional reference captures full-artifact, Opus and worker budget invariants', () => {
+test('accepted reference captures full verification, reviewer and worker invariants', () => {
   assert.equal(AUTHORITATIVE_ARTIFACT_KIND, 'full');
   assert.deepEqual(V2_REFERENCE_TEST_REVIEW, {
-    model: 'opus',
-    effort: 'medium',
+    model: 'claude-opus-5-5',
+    effort: 'low',
     maxRepairRounds: 2,
+  });
+  assert.deepEqual(V2_REFERENCE_FULL_VERIFICATION, [
+    'npm run verify',
+    'bash scripts/check-docs.sh',
+    'bash automation/tests/run.sh',
+  ]);
+  assert.deepEqual(V2_REFERENCE_LOCAL_WORKER_GENERATION, {
+    temperature: 1,
+    topP: 0.95,
+    topK: 20,
+    minP: 0,
+    presencePenalty: 0,
+    repetitionPenalty: 1,
+    reasoningEffort: 'medium',
+    enableThinking: true,
+    preserveThinking: false,
+    maxTokens: 16_384,
   });
   assert.equal(V2_REFERENCE_LOCAL_WORKER_LIMITS.gateTimeoutSeconds, 120);
   assert.equal(V2_REFERENCE_LOCAL_WORKER_LIMITS.timeoutSeconds, 600);
@@ -185,7 +211,7 @@ test('risk max and final review route never downgrade effective risk', () => {
   assert.equal(maxRisk('NORMAL', 'HIGH'), 'HIGH');
   assert.deepEqual(finalReviewRoute('CRITICAL'), {
     risk: 'CRITICAL',
-    model: 'gpt-6-astra',
+    model: 'gpt-6-sol',
     effort: 'medium',
     humanRequired: true,
   });
@@ -455,8 +481,183 @@ test('repair round limit blocks before another paid review call', () => {
   assert.equal(plan.blockedByRoundLimit, true);
 });
 
-test('reference profile is the captured PR #207 compatibility profile', () => {
-  assert.equal(V2_REFERENCE_PROFILE.finalReview.critical.model, 'gpt-6-astra');
+test('reference profile is the accepted #207 + #209 compatibility profile', () => {
+  assert.equal(V2_REFERENCE_PROFILE.finalReview.normal.model, 'gpt-6-sol');
+  assert.equal(V2_REFERENCE_PROFILE.finalReview.normal.effort, 'medium');
+  assert.equal(V2_REFERENCE_PROFILE.finalReview.critical.model, 'gpt-6-sol');
   assert.equal(V2_REFERENCE_PROFILE.controller.critical.effort, 'medium');
-  assert.equal(PROVISIONAL_V2_REFERENCE.pullRequest, 207);
+  assert.equal(ACCEPTED_V2_REFERENCE.pullRequest, 207);
+});
+
+
+test('protocol rejects duplicate STATUS and ROLE fields fail-closed', () => {
+  const duplicateStatus = preReview().replace(
+    'STATUS: CANDIDATE',
+    'STATUS: CANDIDATE\nSTATUS: CANDIDATE',
+  );
+  assert.equal(validateArtifactForStore('pre-review', duplicateStatus, {
+    expectedSha: revision,
+    configHash,
+  }).valid, false);
+
+  const duplicateRole = preReview().replace(
+    'ROLE: pre-review',
+    'ROLE: pre-review\nROLE: pre-review',
+  );
+  assert.equal(validateArtifactForStore('pre-review', duplicateRole, {
+    expectedSha: revision,
+    configHash,
+  }).valid, false);
+});
+
+test('context-triage signal detection is status-independent and CRLF-safe', () => {
+  assert.equal(contextTriageHasSignal(triage('PASS')), false);
+
+  const withAmbiguity = triage('PASS').replace(
+    'AMBIGUITIES:\n  - none',
+    'AMBIGUITIES:\n  - API ownership is unclear',
+  );
+  assert.equal(contextTriageHasSignal(withAmbiguity), true);
+  assert.equal(contextTriageHasSignal(withAmbiguity.replaceAll('\n', '\r\n')), true);
+});
+
+test('PASS context-triage with a real signal still requires current adjudication', async () => {
+  const withSignal = triage('PASS').replace(
+    'RISKS_CANDIDATE:\n  - none',
+    'RISKS_CANDIDATE:\n  - authorization boundary changed',
+  );
+
+  assert.equal(
+    (
+      await validateContextTriageGate({
+        triage: withSignal,
+        taskFingerprint: 'task-fingerprint',
+        baseSha: 'base-sha',
+        configHash,
+      })
+    ).valid,
+    false,
+  );
+
+  const controllerAdjudication = evaluatorArtifact().replace(
+    `SHA: ${revision}`,
+    'SHA: task-fingerprint',
+  );
+  const adjudication = await stampContextTriageAdjudication(
+    controllerAdjudication,
+    configHash,
+    withSignal,
+  );
+
+  assert.equal(
+    (
+      await validateContextTriageGate({
+        triage: withSignal,
+        taskFingerprint: 'task-fingerprint',
+        baseSha: 'base-sha',
+        configHash,
+        adjudication,
+      })
+    ).valid,
+    true,
+  );
+});
+
+test('test-review scope hash is deterministic and separator-collision safe', async () => {
+  const first = await testReviewScopeHash('base', 'a|b', 'c', 'triage');
+  const second = await testReviewScopeHash('base', 'a', 'b|c', 'triage');
+  assert.notEqual(first, second);
+  assert.equal(first, await testReviewScopeHash('base', 'a|b', 'c', 'triage'));
+  assert.notEqual(first, await testReviewScopeHash('base', 'a|b', 'c', 'triage-2'));
+});
+
+test('test-review artifact is exact-bound to one canonical scope hash', async () => {
+  const scopeHash = await testReviewScopeHash('base', 'title', 'body', 'triage');
+  const artifact = `STATUS: COMPLETE
+ROLE: test-review
+SHA: ${revision}
+TEST_COVERAGE:
+  acceptance_criteria: YES
+  positive_path: YES
+  negative_path: YES
+  boundaries: YES
+  regression: YES
+ORACLE_QUALITY: STRONG
+TEST_SUFFICIENCY: SUFFICIENT
+FINDINGS:
+  - none
+PRODUCER: opus-test-review
+CONFIG_HASH: ${configHash}
+SCOPE_HASH: ${scopeHash}
+`;
+
+  assert.equal(
+    validateArtifactForStore('test-review', artifact, {
+      expectedSha: revision,
+      configHash,
+      expectedTestReviewScopeHash: scopeHash,
+    }).valid,
+    true,
+  );
+  assert.equal(
+    validateArtifactForStore('test-review', artifact, {
+      expectedSha: revision,
+      configHash,
+      expectedTestReviewScopeHash: '0'.repeat(64),
+    }).valid,
+    false,
+  );
+  assert.equal(
+    validateArtifactForStore('test-review', artifact + `SCOPE_HASH: ${scopeHash}\n`, {
+      expectedSha: revision,
+      configHash,
+      expectedTestReviewScopeHash: scopeHash,
+    }).valid,
+    false,
+  );
+});
+
+test('final-review scope binds exact mutable PR and policy identity', async () => {
+  const input = {
+    headSha: revision,
+    baseSha: 'c'.repeat(40),
+    title: 'feat: exact scope',
+    body: 'acceptance criteria',
+    labels: 'risk:high',
+    taskId: 'task-1',
+    triageHash: 'd'.repeat(64),
+    configHash,
+    effectiveRisk: 'HIGH',
+  };
+  const scopeHash = await finalReviewScopeHash(input);
+  assert.equal(scopeHash, await finalReviewScopeHash(input));
+  assert.notEqual(scopeHash, await finalReviewScopeHash({ ...input, labels: 'risk:critical' }));
+  assert.notEqual(scopeHash, await finalReviewScopeHash({ ...input, taskId: 'task-2' }));
+  assert.notEqual(scopeHash, await finalReviewScopeHash({ ...input, effectiveRisk: 'CRITICAL' }));
+
+  const artifact = `${evaluatorArtifact()}SCOPE_HASH: ${scopeHash}
+PRODUCER: gpt-6-sol-final-review
+CONFIG_HASH: ${configHash}
+INITIAL_RISK: NORMAL
+FINAL_RISK: HIGH
+EFFECTIVE_RISK: HIGH
+MODEL: gpt-6-sol
+EFFORT: medium
+`;
+  assert.equal(
+    validateArtifactForStore('final-review', artifact, {
+      expectedSha: revision,
+      configHash,
+      expectedFinalReviewScopeHash: scopeHash,
+    }).valid,
+    true,
+  );
+  assert.equal(
+    validateArtifactForStore('final-review', artifact, {
+      expectedSha: revision,
+      configHash,
+      expectedFinalReviewScopeHash: 'f'.repeat(64),
+    }).valid,
+    false,
+  );
 });
