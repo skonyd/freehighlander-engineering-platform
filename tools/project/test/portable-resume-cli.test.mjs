@@ -567,7 +567,6 @@ test('portable resume skips ownership reads when reconciliation is stale or no w
   assert.equal(ownershipReads, 0);
 });
 
-
 test('portable resume claims missing ownership with exact null-revision CAS and read-back', async () => {
   const candidate = manifest();
   const events = [];
