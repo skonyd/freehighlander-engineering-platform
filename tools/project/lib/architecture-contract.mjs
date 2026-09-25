@@ -145,8 +145,15 @@ export function assertArchitectureContract(contract) {
   expectTrue(contract.debate?.bounded_rounds, 'debate rounds are bounded');
   expectTrue(contract.debate?.consensus_is_not_authority, 'debate consensus is not authority');
 
-  expect(contract.authority?.delegable_model_quorum_gate, 'MODEL_QUORUM_REQUIRED', 'delegable model quorum gate');
-  expectTrue(contract.authority?.human_required_is_non_delegable, 'human required is non-delegable');
+  expect(
+    contract.authority?.delegable_model_quorum_gate,
+    'MODEL_QUORUM_REQUIRED',
+    'delegable model quorum gate',
+  );
+  expectTrue(
+    contract.authority?.human_required_is_non_delegable,
+    'human required is non-delegable',
+  );
   expectTrue(contract.authority?.model_quorum_is_not_authority, 'model quorum is not authority');
   expectTrue(
     contract.authority?.system_policy_validates_model_quorum,
