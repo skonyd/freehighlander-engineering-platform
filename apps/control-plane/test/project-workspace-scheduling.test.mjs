@@ -87,10 +87,7 @@ test('selected independent work items receive distinct real Git worktrees before
     const backend = new LocalGitWorktreeBackend({ runtimeRoot: fixture.runtimeRoot });
     const activation = await materializeSelectedProjectWorkspaces({
       schedule,
-      requests: [
-        request('work-b', fixture.revision),
-        request('work-c', fixture.revision),
-      ],
+      requests: [request('work-b', fixture.revision), request('work-c', fixture.revision)],
       repositoryRoot: fixture.repositoryRoot,
       backend,
     });
@@ -166,10 +163,7 @@ test('workspace activation reattaches only the exact #148 descriptor identity', 
 
 test('workspace allocation failure blocks only that selected item and does not grant fallback authority', async () => {
   const schedule = buildProjectSchedulePlan(
-    [
-      workItem('work-a', { priority: 20 }),
-      workItem('work-b', { priority: 10 }),
-    ],
+    [workItem('work-a', { priority: 20 }), workItem('work-b', { priority: 10 })],
     2,
   );
 
@@ -193,10 +187,7 @@ test('workspace allocation failure blocks only that selected item and does not g
 
   const activation = await materializeSelectedProjectWorkspaces({
     schedule,
-    requests: [
-      request('work-a', 'a'.repeat(40)),
-      request('work-b', 'a'.repeat(40)),
-    ],
+    requests: [request('work-a', 'a'.repeat(40)), request('work-b', 'a'.repeat(40))],
     repositoryRoot: '/repo',
     backend,
   });
@@ -209,10 +200,7 @@ test('workspace allocation failure blocks only that selected item and does not g
 });
 
 test('scheduler workspace bridge fails closed on missing extra or shared workspace requests', async () => {
-  const schedule = buildProjectSchedulePlan(
-    [workItem('work-a'), workItem('work-b')],
-    2,
-  );
+  const schedule = buildProjectSchedulePlan([workItem('work-a'), workItem('work-b')], 2);
   const backend = {
     async create() {
       throw new Error('must not be reached for malformed activation input');
@@ -255,10 +243,7 @@ test('scheduler workspace bridge fails closed on missing extra or shared workspa
     () =>
       materializeSelectedProjectWorkspaces({
         schedule: oneSelected,
-        requests: [
-          request('work-a', 'a'.repeat(40)),
-          request('work-b', 'a'.repeat(40)),
-        ],
+        requests: [request('work-a', 'a'.repeat(40)), request('work-b', 'a'.repeat(40))],
         repositoryRoot: '/repo',
         backend,
       }),
