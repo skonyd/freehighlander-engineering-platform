@@ -1,4 +1,15 @@
 export {
+  materializeSelectedProjectWorkspaces,
+  projectSchedulerCanStartWithoutIsolatedWorkspace,
+  projectWorkspaceActivationCanGrantAuthority,
+  type ProjectWorkspaceActivationMode,
+  type ProjectWorkspaceActivationPlan,
+  type ProjectWorkspaceActivationRequest,
+  type ProjectWorkspaceActivationResult,
+  type ProjectWorkspaceActivationStatus,
+} from './project-workspace-scheduling.js';
+
+export {
   advanceRuntimeHeartbeat,
   classifyRuntimeActivityLiveness,
   createRuntimeHeartbeat,
