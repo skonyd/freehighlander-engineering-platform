@@ -80,6 +80,27 @@ export const workflowSpecSchema = z
 export type WorkflowSpec = z.infer<typeof workflowSpecSchema>;
 
 export {
+  buildDiagnosedUserErrorV1,
+  buildRuntimeErrorDiagnosisV1,
+  errorDiagnosisCanExposeRawCause,
+  errorDiagnosisCanGrantAuthority,
+  formatRuntimeErrorDiagnosisForUser,
+  runtimeErrorCausalHopV1Schema,
+  runtimeErrorCauseCertaintyV1Schema,
+  runtimeErrorCauseKindV1Schema,
+  runtimeErrorDiagnosisV1Schema,
+  runtimeErrorSourceLayerV1Schema,
+  unresolvedDiagnosisCanClaimSpecificRootCause,
+  type BuildRuntimeErrorDiagnosisV1Input,
+  type DiagnosedUserErrorV1,
+  type RuntimeErrorCausalHopV1,
+  type RuntimeErrorCauseCertaintyV1,
+  type RuntimeErrorCauseKindV1,
+  type RuntimeErrorDiagnosisV1,
+  type RuntimeErrorSourceLayerV1,
+} from './error-diagnosis.js';
+
+export {
   autonomousMergeReviewV1Schema,
   buildUserFacingErrorV1,
   errorReportingCanGrantAuthority,
