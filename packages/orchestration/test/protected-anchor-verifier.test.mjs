@@ -70,10 +70,7 @@ test('missing or altered protected anchor blocks remote invocation before the ca
   assert.equal(verification.status, 'FAIL');
   assert.equal(verification.remoteInvocationAllowed, false);
   assert.deepEqual(verification.missingOptimizedAnchorIds, ['error-code']);
-  assert.throws(
-    () => assertProtectedContextAnchors(verification),
-    /optimized:error-code/,
-  );
+  assert.throws(() => assertProtectedContextAnchors(verification), /optimized:error-code/);
 });
 
 test('anchor absent from source is an invalid optimization baseline and fails closed', () => {
