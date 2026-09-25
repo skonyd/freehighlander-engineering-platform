@@ -160,7 +160,6 @@ test('Git resume store and command runner reject unsafe construction and argumen
   );
 });
 
-
 test('GitResumeStore discovers portable project ids from remote state refs', async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), 'fh-git-resume-discovery-'));
   const remote = path.join(root, 'remote.git');
