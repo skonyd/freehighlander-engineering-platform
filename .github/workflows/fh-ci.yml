@@ -32,5 +32,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Verify
-        run: npm run verify
+      - name: Emit canonical Prettier diff
+        run: |
+          npx prettier --write apps/control-plane/src/execution-runtime.ts apps/control-plane/test/execution-runtime.test.mjs packages/orchestration/src/causal-trace.ts packages/telemetry/src/index.ts packages/telemetry/test/telemetry.test.mjs
+          git diff -- apps/control-plane/src/execution-runtime.ts apps/control-plane/test/execution-runtime.test.mjs packages/orchestration/src/causal-trace.ts packages/telemetry/src/index.ts packages/telemetry/test/telemetry.test.mjs
+          exit 1
