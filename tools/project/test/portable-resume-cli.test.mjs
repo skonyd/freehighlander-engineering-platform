@@ -4,7 +4,10 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { acquirePortableOwnershipLease } from '../../../packages/orchestration/dist/index.js';
+import {
+  acquirePortableOwnershipLease,
+  releasePortableOwnershipLease,
+} from '../../../packages/orchestration/dist/index.js';
 import { createResumeManifestV1 } from '../../../packages/persistence/dist/index.js';
 import {
   evaluatePortableResumeReconciliation,
