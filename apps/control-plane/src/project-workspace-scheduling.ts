@@ -1,10 +1,13 @@
-import type { ProjectSchedulePlan } from '@freehighlander/orchestration';
-
 import {
   createExecutionWorkspaceDescriptor,
   type ExecutionWorkspaceDescriptor,
 } from './execution-runtime.js';
 import type { LocalGitWorktreeBackend, LocalWorkspaceHandle } from './local-worktree-backend.js';
+
+export interface ProjectScheduleSelection {
+  readonly selectedIds: readonly string[];
+  readonly authority: 'NONE';
+}
 
 export type ProjectWorkspaceActivationMode = 'CREATE' | 'REATTACH';
 
@@ -38,7 +41,7 @@ export interface ProjectWorkspaceActivationPlan {
 }
 
 export async function materializeSelectedProjectWorkspaces(input: {
-  readonly schedule: ProjectSchedulePlan;
+  readonly schedule: ProjectScheduleSelection;
   readonly requests: readonly ProjectWorkspaceActivationRequest[];
   readonly repositoryRoot: string;
   readonly backend: Pick<LocalGitWorktreeBackend, 'create' | 'reattach'>;
