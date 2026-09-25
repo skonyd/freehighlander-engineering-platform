@@ -6,6 +6,10 @@ import test from 'node:test';
 
 import {
   acquirePortableOwnershipLease,
+  buildCanonicalExecutionScope,
+  buildNodeExecutionIdentity,
+  createNodeResultV1,
+  evaluateNodeResultReuse,
   releasePortableOwnershipLease,
 } from '../../../packages/orchestration/dist/index.js';
 import {
@@ -24,6 +28,7 @@ import {
   readPreparedPortableEventBundle,
   readPreparedResumeManifest,
   rebuildPortableResumeReadModel,
+  restorePortableCompletedNodeResults,
   resolvePortableResumeProjectId,
 } from '../lib/portable-resume.mjs';
 
@@ -99,6 +104,100 @@ function portableEventBundle() {
 
 function manifestWithPortableEvents(bundle = portableEventBundle()) {
   return manifest({
+    artifactManifest: [
+      {
+        artifactId: portableEventArtifactId(bundle.runId),
+        contentHash: bundle.bundleHash,
+        classification: 'PORTABLE_REQUIRED',
+      },
+    ],
+  });
+}
+
+function exactNodeResult(overrides = {}) {
+  const scope = buildCanonicalExecutionScope({
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    exactRevision: REMOTE_HEAD,
+    runSnapshotHash: H2,
+    components: {
+      binding: H4,
+      policy: H3,
+      prompt: H5,
+    },
+  });
+  const identity = buildNodeExecutionIdentity({
+    runSnapshotHash: H2,
+    nodeId: 'node-review',
+    nodeVersion: '1.0.0',
+    exactRevision: REMOTE_HEAD,
+    scopeHash: scope.scopeHash,
+    inputHash: H1,
+    roleContractHash: H4,
+    promptContractHash: H5,
+    bindingId: 'binding-primary',
+    providerId: 'provider-a',
+    modelId: 'model-a',
+    effort: 'medium',
+    policyHash: H3,
+    configHash: H4,
+    predecessorResultHashes: [],
+    artifactHashes: [],
+    ...overrides,
+  });
+  return createNodeResultV1({
+    identity,
+    status: 'SUCCEEDED',
+    outputHash: H5,
+    artifactHashes: [],
+  });
+}
+
+function portableNodeResultBundle(result = exactNodeResult()) {
+  return createPortableCanonicalEventBundleV1({
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    projectId: 'project-151',
+    runId: 'run-151',
+    exactRevision: REMOTE_HEAD,
+    events: [
+      {
+        schemaVersion: 1,
+        type: 'node.completed',
+        timestamp: '2026-09-25T07:00:00.000Z',
+        runId: 'run-151',
+        taskId: 'task-151',
+        revision: {
+          repository: 'skonyd/freehighlander-engineering-platform',
+          pullRequest: 151,
+          branch: 'feature/resume',
+          baseSha: 'b'.repeat(40),
+          headSha: REMOTE_HEAD,
+        },
+        workflow: {
+          id: 'project-execution',
+          version: '1.0.0',
+          hash: H1,
+        },
+        node: {
+          id: result.identity.nodeId,
+          type: 'MODEL',
+        },
+        payload: {
+          portableNodeResult: result,
+        },
+      },
+    ],
+  });
+}
+
+function manifestWithCompletedNodeResult(result, bundle) {
+  return manifest({
+    completedNodeResults: [
+      {
+        nodeId: result.identity.nodeId,
+        resultHash: result.resultHash,
+        executionKey: result.identity.executionKey,
+      },
+    ],
     artifactManifest: [
       {
         artifactId: portableEventArtifactId(bundle.runId),
@@ -209,6 +308,145 @@ test('portable handoff never releases ownership before event bundle read-back ve
     /event bundle checkpoint read-back verification failed/,
   );
   assert.equal(ownershipReads, 0);
+});
+
+test('completed NodeResult checkpoint requires portable full metadata and restores exact reuse', async () => {
+  const result = exactNodeResult();
+  const bundle = portableNodeResultBundle(result);
+  const candidate = manifestWithCompletedNodeResult(result, bundle);
+
+  await assert.rejects(
+    () =>
+      publishPreparedResumeCheckpoint({
+        store: {
+          async publishCas() {
+            throw new Error('manifest-only completed results must not publish');
+          },
+        },
+        manifest: candidate,
+        repositoryIdentity: candidate.repositoryIdentity,
+        remoteHead: REMOTE_HEAD,
+      }),
+    /completed portable NodeResults require an event bundle/,
+  );
+
+  const checkpoint = await publishPreparedResumeCheckpoint({
+    store: {
+      async publishCasWithEventBundle(value, events, expectedGeneration) {
+        assert.deepEqual(value, candidate);
+        assert.deepEqual(events, bundle);
+        assert.equal(expectedGeneration, null);
+        return { status: 'ACCEPT', reasons: [], acceptedGeneration: 1, authority: 'NONE' };
+      },
+      async getLatest() {
+        return candidate;
+      },
+      async getLatestEventBundle() {
+        return bundle;
+      },
+    },
+    manifest: candidate,
+    repositoryIdentity: candidate.repositoryIdentity,
+    remoteHead: REMOTE_HEAD,
+    eventBundle: bundle,
+  });
+
+  assert.equal(checkpoint.status, 'PORTABLE_READY');
+  assert.equal(checkpoint.restoredNodeResultCount, 1);
+  assert.deepEqual(checkpoint.restoredNodeIds, ['node-review']);
+
+  const restored = restorePortableCompletedNodeResults({
+    manifest: candidate,
+    eventBundle: bundle,
+  });
+  assert.equal(restored.status, 'RESTORED');
+  assert.equal(restored.resultCount, 1);
+  assert.deepEqual(restored.restoredNodeIds, ['node-review']);
+
+  let providerCalls = 0;
+  const reuse = evaluateNodeResultReuse(restored.results[0], {
+    expectedIdentity: result.identity,
+    sideEffecting: false,
+  });
+  if (reuse.status !== 'REUSABLE') providerCalls += 1;
+
+  assert.equal(reuse.status, 'REUSABLE');
+  assert.equal(providerCalls, 0);
+  assert.equal(restored.semanticGatePassInferred, false);
+  assert.equal(restored.authority, 'NONE');
+});
+
+test('portable completed NodeResult restore rejects missing extra and stale identities', () => {
+  const result = exactNodeResult();
+  const bundle = portableNodeResultBundle(result);
+  const candidate = manifestWithCompletedNodeResult(result, bundle);
+
+  const missingBundle = createPortableCanonicalEventBundleV1({
+    repositoryIdentity: bundle.repositoryIdentity,
+    projectId: bundle.projectId,
+    runId: bundle.runId,
+    exactRevision: bundle.exactRevision,
+    events: [],
+  });
+  assert.throws(
+    () =>
+      restorePortableCompletedNodeResults({
+        manifest: candidate,
+        eventBundle: missingBundle,
+      }),
+    /completed NodeResult is missing/,
+  );
+
+  const staleResult = exactNodeResult({ policyHash: H4 });
+  const staleBundle = portableNodeResultBundle(staleResult);
+  assert.throws(
+    () =>
+      restorePortableCompletedNodeResults({
+        manifest: candidate,
+        eventBundle: staleBundle,
+      }),
+    /policy mismatch|identity mismatch/,
+  );
+
+  const extraResult = exactNodeResult({ nodeId: 'node-extra' });
+  const extraBundle = portableNodeResultBundle(extraResult);
+  assert.throws(
+    () =>
+      restorePortableCompletedNodeResults({
+        manifest: candidate,
+        eventBundle: extraBundle,
+      }),
+    /unlisted completed NodeResult/,
+  );
+});
+
+test('exact reuse turns stale when the destination execution identity changes', () => {
+  const result = exactNodeResult();
+  const changed = buildNodeExecutionIdentity({
+    runSnapshotHash: result.identity.runSnapshotHash,
+    nodeId: result.identity.nodeId,
+    nodeVersion: result.identity.nodeVersion,
+    exactRevision: result.identity.exactRevision,
+    scopeHash: result.identity.scopeHash,
+    inputHash: result.identity.inputHash,
+    roleContractHash: result.identity.roleContractHash,
+    promptContractHash: result.identity.promptContractHash,
+    bindingId: 'binding-alternate',
+    providerId: result.identity.providerId,
+    modelId: result.identity.modelId,
+    effort: result.identity.effort,
+    policyHash: result.identity.policyHash,
+    configHash: result.identity.configHash,
+    predecessorResultHashes: result.identity.predecessorResultHashes,
+    artifactHashes: result.identity.artifactHashes,
+  });
+
+  const reuse = evaluateNodeResultReuse(result, {
+    expectedIdentity: changed,
+    sideEffecting: false,
+  });
+  assert.equal(reuse.status, 'STALE');
+  assert.deepEqual(reuse.reasons, ['execution identity mismatch']);
 });
 
 test('stale remote HEAD fails reconciliation without publishing', async () => {

@@ -23,6 +23,7 @@ import {
   readPreparedPortableEventBundle,
   readPreparedResumeManifest,
   rebuildPortableResumeReadModel,
+  restorePortableCompletedNodeResults,
   resolvePortableResumeProjectId,
   readRemoteBranchHead,
 } from './lib/portable-resume.mjs';
@@ -160,10 +161,18 @@ try {
             secrets,
           });
 
+    let nodeResults = {
+      status: 'NOT_CHECKED',
+      restoredNodeIds: [],
+      resultCount: 0,
+      semanticGatePassInferred: false,
+      authority: 'NONE',
+    };
     let readModel = {
       status: 'NOT_CHECKED',
       projectId,
       eventBundleHash: null,
+      seen: 0,
       imported: 0,
       duplicates: 0,
       localDatabaseRequiredForPortability: false,
@@ -186,6 +195,19 @@ try {
               `${projectId}.sqlite`,
             )
           : path.resolve(process.cwd(), configuredReadModel);
+      const eventBundle = await store.getLatestEventBundle(state.repository, projectId);
+      const restored = restorePortableCompletedNodeResults({
+        manifest,
+        eventBundle,
+      });
+      nodeResults = {
+        status: restored.status,
+        restoredNodeIds: restored.restoredNodeIds,
+        resultCount: restored.resultCount,
+        semanticGatePassInferred: false,
+        authority: 'NONE',
+      };
+
       readModel = await rebuildPortableResumeReadModel({
         store,
         repositoryIdentity: state.repository,
@@ -194,7 +216,7 @@ try {
       });
     }
 
-    printJson({ ...result, secrets, plan, readModel });
+    printJson({ ...result, secrets, plan, nodeResults, readModel });
     if (result.status !== 'READY' || result.readyToMutate !== true) process.exitCode = 2;
   } else if (parsed.command === 'help' || parsed.command === undefined) {
     printHelp();
@@ -300,6 +322,7 @@ Resume safety:
   - checks only SecretHandles required by the portable manifest against the selected local profile
   - unresolved required handles block secret-dependent work without blocking unrelated READY work
   - emits PARKED / READY / WAITING planner state directly from the portable manifest
+  - completed exact NodeResults are restored from hash-bound portable event metadata after HEAD reconciliation
   - bound portable events rebuild the local SQLite read-model idempotently after HEAD reconciliation
   - planner requires neither local SQLite nor LOCAL_ONLY_CACHE state
   - SQLite/WAL is never used as the handoff protocol

@@ -6,6 +6,7 @@ import {
   acquirePortableOwnershipLease,
   portableOwnershipLeaseIsActive,
   releasePortableOwnershipLease,
+  validateNodeResultV1,
 } from '../../../packages/orchestration/dist/index.js';
 import {
   GitResumeStore,
@@ -95,6 +96,11 @@ export async function publishPreparedResumeCheckpoint({
     };
   }
 
+  const restoredNodeResults = restorePortableCompletedNodeResults({
+    manifest,
+    eventBundle,
+  });
+
   const expectedGeneration = manifest.generation === 1 ? null : manifest.generation - 1;
   const decision =
     eventBundle === null
@@ -143,6 +149,8 @@ export async function publishPreparedResumeCheckpoint({
     generation: manifest.generation,
     manifestHash: manifest.manifestHash,
     eventBundleHash,
+    restoredNodeResultCount: restoredNodeResults.resultCount,
+    restoredNodeIds: restoredNodeResults.restoredNodeIds,
     published: true,
     semanticGatePassInferred: false,
     authority: 'NONE',
@@ -549,6 +557,93 @@ export async function rebuildPortableResumeReadModel({
     duplicates: rebuilt.duplicates,
     integrity: rebuilt.integrity,
     localDatabaseRequiredForPortability: false,
+    semanticGatePassInferred: false,
+    authority: 'NONE',
+  };
+}
+
+export function restorePortableCompletedNodeResults({ manifest, eventBundle }) {
+  validateResumeManifestV1(manifest);
+  if (eventBundle === null || typeof eventBundle !== 'object') {
+    if (manifest.completedNodeResults.length === 0) {
+      return {
+        status: 'NOT_REQUIRED',
+        restoredNodeIds: [],
+        resultCount: 0,
+        results: [],
+        semanticGatePassInferred: false,
+        authority: 'NONE',
+      };
+    }
+    throw new Error('completed portable NodeResults require an event bundle');
+  }
+
+  validatePortableCanonicalEventBundleV1(eventBundle);
+  if (eventBundle.repositoryIdentity !== manifest.repositoryIdentity) {
+    throw new Error('portable NodeResult bundle repository identity mismatch');
+  }
+  if (eventBundle.projectId !== manifest.projectId) {
+    throw new Error('portable NodeResult bundle project identity mismatch');
+  }
+  if (eventBundle.exactRevision !== manifest.remoteHead) {
+    throw new Error('portable NodeResult bundle revision mismatch');
+  }
+
+  const expected = new Map(manifest.completedNodeResults.map((entry) => [entry.nodeId, entry]));
+  const resultsByNode = new Map();
+
+  for (const record of eventBundle.events) {
+    const event = record.event;
+    if (event.type !== 'node.completed') continue;
+    const raw = event.payload?.portableNodeResult;
+    if (raw === undefined) continue;
+    if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+      throw new Error('portable completed NodeResult payload must be an object');
+    }
+
+    const result = raw;
+    validateNodeResultV1(result);
+    const nodeId = result.identity.nodeId;
+    if (resultsByNode.has(nodeId)) {
+      throw new Error('duplicate portable completed NodeResult: ' + nodeId);
+    }
+    if (!expected.has(nodeId)) {
+      throw new Error('portable event bundle contains an unlisted completed NodeResult: ' + nodeId);
+    }
+    if (result.identity.exactRevision !== manifest.remoteHead) {
+      throw new Error('portable completed NodeResult revision mismatch: ' + nodeId);
+    }
+    if (result.identity.runSnapshotHash !== manifest.runSnapshotHash) {
+      throw new Error('portable completed NodeResult run snapshot mismatch: ' + nodeId);
+    }
+    if (result.identity.policyHash !== manifest.policyHash) {
+      throw new Error('portable completed NodeResult policy mismatch: ' + nodeId);
+    }
+
+    const identity = expected.get(nodeId);
+    if (
+      result.resultHash !== identity.resultHash ||
+      result.identity.executionKey !== identity.executionKey
+    ) {
+      throw new Error('portable completed NodeResult identity mismatch: ' + nodeId);
+    }
+    resultsByNode.set(nodeId, result);
+  }
+
+  for (const expectedResult of manifest.completedNodeResults) {
+    if (!resultsByNode.has(expectedResult.nodeId)) {
+      throw new Error('portable completed NodeResult is missing: ' + expectedResult.nodeId);
+    }
+  }
+
+  const restoredNodeIds = [...resultsByNode.keys()].sort();
+  const results = restoredNodeIds.map((nodeId) => resultsByNode.get(nodeId));
+
+  return {
+    status: results.length === 0 ? 'NOT_REQUIRED' : 'RESTORED',
+    restoredNodeIds,
+    resultCount: results.length,
+    results,
     semanticGatePassInferred: false,
     authority: 'NONE',
   };
