@@ -178,7 +178,13 @@ try {
       const configuredReadModel = option(parsed.options, 'read-model');
       const readModelFile =
         configuredReadModel === null
-          ? path.join(root, '.freehighlander', 'runtime', 'resume-read-models', `${projectId}.sqlite`)
+          ? path.join(
+              root,
+              '.freehighlander',
+              'runtime',
+              'resume-read-models',
+              `${projectId}.sqlite`,
+            )
           : path.resolve(process.cwd(), configuredReadModel);
       readModel = await rebuildPortableResumeReadModel({
         store,
