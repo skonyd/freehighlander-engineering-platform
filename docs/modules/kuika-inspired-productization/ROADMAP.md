@@ -5,7 +5,7 @@
 **Scope:** Kuika-inspired productization ideas adapted to FreeHighlander engineering-control-plane semantics  
 **Module boundary:** optional productization/UX module; not part of core authority semantics  
 **Authority state assumed:** V3 remains `SHADOW_ONLY` until FH-20 explicit cutover  
-**Canonical UX companion:** [Control Plane UX](../ui/CONTROL-PLANE-UX.md)
+**Canonical UX companion:** [FH-KUIKA Product UX](UX.md)
 
 ## Purpose
 
