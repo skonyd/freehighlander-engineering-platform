@@ -129,6 +129,13 @@ export {
 } from './local-worktree-backend.js';
 
 export {
+  createKnownRuntimeFailureReport,
+  knownRuntimeFailureCatalogCanGrantAuthority,
+  type KnownRuntimeFailureInput,
+  type KnownRuntimeFailureKind,
+} from './runtime-error-diagnosis-catalog.js';
+
+export {
   createRuntimeErrorReport,
   formatRuntimeErrorForUser,
   runtimeErrorReportCanExposeSecrets,
