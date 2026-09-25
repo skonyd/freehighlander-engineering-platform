@@ -256,19 +256,17 @@ test('resume secret readiness evaluates only handles required by the portable ma
   assert.deepEqual(blocked.resolvableHandleIds, ['provider.openai.api']);
   assert.deepEqual(blocked.blockedHandleIds, ['provider.gemini.api']);
   assert.equal(blocked.secretDependentWorkReady, false);
-  assert.equal(blocked.resolutions.some((entry) => entry.handleId === 'github.repo.auth'), false);
+  assert.equal(
+    blocked.resolutions.some((entry) => entry.handleId === 'github.repo.auth'),
+    false,
+  );
   assert.equal(blocked.secretValuesPresent, false);
   assert.doesNotMatch(JSON.stringify(blocked), /runtime-only-material|OPENAI_API_KEY/);
 
-  const ready = await doctorResumeSecretHandles(
-    profile,
-    requirements,
-    ['provider.openai.api'],
-    {
-      environment: { OPENAI_API_KEY: 'runtime-only-material' },
-      platform: 'linux',
-    },
-  );
+  const ready = await doctorResumeSecretHandles(profile, requirements, ['provider.openai.api'], {
+    environment: { OPENAI_API_KEY: 'runtime-only-material' },
+    platform: 'linux',
+  });
   assert.equal(ready.status, 'READY');
   assert.deepEqual(ready.blockedHandleIds, []);
   assert.equal(ready.secretDependentWorkReady, true);
@@ -282,15 +280,10 @@ test('resume secret readiness fails closed when required handle metadata is abse
     authority: 'NONE',
   };
 
-  const result = await doctorResumeSecretHandles(
-    profile,
-    [],
-    ['provider.unknown.api'],
-    {
-      environment: {},
-      platform: 'linux',
-    },
-  );
+  const result = await doctorResumeSecretHandles(profile, [], ['provider.unknown.api'], {
+    environment: {},
+    platform: 'linux',
+  });
 
   assert.equal(result.status, 'BLOCKED_CONFIGURATION');
   assert.deepEqual(result.blockedHandleIds, ['provider.unknown.api']);
