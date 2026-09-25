@@ -87,7 +87,7 @@ try {
     "normal: { model: 'gpt-6-sol', effort: 'medium' }",
     "high: { model: 'gpt-6-sol', effort: 'medium' }",
     "critical: { model: 'gpt-6-sol', effort: 'medium' }",
-    'export function testReviewScopeHash',
+    'export async function testReviewScopeHash',
     'export async function finalReviewScopeHash',
     'export function contextTriageHasSignal',
     'export function authorityPromotionAllowed(): true',
