@@ -197,9 +197,7 @@ function validateOrchestrationTracePayload(payload: OrchestrationTraceEventPaylo
 }
 
 export type FullAutoEventType =
-  | 'full_auto.quorum.completed'
-  | 'full_auto.merge.intent'
-  | 'full_auto.merge.result';
+  'full_auto.quorum.completed' | 'full_auto.merge.intent' | 'full_auto.merge.result';
 
 export interface FullAutoEventPayload extends Record<string, unknown> {
   readonly action: 'QUORUM' | 'MERGE_INTENT' | 'MERGE_RESULT';
@@ -298,7 +296,13 @@ export function createFullAutoEvent(
   }
 
   if (input.payload.action === 'MERGE_INTENT') {
-    for (const field of ['quorumHash', 'decisionHash', 'policyHash', 'policyDecision', 'intentStatus'] as const) {
+    for (const field of [
+      'quorumHash',
+      'decisionHash',
+      'policyHash',
+      'policyDecision',
+      'intentStatus',
+    ] as const) {
       if (input.payload[field] === undefined) {
         throw new Error(`Full Auto merge-intent telemetry requires ${field}`);
       }
@@ -306,7 +310,12 @@ export function createFullAutoEvent(
   }
 
   if (input.payload.action === 'MERGE_RESULT') {
-    for (const field of ['decisionHash', 'mergeAttempted', 'mergeSucceeded', 'resultStatus'] as const) {
+    for (const field of [
+      'decisionHash',
+      'mergeAttempted',
+      'mergeSucceeded',
+      'resultStatus',
+    ] as const) {
       if (input.payload[field] === undefined) {
         throw new Error(`Full Auto merge-result telemetry requires ${field}`);
       }
