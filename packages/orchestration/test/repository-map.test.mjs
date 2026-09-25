@@ -125,19 +125,12 @@ test('map and selector fail closed on malformed or stale inputs', () => {
     /non-negative integer/,
   );
   assert.throws(
-    () =>
-      buildRepositoryMap('abc123', [
-        entry('a.ts', [], [], 1),
-        entry('./a.ts', [], [], 1),
-      ]),
+    () => buildRepositoryMap('abc123', [entry('a.ts', [], [], 1), entry('./a.ts', [], [], 1)]),
     /duplicate repository map path/,
   );
 
   const map = buildRepositoryMap('abc123', entries);
-  assert.throws(
-    () => validateRepositoryMap({ ...map, mapHash: '0'.repeat(64) }),
-    /hash mismatch/,
-  );
+  assert.throws(() => validateRepositoryMap({ ...map, mapHash: '0'.repeat(64) }), /hash mismatch/);
   assert.throws(
     () =>
       selectJitRepositoryContext({
