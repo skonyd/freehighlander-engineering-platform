@@ -47,6 +47,16 @@ export function enqueueHumanDecision(store, expectedGeneration, entry) {
     return generationConflict(expectedGeneration, current.generation);
   }
 
+  const resolved = current.state.responses.find(
+    (candidate) => candidate.decisionId === entry.decisionId,
+  );
+  if (resolved) {
+    if (resolved.decisionHash !== entry.decisionHash) {
+      throw new Error('resolved human decision id has different portable identity');
+    }
+    throw new Error('portable state still parks a locally resolved human decision');
+  }
+
   const existing = current.state.entries.find(
     (candidate) => candidate.decisionId === entry.decisionId,
   );
