@@ -107,11 +107,7 @@ test('diagnosis is exact-bound to error identity binding and surfaced component'
   );
 
   assert.throws(
-    () =>
-      buildDiagnosedUserErrorV1(
-        runtimeError({ correlationId: 'corr-002' }),
-        diagnosis,
-      ),
+    () => buildDiagnosedUserErrorV1(runtimeError({ correlationId: 'corr-002' }), diagnosis),
     /correlationId does not match/,
   );
 
