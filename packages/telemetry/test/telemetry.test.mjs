@@ -551,3 +551,104 @@ test('orchestration trace telemetry rejects raw content mismatched kinds and mal
     /criticalPathSpanIds must be unique/,
   );
 });
+
+
+test('orchestration trace telemetry covers required-field and scalar validation guards', () => {
+  const baseSpan = {
+    type: 'orchestration.span.completed',
+    timestamp: '2026-09-25T04:30:00.000Z',
+    runId: 'run-trace-guards',
+    payload: {
+      kind: 'SPAN',
+      traceId: 'trace-guards',
+      spanId: 'span-a',
+      nodeId: 'node-a',
+      spanKind: 'MODEL',
+      status: 'SUCCEEDED',
+      attempt: 1,
+      durationMs: 1,
+    },
+  };
+
+  const { durationMs: _durationMs, ...spanWithoutDuration } = baseSpan.payload;
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: spanWithoutDuration,
+      }),
+    /requires durationMs/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: { ...baseSpan.payload, nodeId: '' },
+      }),
+    /nodeId must not be empty/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: { ...baseSpan.payload, traceId: '' },
+      }),
+    /traceId must not be empty|traceId is required/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: { ...baseSpan.payload, queueMs: 1.5 },
+      }),
+    /queueMs must be a non-negative integer/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: { ...baseSpan.payload, attempt: 0 },
+      }),
+    /attempt must be >= 1/,
+  );
+
+  const baseSummary = {
+    type: 'orchestration.run.summary',
+    timestamp: '2026-09-25T04:30:01.000Z',
+    runId: 'run-trace-guards',
+    payload: {
+      kind: 'RUN_SUMMARY',
+      traceId: 'trace-guards',
+      wallClockMs: 10,
+      criticalPathMs: 8,
+      criticalPathSpanIds: ['span-a'],
+      spanCount: 1,
+      maxConcurrentSpans: 1,
+      parallelismObserved: false,
+    },
+  };
+
+  const { maxConcurrentSpans: _maxConcurrentSpans, ...summaryWithoutConcurrency } =
+    baseSummary.payload;
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSummary,
+        payload: summaryWithoutConcurrency,
+      }),
+    /requires maxConcurrentSpans/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSummary,
+        payload: { ...baseSummary.payload, criticalPathSpanIds: [''] },
+      }),
+    /criticalPathSpanIds must not be empty/,
+  );
+});
