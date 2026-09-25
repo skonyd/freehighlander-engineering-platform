@@ -227,6 +227,20 @@ export {
 } from './protected-anchor-verifier.js';
 
 export {
+  buildFreshContextReset,
+  createSemanticCheckpoint,
+  freshContextResetCarriesPreviousTrajectory,
+  semanticCheckpointCanGrantAuthority,
+  semanticCheckpointCanReplaceRequiredRawEvidence,
+  validateSemanticCheckpoint,
+  type FreshContextReset,
+  type FreshContextResetInput,
+  type SemanticCheckpoint,
+  type SemanticCheckpointBoundary,
+  type SemanticCheckpointInput,
+} from './semantic-checkpoint.js';
+
+export {
   activateToolSchemas,
   buildLazyToolExposurePlan,
   lazyToolSchemaLoadingCanGrantAuthority,
