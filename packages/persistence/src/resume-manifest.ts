@@ -90,6 +90,42 @@ const ARTIFACT_CLASSIFICATIONS = new Set<ResumeArtifactClassification>([
   'LOCAL_ONLY_CACHE',
 ]);
 
+const RESUME_MANIFEST_KEYS = [
+  'schemaVersion',
+  'repositoryIdentity',
+  'projectId',
+  'activeWorkItemId',
+  'issueNumber',
+  'pullRequestNumber',
+  'branch',
+  'remoteHead',
+  'baseRevision',
+  'workflow',
+  'runSnapshotHash',
+  'policyHash',
+  'catalogSnapshotHash',
+  'bindingSnapshotHash',
+  'logicalRoleState',
+  'completedNodeResults',
+  'parkedDecisionIds',
+  'waitingNodeIds',
+  'readyNodeIds',
+  'artifactManifest',
+  'checkpointHash',
+  'replayManifestHash',
+  'workspaceLogicalId',
+  'requiredProviderCapabilities',
+  'requiredSecretHandleIds',
+  'createdAt',
+  'generation',
+  'manifestHash',
+  'authority',
+] as const;
+
+const WORKFLOW_IDENTITY_KEYS = ['id', 'version', 'hash'] as const;
+const NODE_RESULT_IDENTITY_KEYS = ['nodeId', 'resultHash', 'executionKey'] as const;
+const ARTIFACT_ENTRY_KEYS = ['artifactId', 'contentHash', 'classification'] as const;
+
 export function createResumeManifestV1(input: ResumeManifestV1Input): ResumeManifestV1 {
   requireText(input.repositoryIdentity, 'repositoryIdentity');
   requireIdentifier(input.projectId, 'projectId');
@@ -172,6 +208,15 @@ export function createResumeManifestV1(input: ResumeManifestV1Input): ResumeMani
 }
 
 export function validateResumeManifestV1(manifest: ResumeManifestV1): void {
+  requireExactObjectKeys(manifest, RESUME_MANIFEST_KEYS, 'resume manifest');
+  requireExactObjectKeys(manifest.workflow, WORKFLOW_IDENTITY_KEYS, 'resume workflow identity');
+  for (const result of manifest.completedNodeResults) {
+    requireExactObjectKeys(result, NODE_RESULT_IDENTITY_KEYS, 'resume node result identity');
+  }
+  for (const artifact of manifest.artifactManifest) {
+    requireExactObjectKeys(artifact, ARTIFACT_ENTRY_KEYS, 'resume artifact entry');
+  }
+
   if (manifest.schemaVersion !== 1) throw new Error('resume manifest schemaVersion must be 1');
   if (manifest.authority !== 'NONE') throw new Error('resume manifest authority must remain NONE');
 
@@ -270,6 +315,21 @@ export function resumeManifestCanContainSecretValues(): false {
 
 export function resumeManifestCanGrantAuthority(): false {
   return false;
+}
+
+function requireExactObjectKeys(
+  value: object,
+  expectedKeys: readonly string[],
+  label: string,
+): void {
+  const actual = Object.keys(value).sort();
+  const expected = [...expectedKeys].sort();
+  if (
+    actual.length !== expected.length ||
+    actual.some((key, index) => key !== expected[index])
+  ) {
+    throw new Error(label + ' contains unsupported fields');
+  }
 }
 
 function validateWorkflowIdentity(workflow: ResumeWorkflowIdentity): void {
