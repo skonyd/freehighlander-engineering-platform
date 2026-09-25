@@ -106,12 +106,7 @@ export class GitPortableOwnershipStore {
       currentHead === null
         ? `--force-with-lease=${stateRef}:`
         : `--force-with-lease=${stateRef}:${currentHead}`;
-    const push = this.#runner.run([
-      'push',
-      this.#remote,
-      forceWithLease,
-      `${commit}:${stateRef}`,
-    ]);
+    const push = this.#runner.run(['push', this.#remote, forceWithLease, `${commit}:${stateRef}`]);
     if (push.exitCode !== 0) {
       return conflict('remote portable ownership state changed during publish');
     }
