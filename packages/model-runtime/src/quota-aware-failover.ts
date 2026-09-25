@@ -95,7 +95,7 @@ export function createRoleBindingFailoverState(
   policy: BindingFailoverPolicyV1,
 ): RoleBindingFailoverStateV1 {
   validateBindingPlan(plan);
-  validatePolicy(policy);
+  validateBindingFailoverPolicyV1(policy);
   const preferred = plan.bindings[0]!;
   return buildState({
     logicalRole: plan.logicalRole,
@@ -401,7 +401,7 @@ function validateStateAgainstPlan(state: RoleBindingFailoverStateV1, plan: Bindi
 function validateStateShape(state: RoleBindingFailoverStateV1): void {
   if (state.schemaVersion !== 1) throw new Error('failover state schemaVersion must be 1');
   if (state.authority !== 'NONE') throw new Error('failover state authority must remain NONE');
-  validatePolicy(state.policy);
+  validateBindingFailoverPolicyV1(state.policy);
   requireText(state.logicalRole, 'logicalRole');
   requireSha256(state.planHash, 'planHash');
   requireText(state.preferredBindingId, 'preferredBindingId');
@@ -428,7 +428,7 @@ function buildState(
     'schemaVersion' | 'nextCheckAt' | 'stateHash' | 'authority'
   >,
 ): RoleBindingFailoverStateV1 {
-  validatePolicy(input.policy);
+  validateBindingFailoverPolicyV1(input.policy);
   const cooldowns = [...input.cooldowns].sort(
     (left, right) =>
       left.nextCheckAt.localeCompare(right.nextCheckAt) ||
@@ -460,7 +460,7 @@ function buildState(
   };
 }
 
-function validatePolicy(policy: BindingFailoverPolicyV1): void {
+export function validateBindingFailoverPolicyV1(policy: BindingFailoverPolicyV1): void {
   if (!['STAY_ON_FALLBACK', 'ASK_BEFORE_RETURN', 'AUTO_RETURN'].includes(policy.returnPolicy)) {
     throw new Error('binding return policy is invalid');
   }
