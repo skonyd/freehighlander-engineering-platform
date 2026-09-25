@@ -148,7 +148,9 @@ function normalizeTools(tools: readonly ToolSchemaDescriptor[]): readonly ToolSc
       if (!Number.isInteger(tool.estimatedSchemaTokens) || tool.estimatedSchemaTokens < 0) {
         throw new Error(`tool ${id} estimatedSchemaTokens must be a non-negative integer`);
       }
-      const keywords = [...new Set(tool.keywords.map((keyword) => normalizeText(keyword, 'keyword').toLowerCase()))].sort();
+      const keywords = [
+        ...new Set(tool.keywords.map((keyword) => normalizeText(keyword, 'keyword').toLowerCase())),
+      ].sort();
 
       return {
         id,
@@ -168,10 +170,7 @@ function normalizeTools(tools: readonly ToolSchemaDescriptor[]): readonly ToolSc
   return normalized;
 }
 
-function validatePlan(
-  plan: LazyToolExposurePlan,
-  tools: readonly ToolSchemaDescriptor[],
-): void {
+function validatePlan(plan: LazyToolExposurePlan, tools: readonly ToolSchemaDescriptor[]): void {
   if (plan.schemaVersion !== 1) throw new Error('tool exposure plan schemaVersion must be 1');
   if (plan.authority !== 'NONE') throw new Error('tool exposure plan authority must be NONE');
 
@@ -182,7 +181,14 @@ function validatePlan(
 }
 
 function tokenize(query: string): readonly string[] {
-  return [...new Set(query.toLowerCase().split(/[^a-z0-9._:-]+/).filter(Boolean))].sort();
+  return [
+    ...new Set(
+      query
+        .toLowerCase()
+        .split(/[^a-z0-9._:-]+/)
+        .filter(Boolean),
+    ),
+  ].sort();
 }
 
 function scoreTool(tool: ToolSchemaDescriptor, terms: readonly string[]): number {
