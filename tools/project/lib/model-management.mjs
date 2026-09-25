@@ -201,14 +201,31 @@ export async function refreshManagedProvider(state, providerId, refreshedAt, env
     result.snapshot,
   ].sort((left, right) => left.providerId.localeCompare(right.providerId));
 
+  const catalogChanged = existing === undefined || existing.hash !== result.snapshot.hash;
+  const qualifications = catalogChanged
+    ? state.qualifications.filter((snapshot) => snapshot.providerId !== providerId)
+    : state.qualifications;
+  const publications = catalogChanged
+    ? state.publications.filter(
+        (publication) =>
+          !publication.plan.bindings.some((binding) => binding.providerId === providerId),
+      )
+    : state.publications;
+
   const next = validateModelManagementStateV1({
     ...state,
     catalogs,
+    qualifications,
+    publications,
   });
 
   return {
     state: next,
     result,
+    invalidated: {
+      qualifications: state.qualifications.length - qualifications.length,
+      publications: state.publications.length - publications.length,
+    },
     auditEvents: audit.events,
   };
 }
@@ -293,14 +310,11 @@ export function previewManagedBinding(state, args, env = process.env) {
   if (!catalog) throw new Error(`no managed catalog for provider ${input.primary.providerId}`);
 
   const catalogs = new ModelCatalogManagementService(registry, new MemoryAuditSink(), [catalog]);
-  const publicationsForProvider = state.publications.filter((publication) =>
-    publication.plan.bindings.every((binding) => binding.providerId === provider.id),
-  );
   const service = new RoleBindingManagementService(
     registry,
     catalogs,
     new MemoryAuditSink(),
-    publicationsForProvider,
+    state.publications,
   );
   const qualification = findEligibleQualification(
     state,
@@ -330,10 +344,7 @@ export async function publishManagedBinding(state, args, publishedAt, env = proc
 
   const catalogs = new ModelCatalogManagementService(registry, new MemoryAuditSink(), [catalog]);
   const audit = new MemoryAuditSink();
-  const existingPublications = state.publications.filter((publication) =>
-    publication.plan.bindings.every((binding) => binding.providerId === provider.id),
-  );
-  const service = new RoleBindingManagementService(registry, catalogs, audit, existingPublications);
+  const service = new RoleBindingManagementService(registry, catalogs, audit, state.publications);
   const qualification = findEligibleQualification(
     state,
     input.primary.providerId,
@@ -368,7 +379,10 @@ export async function publishManagedBinding(state, args, publishedAt, env = proc
 }
 
 export function parseCliArgs(argv) {
-  const [command, subcommand, ...rest] = argv;
+  const command = argv[0];
+  const hasSubcommand = argv[1] !== undefined && !argv[1].startsWith('--');
+  const subcommand = hasSubcommand ? argv[1] : undefined;
+  const rest = argv.slice(hasSubcommand ? 2 : 1);
   const options = {};
   const positionals = [];
 
