@@ -8,6 +8,7 @@ import {
   createImmutableReviewSnapshot,
   evaluateChangeBudget,
   executionRuntimeCanGrantAuthority,
+  runParallelActivityWave,
   validateWorkspaceReattach,
 } from '../dist/index.js';
 
@@ -414,4 +415,110 @@ test('change budget rejects malformed budgets paths and counters', () => {
 test('execution runtime remains authority-neutral and replay cannot execute activities', () => {
   assert.equal(executionRuntimeCanGrantAuthority(), false);
   assert.equal(activityRunnerCanExecuteDuringReplay(), false);
+});
+
+test('parallel activity wave runs independent activities concurrently but returns deterministic input order', async () => {
+  let active = 0;
+  let maxActive = 0;
+  const completionOrder = [];
+  const runner = new ActivityRunner(
+    {
+      authorize() {
+        return { allowed: true, reason: 'parallel-safe', authority: 'NONE' };
+      },
+    },
+    {
+      COMMAND: {
+        id: 'parallel-command',
+        async execute(request) {
+          active += 1;
+          maxActive = Math.max(maxActive, active);
+          const delayMs = Number(request.input);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          completionOrder.push(request.activityId);
+          active -= 1;
+          return { status: 'SUCCEEDED', output: request.activityId };
+        },
+      },
+    },
+  );
+
+  const wave = await runParallelActivityWave(
+    runner,
+    [
+      activityRequest({ activityId: 'activity-a', input: '30' }),
+      activityRequest({ activityId: 'activity-b', input: '5' }),
+      activityRequest({ activityId: 'activity-c', input: '1' }),
+    ],
+    2,
+  );
+
+  assert.equal(maxActive, 2);
+  assert.notDeepEqual(completionOrder, ['activity-a', 'activity-b', 'activity-c']);
+  assert.deepEqual(
+    wave.results.map((result) => result.activityId),
+    ['activity-a', 'activity-b', 'activity-c'],
+  );
+  assert.equal(wave.maxConcurrency, 2);
+  assert.equal(wave.authority, 'NONE');
+});
+
+test('parallel activity wave fails closed on mixed identity duplicates and invalid bounds', async () => {
+  const runner = new ActivityRunner(
+    {
+      authorize() {
+        return { allowed: true, reason: 'allowed', authority: 'NONE' };
+      },
+    },
+    {
+      COMMAND: {
+        id: 'parallel-command',
+        async execute(request) {
+          return { status: 'SUCCEEDED', output: request.activityId };
+        },
+      },
+    },
+  );
+
+  await assert.rejects(() => runParallelActivityWave(runner, [], 2), /at least one request/);
+  await assert.rejects(
+    () => runParallelActivityWave(runner, [activityRequest()], 0),
+    /maxConcurrency/,
+  );
+  await assert.rejects(
+    () =>
+      runParallelActivityWave(
+        runner,
+        [
+          activityRequest({ activityId: 'activity-a' }),
+          activityRequest({ activityId: 'activity-a' }),
+        ],
+        2,
+      ),
+    /duplicate activityId/,
+  );
+  await assert.rejects(
+    () =>
+      runParallelActivityWave(
+        runner,
+        [
+          activityRequest({ activityId: 'activity-a' }),
+          activityRequest({ activityId: 'activity-b', runId: 'run-002' }),
+        ],
+        2,
+      ),
+    /runId mismatch/,
+  );
+  await assert.rejects(
+    () =>
+      runParallelActivityWave(
+        runner,
+        [
+          activityRequest({ activityId: 'activity-a' }),
+          activityRequest({ activityId: 'activity-b', workspaceHash: H2 }),
+        ],
+        2,
+      ),
+    /workspaceHash mismatch/,
+  );
 });

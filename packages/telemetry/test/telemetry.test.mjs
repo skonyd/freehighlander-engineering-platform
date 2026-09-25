@@ -11,6 +11,7 @@ import {
   cachedInputShare,
   createEvent,
   createModelCatalogEvent,
+  createOrchestrationTraceEvent,
   parseEvent,
   readJsonlEvents,
   serializeEvent,
@@ -425,5 +426,228 @@ test('model catalog telemetry validates bounded optional metadata branches', () 
         },
       }),
     /action does not match event type/,
+  );
+});
+
+test('orchestration trace telemetry emits strict metadata-only span and run summary events', () => {
+  const span = createOrchestrationTraceEvent({
+    type: 'orchestration.span.completed',
+    timestamp: '2026-09-25T04:30:00.000Z',
+    runId: 'run-trace-1',
+    payload: {
+      kind: 'SPAN',
+      traceId: 'trace-001',
+      spanId: 'span-a',
+      parentSpanId: 'span-root',
+      causationId: 'cause-001',
+      nodeId: 'node-a',
+      spanKind: 'MODEL',
+      status: 'SUCCEEDED',
+      attempt: 1,
+      durationMs: 120,
+      queueMs: 8,
+    },
+  });
+  assert.equal(span.payload.durationMs, 120);
+
+  const summary = createOrchestrationTraceEvent({
+    type: 'orchestration.run.summary',
+    timestamp: '2026-09-25T04:30:01.000Z',
+    runId: 'run-trace-1',
+    payload: {
+      kind: 'RUN_SUMMARY',
+      traceId: 'trace-001',
+      wallClockMs: 300,
+      criticalPathMs: 240,
+      criticalPathSpanIds: ['span-root', 'span-a', 'span-join'],
+      spanCount: 4,
+      maxConcurrentSpans: 2,
+      parallelismObserved: true,
+    },
+  });
+  assert.equal(summary.payload.parallelismObserved, true);
+  assert.equal(JSON.stringify(summary).includes('prompt'), false);
+});
+
+test('orchestration trace telemetry rejects raw content mismatched kinds and malformed metrics', () => {
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        type: 'orchestration.span.completed',
+        timestamp: '2026-09-25T04:30:00.000Z',
+        runId: 'run-trace-1',
+        payload: {
+          kind: 'SPAN',
+          traceId: 'trace-001',
+          spanId: 'span-a',
+          nodeId: 'node-a',
+          spanKind: 'MODEL',
+          status: 'SUCCEEDED',
+          attempt: 1,
+          durationMs: 120,
+          prompt: 'must-not-persist',
+        },
+      }),
+    /field is not allowed: prompt/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        type: 'orchestration.run.summary',
+        timestamp: '2026-09-25T04:30:01.000Z',
+        runId: 'run-trace-1',
+        payload: {
+          kind: 'SPAN',
+          traceId: 'trace-001',
+          spanId: 'span-a',
+          nodeId: 'node-a',
+          spanKind: 'MODEL',
+          status: 'SUCCEEDED',
+          attempt: 1,
+          durationMs: 120,
+        },
+      }),
+    /kind does not match event type/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        type: 'orchestration.span.completed',
+        timestamp: '2026-09-25T04:30:00.000Z',
+        runId: 'run-trace-1',
+        payload: {
+          kind: 'SPAN',
+          traceId: 'trace-001',
+          spanId: 'span-a',
+          nodeId: 'node-a',
+          spanKind: 'MODEL',
+          status: 'SUCCEEDED',
+          attempt: 0,
+          durationMs: -1,
+        },
+      }),
+    /non-negative integer|attempt must be >= 1/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        type: 'orchestration.run.summary',
+        timestamp: '2026-09-25T04:30:01.000Z',
+        runId: 'run-trace-1',
+        payload: {
+          kind: 'RUN_SUMMARY',
+          traceId: 'trace-001',
+          wallClockMs: 300,
+          criticalPathMs: 240,
+          criticalPathSpanIds: ['span-a', 'span-a'],
+          spanCount: 2,
+          maxConcurrentSpans: 1,
+          parallelismObserved: false,
+        },
+      }),
+    /criticalPathSpanIds must be unique/,
+  );
+});
+
+test('orchestration trace telemetry covers required-field and scalar validation guards', () => {
+  const baseSpan = {
+    type: 'orchestration.span.completed',
+    timestamp: '2026-09-25T04:30:00.000Z',
+    runId: 'run-trace-guards',
+    payload: {
+      kind: 'SPAN',
+      traceId: 'trace-guards',
+      spanId: 'span-a',
+      nodeId: 'node-a',
+      spanKind: 'MODEL',
+      status: 'SUCCEEDED',
+      attempt: 1,
+      durationMs: 1,
+    },
+  };
+
+  const { durationMs: _durationMs, ...spanWithoutDuration } = baseSpan.payload;
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: spanWithoutDuration,
+      }),
+    /requires durationMs/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: { ...baseSpan.payload, nodeId: '' },
+      }),
+    /nodeId must not be empty/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: { ...baseSpan.payload, traceId: '' },
+      }),
+    /traceId must not be empty|traceId is required/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: { ...baseSpan.payload, queueMs: 1.5 },
+      }),
+    /queueMs must be a non-negative integer/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSpan,
+        payload: { ...baseSpan.payload, attempt: 0 },
+      }),
+    /attempt must be >= 1/,
+  );
+
+  const baseSummary = {
+    type: 'orchestration.run.summary',
+    timestamp: '2026-09-25T04:30:01.000Z',
+    runId: 'run-trace-guards',
+    payload: {
+      kind: 'RUN_SUMMARY',
+      traceId: 'trace-guards',
+      wallClockMs: 10,
+      criticalPathMs: 8,
+      criticalPathSpanIds: ['span-a'],
+      spanCount: 1,
+      maxConcurrentSpans: 1,
+      parallelismObserved: false,
+    },
+  };
+
+  const { maxConcurrentSpans: _maxConcurrentSpans, ...summaryWithoutConcurrency } =
+    baseSummary.payload;
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSummary,
+        payload: summaryWithoutConcurrency,
+      }),
+    /requires maxConcurrentSpans/,
+  );
+
+  assert.throws(
+    () =>
+      createOrchestrationTraceEvent({
+        ...baseSummary,
+        payload: { ...baseSummary.payload, criticalPathSpanIds: [''] },
+      }),
+    /criticalPathSpanIds must not be empty/,
   );
 });

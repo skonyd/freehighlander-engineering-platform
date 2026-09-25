@@ -42,6 +42,8 @@ export type EventType =
   | 'context.packet.built'
   | 'cache.diagnostic'
   | 'reuse.diagnostic'
+  | 'orchestration.span.completed'
+  | 'orchestration.run.summary'
   | 'policy.decision'
   | 'data.redaction'
   | 'provider.egress.decision'
@@ -51,6 +53,145 @@ export type EventType =
   | 'persistence.backup.completed'
   | 'persistence.restore.completed'
   | 'lineage.validation.failed';
+
+export type OrchestrationTraceEventType =
+  'orchestration.span.completed' | 'orchestration.run.summary';
+
+export interface OrchestrationTraceEventPayload extends Record<string, unknown> {
+  readonly kind: 'SPAN' | 'RUN_SUMMARY';
+  readonly traceId: string;
+  readonly spanId?: string;
+  readonly parentSpanId?: string;
+  readonly causationId?: string;
+  readonly nodeId?: string;
+  readonly spanKind?: string;
+  readonly status?: string;
+  readonly attempt?: number;
+  readonly durationMs?: number;
+  readonly queueMs?: number;
+  readonly wallClockMs?: number;
+  readonly criticalPathMs?: number;
+  readonly criticalPathSpanIds?: readonly string[];
+  readonly spanCount?: number;
+  readonly maxConcurrentSpans?: number;
+  readonly parallelismObserved?: boolean;
+}
+
+const orchestrationTracePayloadKeys = new Set([
+  'kind',
+  'traceId',
+  'spanId',
+  'parentSpanId',
+  'causationId',
+  'nodeId',
+  'spanKind',
+  'status',
+  'attempt',
+  'durationMs',
+  'queueMs',
+  'wallClockMs',
+  'criticalPathMs',
+  'criticalPathSpanIds',
+  'spanCount',
+  'maxConcurrentSpans',
+  'parallelismObserved',
+]);
+
+export function createOrchestrationTraceEvent(
+  input: Omit<EngineeringEventInput<OrchestrationTraceEventPayload>, 'type'> & {
+    readonly type: OrchestrationTraceEventType;
+  },
+): EngineeringEvent<OrchestrationTraceEventPayload> {
+  validateOrchestrationTracePayload(input.payload);
+  const expectedKind = input.type === 'orchestration.span.completed' ? 'SPAN' : 'RUN_SUMMARY';
+  if (input.payload.kind !== expectedKind) {
+    throw new Error('orchestration trace telemetry kind does not match event type');
+  }
+  if (input.payload.kind === 'SPAN') {
+    for (const field of [
+      'spanId',
+      'nodeId',
+      'spanKind',
+      'status',
+      'attempt',
+      'durationMs',
+    ] as const) {
+      if (input.payload[field] === undefined) {
+        throw new Error(`orchestration span telemetry requires ${field}`);
+      }
+    }
+  } else {
+    for (const field of [
+      'wallClockMs',
+      'criticalPathMs',
+      'criticalPathSpanIds',
+      'spanCount',
+      'maxConcurrentSpans',
+      'parallelismObserved',
+    ] as const) {
+      if (input.payload[field] === undefined) {
+        throw new Error(`orchestration run summary telemetry requires ${field}`);
+      }
+    }
+  }
+  return createEvent(input);
+}
+
+function validateOrchestrationTracePayload(payload: OrchestrationTraceEventPayload): void {
+  const record = payload as unknown as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (!orchestrationTracePayloadKeys.has(key)) {
+      throw new Error(`orchestration trace telemetry field is not allowed: ${key}`);
+    }
+  }
+
+  for (const [name, value] of [
+    ['traceId', payload.traceId],
+    ['spanId', payload.spanId],
+    ['parentSpanId', payload.parentSpanId],
+    ['causationId', payload.causationId],
+    ['nodeId', payload.nodeId],
+    ['spanKind', payload.spanKind],
+    ['status', payload.status],
+  ] as const) {
+    if (value !== undefined && !value.trim()) {
+      throw new Error(`orchestration trace telemetry ${name} must not be empty`);
+    }
+  }
+  if (!payload.traceId.trim()) {
+    throw new Error('orchestration trace telemetry traceId is required');
+  }
+
+  for (const [name, value] of [
+    ['attempt', payload.attempt],
+    ['durationMs', payload.durationMs],
+    ['queueMs', payload.queueMs],
+    ['wallClockMs', payload.wallClockMs],
+    ['criticalPathMs', payload.criticalPathMs],
+    ['spanCount', payload.spanCount],
+    ['maxConcurrentSpans', payload.maxConcurrentSpans],
+  ] as const) {
+    if (value !== undefined && (!Number.isInteger(value) || value < 0)) {
+      throw new Error(`orchestration trace telemetry ${name} must be a non-negative integer`);
+    }
+  }
+  if (payload.attempt !== undefined && payload.attempt < 1) {
+    throw new Error('orchestration trace telemetry attempt must be >= 1');
+  }
+
+  if (payload.criticalPathSpanIds !== undefined) {
+    const seen = new Set<string>();
+    for (const spanId of payload.criticalPathSpanIds) {
+      if (!spanId.trim()) {
+        throw new Error('orchestration trace telemetry criticalPathSpanIds must not be empty');
+      }
+      if (seen.has(spanId)) {
+        throw new Error('orchestration trace telemetry criticalPathSpanIds must be unique');
+      }
+      seen.add(spanId);
+    }
+  }
+}
 
 export type ModelCatalogEventType =
   'model.catalog.refreshed' | 'model.binding.changed' | 'model.qualification.changed';

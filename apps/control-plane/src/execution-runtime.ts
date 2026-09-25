@@ -286,6 +286,69 @@ export class ActivityRunner {
   }
 }
 
+export interface ParallelActivityWaveResult {
+  readonly schemaVersion: 1;
+  readonly runId: string;
+  readonly workspaceHash: string;
+  readonly results: readonly ActivityRunResult[];
+  readonly maxConcurrency: number;
+  readonly authority: 'NONE';
+}
+
+export async function runParallelActivityWave(
+  runner: ActivityRunner,
+  requests: readonly ActivityRequest[],
+  maxConcurrency: number,
+): Promise<ParallelActivityWaveResult> {
+  if (!Number.isInteger(maxConcurrency) || maxConcurrency < 1) {
+    throw new Error('parallel activity maxConcurrency must be an integer >= 1');
+  }
+  if (requests.length === 0) {
+    throw new Error('parallel activity wave requires at least one request');
+  }
+
+  const first = requests[0]!;
+  validateActivityRequest(first);
+  const seen = new Set<string>();
+  for (const request of requests) {
+    validateActivityRequest(request);
+    if (request.runId !== first.runId) {
+      throw new Error('parallel activity wave runId mismatch');
+    }
+    if (request.workspaceHash !== first.workspaceHash) {
+      throw new Error('parallel activity wave workspaceHash mismatch');
+    }
+    if (seen.has(request.activityId)) {
+      throw new Error('parallel activity wave contains duplicate activityId');
+    }
+    seen.add(request.activityId);
+  }
+
+  const results = new Array<ActivityRunResult>(requests.length);
+  let cursor = 0;
+
+  const worker = async (): Promise<void> => {
+    while (true) {
+      const index = cursor;
+      cursor += 1;
+      if (index >= requests.length) return;
+      results[index] = await runner.run(requests[index]!);
+    }
+  };
+
+  const workerCount = Math.min(maxConcurrency, requests.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
+  return {
+    schemaVersion: 1,
+    runId: first.runId,
+    workspaceHash: first.workspaceHash,
+    results,
+    maxConcurrency: workerCount,
+    authority: 'NONE',
+  };
+}
+
 export function evaluateChangeBudget(
   manifest: readonly ChangeManifestEntry[],
   budget: ChangeBudget,
