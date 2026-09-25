@@ -417,7 +417,6 @@ test('execution runtime remains authority-neutral and replay cannot execute acti
   assert.equal(activityRunnerCanExecuteDuringReplay(), false);
 });
 
-
 test('parallel activity wave runs independent activities concurrently but returns deterministic input order', async () => {
   let active = 0;
   let maxActive = 0;
