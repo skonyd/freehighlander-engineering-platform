@@ -701,7 +701,9 @@ export function restorePortableHumanDecisionQueue({ manifest, eventBundle }) {
       throw new Error('duplicate portable human decision: ' + entry.decisionId);
     }
     if (!expected.has(entry.decisionId)) {
-      throw new Error('portable event bundle contains an unlisted human decision: ' + entry.decisionId);
+      throw new Error(
+        'portable event bundle contains an unlisted human decision: ' + entry.decisionId,
+      );
     }
     if (entry.repositoryIdentity !== manifest.repositoryIdentity) {
       throw new Error('portable human decision repository mismatch: ' + entry.decisionId);
