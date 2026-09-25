@@ -104,10 +104,12 @@ export function createPortableCanonicalEventBundleV1(
     }
     previousTimestamp = timestamp;
 
-    const eventHash = indexedEngineeringEventHash(event);
+    const normalizedEvent = JSON.parse(JSON.stringify(event)) as IndexedEngineeringEvent;
+    validateIndexedEngineeringEvent(normalizedEvent);
+    const eventHash = indexedEngineeringEventHash(normalizedEvent);
     if (seen.has(eventHash)) throw new Error('portable event bundle contains duplicate event');
     seen.add(eventHash);
-    return { eventHash, event: structuredClone(event) };
+    return { eventHash, event: normalizedEvent };
   });
 
   const identity = bundleIdentity(input, events);
