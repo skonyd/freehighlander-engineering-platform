@@ -470,11 +470,7 @@ export async function claimPortableResumeOwnership({
   };
 }
 
-export function buildPortableResumePlan({
-  manifest,
-  reconciliation,
-  secrets,
-}) {
+export function buildPortableResumePlan({ manifest, reconciliation, secrets }) {
   validateResumeManifestV1(manifest);
   if (reconciliation === null || typeof reconciliation !== 'object') {
     throw new Error('portable resume reconciliation result is required');
