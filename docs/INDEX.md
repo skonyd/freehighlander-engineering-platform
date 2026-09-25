@@ -12,6 +12,7 @@
 ## Planning / Delivery
 - [Roadmap](ROADMAP.md)
 - [PR Roadmap](planning/PR-ROADMAP.md)
+- [FH-40..FH-49 Productization / Studio Roadmap](planning/FH-40-49-PRODUCTIZATION-ROADMAP.md)
 - [FH-00 Final Audit](planning/FH-00-FINAL-AUDIT.md)
 - [FH-01 Implementation Plan](planning/FH-01-IMPLEMENTATION-PLAN.md)
 - [Discussion Agenda](planning/DISCUSSION-AGENDA.md)
