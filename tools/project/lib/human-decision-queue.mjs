@@ -163,6 +163,7 @@ export function validateHumanDecisionQueueStateV1(value, expectedProjectId = nul
   if (!Array.isArray(value.responses)) {
     throw new Error('human decision queue responses must be an array');
   }
+  assertNoCredentialMaterial(value);
 
   const entries = value.entries.map((entry) => {
     validateHumanDecisionQueueEntry(entry);
@@ -185,11 +186,16 @@ export function validateHumanDecisionQueueStateV1(value, expectedProjectId = nul
     return clone(response);
   });
   const responseHashes = new Set();
+  const respondedDecisionIds = new Set();
   for (const response of responses) {
     if (responseHashes.has(response.responseHash)) {
       throw new Error('duplicate human decision response hash');
     }
+    if (respondedDecisionIds.has(response.decisionId)) {
+      throw new Error('human decision already has a persisted response');
+    }
     responseHashes.add(response.responseHash);
+    respondedDecisionIds.add(response.decisionId);
     if (entries.some((entry) => entry.decisionId === response.decisionId)) {
       throw new Error('resolved decision cannot remain in the parked queue');
     }
@@ -245,6 +251,19 @@ function atomicConflict(result, expectedGeneration) {
     mutated: false,
     authority: 'NONE',
   };
+}
+
+function assertNoCredentialMaterial(value) {
+  const serialized = JSON.stringify(value);
+  if (
+    /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(serialized) ||
+    /\bBearer\s+[A-Za-z0-9._~+\/-]{12,}/i.test(serialized) ||
+    /\bghp_[A-Za-z0-9]{20,}\b/.test(serialized) ||
+    /\bgithub_pat_[A-Za-z0-9_]{20,}\b/.test(serialized) ||
+    /\bsk-[A-Za-z0-9_-]{20,}\b/.test(serialized)
+  ) {
+    throw new Error('human decision queue contains credential-shaped material');
+  }
 }
 
 function assertExactKeys(record, keys) {
