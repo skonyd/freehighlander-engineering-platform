@@ -181,11 +181,17 @@ export async function loadSecretRequirements(filePath) {
     Array.isArray(parsed) ||
     parsed.schemaVersion !== 1 ||
     parsed.authority !== 'NONE' ||
+    parsed.secretValuesPresent !== false ||
     !Array.isArray(parsed.requirements)
   ) {
     throw new Error('secret requirements file has invalid schema');
   }
-  const allowed = new Set(['schemaVersion', 'requirements', 'authority']);
+  const allowed = new Set([
+    'schemaVersion',
+    'requirements',
+    'authority',
+    'secretValuesPresent',
+  ]);
   for (const key of Object.keys(parsed)) {
     if (!allowed.has(key)) throw new Error(`secret requirements field is not allowed: ${key}`);
   }
