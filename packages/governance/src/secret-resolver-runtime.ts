@@ -511,6 +511,21 @@ function osKeychainCommand(
       readArgs: ['lookup', 'service', parsed.service, 'account', parsed.account],
     };
   }
+  if (platform === 'win32') {
+    const typeExpression =
+      '[Windows.Security.Credentials.PasswordVault,Windows.Security.Credentials,ContentType=WindowsRuntime]';
+    const probeScript = `$ErrorActionPreference='Stop'; [void]${typeExpression}`;
+    const readScript =
+      `$ErrorActionPreference='Stop'; [void]${typeExpression}; ` +
+      `$vault=New-Object Windows.Security.Credentials.PasswordVault; ` +
+      `$credential=$vault.Retrieve('${parsed.service}','${parsed.account}'); ` +
+      `$credential.RetrievePassword(); [Console]::Out.Write($credential.Password)`;
+    return {
+      executable: 'powershell.exe',
+      probeArgs: ['-NoProfile', '-NonInteractive', '-Command', probeScript],
+      readArgs: ['-NoProfile', '-NonInteractive', '-Command', readScript],
+    };
+  }
   return null;
 }
 
