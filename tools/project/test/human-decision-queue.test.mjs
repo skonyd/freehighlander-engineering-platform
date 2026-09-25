@@ -241,10 +241,7 @@ test('human decision queue strict state rejects duplicate responses and credenti
   const root = mkdtempSync(path.join(os.tmpdir(), 'fh-human-queue-secret-'));
   try {
     const store = createHumanDecisionQueueStore(root, unsafe.projectId);
-    assert.throws(
-      () => enqueueHumanDecision(store, 0, unsafe),
-      /credential-shaped material/,
-    );
+    assert.throws(() => enqueueHumanDecision(store, 0, unsafe), /credential-shaped material/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
