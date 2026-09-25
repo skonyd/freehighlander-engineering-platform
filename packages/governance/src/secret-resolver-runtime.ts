@@ -517,7 +517,7 @@ function osKeychainCommand(
     const probeScript = `$ErrorActionPreference='Stop'; [void]${typeExpression}`;
     const readScript =
       `$ErrorActionPreference='Stop'; [void]${typeExpression}; ` +
-      `$vault=New-Object Windows.Security.Credentials.PasswordVault; ` +
+      `$vault=${typeExpression}::new(); ` +
       `$credential=$vault.Retrieve('${parsed.service}','${parsed.account}'); ` +
       `$credential.RetrievePassword(); [Console]::Out.Write($credential.Password)`;
     return {
