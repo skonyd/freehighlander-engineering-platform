@@ -809,7 +809,7 @@ test('portable resume planner reconstructs actionable state without local SQLite
       {
         nodeId: 'node-complete',
         resultHash: '6'.repeat(64),
-        executionKey: 'execution-complete',
+        executionKey: '7'.repeat(64),
       },
     ],
   });
