@@ -179,6 +179,10 @@ function requireRepository(value) {
   if (typeof value !== 'string' || !REPOSITORY_PATTERN.test(value)) {
     throw new Error('repository must be a bounded owner/name identifier');
   }
+  const [owner, name] = value.split('/');
+  if (owner === '.' || owner === '..' || name === '.' || name === '..') {
+    throw new Error('repository must be a bounded owner/name identifier');
+  }
 }
 
 function requireExecutable(value) {
