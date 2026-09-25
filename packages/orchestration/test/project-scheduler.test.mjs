@@ -4,18 +4,29 @@ import test from 'node:test';
 import {
   buildProjectSchedulePlan,
   createHumanDecisionQueueEntry,
+  createHumanDecisionResponseV1,
   createInitialNodeStates,
+  evaluateHumanDecisionResume,
+  humanDecisionResponseCanGrantAuthority,
   modelCanResolveHumanDecision,
+  modelCanSubmitHumanDecisionResponse,
   parkedHumanRequiredCancelsProject,
   propagateWorkflowStates,
   publishWorkflow,
   schedulerCanGrantAuthority,
   transitionNodeState,
+  validateHumanDecisionQueueEntry,
+  validateHumanDecisionResponseV1,
   unknownConflictCanRun,
 } from '../dist/index.js';
 
 const H1 = '1'.repeat(64);
 const H2 = '2'.repeat(64);
+const H3 = '3'.repeat(64);
+const H4 = '4'.repeat(64);
+const H5 = '5'.repeat(64);
+const H6 = '6'.repeat(64);
+const H7 = '7'.repeat(64);
 
 function workItem(id, overrides = {}) {
   return {
@@ -41,8 +52,16 @@ function decisionInput(overrides = {}) {
     workItemId: 'work-a',
     runId: 'run-001',
     nodeId: 'human-gate',
-    exactRevision: 'abc123',
+    exactRevision: 'a'.repeat(40),
     scopeHash: H1,
+    currentness: {
+      workflowHash: H2,
+      runSnapshotHash: H3,
+      policyHash: H4,
+      catalogSnapshotHash: H5,
+      bindingSnapshotHash: H6,
+      dependencyGraphHash: H7,
+    },
     decisionType: 'MERGE_AUTHORIZATION',
     reason: 'Protected policy requires a human decision.',
     choices: ['approve', 'reject'],
@@ -260,6 +279,15 @@ test('human decision queue entries are exact-bound deterministic metadata only',
   assert.deepEqual(first.blockedWorkItemIds, ['work-b', 'work-c']);
   assert.equal(first.otherWorkContinuing, true);
   assert.equal(first.authority, 'NONE');
+  assert.deepEqual(first.currentness, {
+    workflowHash: H2,
+    runSnapshotHash: H3,
+    policyHash: H4,
+    catalogSnapshotHash: H5,
+    bindingSnapshotHash: H6,
+    dependencyGraphHash: H7,
+  });
+  validateHumanDecisionQueueEntry(first);
 });
 
 test('human decision queue rejects malformed identity evidence and user-facing metadata', () => {
@@ -271,7 +299,9 @@ test('human decision queue rejects malformed identity evidence and user-facing m
     decisionInput({ runId: 'x' }),
     decisionInput({ nodeId: 'x' }),
     decisionInput({ exactRevision: '' }),
+    decisionInput({ exactRevision: 'abc123' }),
     decisionInput({ scopeHash: 'bad' }),
+    decisionInput({ currentness: { ...decisionInput().currentness, policyHash: 'bad' } }),
     decisionInput({ decisionType: '' }),
     decisionInput({ reason: ' ' }),
     decisionInput({ choices: [''] }),
@@ -285,6 +315,136 @@ test('human decision queue rejects malformed identity evidence and user-facing m
   ]) {
     assert.throws(() => createHumanDecisionQueueEntry(invalid));
   }
+});
+
+test('human response resumes only the exact current parked decision', () => {
+  const entry = createHumanDecisionQueueEntry(decisionInput());
+  const response = createHumanDecisionResponseV1({
+    decisionId: entry.decisionId,
+    decisionHash: entry.decisionHash,
+    principalId: 'human-operator-001',
+    principalKind: 'HUMAN',
+    selectedChoice: 'approve',
+    exactRevision: entry.exactRevision,
+    scopeHash: entry.scopeHash,
+    respondedAt: '2026-09-24T10:00:00.000Z',
+  });
+
+  validateHumanDecisionResponseV1(response);
+  const decision = evaluateHumanDecisionResume(entry, response, {
+    authorityVerified: true,
+    exactRevision: entry.exactRevision,
+    scopeHash: entry.scopeHash,
+    currentness: entry.currentness,
+  });
+
+  assert.deepEqual(decision, {
+    status: 'RESUME_READY',
+    reasons: [],
+    staleDimensions: [],
+    authority: 'NONE',
+  });
+  assert.equal(response.authority, 'NONE');
+  assert.match(response.responseHash, /^[a-f0-9]{64}$/);
+});
+
+test('human response requires verified human authority and an allowed exact decision choice', () => {
+  const entry = createHumanDecisionQueueEntry(decisionInput());
+  const response = createHumanDecisionResponseV1({
+    decisionId: entry.decisionId,
+    decisionHash: entry.decisionHash,
+    principalId: 'human-operator-001',
+    principalKind: 'HUMAN',
+    selectedChoice: 'approve',
+    exactRevision: entry.exactRevision,
+    scopeHash: entry.scopeHash,
+    respondedAt: '2026-09-24T10:00:00.000Z',
+  });
+
+  assert.equal(
+    evaluateHumanDecisionResume(entry, response, {
+      authorityVerified: false,
+      exactRevision: entry.exactRevision,
+      scopeHash: entry.scopeHash,
+      currentness: entry.currentness,
+    }).status,
+    'UNAUTHORIZED',
+  );
+
+  const invalidChoice = createHumanDecisionResponseV1({
+    ...response,
+    selectedChoice: 'invented-choice',
+  });
+  const invalid = evaluateHumanDecisionResume(entry, invalidChoice, {
+    authorityVerified: true,
+    exactRevision: entry.exactRevision,
+    scopeHash: entry.scopeHash,
+    currentness: entry.currentness,
+  });
+  assert.equal(invalid.status, 'INVALID_RESPONSE');
+  assert.match(invalid.reasons[0], /selectedChoice/);
+
+  const wrongDecision = createHumanDecisionResponseV1({
+    ...response,
+    decisionId: 'decision-999',
+  });
+  assert.equal(
+    evaluateHumanDecisionResume(entry, wrongDecision, {
+      authorityVerified: true,
+      exactRevision: entry.exactRevision,
+      scopeHash: entry.scopeHash,
+      currentness: entry.currentness,
+    }).status,
+    'INVALID_RESPONSE',
+  );
+});
+
+test('human response reports exact currentness drift instead of blindly resuming', () => {
+  const entry = createHumanDecisionQueueEntry(decisionInput());
+  const response = createHumanDecisionResponseV1({
+    decisionId: entry.decisionId,
+    decisionHash: entry.decisionHash,
+    principalId: 'human-operator-001',
+    principalKind: 'HUMAN',
+    selectedChoice: 'approve',
+    exactRevision: entry.exactRevision,
+    scopeHash: entry.scopeHash,
+    respondedAt: '2026-09-24T10:00:00.000Z',
+  });
+
+  const stale = evaluateHumanDecisionResume(entry, response, {
+    authorityVerified: true,
+    exactRevision: 'b'.repeat(40),
+    scopeHash: H1,
+    currentness: {
+      ...entry.currentness,
+      policyHash: '8'.repeat(64),
+      bindingSnapshotHash: '9'.repeat(64),
+    },
+  });
+
+  assert.equal(stale.status, 'STALE');
+  assert.deepEqual(stale.staleDimensions, ['bindingSnapshotHash', 'policyHash', 'revision']);
+  assert.match(stale.reasons[0], /currentness changed/);
+});
+
+test('models cannot submit or grant authority through human decision responses', () => {
+  assert.equal(modelCanSubmitHumanDecisionResponse(), false);
+  assert.equal(humanDecisionResponseCanGrantAuthority(), false);
+  assert.throws(
+    () =>
+      createHumanDecisionResponseV1({
+        decisionId: 'decision-001',
+        decisionHash: H1,
+        principalId: 'model-reviewer-001',
+        principalKind: 'MODEL',
+        selectedChoice: 'approve',
+        exactRevision: 'a'.repeat(40),
+        scopeHash: H2,
+        respondedAt: '2026-09-24T10:00:00.000Z',
+      }),
+    /principalKind must be HUMAN/,
+  );
 });
 
 test('workflow HUMAN_REQUIRED leaves unrelated branch runnable and dependent join pending', () => {
