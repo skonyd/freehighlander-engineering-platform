@@ -51,8 +51,7 @@ export function writeLocalSecretProfile(store, generation, profile) {
   validateSecretBindingProfileV1(profile);
   const result = store.write(generation, profile);
   if (result.status !== 'WRITTEN' || result.snapshot === null) {
-    const actual =
-      result.actualGeneration === null ? 'unknown' : String(result.actualGeneration);
+    const actual = result.actualGeneration === null ? 'unknown' : String(result.actualGeneration);
     throw new Error(
       `secret binding profile write conflict: ${result.status} expected=${generation} actual=${actual}`,
     );
@@ -100,10 +99,7 @@ export function unbindLocalSecret(profile, handleId) {
   );
 }
 
-export async function inspectLocalSecretProfile(
-  profile,
-  options = {},
-) {
+export async function inspectLocalSecretProfile(profile, options = {}) {
   validateSecretBindingProfileV1(profile);
   const registry =
     options.registry ??
@@ -145,11 +141,7 @@ export async function inspectLocalSecretProfile(
   };
 }
 
-export async function doctorLocalSecrets(
-  profile,
-  requirements,
-  options = {},
-) {
+export async function doctorLocalSecrets(profile, requirements, options = {}) {
   validateSecretBindingProfileV1(profile);
   const normalizedRequirements = validateSecretRequirements(requirements);
   const inspection = await inspectLocalSecretProfile(profile, options);
