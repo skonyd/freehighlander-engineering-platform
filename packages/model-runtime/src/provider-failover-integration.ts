@@ -70,9 +70,7 @@ export function applyProviderInvocationFailure(
     failureKind: normalized.failureKind,
     scope: normalized.scope,
     observedAt: input.observedAt,
-    ...(normalized.retryAfterMs === undefined
-      ? {}
-      : { retryAfterMs: normalized.retryAfterMs }),
+    ...(normalized.retryAfterMs === undefined ? {} : { retryAfterMs: normalized.retryAfterMs }),
     availabilityByBinding: input.availabilityByBinding,
   });
 }
