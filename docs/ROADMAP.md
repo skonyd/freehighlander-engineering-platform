@@ -1,39 +1,40 @@
 # Ana Yol Haritası
 
-## Current status — 2026-09-20
+## Current status — 2026-09-25
 
 Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementation durumu ayrıca aşağıda belirtilir.
 
 | Phase | Scope | Current status |
 | --- | --- | --- |
-| 0 | Creator Marketplace reference acceptance | **EXTERNAL BLOCKER** — #207 final acceptance/merge/smoke pending |
-| 1 | FreeHighlander automation bootstrap | **PARTIAL COMPLETE** — FH-01A + FH-01B1 complete; FH-01B2 blocked by #207 |
+| 0 | Creator Marketplace reference acceptance | **COMPLETE** — #207 merged, #209 hardening merged, final accepted SHA recorded |
+| 1 | FreeHighlander automation bootstrap | **COMPLETE** — FH-01A + FH-01B1 + FH-01B2 complete |
 | 2 | V2.5 telemetry foundation | **COMPLETE** |
 | 3 | SQLite + read-only dashboard | **COMPLETE** |
 | 4 | Qwen shadow benchmark/offloading | **COMPLETE foundation** |
 | 5 | Token/context/provider optimization | **COMPLETE foundation** |
 | 6 | V3 architecture freeze | **COMPLETE** |
 | 7 | V3 control plane | **COMPLETE through FH-19** |
-| 8 | V2/V3 parity + authority cutover | **READINESS COMPLETE / CUTOVER BLOCKED** |
+| 8 | V2/V3 parity + authority cutover | **READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED** |
 | 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane BLOCKED** |
-| 10 | Authority-bearing full lifecycle | **BLOCKED until FH-01B2/FH-20** |
+| 10 | Authority-bearing full lifecycle | **BLOCKED until explicit FH-20 cutover** |
 
 Current authority state remains:
 
 ```text
-V2 reference = PROVISIONAL
+V2 reference = ACCEPTED
+V2 compatibility authority = ENABLED
 V3 authority = SHADOW_ONLY
 ```
 
 ## Phase 0 — Creator Marketplace reference implementation
 
-Still required for final authority migration:
-- PR #207 final acceptance
-- final accepted reference SHA
-- merge + post-merge smoke
-- FreeHighlander provisional-to-final reconciliation
+Completed:
+- Creator Marketplace #207 merged at `e4707a3c4267db9d2aadd452782b91045b96724d`
+- direct #209 hardening merged
+- final accepted reference SHA `1a8e215b78a3a5008aae6aae36488b3273733b19`
+- FreeHighlander FH-01B2 reconciliation merged in PR #237
 
-**Exit:** final V2 reference becomes accepted evidence for FH-01B2/FH-20.
+**Exit:** final V2 reference is accepted evidence for FH-20.
 
 ## Phase 1 — FreeHighlander Automation Bootstrap
 
@@ -45,8 +46,8 @@ Completed:
 - artifact/provenance/gate/test harness
 - CI and telemetry foundations
 
-Pending:
-- FH-01B2 final accepted-V2 reconciliation after #207.
+Completed:
+- FH-01B2 final accepted-V2 reconciliation after #207/#209.
 
 ## Phase 2 — V2.5 Telemetry Foundation — COMPLETE
 
@@ -66,7 +67,7 @@ Delivered context packets, token-budget preflight, safe cache/reuse identity and
 
 ## Phase 6 — V3 Architecture Freeze — COMPLETE
 
-The frozen architecture contract is currently version **1.8.0**, covering the V3 foundation and FH-30A..FH-37A bounded contexts.
+The frozen architecture contract is currently version **1.10.0**, including accepted V2 reconciliation (1.9.0) and Full Auto delegable quorum semantics (1.10.0).
 
 ## Phase 7 — V3 Control Plane — COMPLETE THROUGH FH-19
 
@@ -80,11 +81,15 @@ Completed:
 - FH-19 parity framework
 - FH-20 deterministic cutover-readiness evaluator
 
-Blocked:
-- final accepted V2 reference from Creator Marketplace #207
+Completed:
+- final accepted V2 reference from Creator Marketplace #207/#209
 - FH-01B2 exact delta reconciliation
 - post-port parity/smoke against the final accepted SHA
-- explicit human/system-policy authority promotion decision
+
+Remaining:
+- explicit exact human approval for V3 cutover
+- SYSTEM_POLICY = ALLOW
+- explicit V3 authority-promotion review
 
 The readiness evaluator cannot enable authority by itself.
 
@@ -101,11 +106,11 @@ Authority-neutral preparation is complete:
 7. FH-36A Incident
 8. FH-37A Project Knowledge Graph / Engineering Lineage
 
-FH-30B..FH-37B activation remains blocked by FH-01B2/FH-20.
+FH-30B..FH-37B activation remains blocked by FH-20 only.
 
 ## Pre-cutover hardening — COMPLETE THROUGH PROVIDER EGRESS PREPARATION
 
-Independent of #207, the repository now includes:
+The repository also includes:
 - executable data-policy and remote-egress enforcement;
 - executable sandbox permission evaluation;
 - retention/privacy dry-run lifecycle planning;

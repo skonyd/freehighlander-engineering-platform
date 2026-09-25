@@ -6,34 +6,37 @@
 
 Bu repository **FreeHighlander'ın ana ürün repository'sidir** ve ürün kodu ile planning/architecture/governance kontratlarını birlikte taşır.
 
-20 Eylül 2026 itibarıyla:
+25 Eylül 2026 itibarıyla:
 
 - FH-00 ve FH-01A tamamlandı.
-- FH-01B1 provisional V2 compatibility port tamamlandı; V2 reference hâlâ **PROVISIONAL**.
+- FH-01B1 provisional port ve FH-01B2 final reconciliation tamamlandı; V2 reference **ACCEPTED**.
 - FH-02..FH-19 implementation hattı tamamlandı.
-- FH-20 cutover-readiness gate tamamlandı ancak final authority cutover **Creator Marketplace #207 / FH-01B2** tamamlanana kadar bloklu.
+- FH-20 cutover-readiness gate tamamlandı; Creator Marketplace #207/FH-01B2 external blocker temizlendi. Final V3 cutover hâlâ explicit human approval + SYSTEM_POLICY=ALLOW + promotion review gerektiriyor.
 - FH-30A..FH-37A authority-neutral SDLC preparation lane tamamlandı.
-- FH-30B..FH-37B authority-bearing activation lane FH-01B2/FH-20 sonrasına bloklu.
+- FH-30B..FH-37B authority-bearing activation lane FH-20 final cutover sonrasına bloklu.
 - Pre-cutover hardening hattında data policy, sandbox, retention, SQLite backup/restore, cross-module digital thread, privacy-safe observability, adversarial fail-closed coverage, workspace dependency boundaries, reproducible CI, repository credential/dependency hygiene, tracked-secret leakage gate, 19/19 workspace için ölçülmüş native coverage regression gate ve opaque SecretHandle/EPHEMERAL injection kontratı ve npm lockfile provenance/integrity/install-script gate ve güvenli private vulnerability reporting policy ve deterministic clean-build output integrity gate ve monorepo accidental-publish safety gate ile internal workspace dependency-confusion gate ve workspace package entrypoint integrity gate ve source-to-dist build completeness gate tamamlandı.
 
 Current authority state:
 
 ```text
-V2 reference = PROVISIONAL
+V2 reference = ACCEPTED
+V2 compatibility authority = ENABLED
 V3 authority = SHADOW_ONLY
-FH-20 cutover = BLOCKED
-FH-30B..FH-37B = BLOCKED
+FH-20 external blocker = CLEARED
+FH-20 cutover = NOT YET APPLIED
+FH-30B..FH-37B = BLOCKED BY FH-20
 ```
 
-External dependency:
-- `skonyd/creator-marketplace#207`
-- final acceptance + merge + post-merge smoke tamamlanmadan FH-01B2 reconciliation ve FH-20 authority cutover yapılamaz.
+Accepted external reference:
+- `skonyd/creator-marketplace#207` merged at `e4707a3c4267db9d2aadd452782b91045b96724d`
+- direct hardening #209 produced final accepted reference `1a8e215b78a3a5008aae6aae36488b3273733b19`
+- FreeHighlander FH-01B2 reconciliation merged in PR #237; full verify run `36159166117` passed.
 
 ## Delivery state
 
 Completed/prepared:
 
-1. TypeScript monorepo + provisional V2 compatibility
+1. TypeScript monorepo + accepted V2 compatibility
 2. Telemetry + SQLite + read-only dashboard
 3. Qwen/local shadow benchmark and model economics
 4. Token/context/provider resilience
@@ -54,14 +57,14 @@ Completed/prepared:
 Remaining authority-bearing sequence:
 
 ```text
-Creator Marketplace #207 final acceptance + merge + smoke
+FH-20 exact human approval + SYSTEM_POLICY ALLOW + promotion review
         ↓
-FH-01B2 final V2 reconciliation/parity
-        ↓
-FH-20 authority cutover
+FH-20 V3 authority cutover
         ↓
 FH-30B..FH-37B activation
 ```
+
+Creator Marketplace #207 and FH-01B2 are complete and are no longer blockers.
 
 ## Resume / another machine
 

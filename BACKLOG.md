@@ -5,9 +5,9 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 ## Foundation
 - [x] FH-00 Planning foundation ve doküman sözleşmesi
 - [x] FH-01A Platform bootstrap — issue #15 / PR #17
-- [ ] FH-01B umbrella — issue #16
+- [x] FH-01B umbrella — issue #16
   - [x] FH-01B1 Provisional V2 compatibility, authority disabled — issue #18 / PR #21
-  - [ ] FH-01B2 Accepted V2 reconciliation + authority promotion — issue #19, blocked by Creator Marketplace #207
+  - [x] FH-01B2 Accepted V2 reconciliation + compatibility promotion — issue #19 / PR #237
 - [x] FH-02 Telemetry event emitter / durable event history — issue #22 / PR #23
 - [x] FH-03 SQLite run/event/artifact metadata store — issue #24 / PR #25
 - [x] FH-04 Read-only metrics dashboard — issue #26 / PR #27
@@ -29,7 +29,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-17 Replay/simulation + crash recovery — issue #54 / PR #55
 - [x] FH-18 UI control plane — issue #56 / PR #57
 - [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
-- [ ] FH-20 V3 authority cutover — readiness gate issue #64 / PR #65 complete; final cutover blocked by Creator Marketplace #207 / FH-01B2
+- [ ] FH-20 V3 authority cutover — readiness gate issue #64 / PR #65 complete; external #207 blocker cleared, explicit human/policy cutover still pending
 
 ## Modules — pre-cutover preparation lane
 - [x] FH-30A Planning — issue #69 / PR #70
@@ -41,7 +41,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-36A Incident — issue #84 / PR #85
 - [x] FH-37A Engineering Lineage / Knowledge Graph — issue #86 / PR #87
 
-Activation lane **FH-30B..FH-37B** remains blocked by FH-01B2/FH-20 final authority cutover.
+Activation lane **FH-30B..FH-37B** remains blocked by FH-20 final authority cutover.
 
 ## Pre-cutover hardening — independent of Creator Marketplace #207
 - [x] Executable data-policy/redaction/provider-egress enforcement — issue #89 / PR #90
@@ -76,6 +76,6 @@ Umbrella: #88.
 
 ## Current blocker
 
-No authority-bearing migration or B-lane activation may proceed until Creator Marketplace #207 provides the final accepted reference needed by FH-01B2/FH-20.
+Creator Marketplace #207 is satisfied. The remaining authority blocker is the explicit FH-20 cutover gate: exact human approval, SYSTEM_POLICY=ALLOW, current final-reference-bound parity, and explicit V3 promotion review.
 
 This does **not** invalidate or roll back the completed authority-neutral A-lane/hardening work.
