@@ -87,9 +87,7 @@ test('only a current new repaired revision consumes semantic repair budget', () 
   assert.equal(staleArtifactCanAdvanceRepairRound(), false);
 });
 
-test(
-  'final allowed repair is reviewed and the next semantic repair escalates deterministically',
-  () => {
+test('final allowed repair is reviewed and the next semantic repair escalates deterministically', () => {
   let state = createRepairAccountingState({
     maxSemanticRepairs: 2,
     maxTransportRetries: 2,
@@ -123,11 +121,10 @@ test(
   assert.equal(anotherRepair.semanticBudgetConsumed, false);
   assert.equal(anotherRepair.state.semanticRepairs, 2);
 
-    const success = applyRepairEvent(state, { kind: 'SUCCESS' });
-    assert.equal(success.nextAction, 'COMPLETE');
-    assert.equal(success.state.semanticRepairs, 2);
-  },
-);
+  const success = applyRepairEvent(state, { kind: 'SUCCESS' });
+  assert.equal(success.nextAction, 'COMPLETE');
+  assert.equal(success.state.semanticRepairs, 2);
+});
 
 test('repair accounting validation rejects malformed policy state and revisions', () => {
   assert.throws(
