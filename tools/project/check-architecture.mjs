@@ -1644,6 +1644,34 @@ try {
 }
 
 try {
+  const portableSecretsCli = await fs.readFile(
+    path.join(root, 'tools', 'project', 'lib', 'secrets.mjs'),
+    'utf8',
+  );
+  const gitignore = await fs.readFile(path.join(root, '.gitignore'), 'utf8');
+
+  for (const invariant of [
+    "'.freehighlander', 'runtime', 'secret-bindings'",
+    'validateSecretBindingProfileV1',
+    'evaluateSecretBindingStatusV1',
+    'secretValuesPresent: false',
+    'export function portableSecretsCliCanPrintSecretValues()',
+    'export function portableSecretsCliCanPersistSecretValues()',
+    'export function portableSecretsCliCanGrantAuthority()',
+  ]) {
+    if (!portableSecretsCli.includes(invariant)) {
+      failures.push(`portable secrets CLI missing invariant: ${invariant}`);
+    }
+  }
+
+  if (!gitignore.includes('.freehighlander/runtime/')) {
+    failures.push('portable secret binding profiles must remain under gitignored runtime state');
+  }
+} catch {
+  failures.push('missing local-only portable secrets CLI contract');
+}
+
+try {
   const providerConformance = await fs.readFile(
     path.join(root, 'packages', 'model-runtime', 'test', 'provider-conformance.mjs'),
     'utf8',
