@@ -1929,7 +1929,7 @@ try {
   for (const invariant of [
     '**Status:** ACCEPTED',
     'MODEL_QUORUM_REQUIRED',
-    'HUMAN_REQUIRED remains non-delegable',
+    '`HUMAN_REQUIRED` remains non-delegable',
     'V3 execution authority remains `SHADOW_ONLY`',
   ]) {
     if (!adrSource.includes(invariant)) {
