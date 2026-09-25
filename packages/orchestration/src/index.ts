@@ -121,6 +121,23 @@ export {
 } from './replay-engine.js';
 
 export {
+  createFullAutoReviewCouncil,
+  createFullAutoReviewSession,
+  evaluateFullAutoReviewCouncil,
+  fullAutoBoundedDisagreementCanGrantAuthority,
+  fullAutoNonApproveConsensusCanMerge,
+  recordFullAutoReviewerOpinion,
+  type FullAutoCouncilOutcome,
+  type FullAutoCouncilStatus,
+  type FullAutoReviewCouncil,
+  type FullAutoReviewCouncilInput,
+  type FullAutoReviewerOpinionInput,
+  type FullAutoReviewerParticipant,
+  type FullAutoReviewSession,
+  type FullAutoReviewVerdict,
+} from './full-auto-disagreement.js';
+
+export {
   buildFullAutoQuorumArtifact,
   fullAutoQuorumCanGrantAuthority,
   fullAutoQuorumIsMergeEvidenceComplete,
