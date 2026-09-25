@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 
-import {
-  parseFhResumeArgs,
-  runFhResume,
-} from './project/lib/fh-resume-command.mjs';
+import { parseFhResumeArgs, runFhResume } from './project/lib/fh-resume-command.mjs';
 
 try {
   const parsed = parseFhResumeArgs(process.argv.slice(2));
