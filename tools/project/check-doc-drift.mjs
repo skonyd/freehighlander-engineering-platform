@@ -18,7 +18,11 @@ const prRoadmap = await fs.readFile(path.join(root, 'docs', 'planning', 'PR-ROAD
 const securityPolicy = await fs.readFile(path.join(root, 'SECURITY.md'), 'utf8');
 
 expect(state.phase?.id, 'PRE-CUTOVER', 'state phase');
-expect(state.phase?.status, 'external_dependency_satisfied_cutover_not_applied', 'state phase status');
+expect(
+  state.phase?.status,
+  'external_dependency_satisfied_cutover_not_applied',
+  'state phase status',
+);
 expect(state.active_work?.branch, 'main', 'state active branch');
 if (state.active_work?.pull_request !== null) {
   failures.push('state active_work.pull_request must be null in canonical main state');
