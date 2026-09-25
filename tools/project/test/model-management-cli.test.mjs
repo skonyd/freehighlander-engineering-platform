@@ -339,6 +339,104 @@ test('binding preview and publish require exact eligible qualification and remai
   }
 });
 
+test('managed binding publish validates multi-provider fallbacks and persists return policy', async () => {
+  const server = await startModelServer(['opus-5.5', 'gpt-6', 'gemini-pro']);
+  try {
+    let state = {
+      schemaVersion: 1,
+      providers: [],
+      catalogs: [],
+      qualifications: [],
+      publications: [],
+      authority: 'NONE',
+    };
+
+    for (const id of ['anthropic', 'openai', 'google']) {
+      state = setManagedProvider(state, {
+        id,
+        kind: 'OPENAI_COMPATIBLE',
+        baseUrl: server.baseUrl,
+        locality: 'REMOTE',
+        credentialEnv: null,
+      }).state;
+    }
+
+    for (const providerId of ['anthropic', 'openai', 'google']) {
+      state = (
+        await refreshManagedProvider(state, providerId, '2026-09-25T18:20:00.000Z', {})
+      ).state;
+    }
+
+    const specs = [
+      ['anthropic', 'opus-5.5', 'e', 'f', '1'],
+      ['openai', 'gpt-6', '2', '3', '4'],
+      ['google', 'gemini-pro', '5', '6', '7'],
+    ];
+    const qualifications = specs.map(([providerId, modelId, probe, shadowHash, decision]) => {
+      const snapshot = state.catalogs.find((catalog) => catalog.providerId === providerId);
+      const discovered = createDiscoveredQualification({
+        providerId,
+        modelId,
+        catalogHash: snapshot.hash,
+      });
+      const probed = recordCapabilityProbe(discovered, {
+        evidenceHash: probe.repeat(64),
+        status: 'PASS',
+        probedAt: '2026-09-25T18:21:00.000Z',
+      });
+      const shadow = recordShadowVerification(probed, {
+        evidenceHash: shadowHash.repeat(64),
+        status: 'PASS',
+        verifiedAt: '2026-09-25T18:22:00.000Z',
+        role: 'controller',
+        riskTier: 'NORMAL',
+      });
+      return grantModelEligibility(shadow, {
+        role: 'controller',
+        riskTier: 'NORMAL',
+        grantedAt: '2026-09-25T18:23:00.000Z',
+        decisionHash: decision.repeat(64),
+      });
+    });
+    state = { ...state, qualifications };
+
+    const result = await publishManagedBinding(
+      state,
+      {
+        role: 'controller',
+        risk: 'NORMAL',
+        provider: 'anthropic',
+        model: 'opus-5.5',
+        bindingId: 'controller-opus',
+        effort: undefined,
+        fallback: [
+          'controller-gpt,openai,gpt-6',
+          'controller-gemini,google,gemini-pro',
+        ],
+        returnPolicy: 'ASK_BEFORE_RETURN',
+        unknownResetRecheckMs: 30_000,
+      },
+      '2026-09-25T18:25:00.000Z',
+      {},
+    );
+
+    assert.deepEqual(
+      result.publication.plan.bindings.map((binding) => binding.bindingId),
+      ['controller-opus', 'controller-gpt', 'controller-gemini'],
+    );
+    assert.deepEqual(result.publication.failoverPolicy, {
+      returnPolicy: 'ASK_BEFORE_RETURN',
+      unknownResetRecheckMs: 30_000,
+    });
+    assert.deepEqual(result.auditEvents[0].payload.fallbackBindingIds, [
+      'controller-gpt',
+      'controller-gemini',
+    ]);
+  } finally {
+    await server.close();
+  }
+});
+
 async function makeTempRoot() {
   const { mkdtemp } = await import('node:fs/promises');
   return mkdtemp(path.join(os.tmpdir(), 'fh-model-management-'));
