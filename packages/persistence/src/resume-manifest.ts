@@ -324,10 +324,7 @@ function requireExactObjectKeys(
 ): void {
   const actual = Object.keys(value).sort();
   const expected = [...expectedKeys].sort();
-  if (
-    actual.length !== expected.length ||
-    actual.some((key, index) => key !== expected[index])
-  ) {
+  if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) {
     throw new Error(label + ' contains unsupported fields');
   }
 }
