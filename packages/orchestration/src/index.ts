@@ -227,6 +227,19 @@ export {
 } from './protected-anchor-verifier.js';
 
 export {
+  buildRepositoryMap,
+  jitSelectionCanDropRequiredPathsForBudget,
+  repositoryMapCanGrantAuthority,
+  selectJitRepositoryContext,
+  validateRepositoryMap,
+  type JitRepositoryContextInput,
+  type JitRepositoryContextSelection,
+  type RepositoryMapEntry,
+  type RepositoryMapEntryInput,
+  type RepositoryMapV1,
+} from './repository-map.js';
+
+export {
   buildFreshContextReset,
   createSemanticCheckpoint,
   freshContextResetCarriesPreviousTrajectory,
