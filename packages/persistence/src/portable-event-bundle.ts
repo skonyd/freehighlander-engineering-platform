@@ -90,10 +90,7 @@ export function createPortableCanonicalEventBundleV1(
     ) {
       throw new Error('portable event repository identity mismatch');
     }
-    if (
-      event.revision?.headSha !== undefined &&
-      event.revision.headSha !== input.exactRevision
-    ) {
+    if (event.revision?.headSha !== undefined && event.revision.headSha !== input.exactRevision) {
       throw new Error('portable event exact revision mismatch');
     }
 
@@ -167,7 +164,10 @@ export function validatePortableCanonicalEventBundleV1(
   if (rebuilt.eventCount !== bundle.eventCount) {
     throw new Error('portable event count mismatch');
   }
-  if (rebuilt.firstTimestamp !== bundle.firstTimestamp || rebuilt.lastTimestamp !== bundle.lastTimestamp) {
+  if (
+    rebuilt.firstTimestamp !== bundle.firstTimestamp ||
+    rebuilt.lastTimestamp !== bundle.lastTimestamp
+  ) {
     throw new Error('portable event timestamp bounds mismatch');
   }
   if (rebuilt.bundleHash !== bundle.bundleHash) {
@@ -224,8 +224,9 @@ function bundleIdentity(
     exactRevision: input.exactRevision,
     events,
     eventCount: events.length,
-    firstTimestamp: events.length === 0 ? null : events[0]?.event.timestamp ?? null,
-    lastTimestamp: events.length === 0 ? null : events[events.length - 1]?.event.timestamp ?? null,
+    firstTimestamp: events.length === 0 ? null : (events[0]?.event.timestamp ?? null),
+    lastTimestamp:
+      events.length === 0 ? null : (events[events.length - 1]?.event.timestamp ?? null),
   };
 }
 
