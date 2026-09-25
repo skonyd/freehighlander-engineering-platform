@@ -183,3 +183,94 @@ test('tampered derived state or receipt hash is rejected', async () => {
     /hash mismatch/,
   );
 });
+
+
+test('PARTIAL receipt and duplicate excerpt hashes normalize deterministically', async () => {
+  const receipt = await buildArtifactReceipt({
+    artifactId: 'partial-tool-output',
+    exactRevision: 'a'.repeat(40),
+    artifactHash: hash('9'),
+    kind: 'TOOL_OUTPUT',
+    status: 'PARTIAL',
+    itemCount: 2,
+    failureCount: 0,
+    sourceBytes: 20,
+    estimatedSourceTokens: 10,
+    relevantExcerptHashes: [hash('b'), hash('a'), hash('b')],
+  });
+
+  assert.equal(receipt.certificate, 'PARTIAL_RECEIPT');
+  assert.deepEqual(receipt.relevantExcerptHashes, [hash('a'), hash('b')]);
+  assert.equal(receipt.requiredRawEvidence, false);
+  assert.equal(receipt.contextReplacement, 'ALLOWED');
+});
+
+test('receipt validator rejects malformed schema and authority', async () => {
+  const receipt = await buildPassArtifactCertificate({
+    artifactId: 'validation-guards',
+    exactRevision: 'a'.repeat(40),
+    artifactHash: hash('c'),
+    kind: 'CI_LOG',
+    itemCount: 1,
+    sourceBytes: 10,
+    estimatedSourceTokens: 2,
+  });
+
+  await assert.rejects(
+    () => validateArtifactReceipt({ ...receipt, schemaVersion: 2 }),
+    /schemaVersion must be 1/,
+  );
+  await assert.rejects(
+    () => validateArtifactReceipt({ ...receipt, authority: 'SYSTEM' }),
+    /authority must be NONE/,
+  );
+});
+
+test('receipt constructors reject malformed identity enum and failure-state fields', async () => {
+  const base = {
+    artifactId: 'guarded',
+    exactRevision: 'a'.repeat(40),
+    artifactHash: hash('d'),
+    kind: 'CI_LOG',
+    status: 'PARTIAL',
+    itemCount: 1,
+    failureCount: 0,
+    sourceBytes: 10,
+    estimatedSourceTokens: 2,
+  };
+
+  await assert.rejects(
+    () => buildArtifactReceipt({ ...base, artifactId: '   ' }),
+    /artifactId is required/,
+  );
+  await assert.rejects(
+    () => buildArtifactReceipt({ ...base, artifactHash: 'bad' }),
+    /artifactHash must be lowercase sha256/,
+  );
+  await assert.rejects(
+    () => buildArtifactReceipt({ ...base, kind: 'UNKNOWN' }),
+    /kind is invalid/,
+  );
+  await assert.rejects(
+    () => buildArtifactReceipt({ ...base, status: 'UNKNOWN' }),
+    /status is invalid/,
+  );
+  await assert.rejects(
+    () =>
+      buildArtifactReceipt({
+        ...base,
+        status: 'FAIL',
+        failureCount: 0,
+        relevantExcerptHashes: [hash('e')],
+      }),
+    /FAIL artifact receipt requires failureCount > 0/,
+  );
+  await assert.rejects(
+    () => buildArtifactReceipt({ ...base, durationMs: -1 }),
+    /durationMs must be a non-negative integer/,
+  );
+  await assert.rejects(
+    () => buildArtifactReceipt({ ...base, relevantExcerptHashes: ['bad'] }),
+    /relevantExcerptHash must be lowercase sha256/,
+  );
+});
