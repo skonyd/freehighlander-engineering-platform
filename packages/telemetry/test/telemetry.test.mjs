@@ -552,7 +552,6 @@ test('orchestration trace telemetry rejects raw content mismatched kinds and mal
   );
 });
 
-
 test('orchestration trace telemetry covers required-field and scalar validation guards', () => {
   const baseSpan = {
     type: 'orchestration.span.completed',
