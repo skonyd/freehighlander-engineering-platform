@@ -1940,7 +1940,6 @@ try {
   failures.push('missing Full Auto delegable quorum architecture contract');
 }
 
-
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);
