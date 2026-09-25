@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   buildResumeDoctorSummary,
   inspectResumeHostCapabilities,
+  inspectResumeProviderReadiness,
   parseResumeDoctorArgs,
   resumeDoctorCanCopyCredentials,
   resumeDoctorCanGrantAuthority,
@@ -173,6 +174,15 @@ test('resume doctor summary reports host and secret blockers without values', ()
       blockedHandleIds: ['provider.openai.api'],
       secretDependentWorkReady: false,
     },
+    providerReadiness: {
+      status: 'READY',
+      resolutions: [],
+      blockedProviderIds: [],
+      providerDependentWorkReady: true,
+      providerHealthProbed: true,
+      secretValuesPresent: false,
+      authority: 'NONE',
+    },
     host: {
       ok: true,
       checks: [{ id: 'git', status: 'PASS', detail: 'git version 2.51.0' }],
@@ -195,4 +205,132 @@ test('resume doctor summary reports host and secret blockers without values', ()
 test('resume doctor remains credential-copy-free and authority-neutral', () => {
   assert.equal(resumeDoctorCanCopyCredentials(), false);
   assert.equal(resumeDoctorCanGrantAuthority(), false);
+});
+
+
+test('resume provider readiness probes required providers and capabilities without values', async () => {
+  const adapters = new Map([
+    [
+      'openai',
+      {
+        capabilities() {
+          return new Set(['reasoning_effort', 'usage_token_breakdown']);
+        },
+        async health() {
+          return { available: true };
+        },
+      },
+    ],
+    [
+      'local',
+      {
+        capabilities() {
+          return new Set(['usage_token_breakdown']);
+        },
+        async health() {
+          return { available: true };
+        },
+      },
+    ],
+  ]);
+
+  const report = await inspectResumeProviderReadiness({
+    managedState: {
+      providers: [
+        { id: 'local', locality: 'LOCAL' },
+        { id: 'openai', locality: 'REMOTE' },
+      ],
+    },
+    requiredProviderCapabilities: {
+      local: ['usage_token_breakdown'],
+      openai: ['reasoning_effort'],
+    },
+    adapterFactory(provider) {
+      return adapters.get(provider.id);
+    },
+  });
+
+  assert.equal(report.status, 'READY');
+  assert.deepEqual(report.blockedProviderIds, []);
+  assert.equal(report.providerDependentWorkReady, true);
+  assert.equal(report.providerHealthProbed, true);
+  assert.equal(report.secretValuesPresent, false);
+  assert.equal(report.authority, 'NONE');
+  assert.deepEqual(
+    report.resolutions.map((entry) => [
+      entry.providerId,
+      entry.status,
+      entry.endpointRequired,
+      entry.endpointHealthy,
+    ]),
+    [
+      ['local', 'READY', true, true],
+      ['openai', 'READY', false, null],
+    ],
+  );
+});
+
+test('resume provider readiness fails closed for missing capability provider credential and health', async () => {
+  const report = await inspectResumeProviderReadiness({
+    managedState: {
+      providers: [
+        { id: 'credential-fail', locality: 'REMOTE' },
+        { id: 'local-down', locality: 'LOCAL' },
+        { id: 'limited', locality: 'REMOTE' },
+      ],
+    },
+    requiredProviderCapabilities: {
+      'credential-fail': ['reasoning_effort'],
+      'local-down': ['usage_token_breakdown'],
+      limited: ['reasoning_effort'],
+      missing: ['usage_token_breakdown'],
+    },
+    adapterFactory(provider) {
+      if (provider.id === 'credential-fail') {
+        throw new Error('OPENAI_API_KEY is missing: runtime-only-material');
+      }
+      if (provider.id === 'local-down') {
+        return {
+          capabilities() {
+            return new Set(['usage_token_breakdown']);
+          },
+          async health() {
+            return { available: false, detail: 'private endpoint detail' };
+          },
+        };
+      }
+      return {
+        capabilities() {
+          return new Set(['usage_token_breakdown']);
+        },
+        async health() {
+          return { available: true };
+        },
+      };
+    },
+  });
+
+  assert.equal(report.status, 'BLOCKED');
+  assert.deepEqual(report.blockedProviderIds, [
+    'credential-fail',
+    'limited',
+    'local-down',
+    'missing',
+  ]);
+  assert.deepEqual(
+    Object.fromEntries(report.resolutions.map((entry) => [entry.providerId, entry.status])),
+    {
+      'credential-fail': 'CREDENTIAL_UNAVAILABLE',
+      limited: 'CAPABILITY_MISSING',
+      'local-down': 'PROVIDER_UNAVAILABLE',
+      missing: 'MISSING_PROVIDER',
+    },
+  );
+  const local = report.resolutions.find((entry) => entry.providerId === 'local-down');
+  assert.equal(local.endpointRequired, true);
+  assert.equal(local.endpointHealthy, false);
+  assert.doesNotMatch(
+    JSON.stringify(report),
+    /OPENAI_API_KEY|runtime-only-material|private endpoint detail/,
+  );
 });
