@@ -39,6 +39,36 @@ export class GitResumeStore implements ResumeStore {
     this.#runner = options.runner ?? new SpawnGitResumeCommandRunner(options.repositoryRoot);
   }
 
+  async listProjectIds(): Promise<readonly string[]> {
+    const prefix = 'refs/heads/freehighlander-state/';
+    const result = await requireGitSuccess(
+      this.#runner.run(['ls-remote', '--refs', this.#remote, `${prefix}*`]),
+      'resume state project discovery failed',
+    );
+    const output = result.stdout.trim();
+    if (!output) return [];
+
+    const seen = new Set<string>();
+    for (const line of output.split('\n')) {
+      const parts = line.trim().split(/\s+/);
+      if (
+        parts.length !== 2 ||
+        !GIT_OBJECT_ID_PATTERN.test(parts[0] ?? '') ||
+        !parts[1]?.startsWith(prefix)
+      ) {
+        throw new Error('resume state project discovery returned malformed ref data');
+      }
+      const projectId = parts[1].slice(prefix.length);
+      requireIdentifier(projectId, 'projectId');
+      if (seen.has(projectId)) {
+        throw new Error('resume state project discovery returned duplicate project ref');
+      }
+      seen.add(projectId);
+    }
+
+    return [...seen].sort();
+  }
+
   async getLatest(repositoryIdentity: string, projectId: string): Promise<ResumeManifestV1 | null> {
     requireText(repositoryIdentity, 'repositoryIdentity');
     requireIdentifier(projectId, 'projectId');
