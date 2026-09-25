@@ -18,7 +18,7 @@ test('repository V3 architecture contract validates and hashes deterministically
 
   assert.match(first, /^[a-f0-9]{64}$/);
   assert.equal(first, second);
-  assert.equal(contract.contract_version, '1.8.0');
+  assert.equal(contract.contract_version, '1.9.0');
   assert.equal(contract.status, 'FROZEN_BASELINE');
   assert.equal(contract.bounded_contexts.packages.includes('planning'), true);
   assert.equal(contract.bounded_contexts.packages.includes('development'), true);
@@ -28,6 +28,9 @@ test('repository V3 architecture contract validates and hashes deterministically
   assert.equal(contract.bounded_contexts.packages.includes('operations'), true);
   assert.equal(contract.bounded_contexts.packages.includes('incident'), true);
   assert.equal(contract.bounded_contexts.packages.includes('lineage'), true);
+  assert.equal(contract.authority.delegable_model_quorum_gate, 'MODEL_QUORUM_REQUIRED');
+  assert.equal(contract.full_auto.default_profile, 'OFF');
+  assert.equal(contract.full_auto.merge_execution_authority, 'SHADOW_ONLY');
   assert.equal(contract.migration.v3_authority, 'SHADOW_ONLY');
 });
 
