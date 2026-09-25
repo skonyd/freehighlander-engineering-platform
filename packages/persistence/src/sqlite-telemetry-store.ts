@@ -504,7 +504,7 @@ export class SqliteTelemetryStore {
 
   #ingestUnsafe(event: IndexedEngineeringEvent): boolean {
     const eventJson = JSON.stringify(event);
-    const eventHash = sha256(eventJson);
+    const eventHash = indexedEngineeringEventHash(event);
 
     const insert = this.#db.prepare(
       `INSERT OR IGNORE INTO events (
@@ -717,6 +717,17 @@ export class SqliteTelemetryStore {
       throw error;
     }
   }
+}
+
+export function validateIndexedEngineeringEvent(
+  event: unknown,
+): asserts event is IndexedEngineeringEvent {
+  assertIndexableEvent(event);
+}
+
+export function indexedEngineeringEventHash(event: IndexedEngineeringEvent): string {
+  assertIndexableEvent(event);
+  return sha256(JSON.stringify(event));
 }
 
 export function inspectSqliteTelemetryFile(filePath: string): SqliteIntegrityResult {
