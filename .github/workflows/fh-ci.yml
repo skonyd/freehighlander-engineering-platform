@@ -33,7 +33,4 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: |
-          npm run format:write
-          git diff -- packages/model-runtime/src/quota-aware-failover.ts packages/model-runtime/test/quota-aware-failover.test.mjs
-          exit 1
+        run: npm run verify
