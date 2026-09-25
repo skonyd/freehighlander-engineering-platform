@@ -387,6 +387,19 @@ export async function claimPortableResumeOwnership({
     };
   }
 
+  for (const [value, name] of [
+    [runId, 'runId'],
+    [leaseId, 'leaseId'],
+    [machineInstanceId, 'machineInstanceId'],
+  ]) {
+    if (typeof value !== 'string' || !value.trim()) {
+      throw new Error(name + ' is required for ownership claim');
+    }
+  }
+  if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0) {
+    throw new Error('ttlMs must be a positive safe integer for ownership claim');
+  }
+
   const current = await ownershipStore.getLatest(
     repositoryIdentity,
     manifest.projectId,
