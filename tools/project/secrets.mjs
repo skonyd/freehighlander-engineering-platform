@@ -109,8 +109,7 @@ async function unbindCommand() {
 
 async function doctorCommand() {
   const requirementsFile =
-    optionalSecretCliOption(parsed.options, 'requirements') ??
-    defaultSecretRequirementsFile(root);
+    optionalSecretCliOption(parsed.options, 'requirements') ?? defaultSecretRequirementsFile(root);
   const requirements = await loadSecretRequirements(requirementsFile);
   const result = await doctorLocalSecrets(current.profile, requirements);
   printJson({
