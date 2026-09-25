@@ -2,12 +2,12 @@
 
 **Status:** FROZEN BASELINE  
 **Machine-readable source:** `.freehighlander/architecture.yaml`  
-**Contract version:** 1.9.0  
+**Contract version:** 1.10.0  
 **Freeze phase:** FH-10
 
 ## Purpose
 
-This document records the accepted architecture direction from ADR-0001 through ADR-0021. Version 1.9.0 accepts the reconciled V2 automation compatibility reference after Creator Marketplace #207/#209 while preserving all V3 foundation authority constraints and SHADOW_ONLY execution.
+This document records the accepted architecture direction from ADR-0001 through ADR-0022. Version 1.9.0 accepted the reconciled V2 automation compatibility reference after Creator Marketplace #207/#209; version 1.10.0 adds a delegable dual-model quorum policy state while preserving all V3 foundation authority constraints and SHADOW_ONLY execution.
 
 The machine-readable contract is normative for automated drift checks. Existing ADRs remain the decision rationale.
 
@@ -38,6 +38,8 @@ SYSTEM_POLICY
 ```
 
 Producer cannot become final approver merely by configuration. HUMAN_APPROVER requires a human principal; SYSTEM_POLICY requires a system principal.
+
+Delegable Full Auto confirmation uses `MODEL_QUORUM_REQUIRED`, not `HUMAN_REQUIRED`. Policy precedence is `ALLOW < MODEL_QUORUM_REQUIRED < HUMAN_REQUIRED < DENY`. Model quorum is evidence only: it cannot satisfy a true human-only gate, override DENY, impersonate HUMAN_APPROVER, or grant execution authority. `SYSTEM_POLICY` must deterministically validate quorum evidence before producing any merge intent. Full Auto defaults OFF and remains SHADOW_ONLY until the normal authority cutover path permits execution.
 
 ### Providers
 
@@ -101,6 +103,8 @@ Version 1.7.0 adds `packages/incident`. Incident lifecycle, evidence timelines, 
 Version 1.8.0 adds `packages/lineage`. Stable versioned entities, exact revision bindings, typed evidence-backed relations and bounded read-only traversal form the engineering digital thread. Semantic/vector similarity remains discovery-only and cannot establish authoritative lineage; no graph database is required.
 
 Version 1.9.0 accepts the final V2 compatibility reference at `1a8e215b78a3a5008aae6aae36488b3273733b19`, with #207 merge provenance `e4707a3c4267db9d2aadd452782b91045b96724d` and #209 as the direct post-merge hardening step. This enables the reconciled V2 compatibility authority only; V3 authority remains `SHADOW_ONLY` and FH-20 remains the cutover path.
+
+Version 1.10.0 adds the Full Auto delegable policy effect `MODEL_QUORUM_REQUIRED`. It is distinct from non-delegable `HUMAN_REQUIRED`; unanimous independent model approval remains evidence rather than authority, and current merge execution remains `SHADOW_ONLY`.
 
 ### Migration
 

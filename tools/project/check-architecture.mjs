@@ -1870,6 +1870,76 @@ try {
   failures.push('missing monotonic provider latency contract');
 }
 
+try {
+  const policySource = await fs.readFile(
+    path.join(root, 'packages', 'governance', 'src', 'policy-engine.ts'),
+    'utf8',
+  );
+  const architectureSource = await fs.readFile(
+    path.join(root, '.freehighlander', 'architecture.yaml'),
+    'utf8',
+  );
+  const authorityPolicySource = await fs.readFile(
+    path.join(root, '.freehighlander', 'authority-policy.yaml'),
+    'utf8',
+  );
+  const adrSource = await fs.readFile(
+    path.join(root, 'docs', 'decisions', 'ADR-0022-full-auto-delegable-model-quorum.md'),
+    'utf8',
+  );
+
+  for (const invariant of [
+    "'MODEL_QUORUM_REQUIRED'",
+    'MODEL_QUORUM_REQUIRED: 2',
+    'HUMAN_REQUIRED: 3',
+    'DENY: 4',
+    'export function modelQuorumCanSatisfyHumanRequired(): false',
+    'export function modelQuorumCanOverrideDeny(): false',
+  ]) {
+    if (!policySource.includes(invariant)) {
+      failures.push(`Full Auto policy contract missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const invariant of [
+    'contract_version: "1.10.0"',
+    '- ADR-0022',
+    'delegable_model_quorum_gate: MODEL_QUORUM_REQUIRED',
+    'human_required_is_non_delegable: true',
+    'model_quorum_is_not_authority: true',
+    'default_profile: OFF',
+    'merge_execution_authority: SHADOW_ONLY',
+  ]) {
+    if (!architectureSource.includes(invariant)) {
+      failures.push(`Full Auto architecture contract missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const invariant of [
+    '- MODEL_QUORUM_REQUIRED',
+    'satisfiable_by_model_quorum: false',
+    'overridable_by_model_quorum: false',
+    'authority_mode: SHADOW_ONLY',
+  ]) {
+    if (!authorityPolicySource.includes(invariant)) {
+      failures.push(`Full Auto authority policy missing invariant: ${invariant}`);
+    }
+  }
+
+  for (const invariant of [
+    '**Status:** ACCEPTED',
+    'MODEL_QUORUM_REQUIRED',
+    '`HUMAN_REQUIRED` remains non-delegable',
+    'V3 execution authority remains `SHADOW_ONLY`',
+  ]) {
+    if (!adrSource.includes(invariant)) {
+      failures.push(`ADR-0022 missing invariant: ${invariant}`);
+    }
+  }
+} catch {
+  failures.push('missing Full Auto delegable quorum architecture contract');
+}
+
 if (failures.length > 0) {
   console.error('Architecture check FAIL');
   for (const failure of failures) console.error(`- ${failure}`);

@@ -35,6 +35,26 @@ system_policy:
   deterministic: true
   model_may_not_override: true
 
+decision_effects:
+  precedence:
+    - ALLOW
+    - MODEL_QUORUM_REQUIRED
+    - HUMAN_REQUIRED
+    - DENY
+  model_quorum_required:
+    delegable: true
+    consensus_grants_authority: false
+    validated_by: SYSTEM_POLICY
+  human_required:
+    delegable: false
+    satisfiable_by_model_quorum: false
+  deny:
+    overridable_by_model_quorum: false
+
+full_auto:
+  default_profile: OFF
+  authority_mode: SHADOW_ONLY
+
 role_package:
   format: yaml
   schema_version: v1

@@ -1,5 +1,5 @@
 schema_version: 1
-contract_version: "1.9.0"
+contract_version: "1.10.0"
 status: FROZEN_BASELINE
 phase: FH-10
 
@@ -30,6 +30,7 @@ accepted_adrs:
   - ADR-0019
   - ADR-0020
   - ADR-0021
+  - ADR-0022
 
 product:
   mode: local-first-single-user
@@ -91,6 +92,10 @@ authority:
   unknown_gate_fails_closed: true
   revision_mismatch_fails_or_stales: true
   semantic_negative_cannot_be_bypassed_by_fallback: true
+  delegable_model_quorum_gate: MODEL_QUORUM_REQUIRED
+  human_required_is_non_delegable: true
+  model_quorum_is_not_authority: true
+  system_policy_validates_model_quorum: true
 
 providers:
   core_contract: ProviderAdapter
@@ -144,6 +149,20 @@ debate:
   bounded_rounds: true
   consensus_is_not_authority: true
   disagreement_can_escalate_to_human: true
+
+full_auto:
+  default_profile: OFF
+  profiles:
+    - OFF
+    - SAFE
+    - BALANCED
+    - CUSTOM
+  delegable_gate: MODEL_QUORUM_REQUIRED
+  unanimous_independent_approval_required: true
+  human_required_satisfiable_by_model_quorum: false
+  deny_overridable_by_model_quorum: false
+  system_policy_creates_merge_intent: true
+  merge_execution_authority: SHADOW_ONLY
 
 evidence:
   exact_revision_binding_required: true

@@ -5,7 +5,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 
 const REQUIRED_ADRS = Array.from(
-  { length: 21 },
+  { length: 22 },
   (_, index) => `ADR-${String(index + 1).padStart(4, '0')}`,
 );
 
@@ -67,7 +67,7 @@ export function assertArchitectureContract(contract) {
   ) {
     throw new Error('architecture contract_version must be semantic version');
   }
-  expect(contract.contract_version, '1.9.0', 'architecture contract version');
+  expect(contract.contract_version, '1.10.0', 'architecture contract version');
   expect(contract.status, 'FROZEN_BASELINE', 'architecture status');
   expect(contract.phase, 'FH-10', 'architecture phase');
 
@@ -144,6 +144,42 @@ export function assertArchitectureContract(contract) {
   expectTrue(contract.debate?.independent_round_zero, 'debate round zero is independent');
   expectTrue(contract.debate?.bounded_rounds, 'debate rounds are bounded');
   expectTrue(contract.debate?.consensus_is_not_authority, 'debate consensus is not authority');
+
+  expect(
+    contract.authority?.delegable_model_quorum_gate,
+    'MODEL_QUORUM_REQUIRED',
+    'delegable model quorum gate',
+  );
+  expectTrue(
+    contract.authority?.human_required_is_non_delegable,
+    'human required is non-delegable',
+  );
+  expectTrue(contract.authority?.model_quorum_is_not_authority, 'model quorum is not authority');
+  expectTrue(
+    contract.authority?.system_policy_validates_model_quorum,
+    'system policy validates model quorum',
+  );
+  expect(contract.full_auto?.default_profile, 'OFF', 'Full Auto default profile');
+  assertContainsExactly(
+    contract.full_auto?.profiles,
+    ['OFF', 'SAFE', 'BALANCED', 'CUSTOM'],
+    'Full Auto profiles',
+  );
+  expect(contract.full_auto?.delegable_gate, 'MODEL_QUORUM_REQUIRED', 'Full Auto delegable gate');
+  expectTrue(
+    contract.full_auto?.unanimous_independent_approval_required,
+    'Full Auto unanimous independent approval',
+  );
+  expectFalse(
+    contract.full_auto?.human_required_satisfiable_by_model_quorum,
+    'Full Auto human gate delegation',
+  );
+  expectFalse(contract.full_auto?.deny_overridable_by_model_quorum, 'Full Auto deny override');
+  expectTrue(
+    contract.full_auto?.system_policy_creates_merge_intent,
+    'Full Auto system policy merge intent',
+  );
+  expect(contract.full_auto?.merge_execution_authority, 'SHADOW_ONLY', 'Full Auto merge authority');
 
   expectTrue(
     contract.evidence?.exact_revision_binding_required,
