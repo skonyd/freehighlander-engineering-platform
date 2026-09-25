@@ -4,17 +4,12 @@ import { validateBindingPlan } from './binding-registry.js';
 import type { BindingPlan, ResolvedBinding } from './binding-registry.js';
 import type { ProviderFailureKind } from './index.js';
 
-export type BindingReturnPolicy =
-  | 'STAY_ON_FALLBACK'
-  | 'ASK_BEFORE_RETURN'
-  | 'AUTO_RETURN';
+export type BindingReturnPolicy = 'STAY_ON_FALLBACK' | 'ASK_BEFORE_RETURN' | 'AUTO_RETURN';
 
 export type BindingFailureScope = 'BINDING' | 'PROVIDER';
 
 export type BindingFailoverStatus =
-  | 'SWITCHED_TO_FALLBACK'
-  | 'NO_FALLBACK_AVAILABLE'
-  | 'FALLBACK_FORBIDDEN';
+  'SWITCHED_TO_FALLBACK' | 'NO_FALLBACK_AVAILABLE' | 'FALLBACK_FORBIDDEN';
 
 export type PreferredReturnStatus =
   | 'ALREADY_PREFERRED'
@@ -235,10 +230,7 @@ export function evaluatePreferredBindingReturn(
     };
   }
 
-  if (
-    state.policy.returnPolicy === 'ASK_BEFORE_RETURN' &&
-    input.userApprovedReturn !== true
-  ) {
+  if (state.policy.returnPolicy === 'ASK_BEFORE_RETURN' && input.userApprovedReturn !== true) {
     return {
       status: 'APPROVAL_REQUIRED',
       state,
@@ -367,10 +359,7 @@ function isBlockedByCooldown(
   return cooldowns.some((cooldown) => cooldownAppliesToBinding(cooldown, binding));
 }
 
-function cooldownAppliesToBinding(
-  cooldown: BindingCooldownV1,
-  binding: ResolvedBinding,
-): boolean {
+function cooldownAppliesToBinding(cooldown: BindingCooldownV1, binding: ResolvedBinding): boolean {
   return cooldown.scope === 'PROVIDER'
     ? cooldown.providerId === binding.providerId
     : cooldown.bindingId === binding.bindingId;
@@ -386,7 +375,8 @@ function validateStateAgainstPlan(state: RoleBindingFailoverStateV1, plan: Bindi
   validateBindingPlan(plan);
   validateStateShape(state);
   if (state.planHash !== plan.hash) throw new Error('failover state plan hash mismatch');
-  if (state.logicalRole !== plan.logicalRole) throw new Error('failover state logical role mismatch');
+  if (state.logicalRole !== plan.logicalRole)
+    throw new Error('failover state logical role mismatch');
   if (state.preferredBindingId !== plan.bindings[0]!.bindingId) {
     throw new Error('failover state preferred binding mismatch');
   }
@@ -433,7 +423,10 @@ function validateStateShape(state: RoleBindingFailoverStateV1): void {
 }
 
 function buildState(
-  input: Omit<RoleBindingFailoverStateV1, 'schemaVersion' | 'nextCheckAt' | 'stateHash' | 'authority'>,
+  input: Omit<
+    RoleBindingFailoverStateV1,
+    'schemaVersion' | 'nextCheckAt' | 'stateHash' | 'authority'
+  >,
 ): RoleBindingFailoverStateV1 {
   validatePolicy(input.policy);
   const cooldowns = [...input.cooldowns].sort(
