@@ -1,7 +1,4 @@
-import {
-  validateSecretBindingV1,
-  type SecretBindingV1,
-} from './portable-secret-binding.js';
+import { validateSecretBindingV1, type SecretBindingV1 } from './portable-secret-binding.js';
 import {
   validateSecretInjectionReceipt,
   type SecretInjectionPlan,
@@ -13,12 +10,7 @@ import type {
 } from './secret-resolver-runtime.js';
 
 export type SecretReceiptReleaseReason =
-  | 'USER_CANCEL'
-  | 'DEADLINE_EXCEEDED'
-  | 'SHUTDOWN'
-  | 'PARENT_CANCELLED'
-  | 'COMPLETED'
-  | 'EXPIRED';
+  'USER_CANCEL' | 'DEADLINE_EXCEEDED' | 'SHUTDOWN' | 'PARENT_CANCELLED' | 'COMPLETED' | 'EXPIRED';
 
 export interface SecretReceiptReleaseFailure {
   readonly receiptId: string;
@@ -60,7 +52,9 @@ export class SecretReceiptScope {
     }
     const validation = validateSecretInjectionReceipt(plan, receipt);
     if (!validation.valid) {
-      throw new Error('secret receipt tracking rejected invalid receipt: ' + validation.errors.join('; '));
+      throw new Error(
+        'secret receipt tracking rejected invalid receipt: ' + validation.errors.join('; '),
+      );
     }
     if (this.#entries.has(receipt.receiptId)) {
       throw new Error('duplicate tracked secret receipt id');
