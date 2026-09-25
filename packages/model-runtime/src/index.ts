@@ -101,6 +101,7 @@ export {
   recordActiveBindingFailure,
   recordBindingRecoveryObservation,
   semanticFailureCanAdvanceFallbackChain,
+  validateBindingFailoverPolicyV1,
   validateRoleBindingFailoverState,
   type BindingCooldownV1,
   type BindingFailureObservation,
