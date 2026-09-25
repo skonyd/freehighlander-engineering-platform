@@ -50,7 +50,104 @@ export function createPortableResumeStore(root, remote = 'origin') {
   return new GitResumeStore({ repositoryRoot: root, remote });
 }
 
-export function evaluatePortableResumeReconciliation({ manifest, repositoryIdentity, remoteHead }) {
+export function evaluatePortableResumeCurrentnessEvidence({ manifest, eventBundle }) {
+  validateResumeManifestV1(manifest);
+  if (eventBundle === null || eventBundle === undefined) {
+    return {
+      status: 'MANIFEST_ONLY',
+      verified: true,
+      errors: [],
+      authority: 'NONE',
+    };
+  }
+
+  validatePortableCanonicalEventBundleV1(eventBundle);
+  const evidence = [];
+  for (const record of eventBundle.events) {
+    const raw = record.event.payload?.portableResumeCurrentness;
+    if (raw !== undefined) evidence.push(raw);
+  }
+
+  if (evidence.length === 0) {
+    return {
+      status: 'MISSING',
+      verified: false,
+      errors: ['portable resume currentness evidence is missing'],
+      authority: 'NONE',
+    };
+  }
+  if (evidence.length !== 1) {
+    return {
+      status: 'INVALID',
+      verified: false,
+      errors: ['portable resume currentness evidence must appear exactly once'],
+      authority: 'NONE',
+    };
+  }
+
+  const raw = evidence[0];
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    return {
+      status: 'INVALID',
+      verified: false,
+      errors: ['portable resume currentness evidence must be an object'],
+      authority: 'NONE',
+    };
+  }
+
+  const currentness = raw;
+  const expectedKeys = [
+    'workflowHash',
+    'runSnapshotHash',
+    'policyHash',
+    'catalogSnapshotHash',
+    'bindingSnapshotHash',
+  ];
+  const actualKeys = Object.keys(currentness).sort();
+  if (
+    actualKeys.length !== expectedKeys.length ||
+    actualKeys.some((key, index) => key !== [...expectedKeys].sort()[index])
+  ) {
+    return {
+      status: 'INVALID',
+      verified: false,
+      errors: ['portable resume currentness evidence shape is invalid'],
+      authority: 'NONE',
+    };
+  }
+
+  const pairs = [
+    ['workflowHash', manifest.workflow.hash],
+    ['runSnapshotHash', manifest.runSnapshotHash],
+    ['policyHash', manifest.policyHash],
+    ['catalogSnapshotHash', manifest.catalogSnapshotHash],
+    ['bindingSnapshotHash', manifest.bindingSnapshotHash],
+  ];
+  const errors = [];
+  for (const [name, expected] of pairs) {
+    const value = currentness[name];
+    if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)) {
+      errors.push('portable resume currentness ' + name + ' is invalid');
+    } else if (value !== expected) {
+      errors.push('portable resume currentness ' + name + ' mismatch');
+    }
+  }
+
+  return {
+    status: errors.length === 0 ? 'VERIFIED' : 'MISMATCH',
+    verified: errors.length === 0,
+    errors,
+    authority: 'NONE',
+  };
+}
+
+export function evaluatePortableResumeReconciliation({
+  manifest,
+  repositoryIdentity,
+  remoteHead,
+  eventBundle = null,
+  eventBundleError = null,
+}) {
   validateResumeManifestV1(manifest);
   const errors = [];
 
@@ -63,6 +160,24 @@ export function evaluatePortableResumeReconciliation({ manifest, repositoryIdent
     errors.push('portable resume remote HEAD is stale');
   }
 
+  let currentness = {
+    status: 'MANIFEST_ONLY',
+    verified: true,
+    errors: [],
+    authority: 'NONE',
+  };
+  if (eventBundleError !== null) {
+    currentness = {
+      status: 'INVALID',
+      verified: false,
+      errors: [eventBundleError],
+      authority: 'NONE',
+    };
+  } else {
+    currentness = evaluatePortableResumeCurrentnessEvidence({ manifest, eventBundle });
+  }
+  errors.push(...currentness.errors);
+
   return {
     status: errors.length === 0 ? 'READY' : 'RECONCILIATION_REQUIRED',
     errors,
@@ -73,6 +188,8 @@ export function evaluatePortableResumeReconciliation({ manifest, repositoryIdent
     currentRemoteHead: remoteHead,
     generation: manifest.generation,
     manifestHash: manifest.manifestHash,
+    currentnessStatus: currentness.status,
+    currentnessVerified: currentness.verified,
     authority: 'NONE',
   };
 }
@@ -88,6 +205,7 @@ export async function publishPreparedResumeCheckpoint({
     manifest,
     repositoryIdentity,
     remoteHead,
+    eventBundle,
   });
   if (reconciliation.status !== 'READY') {
     return {
@@ -268,6 +386,33 @@ export async function publishPreparedResumeHandoff({
   };
 }
 
+async function readPortableResumeEventBundleEvidence(store, manifest) {
+  const requiresBundle = manifest.artifactManifest.some((entry) =>
+    entry.artifactId.startsWith('portable-events:'),
+  );
+  if (!requiresBundle) return { eventBundle: null, eventBundleError: null };
+  if (!store || typeof store.getLatestEventBundle !== 'function') {
+    return {
+      eventBundle: null,
+      eventBundleError: 'portable resume store cannot read bound event bundle currentness',
+    };
+  }
+  try {
+    return {
+      eventBundle: await store.getLatestEventBundle(
+        manifest.repositoryIdentity,
+        manifest.projectId,
+      ),
+      eventBundleError: null,
+    };
+  } catch {
+    return {
+      eventBundle: null,
+      eventBundleError: 'portable resume bound event bundle currentness is invalid',
+    };
+  }
+}
+
 export async function inspectPortableResume({
   store,
   repositoryIdentity,
@@ -286,11 +431,13 @@ export async function inspectPortableResume({
   }
 
   const remoteHead = await readRemoteHead(manifest.branch);
+  const evidence = await readPortableResumeEventBundleEvidence(store, manifest);
   return {
     ...evaluatePortableResumeReconciliation({
       manifest,
       repositoryIdentity,
       remoteHead,
+      ...evidence,
     }),
     semanticGatePassInferred: false,
   };
@@ -319,10 +466,12 @@ export async function inspectPortableResumeWithOwnership({
   }
 
   const remoteHead = await readRemoteHead(manifest.branch);
+  const evidence = await readPortableResumeEventBundleEvidence(resumeStore, manifest);
   const reconciliation = evaluatePortableResumeReconciliation({
     manifest,
     repositoryIdentity,
     remoteHead,
+    ...evidence,
   });
   if (reconciliation.status !== 'READY') {
     return {
@@ -417,10 +566,12 @@ export async function claimPortableResumeOwnership({
   }
 
   const remoteHead = await readRemoteHead(manifest.branch);
+  const evidence = await readPortableResumeEventBundleEvidence(resumeStore, manifest);
   const reconciliation = evaluatePortableResumeReconciliation({
     manifest,
     repositoryIdentity,
     remoteHead,
+    ...evidence,
   });
   if (reconciliation.status !== 'READY') {
     return {
