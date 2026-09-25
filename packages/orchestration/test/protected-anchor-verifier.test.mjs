@@ -191,7 +191,6 @@ test('tampered verification identity is rejected', () => {
   );
 });
 
-
 test('verification validator rejects malformed schema authority hashes and derived status', () => {
   const verification = verifyProtectedContextAnchors({
     sourceText: source,
