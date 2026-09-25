@@ -229,6 +229,13 @@ export class SpawnGitResumeCommandRunner implements GitResumeCommandRunner {
           }
         }
       });
+      child.stdin.on('error', (error: NodeJS.ErrnoException) => {
+        if (error.code === 'EPIPE') return;
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(error);
+      });
       child.on('error', (error) => {
         if (settled) return;
         settled = true;
