@@ -1606,7 +1606,6 @@ test('portable resume project discovery fails closed when no remote state exists
   await assert.rejects(() => resolvePortableResumeProjectId({}, 'x'), /bounded identifier/);
 });
 
-
 test('portable resume currentness evidence verifies all five hash dimensions', () => {
   const bundle = portableEventBundle();
   const candidate = manifestWithPortableEvents(bundle);
