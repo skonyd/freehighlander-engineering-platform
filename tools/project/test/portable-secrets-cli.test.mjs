@@ -197,7 +197,6 @@ async function fsMkdir(directory) {
   await mkdir(directory, { recursive: true });
 }
 
-
 test('resume secret readiness evaluates only handles required by the portable manifest', async () => {
   const profile = bindLocalSecret(
     {
