@@ -55,6 +55,10 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     button:hover { border-color: #52677d; }
     .empty { padding: 36px; text-align: center; color: var(--muted); }
     .error { color: var(--bad); }
+    .error-card { border: 1px solid #6b3030; background: #1b1113; border-radius: 9px; padding: 12px; margin: 8px 0; }
+    .error-card strong { color: var(--bad); }
+    .error-grid { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 5px 10px; margin-top: 9px; }
+    .error-grid span:nth-child(odd) { color: var(--muted); }
     @media (max-width: 1050px) {
       .metrics { grid-template-columns: repeat(3, 1fr); }
       .layout { grid-template-columns: 1fr; }
@@ -200,6 +204,28 @@ function renderModels(models) {
     '<tbody>' + rows + '</tbody></table>';
 }
 
+
+function renderRuntimeErrors(errors) {
+  if (!errors.length) {
+    return '<div class="empty">No diagnosed runtime errors for this run.</div>';
+  }
+
+  return errors.map(error =>
+    '<div class="error-card">' +
+      '<strong>[' + esc(error.code) + '] ' + esc(error.headline) + '</strong>' +
+      '<div class="error-grid">' +
+        '<span>Cause</span><span>' + esc(error.rootCause) + '</span>' +
+        '<span>Source</span><span><code>' + esc(error.sourceComponent) + '/' + esc(error.sourceOperation) + '</code></span>' +
+        '<span>Failed step</span><span>' + esc(error.failedStep) + '</span>' +
+        '<span>Signal</span><span>' + esc(error.observedSignal) + '</span>' +
+        '<span>Next</span><span>' + esc(error.nextAction) + '</span>' +
+        (error.retryAt ? '<span>Retry</span><span>' + esc(new Date(error.retryAt).toLocaleString()) + '</span>' : '') +
+        '<span>Correlation</span><span><code>' + esc(error.correlationId) + '</code></span>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+
 async function loadRun(runId) {
   const target = document.querySelector('#detail');
   target.textContent = 'Loading ' + runId + '…';
@@ -207,7 +233,7 @@ async function loadRun(runId) {
   try {
     const detail = await api('/api/runs/' + encodeURIComponent(runId));
     const run = detail.run;
-    const tabs = ['events', 'modelCalls', 'artifacts'];
+    const tabs = ['errors', 'events', 'modelCalls', 'artifacts'];
 
     target.innerHTML =
       '<div><code>' + esc(run.runId) + '</code></div>' +
@@ -216,14 +242,20 @@ async function loadRun(runId) {
         (run.humanRequired ? '<span class="pill human">HUMAN REQUIRED</span>' : '') + '</div>' +
       '<div class="tabs">' +
         tabs.map(tab => '<button data-tab="' + tab + '">' + tab + '</button>').join('') +
-      '</div><pre id="run-payload"></pre>';
+      '</div><div id="run-payload"></div>';
 
     const payload = target.querySelector('#run-payload');
-    const show = key => { payload.textContent = JSON.stringify(detail[key], null, 2); };
+    const show = key => {
+      if (key === 'errors') {
+        payload.innerHTML = renderRuntimeErrors(detail.runtimeErrors || []);
+        return;
+      }
+      payload.innerHTML = '<pre>' + esc(JSON.stringify(detail[key], null, 2)) + '</pre>';
+    };
     target.querySelectorAll('button[data-tab]').forEach(button =>
       button.addEventListener('click', () => show(button.dataset.tab))
     );
-    show('events');
+    show((detail.runtimeErrors || []).length ? 'errors' : 'events');
   } catch (error) {
     target.innerHTML = '<span class="error">' + esc(error.message) + '</span>';
   }
