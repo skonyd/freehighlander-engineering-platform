@@ -47,7 +47,9 @@ export function enqueueHumanDecision(store, expectedGeneration, entry) {
     return generationConflict(expectedGeneration, current.generation);
   }
 
-  const existing = current.state.entries.find((candidate) => candidate.decisionId === entry.decisionId);
+  const existing = current.state.entries.find(
+    (candidate) => candidate.decisionId === entry.decisionId,
+  );
   if (existing) {
     if (existing.decisionHash !== entry.decisionHash) {
       throw new Error('human decision id already exists with different identity');
@@ -85,12 +87,7 @@ export function enqueueHumanDecision(store, expectedGeneration, entry) {
   };
 }
 
-export function resolveHumanDecision(
-  store,
-  expectedGeneration,
-  response,
-  context,
-) {
+export function resolveHumanDecision(store, expectedGeneration, response, context) {
   validateHumanDecisionResponseV1(response);
   const currentSnapshot = store.read();
   if (currentSnapshot === null) {
@@ -159,7 +156,8 @@ export function validateHumanDecisionQueueStateV1(value, expectedProjectId = nul
   if (expectedProjectId !== null && value.projectId !== expectedProjectId) {
     throw new Error('human decision queue project identity mismatch');
   }
-  if (!Array.isArray(value.entries)) throw new Error('human decision queue entries must be an array');
+  if (!Array.isArray(value.entries))
+    throw new Error('human decision queue entries must be an array');
   if (!Array.isArray(value.responses)) {
     throw new Error('human decision queue responses must be an array');
   }
