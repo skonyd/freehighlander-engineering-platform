@@ -165,8 +165,6 @@ export function diagnoseProviderInvocationFailure(
         nextAction:
           'Inspect the structured-output evidence and correct the provider or adapter contract',
       };
-    case 'semantic_failure':
-      return null;
   }
 }
 
@@ -206,7 +204,7 @@ export function providerFailureIntegrationCanGrantAuthority(): false {
 }
 
 function buildObservedSignal(failure: NormalizedProviderFailureV1): string {
-  const parts = [failure.failureKind];
+  const parts: string[] = [failure.failureKind];
   if (failure.httpStatus !== undefined) parts.push(`HTTP ${failure.httpStatus}`);
   if (failure.retryAfterMs !== undefined) parts.push(`Retry-After ${failure.retryAfterMs}ms`);
   return parts.join('; ');
