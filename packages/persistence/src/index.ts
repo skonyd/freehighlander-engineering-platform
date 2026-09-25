@@ -1,4 +1,16 @@
 export {
+  GitResumeStore,
+  SpawnGitResumeCommandRunner,
+  gitResumeStoreCanContainSecretValues,
+  gitResumeStoreCanGrantAuthority,
+  resumeStateBranchCanMergeIntoProductBranches,
+  resumeStateRef,
+  type GitResumeCommandResult,
+  type GitResumeCommandRunner,
+  type GitResumeStoreOptions,
+} from './git-resume-store.js';
+
+export {
   AtomicJsonConfigStore,
   atomicConfigCanBypassGenerationCas,
   atomicConfigCanGrantAuthority,
