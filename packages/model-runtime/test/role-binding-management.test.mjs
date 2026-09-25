@@ -467,7 +467,6 @@ test('role binding publication rehydration rejects duplicate role-risk state and
   );
 });
 
-
 test('publication persists optional failover policy without invalidating legacy publications', async () => {
   const { providers, catalogs, snapshot } = await setupCatalog([
     {
