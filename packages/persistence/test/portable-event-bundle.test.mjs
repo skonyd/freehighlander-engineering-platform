@@ -171,7 +171,7 @@ test('portable event bundle rejects duplicates out-of-order events secrets and m
     () =>
       bundle([
         event('run.started', '2026-09-25T09:00:00.000Z', {
-          payload: { apiKey: 'sk-this-is-runtime-only-secret-material-12345' },
+          payload: { apiKey: 'fixture-runtime-only-material' },
         }),
       ]),
     /forbidden credential field/,
