@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import {
   acquirePortableOwnershipLease,
@@ -8,6 +9,8 @@ import {
 } from '../../../packages/orchestration/dist/index.js';
 import {
   GitResumeStore,
+  rebuildSqliteReadModelFromPortableEventBundle,
+  validatePortableCanonicalEventBundleV1,
   validateResumeManifestV1,
 } from '../../../packages/persistence/dist/index.js';
 
@@ -24,6 +27,20 @@ export async function readPreparedResumeManifest(file) {
     throw error;
   }
   validateResumeManifestV1(parsed);
+  return parsed;
+}
+
+export async function readPreparedPortableEventBundle(file) {
+  let parsed;
+  try {
+    parsed = JSON.parse(await fs.readFile(file, 'utf8'));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error('portable event bundle contains invalid JSON');
+    }
+    throw error;
+  }
+  validatePortableCanonicalEventBundleV1(parsed);
   return parsed;
 }
 
@@ -63,11 +80,13 @@ export async function publishPreparedResumeCheckpoint({
   manifest,
   repositoryIdentity,
   remoteHead,
+  eventBundle = null,
 }) {
   const reconciliation = evaluatePortableResumeReconciliation({
     manifest,
     repositoryIdentity,
     remoteHead,
+    eventBundle,
   });
   if (reconciliation.status !== 'READY') {
     return {
@@ -78,7 +97,14 @@ export async function publishPreparedResumeCheckpoint({
   }
 
   const expectedGeneration = manifest.generation === 1 ? null : manifest.generation - 1;
-  const decision = await store.publishCas(manifest, expectedGeneration);
+  const decision =
+    eventBundle === null
+      ? await store.publishCas(manifest, expectedGeneration)
+      : typeof store.publishCasWithEventBundle === 'function'
+        ? await store.publishCasWithEventBundle(manifest, eventBundle, expectedGeneration)
+        : (() => {
+            throw new Error('portable resume store does not support event bundle publication');
+          })();
   if (decision.status === 'CONFLICT') {
     return {
       status: 'CONFLICT',
@@ -98,6 +124,18 @@ export async function publishPreparedResumeCheckpoint({
     throw new Error('portable resume checkpoint read-back verification failed');
   }
 
+  let eventBundleHash = null;
+  if (eventBundle !== null) {
+    if (typeof store.getLatestEventBundle !== 'function') {
+      throw new Error('portable resume store does not support event bundle read-back');
+    }
+    const verifiedBundle = await store.getLatestEventBundle(repositoryIdentity, manifest.projectId);
+    if (verifiedBundle === null || verifiedBundle.bundleHash !== eventBundle.bundleHash) {
+      throw new Error('portable event bundle checkpoint read-back verification failed');
+    }
+    eventBundleHash = verifiedBundle.bundleHash;
+  }
+
   return {
     status: 'PORTABLE_READY',
     repositoryIdentity,
@@ -105,6 +143,7 @@ export async function publishPreparedResumeCheckpoint({
     branch: manifest.branch,
     generation: manifest.generation,
     manifestHash: manifest.manifestHash,
+    eventBundleHash,
     published: true,
     semanticGatePassInferred: false,
     authority: 'NONE',
@@ -119,6 +158,7 @@ export async function publishPreparedResumeHandoff({
   remoteHead,
   leaseId,
   releasedAt,
+  eventBundle = null,
 }) {
   const checkpoint = await publishPreparedResumeCheckpoint({
     store: resumeStore,
@@ -467,6 +507,48 @@ export async function claimPortableResumeOwnership({
     ownershipGeneration: acquisition.lease.generation,
     readyToMutate: true,
     semanticGatePassInferred: false,
+  };
+}
+
+export async function rebuildPortableResumeReadModel({
+  store,
+  repositoryIdentity,
+  projectId,
+  filePath,
+}) {
+  if (!store || typeof store.getLatestEventBundle !== 'function') {
+    throw new Error('portable resume store does not support event bundle retrieval');
+  }
+  if (typeof filePath !== 'string' || !filePath.trim()) {
+    throw new Error('portable resume read-model filePath is required');
+  }
+
+  const bundle = await store.getLatestEventBundle(repositoryIdentity, projectId);
+  if (bundle === null) {
+    return {
+      status: 'NOT_REQUIRED',
+      projectId,
+      eventBundleHash: null,
+      imported: 0,
+      duplicates: 0,
+      localDatabaseRequiredForPortability: false,
+      semanticGatePassInferred: false,
+      authority: 'NONE',
+    };
+  }
+
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  const rebuilt = rebuildSqliteReadModelFromPortableEventBundle(bundle, filePath);
+  return {
+    status: 'REBUILT',
+    projectId,
+    eventBundleHash: rebuilt.bundleHash,
+    imported: rebuilt.imported,
+    duplicates: rebuilt.duplicates,
+    integrity: rebuilt.integrity,
+    localDatabaseRequiredForPortability: false,
+    semanticGatePassInferred: false,
+    authority: 'NONE',
   };
 }
 
