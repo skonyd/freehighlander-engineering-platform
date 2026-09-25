@@ -159,6 +159,8 @@ export {
   createHumanApprovalRequest,
   evaluatePolicy,
   modelCanActAsHumanApprover,
+  modelQuorumCanOverrideDeny,
+  modelQuorumCanSatisfyHumanRequired,
   policyConfigurationCanSelfApprove,
   publishPolicy,
   recordHumanDecision,
