@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 
 import {
+  acquirePortableOwnershipLease,
   portableOwnershipLeaseIsActive,
   releasePortableOwnershipLease,
 } from '../../../packages/orchestration/dist/index.js';
@@ -330,6 +331,141 @@ export async function inspectPortableResumeWithOwnership({
     ownershipRevision: ownership.revision,
     ownershipGeneration: ownership.lease.generation,
     readyToMutate: false,
+    semanticGatePassInferred: false,
+  };
+}
+
+export async function claimPortableResumeOwnership({
+  resumeStore,
+  ownershipStore,
+  repositoryIdentity,
+  projectId,
+  readRemoteHead,
+  runId,
+  leaseId,
+  machineInstanceId,
+  ttlMs,
+  now,
+}) {
+  const manifest = await resumeStore.getLatest(repositoryIdentity, projectId);
+  if (manifest === null) {
+    return {
+      status: 'NOT_FOUND',
+      repositoryIdentity,
+      projectId,
+      ownershipStatus: 'NOT_CHECKED',
+      ownershipClaimed: false,
+      readyToMutate: false,
+      semanticGatePassInferred: false,
+      authority: 'NONE',
+    };
+  }
+
+  const remoteHead = await readRemoteHead(manifest.branch);
+  const reconciliation = evaluatePortableResumeReconciliation({
+    manifest,
+    repositoryIdentity,
+    remoteHead,
+  });
+  if (reconciliation.status !== 'READY') {
+    return {
+      ...reconciliation,
+      ownershipStatus: 'NOT_CHECKED',
+      ownershipClaimed: false,
+      readyToMutate: false,
+      semanticGatePassInferred: false,
+    };
+  }
+
+  if (manifest.activeWorkItemId === null) {
+    return {
+      ...reconciliation,
+      ownershipStatus: 'NOT_REQUIRED',
+      ownershipClaimed: false,
+      readyToMutate: true,
+      semanticGatePassInferred: false,
+    };
+  }
+
+  for (const [value, name] of [
+    [runId, 'runId'],
+    [leaseId, 'leaseId'],
+    [machineInstanceId, 'machineInstanceId'],
+  ]) {
+    if (typeof value !== 'string' || !value.trim()) {
+      throw new Error(name + ' is required for ownership claim');
+    }
+  }
+  if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0) {
+    throw new Error('ttlMs must be a positive safe integer for ownership claim');
+  }
+
+  const current = await ownershipStore.getLatest(
+    repositoryIdentity,
+    manifest.projectId,
+    manifest.activeWorkItemId,
+  );
+  const acquisition = acquirePortableOwnershipLease(
+    {
+      repositoryIdentity,
+      projectId: manifest.projectId,
+      workItemId: manifest.activeWorkItemId,
+      runId,
+      leaseId,
+      machineInstanceId,
+      now,
+      ttlMs,
+      lastCheckpointGeneration: manifest.generation,
+    },
+    current?.lease ?? null,
+  );
+  if (acquisition.status === 'BLOCKED_ACTIVE') {
+    return {
+      ...reconciliation,
+      status: 'OWNERSHIP_ACTIVE',
+      ownershipStatus: 'ACTIVE_OTHER',
+      ownershipClaimed: false,
+      ownershipRevision: current?.revision ?? null,
+      ownershipGeneration: acquisition.lease.generation,
+      readyToMutate: false,
+      semanticGatePassInferred: false,
+    };
+  }
+
+  const decision = await ownershipStore.publishCas(acquisition.lease, current?.revision ?? null);
+  if (decision.status === 'CONFLICT') {
+    return {
+      ...reconciliation,
+      status: 'OWNERSHIP_CLAIM_CONFLICT',
+      ownershipStatus: 'CONFLICT',
+      ownershipClaimed: false,
+      readyToMutate: false,
+      semanticGatePassInferred: false,
+    };
+  }
+
+  const verified = await ownershipStore.getLatest(
+    repositoryIdentity,
+    manifest.projectId,
+    manifest.activeWorkItemId,
+  );
+  if (
+    verified === null ||
+    verified.revision !== decision.revision ||
+    verified.lease.state !== 'ACTIVE' ||
+    verified.lease.leaseHash !== acquisition.lease.leaseHash
+  ) {
+    throw new Error('portable ownership claim read-back verification failed');
+  }
+
+  return {
+    ...reconciliation,
+    ownershipStatus: 'CLAIMED',
+    ownershipClaimed: true,
+    reclaimedExpiredLease: acquisition.reclaimedExpiredLease,
+    ownershipRevision: decision.revision,
+    ownershipGeneration: acquisition.lease.generation,
+    readyToMutate: true,
     semanticGatePassInferred: false,
   };
 }
