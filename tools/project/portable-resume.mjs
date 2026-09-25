@@ -26,6 +26,7 @@ try {
   const remote = option(parsed.options, 'remote') ?? 'origin';
 
   if (parsed.command === 'checkpoint') {
+    if (parsed.flags.has('claim')) throw new Error('--claim is valid only with resume');
     const manifestFile = requireOption(parsed.options, 'manifest');
     assertSafeCheckpointWorktree(readCheckpointWorktreeStatus(root));
 
@@ -59,6 +60,7 @@ try {
       process.exitCode = 2;
     }
   } else if (parsed.command === 'resume') {
+    if (parsed.flags.has('handoff')) throw new Error('--handoff is valid only with checkpoint');
     const projectId = requireOption(parsed.options, 'project');
     const store = createPortableResumeStore(root, remote);
     const ownershipStore = new GitPortableOwnershipStore(root, remote);
