@@ -35,11 +35,7 @@ export interface FullAutoQuorumInput {
   readonly reviewers: readonly FullAutoReviewerEvidence[];
 }
 
-export type FullAutoQuorumStatus =
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'BLOCKED'
-  | 'INSUFFICIENT';
+export type FullAutoQuorumStatus = 'APPROVED' | 'REJECTED' | 'BLOCKED' | 'INSUFFICIENT';
 
 export interface FullAutoQuorumArtifact {
   readonly schemaVersion: 1;
@@ -121,9 +117,7 @@ export function fullAutoQuorumCanGrantAuthority(): false {
   return false;
 }
 
-export function fullAutoQuorumIsMergeEvidenceComplete(
-  artifact: FullAutoQuorumArtifact,
-): boolean {
+export function fullAutoQuorumIsMergeEvidenceComplete(artifact: FullAutoQuorumArtifact): boolean {
   validateFullAutoQuorumArtifact(artifact);
   return artifact.status === 'APPROVED';
 }
@@ -138,14 +132,8 @@ function normalizeScope(scope: FullAutoQuorumScope): FullAutoQuorumScope {
     catalogSnapshotHash: requireSha256(scope.catalogSnapshotHash, 'catalogSnapshotHash'),
     requiredEvidenceHash: requireSha256(scope.requiredEvidenceHash, 'requiredEvidenceHash'),
     reviewScopeHash: requireSha256(scope.reviewScopeHash, 'reviewScopeHash'),
-    changeBudgetResultHash: requireSha256(
-      scope.changeBudgetResultHash,
-      'changeBudgetResultHash',
-    ),
-    runtimeContainmentHash: requireSha256(
-      scope.runtimeContainmentHash,
-      'runtimeContainmentHash',
-    ),
+    changeBudgetResultHash: requireSha256(scope.changeBudgetResultHash, 'changeBudgetResultHash'),
+    runtimeContainmentHash: requireSha256(scope.runtimeContainmentHash, 'runtimeContainmentHash'),
     ...(scope.testReviewEvidenceHash === undefined
       ? {}
       : {
