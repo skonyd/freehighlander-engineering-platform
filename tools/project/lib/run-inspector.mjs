@@ -52,9 +52,7 @@ export function buildRunInspectorReport(events) {
   validateCausalGraph(spans);
 
   const latestSummary =
-    summaryEvents.length === 0
-      ? null
-      : summaryFromEvent(summaryEvents[summaryEvents.length - 1]);
+    summaryEvents.length === 0 ? null : summaryFromEvent(summaryEvents[summaryEvents.length - 1]);
   validateTraceConsistency(spans, latestSummary);
 
   const criticalPath = new Set(latestSummary?.criticalPathSpanIds ?? []);
