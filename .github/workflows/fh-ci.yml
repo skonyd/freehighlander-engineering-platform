@@ -33,7 +33,4 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: |
-          npm run format:write
-          git diff -- packages/orchestration/src/protected-anchor-verifier.ts packages/orchestration/test/protected-anchor-verifier.test.mjs
-          exit 1
+        run: npm run verify
