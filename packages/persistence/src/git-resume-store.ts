@@ -39,10 +39,7 @@ export class GitResumeStore implements ResumeStore {
     this.#runner = options.runner ?? new SpawnGitResumeCommandRunner(options.repositoryRoot);
   }
 
-  async getLatest(
-    repositoryIdentity: string,
-    projectId: string,
-  ): Promise<ResumeManifestV1 | null> {
+  async getLatest(repositoryIdentity: string, projectId: string): Promise<ResumeManifestV1 | null> {
     requireText(repositoryIdentity, 'repositoryIdentity');
     requireIdentifier(projectId, 'projectId');
 
@@ -52,12 +49,7 @@ export class GitResumeStore implements ResumeStore {
 
     const cacheRef = resumeCacheRef(projectId);
     await requireGitSuccess(
-      this.#runner.run([
-        'fetch',
-        '--no-tags',
-        this.#remote,
-        `+${stateRef}:${cacheRef}`,
-      ]),
+      this.#runner.run(['fetch', '--no-tags', this.#remote, `+${stateRef}:${cacheRef}`]),
       'resume state fetch failed',
     );
 
@@ -127,10 +119,7 @@ export class GitResumeStore implements ResumeStore {
     if (currentHead !== null) commitArgs.push('-p', currentHead);
 
     const commit = await requireObjectId(
-      requireGitSuccess(
-        this.#runner.run(commitArgs),
-        'resume state commit creation failed',
-      ),
+      requireGitSuccess(this.#runner.run(commitArgs), 'resume state commit creation failed'),
       'resume state commit',
     );
 
@@ -138,12 +127,7 @@ export class GitResumeStore implements ResumeStore {
       currentHead === null
         ? `--force-with-lease=${stateRef}:`
         : `--force-with-lease=${stateRef}:${currentHead}`;
-    const push = await this.#runner.run([
-      'push',
-      this.#remote,
-      lease,
-      `${commit}:${stateRef}`,
-    ]);
+    const push = await this.#runner.run(['push', this.#remote, lease, `${commit}:${stateRef}`]);
     if (push.exitCode !== 0) {
       return conflict('remote resume state changed during publish');
     }
