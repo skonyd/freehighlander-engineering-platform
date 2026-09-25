@@ -12,7 +12,7 @@
     "packages/*"
   ],
   "scripts": {
-    "format": "prettier --check package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
+    "format": "prettier --write packages/persistence/src/portable-event-bundle.ts packages/persistence/test/portable-event-bundle.test.mjs && git diff -- packages/persistence/src/portable-event-bundle.ts packages/persistence/test/portable-event-bundle.test.mjs && exit 1",
     "format:write": "prettier --write package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
