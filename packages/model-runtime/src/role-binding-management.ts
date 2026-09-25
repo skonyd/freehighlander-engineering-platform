@@ -11,6 +11,10 @@ import {
 } from './binding-registry.js';
 import type { ModelCatalogManagementService } from './model-catalog-management.js';
 import type { ModelQualificationSnapshotV1 } from './model-qualification.js';
+import {
+  validateBindingFailoverPolicyV1,
+  type BindingFailoverPolicyV1,
+} from './quota-aware-failover.js';
 
 export interface RoleBindingManagementAuditEvent {
   readonly type: 'model.binding.changed';
@@ -28,6 +32,8 @@ export interface RoleBindingManagementAuditEvent {
     readonly previousState?: string;
     readonly currentState: string;
     readonly itemCount: number;
+    readonly fallbackBindingIds?: readonly string[];
+    readonly returnPolicy?: BindingFailoverPolicyV1['returnPolicy'];
   };
 }
 
@@ -43,6 +49,7 @@ export interface RoleBindingPreviewInput {
   readonly qualifications: Readonly<Record<string, ModelQualificationSnapshotV1>>;
   readonly requiredCapabilities?: BindingPlan['requiredCapabilities'];
   readonly requiredIndependenceGroup?: string;
+  readonly failoverPolicy?: BindingFailoverPolicyV1;
 }
 
 export interface RoleBindingPublicationV1 {
@@ -52,6 +59,7 @@ export interface RoleBindingPublicationV1 {
   readonly publishedAt: string;
   readonly primary: ModelBindingDefinition;
   readonly fallbacks: readonly ModelBindingDefinition[];
+  readonly failoverPolicy?: BindingFailoverPolicyV1;
   readonly plan: BindingPlan;
   readonly hash: string;
   readonly authority: 'NONE';
@@ -137,6 +145,9 @@ export class RoleBindingManagementService {
       publishedAt,
       primary: cloneBinding(input.primary),
       fallbacks: (input.fallbacks ?? []).map(cloneBinding),
+      ...(input.failoverPolicy
+        ? { failoverPolicy: cloneFailoverPolicy(input.failoverPolicy) }
+        : {}),
       plan,
       authority: 'NONE' as const,
     };
@@ -165,6 +176,12 @@ export class RoleBindingManagementService {
           : {}),
         currentState: `${input.primary.id}@${input.primary.version}`,
         itemCount: publication.plan.bindings.length,
+        ...(publication.fallbacks.length > 0
+          ? { fallbackBindingIds: publication.fallbacks.map((binding) => binding.id) }
+          : {}),
+        ...(publication.failoverPolicy
+          ? { returnPolicy: publication.failoverPolicy.returnPolicy }
+          : {}),
       },
     };
 
@@ -213,6 +230,13 @@ export function validateRoleBindingPublicationV1(publication: RoleBindingPublica
     throw new Error('role binding publication plan identity mismatch');
   }
 
+  if (publication.failoverPolicy !== undefined) {
+    validateBindingFailoverPolicyV1(publication.failoverPolicy);
+    if (publication.fallbacks.length === 0) {
+      throw new Error('role binding failover policy requires at least one fallback');
+    }
+  }
+
   const definitions = [publication.primary, ...publication.fallbacks];
   const registry = new BindingRegistry();
   for (const definition of definitions) registry.register(cloneBinding(definition));
@@ -242,6 +266,9 @@ export function validateRoleBindingPublicationV1(publication: RoleBindingPublica
     publishedAt,
     primary: cloneBinding(publication.primary),
     fallbacks: publication.fallbacks.map(cloneBinding),
+    ...(publication.failoverPolicy
+      ? { failoverPolicy: cloneFailoverPolicy(publication.failoverPolicy) }
+      : {}),
     plan: publication.plan,
     authority: 'NONE' as const,
   };
@@ -265,6 +292,14 @@ function cloneBinding(binding: ModelBindingDefinition): ModelBindingDefinition {
       ? { requiredCapabilities: [...binding.requiredCapabilities] }
       : {}),
     allowedRiskTiers: [...binding.allowedRiskTiers],
+  };
+}
+
+function cloneFailoverPolicy(policy: BindingFailoverPolicyV1): BindingFailoverPolicyV1 {
+  validateBindingFailoverPolicyV1(policy);
+  return {
+    returnPolicy: policy.returnPolicy,
+    unknownResetRecheckMs: policy.unknownResetRecheckMs,
   };
 }
 
