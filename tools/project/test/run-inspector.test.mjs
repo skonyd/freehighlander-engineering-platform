@@ -229,10 +229,7 @@ test('run inspector reads an existing telemetry database without mutating event 
       loaded.map((event) => event.type),
       representativeEvents()
         .slice()
-        .sort(
-          (left, right) =>
-            Date.parse(left.timestamp) - Date.parse(right.timestamp),
-        )
+        .sort((left, right) => Date.parse(left.timestamp) - Date.parse(right.timestamp))
         .map((event) => event.type),
     );
     assert.equal(buildRunInspectorReport(loaded).summary.maxConcurrentSpans, 2);
