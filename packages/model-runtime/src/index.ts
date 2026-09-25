@@ -97,11 +97,15 @@ export { parseProviderRetryAfterMs, retryAfterParserCanGrantAuthority } from './
 
 export {
   applyProviderInvocationFailure,
+  diagnoseProviderInvocationFailure,
   normalizeProviderInvocationFailure,
   providerFailureIntegrationCanGrantAuthority,
   providerFailureScope,
   type ApplyProviderFailureInput,
   type NormalizedProviderFailureV1,
+  type ProviderFailureDiagnosisCauseKind,
+  type ProviderFailureDiagnosisContext,
+  type ProviderFailureDiagnosisV1,
 } from './provider-failover-integration.js';
 
 export {
