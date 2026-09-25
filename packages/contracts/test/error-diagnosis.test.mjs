@@ -50,7 +50,8 @@ function quotaDiagnosisInput(overrides = {}) {
     certainty: 'CONFIRMED_SIGNAL',
     headline: 'Primary model quota exhausted',
     failedStep: 'Invoke preferred final-review model',
-    rootCause: 'The provider rejected the preferred model because its current usage quota is exhausted.',
+    rootCause:
+      'The provider rejected the preferred model because its current usage quota is exhausted.',
     observedSignal: 'quota_exhausted with Retry-After=1800s',
     causalChain: [
       {
@@ -70,7 +71,8 @@ function quotaDiagnosisInput(overrides = {}) {
         summary: 'Model runtime surfaced the provider availability failure.',
       },
     ],
-    nextAction: 'Use the configured fallback now and retry the preferred model after its reset time',
+    nextAction:
+      'Use the configured fallback now and retry the preferred model after its reset time',
     retryAt: '2026-09-25T23:00:00+03:00',
     redactionStatus: 'NOT_REQUIRED',
     ...overrides,
@@ -156,19 +158,18 @@ test('causal chain is bounded contiguous and root-first', () => {
     /contiguous and root-first/,
   );
 
-  assert.throws(
-    () =>
-      runtimeErrorDiagnosisV1Schema.parse({
-        ...buildRuntimeErrorDiagnosisV1(error, quotaDiagnosisInput()),
-        causalChain: Array.from({ length: 9 }, (_, index) => ({
-          sequence: index,
-          layer: 'INTERNAL',
-          component: 'internal-component',
-          operation: 'internal-operation',
-          code: 'INTERNAL_CODE',
-          summary: 'bounded causal hop',
-        })),
-      }),
+  assert.throws(() =>
+    runtimeErrorDiagnosisV1Schema.parse({
+      ...buildRuntimeErrorDiagnosisV1(error, quotaDiagnosisInput()),
+      causalChain: Array.from({ length: 9 }, (_, index) => ({
+        sequence: index,
+        layer: 'INTERNAL',
+        component: 'internal-component',
+        operation: 'internal-operation',
+        code: 'INTERNAL_CODE',
+        summary: 'bounded causal hop',
+      })),
+    }),
   );
 });
 
