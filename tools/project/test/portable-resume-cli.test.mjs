@@ -10,6 +10,7 @@ import {
 } from '../../../packages/orchestration/dist/index.js';
 import { createResumeManifestV1 } from '../../../packages/persistence/dist/index.js';
 import {
+  buildPortableResumePlan,
   claimPortableResumeOwnership,
   evaluatePortableResumeReconciliation,
   inspectPortableResume,
@@ -797,4 +798,124 @@ test('portable resume validates claim inputs before touching ownership state', a
     /runId is required/,
   );
   assert.equal(ownershipReads, 0);
+});
+
+test('portable resume planner reconstructs actionable state without local SQLite or cache', () => {
+  const candidate = manifest({
+    parkedDecisionIds: ['decision-017'],
+    waitingNodeIds: ['node-waiting'],
+    readyNodeIds: ['node-ready-b', 'node-ready-a'],
+    completedNodeResults: [
+      {
+        nodeId: 'node-complete',
+        resultHash: '6'.repeat(64),
+        executionKey: '7'.repeat(64),
+      },
+    ],
+  });
+
+  const plan = buildPortableResumePlan({
+    manifest: candidate,
+    reconciliation: {
+      status: 'READY',
+      readyToMutate: true,
+      authority: 'NONE',
+    },
+    secrets: {
+      status: 'BLOCKED_CONFIGURATION',
+      blockedHandleIds: ['provider.openai.api'],
+      secretDependentWorkReady: false,
+      authority: 'NONE',
+      secretValuesPresent: false,
+    },
+  });
+
+  assert.equal(plan.status, 'READY');
+  assert.deepEqual(plan.parkedDecisionIds, ['decision-017']);
+  assert.deepEqual(plan.readyNodeIds, ['node-ready-a', 'node-ready-b']);
+  assert.deepEqual(plan.waitingNodeIds, ['node-waiting']);
+  assert.deepEqual(plan.completedNodeIds, ['node-complete']);
+  assert.deepEqual(plan.secretBlockedHandleIds, ['provider.openai.api']);
+  assert.equal(plan.secretDependentWorkReady, false);
+  assert.equal(plan.canContinueIndependentWork, true);
+  assert.equal(plan.localSqliteRequired, false);
+  assert.equal(plan.localOnlyCacheRequired, false);
+  assert.equal(plan.semanticGatePassInferred, false);
+  assert.equal(plan.authority, 'NONE');
+});
+
+test('portable resume planner fails closed on reconciliation drift', () => {
+  const candidate = manifest();
+
+  const plan = buildPortableResumePlan({
+    manifest: candidate,
+    reconciliation: {
+      status: 'RECONCILIATION_REQUIRED',
+      readyToMutate: false,
+      authority: 'NONE',
+    },
+    secrets: {
+      status: 'NOT_CHECKED',
+      secretDependentWorkReady: false,
+      authority: 'NONE',
+      secretValuesPresent: false,
+    },
+  });
+
+  assert.equal(plan.status, 'RECONCILIATION_REQUIRED');
+  assert.equal(plan.canContinueIndependentWork, false);
+  assert.equal(plan.localSqliteRequired, false);
+});
+
+test('portable resume planner preserves parked and waiting state when no node is ready', () => {
+  const candidate = manifest({
+    parkedDecisionIds: ['decision-017'],
+    readyNodeIds: [],
+    waitingNodeIds: ['node-waiting'],
+  });
+
+  const plan = buildPortableResumePlan({
+    manifest: candidate,
+    reconciliation: {
+      status: 'READY',
+      readyToMutate: true,
+      authority: 'NONE',
+    },
+    secrets: {
+      status: 'READY',
+      blockedHandleIds: [],
+      secretDependentWorkReady: true,
+      authority: 'NONE',
+      secretValuesPresent: false,
+    },
+  });
+
+  assert.equal(plan.status, 'BLOCKED');
+  assert.deepEqual(plan.parkedDecisionIds, ['decision-017']);
+  assert.deepEqual(plan.waitingNodeIds, ['node-waiting']);
+  assert.deepEqual(plan.readyNodeIds, []);
+  assert.equal(plan.canContinueIndependentWork, false);
+});
+
+test('portable resume planner rejects missing readiness evidence', () => {
+  const candidate = manifest();
+
+  assert.throws(
+    () =>
+      buildPortableResumePlan({
+        manifest: candidate,
+        reconciliation: null,
+        secrets: {},
+      }),
+    /reconciliation result is required/,
+  );
+  assert.throws(
+    () =>
+      buildPortableResumePlan({
+        manifest: candidate,
+        reconciliation: { status: 'READY', readyToMutate: true },
+        secrets: null,
+      }),
+    /secret readiness result is required/,
+  );
 });
