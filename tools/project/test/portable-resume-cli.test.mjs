@@ -18,6 +18,7 @@ import {
   publishPreparedResumeCheckpoint,
   publishPreparedResumeHandoff,
   readPreparedResumeManifest,
+  resolvePortableResumeProjectId,
 } from '../lib/portable-resume.mjs';
 
 const H1 = '1'.repeat(64);
@@ -918,4 +919,64 @@ test('portable resume planner rejects missing readiness evidence', () => {
       }),
     /secret readiness result is required/,
   );
+});
+
+test('portable resume project discovery selects the only remote project', async () => {
+  const selected = await resolvePortableResumeProjectId(
+    {
+      async listProjectIds() {
+        return ['project-151'];
+      },
+    },
+    null,
+  );
+  assert.equal(selected, 'project-151');
+});
+
+test('portable resume project discovery requires explicit selection when remote has multiple projects', async () => {
+  await assert.rejects(
+    () =>
+      resolvePortableResumeProjectId(
+        {
+          async listProjectIds() {
+            return ['project-151', 'project-200'];
+          },
+        },
+        null,
+      ),
+    /multiple portable resume projects found.*project-151, project-200/,
+  );
+
+  let discoveryCalls = 0;
+  const explicit = await resolvePortableResumeProjectId(
+    {
+      async listProjectIds() {
+        discoveryCalls += 1;
+        return ['project-151', 'project-200'];
+      },
+    },
+    'project-200',
+  );
+  assert.equal(explicit, 'project-200');
+  assert.equal(discoveryCalls, 0);
+});
+
+test('portable resume project discovery fails closed when no remote state exists', async () => {
+  await assert.rejects(
+    () =>
+      resolvePortableResumeProjectId(
+        {
+          async listProjectIds() {
+            return [];
+          },
+        },
+        null,
+      ),
+    /no portable resume project state found/,
+  );
+  await assert.rejects(
+    () => resolvePortableResumeProjectId({}, null),
+    /does not support project discovery/,
+  );
+  await assert.rejects(() => resolvePortableResumeProjectId({}, 'x'), /bounded identifier/);
 });

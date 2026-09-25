@@ -159,3 +159,66 @@ test('Git resume store and command runner reject unsafe construction and argumen
     /git resume command argument must be bounded single-line metadata/,
   );
 });
+
+test('GitResumeStore discovers portable project ids from remote state refs', async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'fh-git-resume-discovery-'));
+  const remote = path.join(root, 'remote.git');
+  const working = path.join(root, 'working');
+
+  try {
+    runGit(root, ['init', '--bare', remote]);
+    runGit(root, ['init', '-b', 'main', working]);
+    runGit(working, ['config', 'user.name', 'FreeHighlander Test']);
+    runGit(working, ['config', 'user.email', 'fh-test@example.invalid']);
+    runGit(working, ['commit', '--allow-empty', '-m', 'initial']);
+    runGit(working, ['remote', 'add', 'origin', remote]);
+    runGit(working, ['push', '-u', 'origin', 'main']);
+
+    const store = new GitResumeStore({ repositoryRoot: working });
+    assert.deepEqual(await store.listProjectIds(), []);
+
+    for (const projectId of ['project-200', 'project-151']) {
+      const candidate = createResumeManifestV1(
+        manifestInput({
+          projectId,
+          activeWorkItemId: projectId === 'project-151' ? 'issue-151' : 'issue-200',
+          issueNumber: projectId === 'project-151' ? 151 : 200,
+        }),
+      );
+      const published = await store.publishCas(candidate, null);
+      assert.equal(published.status, 'ACCEPT');
+    }
+
+    assert.deepEqual(await store.listProjectIds(), ['project-151', 'project-200']);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('GitResumeStore project discovery fails closed on malformed or duplicate remote refs', async () => {
+  const malformed = new GitResumeStore({
+    repositoryRoot: '.',
+    runner: {
+      async run(args) {
+        assert.equal(args[0], 'ls-remote');
+        return {
+          exitCode: 0,
+          stdout: `${'a'.repeat(40)}\trefs/heads/freehighlander-state/x\n`,
+          stderr: '',
+        };
+      },
+    },
+  });
+  await assert.rejects(() => malformed.listProjectIds(), /bounded identifier/);
+
+  const duplicate = new GitResumeStore({
+    repositoryRoot: '.',
+    runner: {
+      async run() {
+        const line = `${'b'.repeat(40)}\trefs/heads/freehighlander-state/project-151\n`;
+        return { exitCode: 0, stdout: line + line, stderr: '' };
+      },
+    },
+  });
+  await assert.rejects(() => duplicate.listProjectIds(), /duplicate project ref/);
+});
