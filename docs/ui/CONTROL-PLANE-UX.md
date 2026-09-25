@@ -17,6 +17,21 @@ create/version/remove role, prompt/contract, I/O, tools/permissions, authority, 
 ## Publish lifecycle
 Draft → Validate → Simulate → Publish. Running workflow published version'a pinned kalır.
 
+## Core vs module navigation
+
+The user interface must keep the core control-plane navigation separate from optional modules.
+
+~~~text
+FreeHighlander
+├─ Core
+│  └─ canonical control-plane screens
+└─ Modules
+   └─ FH-KUIKA
+      └─ optional Kuika-inspired productization screens
+~~~
+
+The `FH-KUIKA` section is a distinct collapsible top-level module group, not a set of mixed core menu entries.
+
 ## Optional productization module
 
 Kuika-inspired Studio/productization UX is intentionally isolated from this core control-plane contract.
