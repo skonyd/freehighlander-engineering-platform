@@ -14,6 +14,7 @@ import {
 import {
   createPortableResumeStore,
   inspectPortableResume,
+  buildPortableResumePlan,
   claimPortableResumeOwnership,
   inspectPortableResumeWithOwnership,
   publishPreparedResumeCheckpoint,
@@ -130,7 +131,17 @@ try {
       );
     }
 
-    printJson({ ...result, secrets });
+    const manifest = await store.getLatest(state.repository, projectId);
+    const plan =
+      manifest === null
+        ? null
+        : buildPortableResumePlan({
+            manifest,
+            reconciliation: result,
+            secrets,
+          });
+
+    printJson({ ...result, secrets, plan });
     if (result.status !== 'READY' || result.readyToMutate !== true) process.exitCode = 2;
   } else if (parsed.command === 'help' || parsed.command === undefined) {
     printHelp();
@@ -232,6 +243,8 @@ Resume safety:
   - a live non-expired lease blocks claim; CAS conflict never guesses takeover
   - checks only SecretHandles required by the portable manifest against the selected local profile
   - unresolved required handles block secret-dependent work without blocking unrelated READY work
+  - emits PARKED / READY / WAITING planner state directly from the portable manifest
+  - planner requires neither local SQLite nor LOCAL_ONLY_CACHE state
   - secret values and private resolver locators are never printed
   - reports RECONCILIATION_REQUIRED instead of guessing continuation
   - never mutates or cleans the product worktree
