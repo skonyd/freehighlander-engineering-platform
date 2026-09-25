@@ -7,6 +7,7 @@ import test from 'node:test';
 
 import {
   GitResumeStore,
+  SpawnGitResumeCommandRunner,
   createResumeManifestV1,
   gitResumeStoreCanContainSecretValues,
   gitResumeStoreCanGrantAuthority,
@@ -138,4 +139,23 @@ test('Git resume state is authority-neutral secret-free metadata and not a produ
   assert.equal(gitResumeStoreCanContainSecretValues(), false);
   assert.equal(gitResumeStoreCanGrantAuthority(), false);
   assert.throws(() => resumeStateRef('x'), /bounded identifier/);
+});
+
+test('Git resume store and command runner reject unsafe construction and arguments', () => {
+  assert.throws(() => new GitResumeStore({ repositoryRoot: '' }), /repositoryRoot is required/);
+  assert.throws(
+    () => new GitResumeStore({ repositoryRoot: '.', remote: 'bad remote' }),
+    /remote must be a bounded Git remote name/,
+  );
+  assert.throws(() => new SpawnGitResumeCommandRunner(''), /repositoryRoot is required/);
+
+  const runner = new SpawnGitResumeCommandRunner('.');
+  assert.throws(
+    () => runner.run(['status\nmalformed']),
+    /git resume command argument must be bounded single-line metadata/,
+  );
+  assert.throws(
+    () => runner.run(['x'.repeat(4097)]),
+    /git resume command argument must be bounded single-line metadata/,
+  );
 });
