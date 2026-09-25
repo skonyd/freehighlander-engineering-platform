@@ -26,9 +26,7 @@ export interface LocalOptimizerPassObservation {
 }
 
 export type LocalOptimizerNextAction =
-  | 'CONTINUE_LOCAL'
-  | 'READY_FOR_REMOTE'
-  | 'FALLBACK_UNCOMPRESSED';
+  'CONTINUE_LOCAL' | 'READY_FOR_REMOTE' | 'FALLBACK_UNCOMPRESSED';
 
 export type LocalOptimizerStopReason =
   | 'TARGET_REACHED'
