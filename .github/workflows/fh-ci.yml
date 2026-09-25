@@ -33,4 +33,7 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: npm run verify
+        run: |
+          npm run format:write
+          git diff -- packages/telemetry/src/index.ts packages/telemetry/test/full-auto-events.test.mjs
+          exit 1
