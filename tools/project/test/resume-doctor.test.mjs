@@ -24,7 +24,11 @@ class FixtureRunner {
       return { exitCode: 0, stdout: 'git version 2.51.0\n', stderr: '' };
     }
     if (key === 'git worktree list --porcelain') {
-      return { exitCode: 0, stdout: 'worktree /repo\nHEAD abc123\nbranch refs/heads/main\n', stderr: '' };
+      return {
+        exitCode: 0,
+        stdout: 'worktree /repo\nHEAD abc123\nbranch refs/heads/main\n',
+        stderr: '',
+      };
     }
     if (key === 'npm --version') {
       return { exitCode: 0, stdout: '11.19.1\n', stderr: '' };
