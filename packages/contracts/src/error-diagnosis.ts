@@ -288,17 +288,14 @@ function assertDiagnosisMatchesError(
   if (diagnosis.correlationId !== error.correlationId) {
     throw new Error('diagnosis correlationId does not match runtime error');
   }
-  if (
-    diagnosis.binding.runId !== error.binding.runId ||
-    diagnosis.binding.exactRevision !== error.binding.exactRevision ||
-    diagnosis.binding.scopeHash !== error.binding.scopeHash ||
-    diagnosis.binding.runSnapshotHash !== error.binding.runSnapshotHash
-  ) {
+  if (JSON.stringify(diagnosis.binding) !== JSON.stringify(error.binding)) {
     throw new Error('diagnosis binding does not match runtime error');
   }
 
   const surfaced = diagnosis.causalChain[diagnosis.causalChain.length - 1]!;
-  if (surfaced.component !== error.component || surfaced.operation !== error.operation) {
+  const surfacedIdentity = `${surfaced.component}/${surfaced.operation}`;
+  const errorIdentity = `${error.component}/${error.operation}`;
+  if (surfacedIdentity !== errorIdentity) {
     throw new Error('diagnosis causal chain must end at the surfaced runtime error');
   }
 }
