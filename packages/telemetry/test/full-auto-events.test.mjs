@@ -110,10 +110,7 @@ test('Full Auto event type must match its action', () => {
 test('action-specific required metadata fails closed', () => {
   const quorum = basePayload();
   delete quorum.reviewerAVerdict;
-  assert.throws(
-    () => event('full_auto.quorum.completed', quorum),
-    /requires reviewerAVerdict/,
-  );
+  assert.throws(() => event('full_auto.quorum.completed', quorum), /requires reviewerAVerdict/);
 
   assert.throws(
     () =>
@@ -163,35 +160,19 @@ test('Full Auto telemetry rejects raw prompt secret or unknown fields by whiteli
 
 test('Full Auto telemetry validates hashes profiles risk and bounded round count', () => {
   assert.throws(
-    () =>
-      event(
-        'full_auto.quorum.completed',
-        basePayload({ reviewScopeHash: 'bad' }),
-      ),
+    () => event('full_auto.quorum.completed', basePayload({ reviewScopeHash: 'bad' })),
     /reviewScopeHash/,
   );
   assert.throws(
-    () =>
-      event(
-        'full_auto.quorum.completed',
-        basePayload({ profile: 'UNKNOWN' }),
-      ),
+    () => event('full_auto.quorum.completed', basePayload({ profile: 'UNKNOWN' })),
     /profile is invalid/,
   );
   assert.throws(
-    () =>
-      event(
-        'full_auto.quorum.completed',
-        basePayload({ riskTier: 'UNKNOWN' }),
-      ),
+    () => event('full_auto.quorum.completed', basePayload({ riskTier: 'UNKNOWN' })),
     /riskTier is invalid/,
   );
   assert.throws(
-    () =>
-      event(
-        'full_auto.quorum.completed',
-        basePayload({ roundCount: 0 }),
-      ),
+    () => event('full_auto.quorum.completed', basePayload({ roundCount: 0 })),
     /roundCount/,
   );
 });
