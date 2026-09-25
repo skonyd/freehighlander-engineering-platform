@@ -800,7 +800,6 @@ test('portable resume validates claim inputs before touching ownership state', a
   assert.equal(ownershipReads, 0);
 });
 
-
 test('portable resume planner reconstructs actionable state without local SQLite or cache', () => {
   const candidate = manifest({
     parkedDecisionIds: ['decision-017'],
