@@ -186,6 +186,17 @@ export {
 } from './context-packet.js';
 
 export {
+  buildDeterministicContextReductionPlan,
+  deterministicReductionPlanCanDropProtectedEvidence,
+  deterministicReductionPlanCanGrantAuthority,
+  validateDeterministicContextReductionPlan,
+  type ContextReductionAction,
+  type ContextReductionPlan,
+  type ContextReductionPlanItem,
+  type ContextReductionPlanItemInput,
+} from './context-reduction-plan.js';
+
+export {
   contextEconomyCanDropRequiredEvidence,
   contextEconomyCanGrantAuthority,
   contextOptimizerCanReclassifyProtectedDownward,
