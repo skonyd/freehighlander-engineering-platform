@@ -12,6 +12,7 @@ import {
   recordShadowVerification,
 } from '../../../packages/model-runtime/dist/index.js';
 import {
+  bindingInputFromArgs,
   createModelManagementStore,
   parseCliArgs,
   previewManagedBinding,
@@ -51,6 +52,73 @@ test('model management CLI parser preserves repeated options and validates requi
   assert.equal(optionOnly.command, 'status');
   assert.equal(optionOnly.subcommand, undefined);
   assert.equal(optionOnly.options.state, '/tmp/model-state.json');
+});
+
+test('binding args preserve ordered fallbacks and safe return policy defaults', () => {
+  const input = bindingInputFromArgs({
+    role: 'controller',
+    risk: 'NORMAL',
+    provider: 'anthropic',
+    model: 'opus-5.5',
+    bindingId: 'controller-opus',
+    effort: 'low',
+    fallback: [
+      'controller-gpt,openai,gpt-6,medium,openai,1.2.0',
+      'controller-gemini,google,gemini-pro,medium',
+    ],
+  });
+
+  assert.deepEqual(
+    input.fallbacks.map((binding) => binding.id),
+    ['controller-gpt', 'controller-gemini'],
+  );
+  assert.equal(input.fallbacks[0].version, '1.2.0');
+  assert.equal(input.fallbacks[0].providerId, 'openai');
+  assert.equal(input.fallbacks[1].independenceGroup, 'google');
+  assert.deepEqual(input.failoverPolicy, {
+    returnPolicy: 'ASK_BEFORE_RETURN',
+    unknownResetRecheckMs: 60_000,
+  });
+
+  const auto = bindingInputFromArgs({
+    role: 'controller',
+    risk: 'NORMAL',
+    provider: 'anthropic',
+    model: 'opus-5.5',
+    bindingId: 'controller-opus',
+    fallback: 'controller-gpt,openai,gpt-6',
+    returnPolicy: 'AUTO_RETURN',
+    unknownResetRecheckMs: '120000',
+  });
+  assert.deepEqual(auto.failoverPolicy, {
+    returnPolicy: 'AUTO_RETURN',
+    unknownResetRecheckMs: 120_000,
+  });
+
+  assert.throws(
+    () =>
+      bindingInputFromArgs({
+        role: 'controller',
+        risk: 'NORMAL',
+        provider: 'anthropic',
+        model: 'opus-5.5',
+        bindingId: 'controller-opus',
+        returnPolicy: 'AUTO_RETURN',
+      }),
+    /requires at least one fallback/,
+  );
+  assert.throws(
+    () =>
+      bindingInputFromArgs({
+        role: 'controller',
+        risk: 'NORMAL',
+        provider: 'anthropic',
+        model: 'opus-5.5',
+        bindingId: 'controller-opus',
+        fallback: 'bad-spec',
+      }),
+    /fallback must be/,
+  );
 });
 
 test('atomic model management store persists references only and rejects stale CAS writes', async () => {
@@ -265,6 +333,100 @@ test('binding preview and publish require exact eligible qualification and remai
       () => previewManagedBinding({ ...refreshed.state, qualifications: [discovered] }, args, {}),
       /expected exactly one ELIGIBLE qualification/,
     );
+  } finally {
+    await server.close();
+  }
+});
+
+test('managed binding publish validates multi-provider fallbacks and persists return policy', async () => {
+  const server = await startModelServer(['opus-5.5', 'gpt-6', 'gemini-pro']);
+  try {
+    let state = {
+      schemaVersion: 1,
+      providers: [],
+      catalogs: [],
+      qualifications: [],
+      publications: [],
+      authority: 'NONE',
+    };
+
+    for (const id of ['anthropic', 'openai', 'google']) {
+      state = setManagedProvider(state, {
+        id,
+        kind: 'OPENAI_COMPATIBLE',
+        baseUrl: server.baseUrl,
+        locality: 'REMOTE',
+        credentialEnv: null,
+      }).state;
+    }
+
+    for (const providerId of ['anthropic', 'openai', 'google']) {
+      state = (await refreshManagedProvider(state, providerId, '2026-09-25T18:20:00.000Z', {}))
+        .state;
+    }
+
+    const specs = [
+      ['anthropic', 'opus-5.5', 'e', 'f', '1'],
+      ['google', 'gemini-pro', '5', '6', '7'],
+      ['openai', 'gpt-6', '2', '3', '4'],
+    ];
+    const qualifications = specs.map(([providerId, modelId, probe, shadowHash, decision]) => {
+      const snapshot = state.catalogs.find((catalog) => catalog.providerId === providerId);
+      const discovered = createDiscoveredQualification({
+        providerId,
+        modelId,
+        catalogHash: snapshot.hash,
+      });
+      const probed = recordCapabilityProbe(discovered, {
+        evidenceHash: probe.repeat(64),
+        status: 'PASS',
+        probedAt: '2026-09-25T18:21:00.000Z',
+      });
+      const shadow = recordShadowVerification(probed, {
+        evidenceHash: shadowHash.repeat(64),
+        status: 'PASS',
+        verifiedAt: '2026-09-25T18:22:00.000Z',
+        role: 'controller',
+        riskTier: 'NORMAL',
+      });
+      return grantModelEligibility(shadow, {
+        role: 'controller',
+        riskTier: 'NORMAL',
+        grantedAt: '2026-09-25T18:23:00.000Z',
+        decisionHash: decision.repeat(64),
+      });
+    });
+    state = { ...state, qualifications };
+
+    const result = await publishManagedBinding(
+      state,
+      {
+        role: 'controller',
+        risk: 'NORMAL',
+        provider: 'anthropic',
+        model: 'opus-5.5',
+        bindingId: 'controller-opus',
+        effort: undefined,
+        fallback: ['controller-gpt,openai,gpt-6', 'controller-gemini,google,gemini-pro'],
+        returnPolicy: 'ASK_BEFORE_RETURN',
+        unknownResetRecheckMs: 30_000,
+      },
+      '2026-09-25T18:25:00.000Z',
+      {},
+    );
+
+    assert.deepEqual(
+      result.publication.plan.bindings.map((binding) => binding.bindingId),
+      ['controller-opus', 'controller-gpt', 'controller-gemini'],
+    );
+    assert.deepEqual(result.publication.failoverPolicy, {
+      returnPolicy: 'ASK_BEFORE_RETURN',
+      unknownResetRecheckMs: 30_000,
+    });
+    assert.deepEqual(result.auditEvents[0].payload.fallbackBindingIds, [
+      'controller-gpt',
+      'controller-gemini',
+    ]);
   } finally {
     await server.close();
   }

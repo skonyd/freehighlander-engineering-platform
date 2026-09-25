@@ -185,7 +185,14 @@ async function execute(parsed, current, store) {
     return {
       status: 'OK',
       plan: preview.plan,
+      failoverPolicy: preview.input.failoverPolicy ?? null,
       qualificationHash: preview.qualification.hash,
+      qualificationHashes: Object.fromEntries(
+        Object.entries(preview.qualifications).map(([bindingId, qualification]) => [
+          bindingId,
+          qualification.hash,
+        ]),
+      ),
       authority: 'NONE',
     };
   }
@@ -227,6 +234,13 @@ function bindingArgs(options) {
     ...(typeof options['independence-group'] === 'string'
       ? { independenceGroup: options['independence-group'] }
       : {}),
+    ...(options.fallback === undefined ? {} : { fallback: options.fallback }),
+    ...(typeof options['return-policy'] === 'string'
+      ? { returnPolicy: options['return-policy'] }
+      : {}),
+    ...(typeof options['unknown-reset-recheck-ms'] === 'string'
+      ? { unknownResetRecheckMs: options['unknown-reset-recheck-ms'] }
+      : {}),
     ...(typeof options['operation-id'] === 'string'
       ? { operationId: options['operation-id'] }
       : {}),
@@ -247,8 +261,8 @@ function help() {
       'catalog [--provider ID]',
       'qualifications [--provider ID] [--model ID] [--role ROLE] [--risk NORMAL|HIGH|CRITICAL]',
       'bindings',
-      'binding preview --role ROLE --risk TIER --binding-id ID --provider ID --model ID [--version X.Y.Z] [--effort EFFORT] [--capability CAP]',
-      'binding publish --role ROLE --risk TIER --binding-id ID --provider ID --model ID [--version X.Y.Z] [--effort EFFORT] [--capability CAP] [--at ISO]',
+      'binding preview --role ROLE --risk TIER --binding-id ID --provider ID --model ID [--version X.Y.Z] [--effort EFFORT] [--capability CAP] [--fallback ID,PROVIDER,MODEL[,EFFORT[,INDEPENDENCE_GROUP[,VERSION]]]]... [--return-policy STAY_ON_FALLBACK|ASK_BEFORE_RETURN|AUTO_RETURN] [--unknown-reset-recheck-ms MS]',
+      'binding publish --role ROLE --risk TIER --binding-id ID --provider ID --model ID [--version X.Y.Z] [--effort EFFORT] [--capability CAP] [--fallback ID,PROVIDER,MODEL[,EFFORT[,INDEPENDENCE_GROUP[,VERSION]]]]... [--return-policy STAY_ON_FALLBACK|ASK_BEFORE_RETURN|AUTO_RETURN] [--unknown-reset-recheck-ms MS] [--at ISO]',
     ],
   };
 }

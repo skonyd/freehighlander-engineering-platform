@@ -259,10 +259,7 @@ export function bindingInputFromArgs(args) {
   const providerId = requireId(args.provider, 'provider');
   const model = requireId(args.model, 'model');
   const id = requireId(args.bindingId, 'binding-id');
-  const version = args.version ?? '1.0.0';
-  if (!/^\d+\.\d+\.\d+$/.test(version)) {
-    throw new Error('version must be semantic x.y.z');
-  }
+  const version = requireSemanticVersion(args.version ?? '1.0.0', 'version');
   const independenceGroup = requireId(args.independenceGroup ?? providerId, 'independence-group');
   const capabilities = normalizeList(args.capability);
 
@@ -277,7 +274,34 @@ export function bindingInputFromArgs(args) {
     independenceGroup,
   };
 
-  return { logicalRole, riskTier, primary };
+  const fallbacks = normalizeOptionList(args.fallback).map((spec, index) =>
+    parseFallbackBinding(spec, index, riskTier, capabilities),
+  );
+
+  if (
+    fallbacks.length === 0 &&
+    (args.returnPolicy !== undefined || args.unknownResetRecheckMs !== undefined)
+  ) {
+    throw new Error('failover return policy requires at least one fallback');
+  }
+
+  const failoverPolicy =
+    fallbacks.length === 0
+      ? undefined
+      : {
+          returnPolicy: requireReturnPolicy(args.returnPolicy ?? 'ASK_BEFORE_RETURN'),
+          unknownResetRecheckMs: requirePositiveInteger(
+            args.unknownResetRecheckMs ?? 60_000,
+            'unknown-reset-recheck-ms',
+          ),
+        };
+
+  return {
+    logicalRole,
+    riskTier,
+    primary,
+    ...(fallbacks.length > 0 ? { fallbacks, failoverPolicy } : {}),
+  };
 }
 
 export function findEligibleQualification(state, providerId, modelId, role, riskTier) {
@@ -299,63 +323,40 @@ export function findEligibleQualification(state, providerId, modelId, role, risk
 
 export function previewManagedBinding(state, args, env = process.env) {
   const input = bindingInputFromArgs(args);
-  const provider = managedProviderById(state, input.primary.providerId);
-  const adapter = createManagedProviderAdapter(provider, env);
-  const registry = new ProviderRegistry();
-  registry.register(adapter);
-
-  const catalog = state.catalogs.find(
-    (snapshot) => snapshot.providerId === input.primary.providerId,
-  );
-  if (!catalog) throw new Error(`no managed catalog for provider ${input.primary.providerId}`);
-
-  const catalogs = new ModelCatalogManagementService(registry, new MemoryAuditSink(), [catalog]);
+  const runtime = buildManagedBindingRuntime(state, input, env);
   const service = new RoleBindingManagementService(
-    registry,
-    catalogs,
+    runtime.registry,
+    runtime.catalogs,
     new MemoryAuditSink(),
     state.publications,
-  );
-  const qualification = findEligibleQualification(
-    state,
-    input.primary.providerId,
-    input.primary.model,
-    input.logicalRole,
-    input.riskTier,
   );
 
   const plan = service.preview({
     ...input,
-    qualifications: { [input.primary.id]: qualification },
+    qualifications: runtime.qualifications,
   });
-  return { plan, input, qualification };
+  return {
+    plan,
+    input,
+    qualification: runtime.qualifications[input.primary.id],
+    qualifications: runtime.qualifications,
+  };
 }
 
 export async function publishManagedBinding(state, args, publishedAt, env = process.env) {
   const input = bindingInputFromArgs(args);
-  const provider = managedProviderById(state, input.primary.providerId);
-  const adapter = createManagedProviderAdapter(provider, env);
-  const registry = new ProviderRegistry();
-  registry.register(adapter);
-  const catalog = state.catalogs.find(
-    (snapshot) => snapshot.providerId === input.primary.providerId,
-  );
-  if (!catalog) throw new Error(`no managed catalog for provider ${input.primary.providerId}`);
-
-  const catalogs = new ModelCatalogManagementService(registry, new MemoryAuditSink(), [catalog]);
+  const runtime = buildManagedBindingRuntime(state, input, env);
   const audit = new MemoryAuditSink();
-  const service = new RoleBindingManagementService(registry, catalogs, audit, state.publications);
-  const qualification = findEligibleQualification(
-    state,
-    input.primary.providerId,
-    input.primary.model,
-    input.logicalRole,
-    input.riskTier,
+  const service = new RoleBindingManagementService(
+    runtime.registry,
+    runtime.catalogs,
+    audit,
+    state.publications,
   );
 
   const publication = await service.publish({
     ...input,
-    qualifications: { [input.primary.id]: qualification },
+    qualifications: runtime.qualifications,
     operationId: args.operationId ?? `cli-binding:${input.logicalRole}:${input.riskTier}`,
     publishedAt,
   });
@@ -426,6 +427,97 @@ export class MemoryAuditSink {
   async append(event) {
     this.events.push(event);
   }
+}
+
+function buildManagedBindingRuntime(state, input, env) {
+  const definitions = [input.primary, ...(input.fallbacks ?? [])];
+  const registry = new ProviderRegistry();
+  const catalogs = [];
+
+  for (const providerId of [...new Set(definitions.map((definition) => definition.providerId))]) {
+    const provider = managedProviderById(state, providerId);
+    registry.register(createManagedProviderAdapter(provider, env));
+    const catalog = state.catalogs.find((snapshot) => snapshot.providerId === providerId);
+    if (!catalog) throw new Error(`no managed catalog for provider ${providerId}`);
+    catalogs.push(catalog);
+  }
+
+  const qualifications = Object.fromEntries(
+    definitions.map((definition) => [
+      definition.id,
+      findEligibleQualification(
+        state,
+        definition.providerId,
+        definition.model,
+        input.logicalRole,
+        input.riskTier,
+      ),
+    ]),
+  );
+
+  return {
+    registry,
+    catalogs: new ModelCatalogManagementService(
+      registry,
+      new MemoryAuditSink(),
+      catalogs.sort((left, right) => left.providerId.localeCompare(right.providerId)),
+    ),
+    qualifications,
+  };
+}
+
+function parseFallbackBinding(spec, index, riskTier, capabilities) {
+  const parts = requireId(spec, `fallback[${index}]`)
+    .split(',')
+    .map((part) => part.trim());
+  if (parts.length < 3 || parts.length > 6) {
+    throw new Error('fallback must be ID,PROVIDER,MODEL[,EFFORT[,INDEPENDENCE_GROUP[,VERSION]]]');
+  }
+
+  const [id, providerId, model, effort, independenceGroup, version] = parts;
+  const fallback = {
+    id: requireId(id, `fallback[${index}].id`),
+    version: requireSemanticVersion(version || '1.0.0', `fallback[${index}].version`),
+    providerId: requireId(providerId, `fallback[${index}].provider`),
+    model: requireId(model, `fallback[${index}].model`),
+    ...(effort ? { effort: requireId(effort, `fallback[${index}].effort`) } : {}),
+    ...(capabilities.length === 0 ? {} : { requiredCapabilities: capabilities }),
+    allowedRiskTiers: [riskTier],
+    independenceGroup: requireId(
+      independenceGroup || providerId,
+      `fallback[${index}].independence-group`,
+    ),
+  };
+  return fallback;
+}
+
+function normalizeOptionList(value) {
+  if (value === undefined) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+function requireReturnPolicy(value) {
+  const normalized = requireId(value, 'return-policy');
+  if (!['STAY_ON_FALLBACK', 'ASK_BEFORE_RETURN', 'AUTO_RETURN'].includes(normalized)) {
+    throw new Error('return-policy must be STAY_ON_FALLBACK ASK_BEFORE_RETURN or AUTO_RETURN');
+  }
+  return normalized;
+}
+
+function requirePositiveInteger(value, field) {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${field} must be an integer >= 1`);
+  }
+  return parsed;
+}
+
+function requireSemanticVersion(value, field) {
+  const normalized = requireId(value, field);
+  if (!/^\d+\.\d+\.\d+$/.test(normalized)) {
+    throw new Error(`${field} must be semantic x.y.z`);
+  }
+  return normalized;
 }
 
 function requireRiskTier(value) {
