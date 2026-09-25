@@ -7,6 +7,7 @@ import { assertSafeCheckpointWorktree } from './lib/reconciliation.mjs';
 import {
   createPortableResumeStore,
   inspectPortableResume,
+  claimPortableResumeOwnership,
   inspectPortableResumeWithOwnership,
   publishPreparedResumeCheckpoint,
   publishPreparedResumeHandoff,
@@ -60,15 +61,40 @@ try {
   } else if (parsed.command === 'resume') {
     const projectId = requireOption(parsed.options, 'project');
     const store = createPortableResumeStore(root, remote);
-    const result = await inspectPortableResumeWithOwnership({
-      resumeStore: store,
-      ownershipStore: new GitPortableOwnershipStore(root, remote),
-      repositoryIdentity: state.repository,
-      projectId,
-      readRemoteHead: async (branch) => readRemoteBranchHead(root, remote, branch),
-      leaseId: option(parsed.options, 'lease-id'),
-      now: new Date().toISOString(),
-    });
+    const ownershipStore = new GitPortableOwnershipStore(root, remote);
+    const claim = parsed.flags.has('claim');
+    const now = new Date().toISOString();
+
+    if (!claim) {
+      for (const name of ['run-id', 'machine-instance', 'ttl-ms']) {
+        if (option(parsed.options, name) !== null) {
+          throw new Error(`--${name} requires --claim`);
+        }
+      }
+    }
+
+    const result = claim
+      ? await claimPortableResumeOwnership({
+          resumeStore: store,
+          ownershipStore,
+          repositoryIdentity: state.repository,
+          projectId,
+          readRemoteHead: async (branch) => readRemoteBranchHead(root, remote, branch),
+          runId: option(parsed.options, 'run-id'),
+          leaseId: option(parsed.options, 'lease-id'),
+          machineInstanceId: option(parsed.options, 'machine-instance'),
+          ttlMs: integerOption(parsed.options, 'ttl-ms'),
+          now,
+        })
+      : await inspectPortableResumeWithOwnership({
+          resumeStore: store,
+          ownershipStore,
+          repositoryIdentity: state.repository,
+          projectId,
+          readRemoteHead: async (branch) => readRemoteBranchHead(root, remote, branch),
+          leaseId: option(parsed.options, 'lease-id'),
+          now,
+        });
     printJson(result);
     if (result.status !== 'READY' || result.readyToMutate !== true) process.exitCode = 2;
   } else if (parsed.command === 'help' || parsed.command === undefined) {
@@ -94,7 +120,7 @@ function parseArgs(args) {
     if (!name || Object.hasOwn(options, name) || flags.has(name)) {
       throw new Error(`invalid or duplicate option: ${token}`);
     }
-    if (name === 'handoff') {
+    if (name === 'handoff' || name === 'claim') {
       flags.add(name);
       continue;
     }
@@ -124,6 +150,19 @@ function option(options, name) {
   return value;
 }
 
+function integerOption(options, name) {
+  const value = option(options, name);
+  if (value === null) return null;
+  if (!/^[1-9][0-9]*$/.test(value)) {
+    throw new Error(`--${name} must be a positive integer`);
+  }
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed)) {
+    throw new Error(`--${name} must be a positive safe integer`);
+  }
+  return parsed;
+}
+
 function printJson(value) {
   console.log(JSON.stringify(value, null, 2));
 }
@@ -135,6 +174,8 @@ Usage:
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> [--remote origin]
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> --handoff --lease-id <lease-id> [--remote origin]
   npm run project:portable-resume -- resume --project <project-id> [--lease-id <current-lease-id>] [--remote origin]
+  npm run project:portable-resume -- resume --project <project-id> --claim \
+    --run-id <run-id> --lease-id <new-lease-id> --machine-instance <machine-id> --ttl-ms <milliseconds> [--remote origin]
 
 Checkpoint safety:
   - requires a clean product worktree
@@ -152,6 +193,8 @@ Resume safety:
   - verifies active-work ownership before reporting mutation-ready state
   - a live lease requires the exact current lease id; machine identity alone is never sufficient
   - missing/released/expired ownership reports OWNERSHIP_CLAIM_REQUIRED
+  - --claim acquires/reclaims ownership with exact Git revision CAS
+  - a live non-expired lease blocks claim; CAS conflict never guesses takeover
   - reports RECONCILIATION_REQUIRED instead of guessing continuation
   - never mutates or cleans the product worktree
 `);
