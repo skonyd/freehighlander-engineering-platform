@@ -227,6 +227,19 @@ export {
 } from './protected-anchor-verifier.js';
 
 export {
+  evaluateLocalOptimizerPass,
+  localOptimizerCanDropRequiredEvidenceForTarget,
+  localOptimizerCanGrantAuthority,
+  localOptimizerCanRunRemoteBinding,
+  type LocalOptimizerBindingEvidence,
+  type LocalOptimizerDecision,
+  type LocalOptimizerNextAction,
+  type LocalOptimizerPassObservation,
+  type LocalOptimizerPolicy,
+  type LocalOptimizerStopReason,
+} from './local-context-optimizer.js';
+
+export {
   buildRepositoryMap,
   jitSelectionCanDropRequiredPathsForBudget,
   repositoryMapCanGrantAuthority,
