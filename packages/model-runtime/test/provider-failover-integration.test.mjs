@@ -170,7 +170,6 @@ test('provider failure integration remains authority-neutral', () => {
   assert.equal(providerFailureIntegrationCanGrantAuthority(), false);
 });
 
-
 test('provider quota failure produces precise safe causal diagnosis with fallback and reset time', () => {
   const diagnosis = diagnoseProviderInvocationFailure(
     new ProviderInvocationError('quota exhausted', 'quota_exhausted', 429, 1_800_000),
