@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   BindingRegistry,
   ProviderRegistry,
+  createPreferredBindingReturnApproval,
   createRoleBindingFailoverState,
   evaluatePreferredBindingReturn,
   listDueBindingChecks,
@@ -12,6 +13,7 @@ import {
   recordBindingRecoveryObservation,
   resolveBindingPlan,
   semanticFailureCanAdvanceFallbackChain,
+  validatePreferredBindingReturnApproval,
   validateRoleBindingFailoverState,
 } from '../dist/index.js';
 
@@ -186,7 +188,6 @@ test('due checks do not silently mark a binding recovered', () => {
 
   const preferred = evaluatePreferredBindingReturn(state, plan, {
     preferredAvailable: true,
-    userApprovedReturn: true,
   });
   assert.equal(preferred.status, 'WAITING_FOR_RECOVERY');
 });
@@ -213,12 +214,89 @@ test('successful recovery observation clears cooldown and ASK policy requires ap
   });
   assert.equal(pending.status, 'APPROVAL_REQUIRED');
 
+  const approval = createPreferredBindingReturnApproval(state, plan, {
+    approverId: 'user-1',
+    decidedAt: '2026-09-25T19:00:02.000Z',
+    decision: 'APPROVE',
+  });
+  assert.doesNotThrow(() => validatePreferredBindingReturnApproval(approval, state, plan));
+
   const approved = evaluatePreferredBindingReturn(state, plan, {
     preferredAvailable: true,
-    userApprovedReturn: true,
+    returnApproval: approval,
   });
   assert.equal(approved.status, 'RETURNED_TO_PREFERRED');
   assert.equal(approved.state.activeBindingId, 'opus');
+  assert.match(approval.approvalHash, /^[a-f0-9]{64}$/);
+  assert.equal(approval.authority, 'NONE');
+});
+
+test('ASK return approval is exact-bound and stale or denied decisions cannot return', () => {
+  const plan = planWithThreeBindings();
+  let state = recordActiveBindingFailure(createRoleBindingFailoverState(plan, askPolicy), plan, {
+    failureKind: 'quota_exhausted',
+    scope: 'BINDING',
+    observedAt: '2026-09-25T18:00:00.000Z',
+    retryAfterMs: 1_000,
+    availabilityByBinding: { opus: false, gpt: true, gemini: true },
+  }).state;
+  state = recordBindingRecoveryObservation(state, plan, {
+    bindingId: 'opus',
+    observedAt: '2026-09-25T18:00:02.000Z',
+    available: true,
+  });
+
+  const deniedApproval = createPreferredBindingReturnApproval(state, plan, {
+    approverId: 'user-1',
+    decidedAt: '2026-09-25T18:00:03.000Z',
+    decision: 'DENY',
+  });
+  const denied = evaluatePreferredBindingReturn(state, plan, {
+    preferredAvailable: true,
+    returnApproval: deniedApproval,
+  });
+  assert.equal(denied.status, 'STAYING_ON_FALLBACK');
+  assert.equal(denied.state.activeBindingId, 'gpt');
+
+  const approved = createPreferredBindingReturnApproval(state, plan, {
+    approverId: 'user-1',
+    decidedAt: '2026-09-25T18:00:04.000Z',
+    decision: 'APPROVE',
+  });
+  assert.throws(
+    () =>
+      validatePreferredBindingReturnApproval(
+        { ...approved, stateHash: '0'.repeat(64) },
+        state,
+        plan,
+      ),
+    /state hash mismatch/,
+  );
+  assert.throws(
+    () =>
+      validatePreferredBindingReturnApproval(
+        { ...approved, approvalHash: '0'.repeat(64) },
+        state,
+        plan,
+      ),
+    /approval hash mismatch/,
+  );
+
+  const changedState = recordActiveBindingFailure(state, plan, {
+    failureKind: 'quota_exhausted',
+    scope: 'BINDING',
+    observedAt: '2026-09-25T18:01:00.000Z',
+    retryAfterMs: 2_000,
+    availabilityByBinding: { opus: true, gpt: false, gemini: true },
+  }).state;
+  assert.throws(
+    () =>
+      evaluatePreferredBindingReturn(changedState, plan, {
+        preferredAvailable: true,
+        returnApproval: approved,
+      }),
+    /state hash mismatch/,
+  );
 });
 
 test('AUTO_RETURN and STAY_ON_FALLBACK honor configured return policy', () => {

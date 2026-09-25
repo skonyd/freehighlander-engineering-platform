@@ -105,6 +105,7 @@ export {
 } from './provider-failover-integration.js';
 
 export {
+  createPreferredBindingReturnApproval,
   createRoleBindingFailoverState,
   evaluatePreferredBindingReturn,
   listDueBindingChecks,
@@ -113,6 +114,7 @@ export {
   recordBindingRecoveryObservation,
   semanticFailureCanAdvanceFallbackChain,
   validateBindingFailoverPolicyV1,
+  validatePreferredBindingReturnApproval,
   validateRoleBindingFailoverState,
   type BindingCooldownV1,
   type BindingFailureObservation,
@@ -122,6 +124,9 @@ export {
   type BindingFailoverTransition,
   type BindingRecoveryObservation,
   type BindingReturnPolicy,
+  type PreferredBindingReturnApprovalInput,
+  type PreferredBindingReturnApprovalV1,
+  type PreferredBindingReturnDecision,
   type PreferredBindingReturnInput,
   type PreferredBindingReturnTransition,
   type PreferredReturnStatus,
