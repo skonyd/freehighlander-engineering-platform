@@ -310,14 +310,11 @@ export function previewManagedBinding(state, args, env = process.env) {
   if (!catalog) throw new Error(`no managed catalog for provider ${input.primary.providerId}`);
 
   const catalogs = new ModelCatalogManagementService(registry, new MemoryAuditSink(), [catalog]);
-  const publicationsForProvider = state.publications.filter((publication) =>
-    publication.plan.bindings.every((binding) => binding.providerId === provider.id),
-  );
   const service = new RoleBindingManagementService(
     registry,
     catalogs,
     new MemoryAuditSink(),
-    publicationsForProvider,
+    state.publications,
   );
   const qualification = findEligibleQualification(
     state,
@@ -347,10 +344,7 @@ export async function publishManagedBinding(state, args, publishedAt, env = proc
 
   const catalogs = new ModelCatalogManagementService(registry, new MemoryAuditSink(), [catalog]);
   const audit = new MemoryAuditSink();
-  const existingPublications = state.publications.filter((publication) =>
-    publication.plan.bindings.every((binding) => binding.providerId === provider.id),
-  );
-  const service = new RoleBindingManagementService(registry, catalogs, audit, existingPublications);
+  const service = new RoleBindingManagementService(registry, catalogs, audit, state.publications);
   const qualification = findEligibleQualification(
     state,
     input.primary.providerId,
