@@ -54,6 +54,17 @@ class FakeRunner {
       return { exitCode: 0, stdout: 'secret-service-material\n' };
     }
 
+    if (executable === 'powershell.exe') {
+      const script = args.at(-1) ?? '';
+      if (!script.includes('Windows.Security.Credentials.PasswordVault')) {
+        return { exitCode: 1, stdout: '' };
+      }
+      if (script.includes('$vault.Retrieve(')) {
+        return { exitCode: 0, stdout: 'windows-keychain-material' };
+      }
+      return { exitCode: 0, stdout: '' };
+    }
+
     return { exitCode: 1, stdout: '' };
   }
 }
@@ -209,14 +220,39 @@ test('OS_KEYCHAIN uses native command adapters and fails closed without a secure
   );
   assert.equal(sink.values.get(linuxReceipt.receiptId), 'secret-service-material');
 
+  const windowsRunner = new FakeRunner();
   const windowsRegistry = createDefaultSecretResolverRegistry({
     platform: 'win32',
-    commandRunner: new FakeRunner(),
+    commandRunner: windowsRunner,
   });
   const evidence = await windowsRegistry.probe(secretBinding);
-  assert.equal(evidence.health, 'UNAVAILABLE');
+  assert.equal(evidence.health, 'HEALTHY');
+  assert.equal(evidence.authenticated, true);
+  const windowsReceipt = await windowsRegistry.inject(
+    secretBinding,
+    plan('provider.keychain.api', 'OS_KEYCHAIN'),
+    sink,
+  );
+  assert.equal(sink.values.get(windowsReceipt.receiptId), 'windows-keychain-material');
+  const windowsCall = windowsRunner.calls.at(-1);
+  assert.equal(windowsCall.executable, 'powershell.exe');
+  assert.deepEqual(windowsCall.args.slice(0, 3), ['-NoProfile', '-NonInteractive', '-Command']);
+  assert.match(windowsCall.args.at(-1), /\.Retrieve\('fh','openai'\)/);
+  assert.doesNotMatch(JSON.stringify(windowsCall.args), /windows-keychain-material/);
+
+  const unsupportedRegistry = createDefaultSecretResolverRegistry({
+    platform: 'aix',
+    commandRunner: new FakeRunner(),
+  });
+  const unsupported = await unsupportedRegistry.probe(secretBinding);
+  assert.equal(unsupported.health, 'UNAVAILABLE');
   await assert.rejects(
-    () => windowsRegistry.inject(secretBinding, plan('provider.keychain.api', 'OS_KEYCHAIN'), sink),
+    () =>
+      unsupportedRegistry.inject(
+        secretBinding,
+        plan('provider.keychain.api', 'OS_KEYCHAIN'),
+        sink,
+      ),
     /secure OS keychain backend is unavailable/,
   );
 });
