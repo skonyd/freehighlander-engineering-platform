@@ -94,6 +94,15 @@ export {
 } from './model-catalog.js';
 
 export {
+  applyProviderInvocationFailure,
+  normalizeProviderInvocationFailure,
+  providerFailureIntegrationCanGrantAuthority,
+  providerFailureScope,
+  type ApplyProviderFailureInput,
+  type NormalizedProviderFailureV1,
+} from './provider-failover-integration.js';
+
+export {
   createRoleBindingFailoverState,
   evaluatePreferredBindingReturn,
   listDueBindingChecks,
