@@ -53,7 +53,7 @@ export function buildDeterministicContextReductionPlan(
     if (
       duplicateOf !== undefined &&
       duplicateOf !== input.id &&
-      decision.mayDrop &&
+      decision.mayLosslesslyTransform &&
       input.requiredByGate !== true
     ) {
       return {
