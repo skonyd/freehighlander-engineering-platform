@@ -15,6 +15,7 @@ export type ProjectWorkItemDisposition =
   | 'FAILED'
   | 'WAITING_DEPENDENCY'
   | 'WAITING_CONFLICT'
+  | 'WAITING_SECRET'
   | 'WAITING_RESOURCE'
   | 'WAITING_BARRIER';
 
@@ -26,6 +27,7 @@ export interface ProjectWorkItem {
   readonly roadmapOrder: number;
   readonly workspaceIsolation: WorkspaceIsolationState;
   readonly conflictWithActive: ProjectConflictClassification;
+  readonly blockedSecretHandleIds?: readonly string[];
   readonly resourcesAvailable: boolean;
   readonly cutoverBlocked: boolean;
 }
@@ -36,6 +38,7 @@ export interface ProjectSchedulePlan {
   readonly selectedIds: readonly string[];
   readonly activeIds: readonly string[];
   readonly parkedHumanIds: readonly string[];
+  readonly secretBlockedIds: readonly string[];
   readonly shouldStop: boolean;
   readonly authority: 'NONE';
 }
@@ -117,6 +120,10 @@ export function buildProjectSchedulePlan(
   const capacity = maxActiveWorkItems - activeIds.length;
   const selectedIds = ready.slice(0, capacity).map((item) => item.id);
   const readyIds = ready.map((item) => item.id);
+  const secretBlockedIds = Object.entries(dispositions)
+    .filter(([, disposition]) => disposition === 'WAITING_SECRET')
+    .map(([id]) => id)
+    .sort();
 
   return {
     dispositions,
@@ -124,6 +131,7 @@ export function buildProjectSchedulePlan(
     selectedIds,
     activeIds,
     parkedHumanIds,
+    secretBlockedIds,
     shouldStop: activeIds.length === 0 && selectedIds.length === 0,
     authority: 'NONE',
   };
@@ -218,6 +226,10 @@ function validateWorkItems(
     if (!CONFLICT_STATES.has(item.conflictWithActive)) {
       throw new Error('unsupported conflict classification');
     }
+    const blockedSecretHandleIds = uniqueSortedIdentifiers(
+      item.blockedSecretHandleIds ?? [],
+      'blocked secret handle id',
+    );
     if (typeof item.resourcesAvailable !== 'boolean') {
       throw new Error('resourcesAvailable must be boolean');
     }
@@ -237,6 +249,7 @@ function validateWorkItems(
     byId.set(item.id, {
       ...item,
       dependencyIds: [...dependencies].sort(),
+      blockedSecretHandleIds,
     });
   }
 
@@ -299,6 +312,7 @@ function classifyWorkItem(
   ) {
     return 'WAITING_CONFLICT';
   }
+  if ((item.blockedSecretHandleIds?.length ?? 0) > 0) return 'WAITING_SECRET';
   if (!item.resourcesAvailable) return 'WAITING_RESOURCE';
   return 'READY';
 }
