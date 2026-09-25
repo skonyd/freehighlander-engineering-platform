@@ -1,4 +1,14 @@
 export {
+  SecretReceiptScope,
+  secretReceiptLifecycleCanGrantAuthority,
+  secretReceiptLifecycleCanPersistSecretValues,
+  secretReceiptScopeIsDrained,
+  type SecretReceiptReleaseFailure,
+  type SecretReceiptReleaseReason,
+  type SecretReceiptReleaseSummary,
+} from './secret-receipt-lifecycle.js';
+
+export {
   CommandSecretResolverAdapter,
   ExecFileSecretCommandRunner,
   GitHubAuthCapabilityResolverAdapter,
