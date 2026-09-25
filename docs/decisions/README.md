@@ -17,6 +17,7 @@ Accepted decisions are stored here instead of relying on chat history.
 | [ADR-0011](ADR-0011-plugin-ecosystem-and-packaging.md) | ACCEPTED | tool/plugin ecosystem and MCP boundary |
 | [ADR-0012](ADR-0012-product-packaging-and-monorepo-boundaries.md) | ACCEPTED | product namespace and bounded-context monorepo |
 | [ADR-0021](ADR-0021-final-v2-reference-promotion.md) | ACCEPTED | final V2 reference reconciliation after Creator Marketplace #207/#209 |
+| [ADR-0022](ADR-0022-full-auto-delegable-model-quorum.md) | ACCEPTED | delegable dual-model quorum remains evidence, not human/system authority |
 
 ## ADR rule
 
