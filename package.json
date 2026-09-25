@@ -43,7 +43,8 @@
     "secrets": "npm run build -w @freehighlander/governance -w @freehighlander/persistence && node tools/project/secrets.mjs",
     "project:portable-resume-bootstrap": "node tools/project/portable-resume-bootstrap.mjs",
     "fh": "node tools/fh.mjs",
-    "inspect:run": "node tools/project/run-inspector.mjs"
+    "inspect:run": "node tools/project/run-inspector.mjs",
+    "full-auto": "npm run build -w @freehighlander/model-runtime -w @freehighlander/governance -w @freehighlander/persistence && node tools/project/full-auto.mjs"
   },
   "dependencies": {
     "yaml": "2.9.1"
