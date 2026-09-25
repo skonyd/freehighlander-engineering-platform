@@ -250,6 +250,45 @@ test('manifest rejects ambiguous duplicate or conflicting portable identities', 
   }
 });
 
+test('manifest validation rejects non-contract persisted fields at every structured layer', () => {
+  const manifest = createResumeManifestV1(manifestInput());
+
+  assert.throws(
+    () => validateResumeManifestV1({ ...manifest, secretValue: 'must-not-persist' }),
+    /unsupported fields/,
+  );
+  assert.throws(
+    () =>
+      validateResumeManifestV1({
+        ...manifest,
+        workflow: { ...manifest.workflow, token: 'must-not-persist' },
+      }),
+    /unsupported fields/,
+  );
+  assert.throws(
+    () =>
+      validateResumeManifestV1({
+        ...manifest,
+        completedNodeResults: [
+          { ...manifest.completedNodeResults[0], credential: 'must-not-persist' },
+          ...manifest.completedNodeResults.slice(1),
+        ],
+      }),
+    /unsupported fields/,
+  );
+  assert.throws(
+    () =>
+      validateResumeManifestV1({
+        ...manifest,
+        artifactManifest: [
+          { ...manifest.artifactManifest[0], privateLocator: 'must-not-persist' },
+          ...manifest.artifactManifest.slice(1),
+        ],
+      }),
+    /unsupported fields/,
+  );
+});
+
 test('manifest hash validation rejects tampering and authority expansion', () => {
   const manifest = createResumeManifestV1(manifestInput());
 
