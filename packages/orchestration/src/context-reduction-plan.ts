@@ -42,7 +42,9 @@ export interface ContextReductionPlan {
 export function buildDeterministicContextReductionPlan(
   inputs: readonly ContextReductionPlanItemInput[],
 ): ContextReductionPlan {
-  const normalized = inputs.map(normalizeInput).sort((left, right) => left.id.localeCompare(right.id));
+  const normalized = inputs
+    .map(normalizeInput)
+    .sort((left, right) => left.id.localeCompare(right.id));
   assertUniqueIds(normalized);
 
   const keeperByHash = selectDuplicateKeepers(normalized);
