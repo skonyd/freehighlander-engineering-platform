@@ -8,7 +8,11 @@ import {
   acquirePortableOwnershipLease,
   releasePortableOwnershipLease,
 } from '../../../packages/orchestration/dist/index.js';
-import { createResumeManifestV1 } from '../../../packages/persistence/dist/index.js';
+import {
+  createPortableCanonicalEventBundleV1,
+  createResumeManifestV1,
+  portableEventArtifactId,
+} from '../../../packages/persistence/dist/index.js';
 import {
   buildPortableResumePlan,
   claimPortableResumeOwnership,
@@ -17,7 +21,9 @@ import {
   inspectPortableResumeWithOwnership,
   publishPreparedResumeCheckpoint,
   publishPreparedResumeHandoff,
+  readPreparedPortableEventBundle,
   readPreparedResumeManifest,
+  rebuildPortableResumeReadModel,
   resolvePortableResumeProjectId,
 } from '../lib/portable-resume.mjs';
 
@@ -60,6 +66,49 @@ function manifest(overrides = {}) {
   });
 }
 
+function portableEventBundle() {
+  return createPortableCanonicalEventBundleV1({
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    projectId: 'project-151',
+    runId: 'run-151',
+    exactRevision: REMOTE_HEAD,
+    events: [
+      {
+        schemaVersion: 1,
+        type: 'run.started',
+        timestamp: '2026-09-25T07:00:00.000Z',
+        runId: 'run-151',
+        taskId: 'task-151',
+        revision: {
+          repository: 'skonyd/freehighlander-engineering-platform',
+          pullRequest: 151,
+          branch: 'feature/resume',
+          baseSha: 'b'.repeat(40),
+          headSha: REMOTE_HEAD,
+        },
+        workflow: {
+          id: 'project-execution',
+          version: '1.0.0',
+          hash: H1,
+        },
+        payload: { checkpoint: 'portable' },
+      },
+    ],
+  });
+}
+
+function manifestWithPortableEvents(bundle = portableEventBundle()) {
+  return manifest({
+    artifactManifest: [
+      {
+        artifactId: portableEventArtifactId(bundle.runId),
+        contentHash: bundle.bundleHash,
+        classification: 'PORTABLE_REQUIRED',
+      },
+    ],
+  });
+}
+
 test('portable checkpoint publishes only when repository and remote HEAD are current', async () => {
   const candidate = manifest();
   let publishCalls = 0;
@@ -87,6 +136,79 @@ test('portable checkpoint publishes only when repository and remote HEAD are cur
   assert.equal(result.semanticGatePassInferred, false);
   assert.equal(result.authority, 'NONE');
   assert.equal(publishCalls, 1);
+});
+
+test('portable checkpoint publishes and verifies the manifest-bound event bundle', async () => {
+  const bundle = portableEventBundle();
+  const candidate = manifestWithPortableEvents(bundle);
+  const calls = [];
+
+  const result = await publishPreparedResumeCheckpoint({
+    store: {
+      async publishCasWithEventBundle(value, events, expectedGeneration) {
+        calls.push('publish-events');
+        assert.deepEqual(value, candidate);
+        assert.deepEqual(events, bundle);
+        assert.equal(expectedGeneration, null);
+        return { status: 'ACCEPT', reasons: [], acceptedGeneration: 1, authority: 'NONE' };
+      },
+      async getLatest() {
+        calls.push('manifest-read');
+        return candidate;
+      },
+      async getLatestEventBundle() {
+        calls.push('events-read');
+        return bundle;
+      },
+    },
+    manifest: candidate,
+    repositoryIdentity: candidate.repositoryIdentity,
+    remoteHead: REMOTE_HEAD,
+    eventBundle: bundle,
+  });
+
+  assert.equal(result.status, 'PORTABLE_READY');
+  assert.equal(result.eventBundleHash, bundle.bundleHash);
+  assert.equal(result.published, true);
+  assert.equal(result.semanticGatePassInferred, false);
+  assert.deepEqual(calls, ['publish-events', 'manifest-read', 'events-read']);
+});
+
+test('portable handoff never releases ownership before event bundle read-back verifies', async () => {
+  const bundle = portableEventBundle();
+  const candidate = manifestWithPortableEvents(bundle);
+  let ownershipReads = 0;
+
+  await assert.rejects(
+    () =>
+      publishPreparedResumeHandoff({
+        resumeStore: {
+          async publishCasWithEventBundle() {
+            return { status: 'ACCEPT', reasons: [], acceptedGeneration: 1, authority: 'NONE' };
+          },
+          async getLatest() {
+            return candidate;
+          },
+          async getLatestEventBundle() {
+            return { ...bundle, bundleHash: 'f'.repeat(64) };
+          },
+        },
+        ownershipStore: {
+          async getLatest() {
+            ownershipReads += 1;
+            throw new Error('ownership must not be touched before event verification');
+          },
+        },
+        manifest: candidate,
+        repositoryIdentity: candidate.repositoryIdentity,
+        remoteHead: REMOTE_HEAD,
+        leaseId: 'lease-machine-a',
+        releasedAt: '2026-09-25T07:00:30.000Z',
+        eventBundle: bundle,
+      }),
+    /event bundle checkpoint read-back verification failed/,
+  );
+  assert.equal(ownershipReads, 0);
 });
 
 test('stale remote HEAD fails reconciliation without publishing', async () => {
@@ -177,6 +299,67 @@ test('prepared manifest file must satisfy the strict persisted contract', async 
 
     assert.deepEqual(await readPreparedResumeManifest(validFile), candidate);
     await assert.rejects(() => readPreparedResumeManifest(invalidFile), /unsupported fields/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('prepared portable event bundle is strict and read-model rebuild is idempotent', async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'fh-portable-read-model-'));
+  try {
+    const bundle = portableEventBundle();
+    const bundleFile = path.join(root, 'events.json');
+    const invalidFile = path.join(root, 'invalid-events.json');
+    const dbFile = path.join(root, 'nested', 'read-model.sqlite');
+    writeFileSync(bundleFile, JSON.stringify(bundle), 'utf8');
+    writeFileSync(invalidFile, JSON.stringify({ ...bundle, authority: 'MERGE' }), 'utf8');
+
+    assert.deepEqual(await readPreparedPortableEventBundle(bundleFile), bundle);
+    await assert.rejects(
+      () => readPreparedPortableEventBundle(invalidFile),
+      /authority must be NONE/,
+    );
+
+    const store = {
+      async getLatestEventBundle() {
+        return bundle;
+      },
+    };
+    const first = await rebuildPortableResumeReadModel({
+      store,
+      repositoryIdentity: bundle.repositoryIdentity,
+      projectId: bundle.projectId,
+      filePath: dbFile,
+    });
+    assert.equal(first.status, 'REBUILT');
+    assert.equal(first.imported, 1);
+    assert.equal(first.duplicates, 0);
+    assert.equal(first.integrity.ok, true);
+    assert.equal(first.localDatabaseRequiredForPortability, false);
+
+    const second = await rebuildPortableResumeReadModel({
+      store,
+      repositoryIdentity: bundle.repositoryIdentity,
+      projectId: bundle.projectId,
+      filePath: dbFile,
+    });
+    assert.equal(second.status, 'REBUILT');
+    assert.equal(second.imported, 0);
+    assert.equal(second.duplicates, 1);
+    assert.equal(second.eventBundleHash, bundle.bundleHash);
+
+    const none = await rebuildPortableResumeReadModel({
+      store: {
+        async getLatestEventBundle() {
+          return null;
+        },
+      },
+      repositoryIdentity: bundle.repositoryIdentity,
+      projectId: bundle.projectId,
+      filePath: path.join(root, 'not-created.sqlite'),
+    });
+    assert.equal(none.status, 'NOT_REQUIRED');
+    assert.equal(none.localDatabaseRequiredForPortability, false);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
