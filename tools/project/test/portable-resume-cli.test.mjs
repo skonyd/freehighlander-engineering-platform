@@ -175,7 +175,6 @@ test('prepared manifest file must satisfy the strict persisted contract', async 
   }
 });
 
-
 test('portable handoff publishes checkpoint before releasing exact ownership lease', async () => {
   const candidate = manifest();
   const active = acquirePortableOwnershipLease(
