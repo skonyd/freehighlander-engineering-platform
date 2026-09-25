@@ -74,19 +74,19 @@ Umbrella: #88.
 - [x] Privacy export/delete manifest planning — issue #140 / PR #141
 - [x] Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143
 
-## Productization / Studio roadmap — proposed
-- [ ] FH-40 Studio shell + Explainable Operations Console — P0
-- [ ] FH-41 ASK / PLAN / EXECUTE / REVIEW Workbench — P0
-- [ ] FH-42 Engineering Blueprint Catalog — P0
-- [ ] FH-43 Visual Workflow Studio — P0
-- [ ] FH-44 Connector Hub / MCP Tool Manager — P0
-- [ ] FH-45 Role Marketplace + Engineering Solution Packs — P1
-- [ ] FH-46 Engineering Knowledge Vault / Lineage-RAG — P1
-- [ ] FH-47 Routines / Trigger Engine — P1
-- [ ] FH-48 Constraint-aware model/work router optimizer — P1
-- [ ] FH-49 Enterprise collaboration / identity boundary — P2 / ADR-required
+## Optional FH-KUIKA productization module — proposed
+- [ ] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0
+- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0
+- [ ] FH-KUIKA-03 Engineering Blueprint Catalog — P0
+- [ ] FH-KUIKA-04 Visual Workflow Studio — P0
+- [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
+- [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
+- [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1
+- [ ] FH-KUIKA-08 Routines / Trigger Engine — P1
+- [ ] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1
+- [ ] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 / ADR-required
 
-Detailed decomposition and authority boundary: [FH-40..FH-49 Productization Roadmap](docs/planning/FH-40-49-PRODUCTIZATION-ROADMAP.md).
+Detailed decomposition and authority boundary: [FH-40..FH-KUIKA-10 Productization Roadmap](docs/planning/FH-40-49-PRODUCTIZATION-ROADMAP.md).
 
 ## Current blocker
 
