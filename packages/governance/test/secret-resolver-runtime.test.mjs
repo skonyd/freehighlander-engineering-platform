@@ -272,6 +272,43 @@ test('OS_KEYCHAIN uses native command adapters and fails closed without a secure
   );
 });
 
+test('Windows OS_KEYCHAIN fails closed when Credential Locker activation is unavailable', async () => {
+  const secretBinding = binding(
+    'provider.windows-keychain.api',
+    'OS_KEYCHAIN',
+    'keychain://freehighlander/openai',
+  );
+  const runner = {
+    calls: [],
+    async run(executable, args, timeoutMs) {
+      this.calls.push({ executable, args: [...args], timeoutMs });
+      return { exitCode: 1, stdout: '' };
+    },
+  };
+  const registry = createDefaultSecretResolverRegistry({
+    platform: 'win32',
+    commandRunner: runner,
+  });
+  const sink = new CaptureSink();
+
+  const evidence = await registry.probe(secretBinding);
+  assert.equal(evidence.health, 'UNAVAILABLE');
+  assert.equal(evidence.authenticated, false);
+  assert.deepEqual(evidence.availableCapabilities, []);
+
+  await assert.rejects(
+    () =>
+      registry.inject(
+        secretBinding,
+        plan('provider.windows-keychain.api', 'OS_KEYCHAIN'),
+        sink,
+      ),
+    /OS_KEYCHAIN secret resolution failed/,
+  );
+  assert.equal(sink.values.size, 0);
+  assert.ok(runner.calls.every((call) => call.executable === 'powershell.exe'));
+});
+
 test('1Password and Bitwarden adapters inject fixture values without exposing them in receipts', async () => {
   const runner = new FakeRunner();
   const registry = createDefaultSecretResolverRegistry({
