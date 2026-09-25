@@ -1,6 +1,10 @@
 import { spawn } from 'node:child_process';
 
 import {
+  validatePortableCanonicalEventBundleV1,
+  type PortableCanonicalEventBundleV1,
+} from './portable-event-bundle.js';
+import {
   evaluateResumeManifestCas,
   validateResumeManifestV1,
   type ResumeManifestCasDecision,
@@ -105,11 +109,59 @@ export class GitResumeStore implements ResumeStore {
     return manifest;
   }
 
+  async getLatestEventBundle(
+    repositoryIdentity: string,
+    projectId: string,
+  ): Promise<PortableCanonicalEventBundleV1 | null> {
+    const manifest = await this.getLatest(repositoryIdentity, projectId);
+    if (manifest === null) return null;
+
+    const artifact = portableEventArtifactEntry(manifest);
+    if (artifact === null) return null;
+
+    const cacheRef = resumeCacheRef(projectId);
+    const shown = await requireGitSuccess(
+      this.#runner.run(['show', `${cacheRef}:portable-events.json`]),
+      'portable event bundle read failed',
+    );
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(shown.stdout) as unknown;
+    } catch {
+      throw new Error('portable event bundle contains invalid JSON');
+    }
+    const bundle = parsed as PortableCanonicalEventBundleV1;
+    validatePortableCanonicalEventBundleV1(bundle);
+    assertManifestBindsEventBundle(manifest, bundle);
+    if (artifact.contentHash !== bundle.bundleHash) {
+      throw new Error('portable event bundle artifact hash mismatch');
+    }
+    return bundle;
+  }
+
+  async publishCasWithEventBundle(
+    candidate: ResumeManifestV1,
+    bundle: PortableCanonicalEventBundleV1,
+    expectedCurrentGeneration: number | null,
+  ): Promise<ResumeManifestCasDecision> {
+    return this.publishCas(candidate, expectedCurrentGeneration, bundle);
+  }
+
   async publishCas(
     candidate: ResumeManifestV1,
     expectedCurrentGeneration: number | null,
+    eventBundle: PortableCanonicalEventBundleV1 | null = null,
   ): Promise<ResumeManifestCasDecision> {
     validateResumeManifestV1(candidate);
+    if (eventBundle === null) {
+      if (portableEventArtifactEntry(candidate) !== null) {
+        throw new Error('portable resume manifest requires its bound event bundle');
+      }
+    } else {
+      validatePortableCanonicalEventBundleV1(eventBundle);
+      assertManifestBindsEventBundle(candidate, eventBundle);
+    }
     const current = await this.getLatest(candidate.repositoryIdentity, candidate.projectId);
     const decision = evaluateResumeManifestCas(current, candidate, expectedCurrentGeneration);
     if (decision.status === 'CONFLICT') return decision;
@@ -128,12 +180,26 @@ export class GitResumeStore implements ResumeStore {
       ),
       'resume manifest blob',
     );
+
+    let treeInput = `100644 blob ${blob}\tmanifest.json\n`;
+    if (eventBundle !== null) {
+      const eventBundleJson = JSON.stringify(eventBundle, null, 2) + '\n';
+      const eventBlob = await requireObjectId(
+        requireGitSuccess(
+          this.#runner.run(['hash-object', '-w', '--stdin'], eventBundleJson),
+          'portable event bundle blob creation failed',
+        ),
+        'portable event bundle blob',
+      );
+      treeInput += `100644 blob ${eventBlob}\tportable-events.json\n`;
+    }
+
     const tree = await requireObjectId(
       requireGitSuccess(
-        this.#runner.run(['mktree'], `100644 blob ${blob}\tmanifest.json\n`),
-        'resume manifest tree creation failed',
+        this.#runner.run(['mktree'], treeInput),
+        'resume state tree creation failed',
       ),
-      'resume manifest tree',
+      'resume state tree',
     );
 
     const commitArgs = [
@@ -169,6 +235,15 @@ export class GitResumeStore implements ResumeStore {
     const verified = await this.getLatest(candidate.repositoryIdentity, candidate.projectId);
     if (verified === null || verified.manifestHash !== candidate.manifestHash) {
       throw new Error('portable resume manifest read-back hash mismatch');
+    }
+    if (eventBundle !== null) {
+      const verifiedBundle = await this.getLatestEventBundle(
+        candidate.repositoryIdentity,
+        candidate.projectId,
+      );
+      if (verifiedBundle === null || verifiedBundle.bundleHash !== eventBundle.bundleHash) {
+        throw new Error('portable event bundle read-back hash mismatch');
+      }
     }
 
     return {
@@ -284,6 +359,11 @@ export class SpawnGitResumeCommandRunner implements GitResumeCommandRunner {
   }
 }
 
+export function portableEventArtifactId(runId: string): string {
+  requireIdentifier(runId, 'runId');
+  return `portable-events:${runId}`;
+}
+
 export function resumeStateRef(projectId: string): string {
   requireIdentifier(projectId, 'projectId');
   return `refs/heads/freehighlander-state/${projectId}`;
@@ -299,6 +379,41 @@ export function gitResumeStoreCanContainSecretValues(): false {
 
 export function gitResumeStoreCanGrantAuthority(): false {
   return false;
+}
+
+function portableEventArtifactEntry(manifest: ResumeManifestV1) {
+  const entries = manifest.artifactManifest.filter((entry) =>
+    entry.artifactId.startsWith('portable-events:'),
+  );
+  if (entries.length > 1) {
+    throw new Error('portable resume manifest contains multiple event bundle artifacts');
+  }
+  return entries[0] ?? null;
+}
+
+function assertManifestBindsEventBundle(
+  manifest: ResumeManifestV1,
+  bundle: PortableCanonicalEventBundleV1,
+): void {
+  if (bundle.repositoryIdentity !== manifest.repositoryIdentity) {
+    throw new Error('portable event bundle repository identity mismatch');
+  }
+  if (bundle.projectId !== manifest.projectId) {
+    throw new Error('portable event bundle project identity mismatch');
+  }
+  if (bundle.exactRevision !== manifest.remoteHead) {
+    throw new Error('portable event bundle revision mismatch');
+  }
+
+  const artifactId = portableEventArtifactId(bundle.runId);
+  const artifact = manifest.artifactManifest.find((entry) => entry.artifactId === artifactId);
+  if (
+    artifact === undefined ||
+    artifact.classification !== 'PORTABLE_REQUIRED' ||
+    artifact.contentHash !== bundle.bundleHash
+  ) {
+    throw new Error('portable resume manifest does not bind the event bundle hash');
+  }
 }
 
 function resumeCacheRef(projectId: string): string {

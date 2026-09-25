@@ -3,6 +3,7 @@ export {
   SpawnGitResumeCommandRunner,
   gitResumeStoreCanContainSecretValues,
   gitResumeStoreCanGrantAuthority,
+  portableEventArtifactId,
   resumeStateBranchCanMergeIntoProductBranches,
   resumeStateRef,
   type GitResumeCommandResult,

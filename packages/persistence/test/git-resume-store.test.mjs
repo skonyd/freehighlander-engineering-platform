@@ -8,9 +8,11 @@ import test from 'node:test';
 import {
   GitResumeStore,
   SpawnGitResumeCommandRunner,
+  createPortableCanonicalEventBundleV1,
   createResumeManifestV1,
   gitResumeStoreCanContainSecretValues,
   gitResumeStoreCanGrantAuthority,
+  portableEventArtifactId,
   resumeStateBranchCanMergeIntoProductBranches,
   resumeStateRef,
 } from '../dist/index.js';
@@ -51,6 +53,41 @@ function manifestInput(overrides = {}) {
     generation: 1,
     ...overrides,
   };
+}
+
+function portableEvent(overrides = {}) {
+  return {
+    schemaVersion: 1,
+    type: 'run.started',
+    timestamp: '2026-09-25T05:00:00.000Z',
+    runId: 'run-151',
+    taskId: 'task-151',
+    revision: {
+      repository: 'skonyd/freehighlander-engineering-platform',
+      pullRequest: 151,
+      branch: 'feature/resume',
+      baseSha: 'b'.repeat(40),
+      headSha: 'a'.repeat(40),
+    },
+    workflow: {
+      id: 'project-execution',
+      version: '1.0.0',
+      hash: H1,
+    },
+    payload: {},
+    ...overrides,
+  };
+}
+
+function portableBundle(overrides = {}) {
+  return createPortableCanonicalEventBundleV1({
+    repositoryIdentity: 'skonyd/freehighlander-engineering-platform',
+    projectId: 'project-151',
+    runId: 'run-151',
+    exactRevision: 'a'.repeat(40),
+    events: [portableEvent()],
+    ...overrides,
+  });
 }
 
 function runGit(cwd, args) {
@@ -132,6 +169,110 @@ test('GitResumeStore publishes and reads a CAS-bound manifest on an isolated sta
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('GitResumeStore atomically publishes and reads a manifest-bound portable event bundle', async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'fh-git-resume-events-'));
+  const remote = path.join(root, 'remote.git');
+  const working = path.join(root, 'working');
+
+  try {
+    runGit(root, ['init', '--bare', remote]);
+    runGit(root, ['init', '-b', 'main', working]);
+    runGit(working, ['config', 'user.name', 'FreeHighlander Test']);
+    runGit(working, ['config', 'user.email', 'fh-test@example.invalid']);
+    runGit(working, ['commit', '--allow-empty', '-m', 'initial']);
+    runGit(working, ['remote', 'add', 'origin', remote]);
+    runGit(working, ['push', '-u', 'origin', 'main']);
+
+    const store = new GitResumeStore({ repositoryRoot: working });
+    const events = portableBundle();
+    const artifactId = portableEventArtifactId(events.runId);
+    assert.equal(artifactId, 'portable-events:run-151');
+
+    const manifest = createResumeManifestV1(
+      manifestInput({
+        artifactManifest: [
+          {
+            artifactId,
+            contentHash: events.bundleHash,
+            classification: 'PORTABLE_REQUIRED',
+          },
+        ],
+      }),
+    );
+
+    await assert.rejects(() => store.publishCas(manifest, null), /requires its bound event bundle/);
+
+    const decision = await store.publishCasWithEventBundle(manifest, events, null);
+    assert.equal(decision.status, 'ACCEPT');
+    assert.equal(decision.acceptedGeneration, 1);
+
+    const restored = await store.getLatestEventBundle(
+      'skonyd/freehighlander-engineering-platform',
+      'project-151',
+    );
+    assert.deepEqual(restored, events);
+
+    const tree = runGit(working, [
+      'ls-tree',
+      '--name-only',
+      'refs/freehighlander/resume-cache/project-151',
+    ])
+      .split('\n')
+      .sort();
+    assert.deepEqual(tree, ['manifest.json', 'portable-events.json']);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('GitResumeStore rejects unbound or identity-drifted portable event bundles before publish', async () => {
+  const store = new GitResumeStore({
+    repositoryRoot: '.',
+    runner: {
+      async run() {
+        throw new Error('Git must not be touched for invalid bundle binding');
+      },
+    },
+  });
+  const events = portableBundle();
+
+  const missingArtifact = createResumeManifestV1(manifestInput());
+  await assert.rejects(
+    () => store.publishCasWithEventBundle(missingArtifact, events, null),
+    /does not bind the event bundle hash/,
+  );
+
+  const bound = createResumeManifestV1(
+    manifestInput({
+      artifactManifest: [
+        {
+          artifactId: portableEventArtifactId(events.runId),
+          contentHash: events.bundleHash,
+          classification: 'PORTABLE_REQUIRED',
+        },
+      ],
+    }),
+  );
+  const driftedRevision = portableBundle({
+    exactRevision: 'c'.repeat(40),
+    events: [
+      portableEvent({
+        revision: {
+          repository: 'skonyd/freehighlander-engineering-platform',
+          pullRequest: 151,
+          branch: 'feature/resume',
+          baseSha: 'b'.repeat(40),
+          headSha: 'c'.repeat(40),
+        },
+      }),
+    ],
+  });
+  await assert.rejects(
+    () => store.publishCasWithEventBundle(bound, driftedRevision, null),
+    /revision mismatch/,
+  );
 });
 
 test('Git resume state is authority-neutral secret-free metadata and not a product merge source', () => {
