@@ -33,7 +33,4 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Verify
-        run: |
-          npm run format:write
-          git diff -- packages/contracts/test/error-diagnosis.test.mjs
-          exit 1
+        run: npm run verify
