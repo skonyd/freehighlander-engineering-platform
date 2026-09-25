@@ -92,10 +92,8 @@ if (doctorArgs.resume) {
       }
     }
 
-    const {
-      createPortableResumeStore,
-      resolvePortableResumeProjectId,
-    } = await import('./lib/portable-resume.mjs');
+    const { createPortableResumeStore, resolvePortableResumeProjectId } =
+      await import('./lib/portable-resume.mjs');
     const {
       createLocalSecretProfileStore,
       defaultSecretRequirementsFile,
