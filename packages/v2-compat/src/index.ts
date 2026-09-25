@@ -1,9 +1,12 @@
-export const PROVISIONAL_V2_REFERENCE = {
+export const ACCEPTED_V2_REFERENCE = {
   repository: 'skonyd/creator-marketplace',
   pullRequest: 207,
-  sha: '0e70f4a9680fcc5c287b7926f2aa20170c79f47d',
-  referenceStatus: 'PROVISIONAL',
-  authority: 'DISABLED',
+  provisionalSha: '0e70f4a9680fcc5c287b7926f2aa20170c79f47d',
+  mergeSha: 'e4707a3c4267db9d2aadd452782b91045b96724d',
+  postMergeHardeningPullRequest: 209,
+  sha: '1a8e215b78a3a5008aae6aae36488b3273733b19',
+  referenceStatus: 'ACCEPTED',
+  authority: 'ENABLED',
 } as const;
 
 export type RiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
@@ -12,9 +15,28 @@ export type Effort = 'low' | 'medium' | 'high';
 export const AUTHORITATIVE_ARTIFACT_KIND = 'full' as const;
 
 export const V2_REFERENCE_TEST_REVIEW = {
-  model: 'opus',
-  effort: 'medium',
+  model: 'claude-opus-5-5',
+  effort: 'low',
   maxRepairRounds: 2,
+} as const;
+
+export const V2_REFERENCE_FULL_VERIFICATION = [
+  'npm run verify',
+  'bash scripts/check-docs.sh',
+  'bash automation/tests/run.sh',
+] as const;
+
+export const V2_REFERENCE_LOCAL_WORKER_GENERATION = {
+  temperature: 1,
+  topP: 0.95,
+  topK: 20,
+  minP: 0,
+  presencePenalty: 0,
+  repetitionPenalty: 1,
+  reasoningEffort: 'medium',
+  enableThinking: true,
+  preserveThinking: false,
+  maxTokens: 16_384,
 } as const;
 
 export const V2_REFERENCE_LOCAL_WORKER_LIMITS = {
@@ -69,9 +91,9 @@ export const V2_REFERENCE_PROFILE: V2CompatibilityProfile = {
     critical: { model: 'sonnet', effort: 'medium' },
   },
   finalReview: {
-    normal: { model: 'gpt-6-astra', effort: 'low' },
-    high: { model: 'gpt-6-astra', effort: 'medium' },
-    critical: { model: 'gpt-6-astra', effort: 'medium' },
+    normal: { model: 'gpt-6-sol', effort: 'medium' },
+    high: { model: 'gpt-6-sol', effort: 'medium' },
+    critical: { model: 'gpt-6-sol', effort: 'medium' },
   },
   criticalPaths: [
     'packages/money/**',
@@ -121,16 +143,16 @@ export const V2_REFERENCE_PROFILE: V2CompatibilityProfile = {
   ],
 };
 
-export function authorityPromotionAllowed(): false {
-  return false;
+export function authorityPromotionAllowed(): true {
+  return true;
 }
 
-export function assertProvisionalReference(): void {
+export function assertAcceptedReference(): void {
   if (
-    PROVISIONAL_V2_REFERENCE.referenceStatus !== 'PROVISIONAL' ||
-    PROVISIONAL_V2_REFERENCE.authority !== 'DISABLED'
+    ACCEPTED_V2_REFERENCE.referenceStatus !== 'ACCEPTED' ||
+    ACCEPTED_V2_REFERENCE.authority !== 'ENABLED'
   ) {
-    throw new Error('FH-01B1 must remain provisional with authority disabled');
+    throw new Error('FH-01B2 requires accepted V2 reference with compatibility authority enabled');
   }
 }
 
@@ -547,7 +569,7 @@ const producerByType: Readonly<Partial<Record<ArtifactType, string>>> = {
   'test-review': 'opus-test-review',
   'verify-full': 'automation/verify.sh',
   'verify-fast': 'automation/verify.sh',
-  'final-review': 'gpt-6-astra-final-review',
+  'final-review': 'gpt-6-sol-final-review',
 };
 
 export interface ArtifactValidationOptions {
@@ -600,15 +622,11 @@ export function validateArtifactForStore(
     } else {
       if (effective !== maxRisk(initial, final)) errors.push('EFFECTIVE_RISK mismatch');
       const configured = finalReviewRoute(effective, profile);
-      if (model !== 'gpt-6-astra' || configured.model !== model) {
+      if (model !== 'gpt-6-sol' || configured.model !== model) {
         errors.push('final reviewer model mismatch');
       }
-      if (effective === 'NORMAL') {
-        if (!effort || !['low', 'medium'].includes(effort)) {
-          errors.push('invalid NORMAL final-review effort');
-        }
-      } else if (effort !== 'medium') {
-        errors.push('HIGH/CRITICAL final-review effort must be medium');
+      if (effort !== 'medium') {
+        errors.push('final-review effort must be medium');
       }
     }
   }
