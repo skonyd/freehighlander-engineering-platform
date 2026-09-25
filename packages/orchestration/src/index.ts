@@ -1,4 +1,18 @@
 export {
+  applyRepairEvent,
+  createRepairAccountingState,
+  repairAccountingCanGrantAuthority,
+  staleArtifactCanAdvanceRepairRound,
+  transportFailureConsumesSemanticRepairBudget,
+  validateRepairAccountingState,
+  type RepairAccountingDecision,
+  type RepairAccountingStateV1,
+  type RepairBudgetPolicy,
+  type RepairEvent,
+  type RepairNextAction,
+} from './repair-accounting.js';
+
+export {
   buildCausalRunSummary,
   causalTracingCanGrantAuthority,
   causalTracingCanPersistHiddenReasoning,
