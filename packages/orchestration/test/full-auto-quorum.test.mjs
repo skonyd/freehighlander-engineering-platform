@@ -45,16 +45,8 @@ function reviewer(
   };
 }
 
-const reviewerA = reviewer(
-  'reviewer-a',
-  'autonomous-merge-reviewer-a',
-  'provider-a',
-);
-const reviewerB = reviewer(
-  'reviewer-b',
-  'autonomous-merge-reviewer-b',
-  'provider-b',
-);
+const reviewerA = reviewer('reviewer-a', 'autonomous-merge-reviewer-a', 'provider-a');
+const reviewerB = reviewer('reviewer-b', 'autonomous-merge-reviewer-b', 'provider-b');
 
 test('two independent APPROVE reviews create deterministic non-authoritative quorum evidence', () => {
   const first = buildFullAutoQuorumArtifact({
@@ -185,10 +177,7 @@ test('binding snapshot changes create a different quorum identity', () => {
   const changed = buildFullAutoQuorumArtifact({
     scope,
     producerIndependenceGroup: 'producer',
-    reviewers: [
-      reviewerA,
-      { ...reviewerB, bindingSnapshotHash: hash('f') },
-    ],
+    reviewers: [reviewerA, { ...reviewerB, bindingSnapshotHash: hash('f') }],
   });
 
   assert.notEqual(first.quorumHash, changed.quorumHash);
