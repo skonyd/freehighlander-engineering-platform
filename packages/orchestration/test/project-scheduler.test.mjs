@@ -26,6 +26,7 @@ function workItem(id, overrides = {}) {
     roadmapOrder: 10,
     workspaceIsolation: 'ISOLATED',
     conflictWithActive: 'SAFE_TO_RUN_CONCURRENTLY',
+    blockedSecretHandleIds: [],
     resourcesAvailable: true,
     cutoverBlocked: false,
     ...overrides,
@@ -74,6 +75,33 @@ test('HUMAN_REQUIRED parks only dependent work while independent work remains se
   assert.equal(plan.dispositions['work-c'], 'WAITING_DEPENDENCY');
   assert.equal(plan.dispositions['work-d'], 'WAITING_DEPENDENCY');
   assert.equal(plan.dispositions['work-e'], 'ACTIVE');
+  assert.equal(plan.shouldStop, false);
+  assert.equal(plan.authority, 'NONE');
+});
+
+test('secret-blocked work waits locally while independent work remains selectable', () => {
+  const items = [
+    workItem('work-secret', {
+      priority: 30,
+      roadmapOrder: 1,
+      blockedSecretHandleIds: ['provider.openai.api'],
+    }),
+    workItem('work-independent', { priority: 20, roadmapOrder: 2 }),
+    workItem('work-dependent', {
+      dependencyIds: ['work-secret'],
+      priority: 40,
+      roadmapOrder: 3,
+    }),
+  ];
+
+  const plan = buildProjectSchedulePlan(items, 2);
+
+  assert.equal(plan.dispositions['work-secret'], 'WAITING_SECRET');
+  assert.equal(plan.dispositions['work-independent'], 'READY');
+  assert.equal(plan.dispositions['work-dependent'], 'WAITING_DEPENDENCY');
+  assert.deepEqual(plan.secretBlockedIds, ['work-secret']);
+  assert.deepEqual(plan.readyIds, ['work-independent']);
+  assert.deepEqual(plan.selectedIds, ['work-independent']);
   assert.equal(plan.shouldStop, false);
   assert.equal(plan.authority, 'NONE');
 });
@@ -194,6 +222,11 @@ test('scheduler rejects ambiguous or malformed project dependency state', () => 
     workItem('work-a', { roadmapOrder: 1.5 }),
     workItem('work-a', { workspaceIsolation: 'UNSAFE' }),
     workItem('work-a', { conflictWithActive: 'MAYBE' }),
+    workItem('work-a', { blockedSecretHandleIds: 'provider.openai.api' }),
+    workItem('work-a', { blockedSecretHandleIds: ['x'] }),
+    workItem('work-a', {
+      blockedSecretHandleIds: ['provider.openai.api', 'provider.openai.api'],
+    }),
     workItem('work-a', { resourcesAvailable: 'yes' }),
     workItem('work-a', { cutoverBlocked: 'no' }),
   ]) {
