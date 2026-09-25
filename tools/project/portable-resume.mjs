@@ -5,6 +5,13 @@ import path from 'node:path';
 import { GitPortableOwnershipStore } from './lib/portable-ownership-store.mjs';
 import { assertSafeCheckpointWorktree } from './lib/reconciliation.mjs';
 import {
+  createLocalSecretProfileStore,
+  defaultSecretRequirementsFile,
+  doctorResumeSecretHandles,
+  loadSecretRequirements,
+  readLocalSecretProfile,
+} from './lib/secrets.mjs';
+import {
   createPortableResumeStore,
   inspectPortableResume,
   claimPortableResumeOwnership,
@@ -27,6 +34,9 @@ try {
 
   if (parsed.command === 'checkpoint') {
     if (parsed.flags.has('claim')) throw new Error('--claim is valid only with resume');
+    if (option(parsed.options, 'secret-profile') !== null) {
+      throw new Error('--secret-profile is valid only with resume');
+    }
     const manifestFile = requireOption(parsed.options, 'manifest');
     assertSafeCheckpointWorktree(readCheckpointWorktreeStatus(root));
 
@@ -97,7 +107,30 @@ try {
           leaseId: option(parsed.options, 'lease-id'),
           now,
         });
-    printJson(result);
+
+    let secrets = {
+      status: 'NOT_CHECKED',
+      secretDependentWorkReady: false,
+      authority: 'NONE',
+      secretValuesPresent: false,
+    };
+    if (result.status === 'READY' && result.readyToMutate === true) {
+      const manifest = await store.getLatest(state.repository, projectId);
+      if (manifest === null) {
+        throw new Error('portable resume manifest disappeared during secret readiness check');
+      }
+      const secretProfileId = option(parsed.options, 'secret-profile') ?? 'default';
+      const secretStore = createLocalSecretProfileStore(root, secretProfileId);
+      const localProfile = readLocalSecretProfile(secretStore, secretProfileId);
+      const requirements = await loadSecretRequirements(defaultSecretRequirementsFile(root));
+      secrets = await doctorResumeSecretHandles(
+        localProfile.profile,
+        requirements,
+        manifest.requiredSecretHandleIds,
+      );
+    }
+
+    printJson({ ...result, secrets });
     if (result.status !== 'READY' || result.readyToMutate !== true) process.exitCode = 2;
   } else if (parsed.command === 'help' || parsed.command === undefined) {
     printHelp();
@@ -175,9 +208,9 @@ function printHelp() {
 Usage:
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> [--remote origin]
   npm run project:portable-resume -- checkpoint --manifest <manifest.json> --handoff --lease-id <lease-id> [--remote origin]
-  npm run project:portable-resume -- resume --project <project-id> [--lease-id <current-lease-id>] [--remote origin]
+  npm run project:portable-resume -- resume --project <project-id> [--lease-id <current-lease-id>] [--secret-profile <profile>] [--remote origin]
   npm run project:portable-resume -- resume --project <project-id> --claim \
-    --run-id <run-id> --lease-id <new-lease-id> --machine-instance <machine-id> --ttl-ms <milliseconds> [--remote origin]
+    --run-id <run-id> --lease-id <new-lease-id> --machine-instance <machine-id> --ttl-ms <milliseconds> [--secret-profile <profile>] [--remote origin]
 
 Checkpoint safety:
   - requires a clean product worktree
@@ -197,6 +230,9 @@ Resume safety:
   - missing/released/expired ownership reports OWNERSHIP_CLAIM_REQUIRED
   - --claim acquires/reclaims ownership with exact Git revision CAS
   - a live non-expired lease blocks claim; CAS conflict never guesses takeover
+  - checks only SecretHandles required by the portable manifest against the selected local profile
+  - unresolved required handles block secret-dependent work without blocking unrelated READY work
+  - secret values and private resolver locators are never printed
   - reports RECONCILIATION_REQUIRED instead of guessing continuation
   - never mutates or cleans the product worktree
 `);
