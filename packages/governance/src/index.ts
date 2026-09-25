@@ -156,6 +156,16 @@ export {
 } from './cutover-readiness.js';
 
 export {
+  fullAutoPreMergeRevalidationCanExecuteInShadowMode,
+  revalidateFullAutoPreMerge,
+  type FullAutoPreMergeExpectation,
+  type FullAutoPreMergeObservedState,
+  type FullAutoPreMergeReason,
+  type FullAutoPreMergeRevalidation,
+  type FullAutoPreMergeRevalidationInput,
+} from './full-auto-premerge.js';
+
+export {
   evaluateFullAutoMergeIntent,
   fullAutoMergeIntentCanExecuteInShadowMode,
   fullAutoProfileCanDelegateRisk,
