@@ -529,6 +529,7 @@ export async function rebuildPortableResumeReadModel({
       status: 'NOT_REQUIRED',
       projectId,
       eventBundleHash: null,
+      seen: 0,
       imported: 0,
       duplicates: 0,
       localDatabaseRequiredForPortability: false,
