@@ -1,4 +1,44 @@
 export {
+  FhKuikaLocalSemanticIndexV1,
+  localSemanticIndexCanCreateAuthoritativeLineage,
+  localSemanticIndexCanGrantAuthority,
+  localSemanticIndexCanInvokeModel,
+  localSemanticIndexCanUseRemoteProvider,
+  type FhKuikaLocalSemanticDocumentV1,
+  type FhKuikaLocalSemanticIndexOptionsV1,
+} from './kuika-local-semantic-index.js';
+
+export {
+  lineageFirstRetrieverCanGrantAuthority,
+  lineageFirstRetrieverCanMutateDomain,
+  lineageFirstRetrieverCanPromoteSemanticResult,
+  retrieveFhKuikaKnowledgeV1,
+  type FhKuikaKnowledgeLineageSourceV1,
+  type FhKuikaKnowledgeRetrievalResultV1,
+  type FhKuikaKnowledgeRetrievalTraceV1,
+} from './kuika-knowledge-retriever.js';
+
+export {
+  buildFhKuikaKnowledgeRetrievalPlanV1,
+  createFhKuikaKnowledgeQueryV1,
+  knowledgeQueryCanGrantAuthority,
+  knowledgeRetrievalCanMutateDomain,
+  knowledgeRetrievalRequiresModelCall,
+  semanticDiscoveryCanEstablishAuthoritativeLineage,
+  validateFhKuikaKnowledgeQueryV1,
+  validateFhKuikaKnowledgeResultV1,
+  type FhKuikaKnowledgeProvenanceV1,
+  type FhKuikaKnowledgeQueryMode,
+  type FhKuikaKnowledgeQueryV1,
+  type FhKuikaKnowledgeQueryValidationV1,
+  type FhKuikaKnowledgeResultClass,
+  type FhKuikaKnowledgeResultV1,
+  type FhKuikaKnowledgeRetrievalPlanV1,
+  type FhKuikaKnowledgeRevisionRefV1,
+  type FhKuikaKnowledgeSourceKind,
+} from './kuika-knowledge-contract.js';
+
+export {
   buildFhKuikaWorkflowSimulationPreviewV1,
   buildFhKuikaWorkflowValidationViewV1,
   createFhKuikaWorkflowNodeInspectorV1,
