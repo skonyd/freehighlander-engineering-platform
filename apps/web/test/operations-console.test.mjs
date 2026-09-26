@@ -7,6 +7,7 @@ import {
   operationsConsoleCanExposeRawCause,
   operationsConsoleCanGrantAuthority,
   operationsConsoleCanInvokeModel,
+  FH_KUIKA_OPERATIONS_HTML,
 } from '../dist/index.js';
 
 const now = '2026-09-26T09:30:00.000Z';
@@ -306,4 +307,13 @@ test('Operations Console is bounded, read-only and authority-neutral', () => {
     () => buildOperationsConsoleSnapshot(source(), { errorLimitPerRun: 10001 }),
     /errorLimitPerRun/,
   );
+});
+
+test('FH-KUIKA Operations UI keeps filters local, persistent and accessible', () => {
+  assert.match(FH_KUIKA_OPERATIONS_HTML, /id="attention-severity"/);
+  assert.match(FH_KUIKA_OPERATIONS_HTML, /id="binding-state"/);
+  assert.match(FH_KUIKA_OPERATIONS_HTML, /aria-label="Operations filters"/);
+  assert.match(FH_KUIKA_OPERATIONS_HTML, /fh-kuika-operate-filters-v1/);
+  assert.match(FH_KUIKA_OPERATIONS_HTML, /localStorage\.setItem/);
+  assert.match(FH_KUIKA_OPERATIONS_HTML, /Filters are local UI state only/);
 });
