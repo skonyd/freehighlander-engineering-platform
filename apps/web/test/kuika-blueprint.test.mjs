@@ -148,3 +148,48 @@ test('blueprint validation requires semantic versioning, unique bounded fields a
     /defaultValue does not match valueType/,
   );
 });
+
+
+test('blueprint publication validates and clones all supported typed defaults', () => {
+  const published = publishFhKuikaBlueprintV1(
+    draft({
+      parameters: [
+        {
+          id: 'target-area',
+          description: 'Target area',
+          required: true,
+          valueType: 'STRING',
+          defaultValue: 'src/web',
+        },
+        {
+          id: 'retry-count',
+          description: 'Retry count',
+          required: false,
+          valueType: 'NUMBER',
+          defaultValue: 2,
+        },
+        {
+          id: 'strict-mode',
+          description: 'Strict mode',
+          required: false,
+          valueType: 'BOOLEAN',
+          defaultValue: true,
+        },
+        {
+          id: 'required-checks',
+          description: 'Required checks',
+          required: false,
+          valueType: 'STRING_LIST',
+          defaultValue: ['typecheck', 'test'],
+        },
+      ],
+    }),
+  );
+
+  assert.equal(published.parameters.length, 4);
+  assert.deepEqual(
+    published.parameters.find((parameter) => parameter.id === 'required-checks').defaultValue,
+    ['typecheck', 'test'],
+  );
+  assert.equal(Object.isFrozen(published.parameters[3].defaultValue), true);
+});
