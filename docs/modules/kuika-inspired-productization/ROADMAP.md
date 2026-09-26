@@ -15,6 +15,8 @@ The goal is not to turn FreeHighlander into a generic low-code application build
 
 The productization layer should expose the capabilities already present in orchestration, governance, model-runtime, evidence, lineage, persistence and the control plane through safe, explainable and versioned UX.
 
+The existing FreeHighlander AI work structure remains the **primary/default way of working**. FH-KUIKA provides optional alternative interfaces, reusable patterns and productized tools around that core flow. A user must not need to understand or enable FH-KUIKA to perform normal AI-assisted engineering work.
+
 ## Module boundary
 
 `FH-KUIKA` is an **optional productization module**, not a new source of authority and not a replacement for FreeHighlander core architecture.
@@ -79,52 +81,41 @@ Any new package not already allowed by the frozen architecture requires normal a
 
 ## Product information architecture
 
-FH-KUIKA is exposed as a distinct module in the FreeHighlander UI.
+FH-KUIKA is exposed as a distinct optional module. To avoid UI complexity, only six module entries are permanently visible.
 
 ~~~text
 FREEHIGHLANDER
 ├─ Core
-│  ├─ Dashboard
-│  ├─ Projects
+│  ├─ Home
+│  ├─ Work
 │  ├─ Runs
-│  ├─ Workflows
-│  ├─ Roles
-│  ├─ Models / Providers
-│  ├─ Policies
-│  ├─ Artifacts / Metrics
 │  └─ Settings
 │
 └─ Modules
    └─ FH-KUIKA
       ├─ Overview
       ├─ Workbench
-      │  ├─ Ask
-      │  ├─ Plan
-      │  ├─ Execute
-      │  └─ Review
       ├─ Build
-      │  ├─ Blueprints
-      │  ├─ Workflow Studio
-      │  ├─ Role Marketplace
-      │  └─ Solution Packs
       ├─ Integrate
-      │  ├─ Connector Hub
-      │  ├─ Models & Routing
-      │  └─ Routines
       ├─ Knowledge
-      │  ├─ Engineering Graph
-      │  ├─ Evidence
-      │  └─ Search
       └─ Operate
-         ├─ Operations Console
-         ├─ Approvals
-         ├─ Errors
-         ├─ Routing / Quotas
-         └─ Audit
 ~~~
 
-The UI route namespace should also preserve this boundary, for example `/modules/fh-kuika/*`. Core routes must not depend on the module being installed or enabled.
+Sub-capabilities are tabs/cards inside those pages rather than sidebar entries:
 
+- Workbench → Ask / Plan / Execute / Review
+- Build → Blueprints / Workflow Studio / Roles / Solution Packs
+- Integrate → Connectors / Models & Routing / Routines
+- Knowledge → Engineering Graph / Evidence / Search
+- Operate → Operations / Approvals / Errors / Routing / Audit
+
+The detailed UX contract is in [FH-KUIKA Product UX](UX.md).
+
+### Complexity budget
+
+New FH-KUIKA features should not automatically create a new top-level screen. A new permanent navigation item requires evidence that it cannot fit coherently under one of the existing six module surfaces.
+
+Advanced state such as hashes, policy evaluation, evidence metadata, provider diagnostics and connector permission matrices should use drawers, tabs or expandable detail by default.
 
 ## Delivery waves
 

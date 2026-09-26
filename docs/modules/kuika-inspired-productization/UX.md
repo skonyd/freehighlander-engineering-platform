@@ -13,127 +13,130 @@ The UI must make automation understandable without making UI state authoritative
 
 ## UX principles
 
-1. **Authority is visible before action.**
-2. **Risk and evidence are first-class UI concepts.**
-3. **Explain why, not only what happened.**
-4. **Draft → Validate → Simulate → Publish** for reusable configuration.
-5. **Published workflow/role/blueprint versions are immutable.**
-6. **Exact revision context is always visible.**
-7. **Modes never grant authority.**
-8. **Unknown/uncertain state is shown as unknown, not guessed.**
-9. **Mutation is explicit; inspection is cheap and safe.**
-10. **Execution survives UI disconnect.**
+1. **The normal AI work path stays simple.** A user should be able to open a project, choose ASK / PLAN / EXECUTE / REVIEW and work without understanding every internal subsystem.
+2. **Progressive disclosure.** Advanced routing, evidence, policy, connector and lineage detail is available when needed, but is not part of the default visual path.
+3. **FH-KUIKA is optional choice, not the default mental model.** It adds alternative productized workflows and tools on top of the existing FreeHighlander AI work structure.
+4. **Authority is visible before action.**
+5. **Risk and evidence are first-class concepts, but detailed fields live in drawers/details panels unless action requires them.**
+6. **Explain why, not only what happened.**
+7. **Draft → Validate → Simulate → Publish** for reusable configuration.
+8. **Published workflow/role/blueprint versions are immutable.**
+9. **Exact revision context is always available.**
+10. **Modes never grant authority.**
+11. **Unknown/uncertain state is shown as unknown, not guessed.**
+12. **Execution survives UI disconnect.**
 
 ## Module navigation contract
 
-FH-KUIKA must appear in the user interface as a **separate top-level module heading**. Its screens must not be mixed into the core FreeHighlander navigation tree.
+FH-KUIKA appears as a separate optional module, but its internal navigation must stay shallow.
 
-Recommended left-navigation structure:
+The default user experience is:
+
+~~~text
+Open project
+   ↓
+Workbench
+   ↓
+ASK | PLAN | EXECUTE | REVIEW
+   ↓
+Run / Result
+~~~
+
+FH-KUIKA adds optional alternative tools around that path; it does not replace the path.
+
+Recommended navigation:
 
 ~~~text
 FREEHIGHLANDER
 
 Core
-  Dashboard
-  Projects
+  Home
+  Work
   Runs
-  Workflows
-  Roles
-  Models
-  Providers
-  Policies
-  Artifacts
-  Metrics
-  Benchmarks
   Settings
 
 Modules
-  FH-KUIKA                       OPTIONAL MODULE
+  FH-KUIKA
     Overview
     Workbench
-      Ask
-      Plan
-      Execute
-      Review
     Build
-      Blueprints
-      Workflow Studio
-      Role Marketplace
-      Solution Packs
     Integrate
-      Connector Hub
-      Models & Routing
-      Routines
     Knowledge
-      Engineering Graph
-      Evidence
-      Search
     Operate
-      Operations Console
-      Approvals
-      Errors
-      Routing / Quotas
-      Audit
 ~~~
 
-### Navigation rules
-
-- `FH-KUIKA` is rendered as one collapsible module group.
-- Module children are hidden when the module is not installed/enabled.
-- Core navigation remains stable whether FH-KUIKA is present or absent.
-- A module badge should identify `FH-KUIKA` as `OPTIONAL`, `ENABLED`, `DISABLED`, or `UPDATE AVAILABLE` where applicable.
-- Cross-links from Core into FH-KUIKA may exist, but they must visibly cross the module boundary.
-- Deep links preserve the module namespace in the route.
-- Search/command-palette results identify the owning module.
-
-Recommended route namespace:
+The detailed capabilities are second-level content inside these six module screens, not additional permanent navigation items:
 
 ~~~text
-/core/...
+Workbench
+  tabs: Ask | Plan | Execute | Review
+
+Build
+  cards/tabs: Blueprints | Workflow Studio | Roles | Solution Packs
+
+Integrate
+  cards/tabs: Connectors | Models & Routing | Routines
+
+Knowledge
+  cards/tabs: Engineering Graph | Evidence | Search
+
+Operate
+  cards/tabs: Operations | Approvals | Errors | Routing / Quotas | Audit
+~~~
+
+### Simplicity rules
+
+- Maximum one visible navigation level below `FH-KUIKA`.
+- ASK / PLAN / EXECUTE / REVIEW are tabs inside Workbench, not menu items.
+- Blueprint, workflow, role and connector detail opens inside the current screen or a drawer where practical.
+- Advanced diagnostics, hashes, policy detail, evidence metadata and routing internals default to collapsed.
+- Common actions use plain labels; protocol/architecture jargon is shown in advanced detail.
+- The default screen should show only the information needed for the next decision.
+- Command palette/search can reach advanced pages without permanently expanding the menu.
+- Module children disappear completely when FH-KUIKA is disabled.
+- Core navigation stays usable and stable with or without FH-KUIKA.
+
+Recommended route namespace remains module-scoped:
+
+~~~text
 /modules/fh-kuika/overview
 /modules/fh-kuika/workbench
-/modules/fh-kuika/blueprints
-/modules/fh-kuika/workflows
-/modules/fh-kuika/roles
-/modules/fh-kuika/connectors
+/modules/fh-kuika/build
+/modules/fh-kuika/integrate
 /modules/fh-kuika/knowledge
-/modules/fh-kuika/routines
-/modules/fh-kuika/operations
+/modules/fh-kuika/operate
+~~~
+
+Deep objects may use nested IDs without creating new sidebar entries, for example:
+
+~~~text
+/modules/fh-kuika/build/blueprints/:id
+/modules/fh-kuika/build/workflows/:id
+/modules/fh-kuika/integrate/connectors/:id
+/modules/fh-kuika/operate/runs/:id
 ~~~
 
 ### Module landing page
 
-Selecting the `FH-KUIKA` heading opens a module overview instead of dropping the user directly into one feature.
-
-The overview should show:
-
-- module status/version;
-- enabled capabilities;
-- required connectors/providers;
-- recent FH-KUIKA runs;
-- pending approvals/errors;
-- blueprint/workflow shortcuts;
-- module health;
-- authority mode;
-- upgrade/configuration actions.
-
-Example:
+Selecting `FH-KUIKA` opens a compact overview with only the most useful entry points and attention items.
 
 ~~~text
-FH-KUIKA
-Kuika-inspired Productization Module
-OPTIONAL · ENABLED · v1.x
+FH-KUIKA                                      OPTIONAL · ENABLED
 
-[ Workbench ] [ Blueprints ] [ Workflow Studio ] [ Connector Hub ]
+[ Workbench ]   [ Build ]   [ Integrate ]
 
-Module health        Healthy
-Authority            SHADOW_ONLY
-Active routines      4
-Pending approvals    2
-Provider fallback    1 active
-Recent errors        0 critical
+Needs attention
+  2 approvals
+  1 provider fallback
+
+Recent
+  Last workflow run
+  Last blueprint used
+
+[ Advanced module details ▾ ]
 ~~~
 
+Version, authority mode, connector inventory, health telemetry and other operational detail belong under the expandable advanced section unless a problem requires attention.
 
 ## Global frame
 
@@ -141,9 +144,9 @@ Desktop layout:
 
 ~~~text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ Project ▾  branch@sha   SHADOW_ONLY   provider health   budget   user/actor │
+│ Project ▾  branch@sha                status / attention                     │
 ├───────────────┬──────────────────────────────────────────────────────────────┤
-│ Core/Modules  │ FH-KUIKA / active module page                               │
+│ Navigation    │ active work surface                                          │
 │               │                                                              │
 │               │                                                              │
 │               │                                                              │
