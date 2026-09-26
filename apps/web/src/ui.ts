@@ -154,6 +154,20 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       cursor: pointer;
     }
     button:hover { border-color: #52677d; }
+    button:focus-visible, summary:focus-visible, tr[data-run]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    summary { cursor: pointer; }
+    .freshness { margin-top: 5px; font-size: 12px; color: var(--muted); }
+    .freshness.warn { color: var(--warn); }
+    .advanced-details { margin-top: 22px; }
+    .advanced-details > summary {
+      color: var(--accent);
+      font-weight: 650;
+      user-select: none;
+      padding: 8px 0;
+    }
     .empty { padding: 28px 12px; text-align: center; color: var(--muted); }
     .error { color: var(--bad); }
     .error-card {
@@ -231,7 +245,8 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       <div class="eyebrow">FreeHighlander · Core</div>
       <h1>Home</h1>
       <div id="project-context" class="project-line muted">Loading project context…</div>
-      <div id="health" class="muted">Connecting to local read model…</div>
+      <div id="health" class="muted" role="status" aria-live="polite">Connecting to local read model…</div>
+      <div id="freshness" class="freshness" aria-live="polite"></div>
     </div>
     <div class="readonly">READ ONLY · ZERO-TOKEN HOME</div>
   </header>
@@ -273,23 +288,25 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       </div>
     </section>
 
-    <div class="details-heading">Engineering details</div>
+    <details class="advanced-details">
+      <summary>Engineering details</summary>
 
-    <section class="grid telemetry-layout">
-      <div class="card wide">
-        <h2>Recent runs</h2>
-        <div id="runs"><div class="empty">Loading runs…</div></div>
-      </div>
-      <aside class="card detail">
-        <h2>Run detail</h2>
-        <div id="detail" class="muted">Select a run.</div>
-      </aside>
-    </section>
+      <section class="grid telemetry-layout">
+        <div class="card wide">
+          <h2>Recent runs</h2>
+          <div id="runs"><div class="empty">Loading runs…</div></div>
+        </div>
+        <aside class="card detail">
+          <h2>Run detail</h2>
+          <div id="detail" class="muted">Select a run.</div>
+        </aside>
+      </section>
 
-    <section class="card wide" style="margin-top:14px">
-      <h2>Model / role usage</h2>
-      <div id="models"><div class="empty">Loading model metrics…</div></div>
-    </section>
+      <section class="card wide" style="margin-top:14px">
+        <h2>Model / role usage</h2>
+        <div id="models"><div class="empty">Loading model metrics…</div></div>
+      </section>
+    </details>
 
     <div class="zero-token-note">
       Core Home reads deterministic telemetry and state only. Automatic refresh does not invoke a model.
@@ -343,6 +360,14 @@ function renderHome(home) {
 
   document.querySelector('#project-context').innerHTML =
     '<strong>' + esc(repository) + '</strong> · ' + esc(branch) + '@<code>' + esc(revision) + '</code>';
+
+  const staleSources = home.sourceFreshness.staleSources || [];
+  const freshnessTarget = document.querySelector('#freshness');
+  const generated = new Date(home.sourceFreshness.generatedAt).toLocaleTimeString();
+  freshnessTarget.className = 'freshness' + (staleSources.length ? ' warn' : '');
+  freshnessTarget.textContent = staleSources.length
+    ? 'Updated ' + generated + ' · partial: ' + staleSources.join(', ')
+    : 'Updated ' + generated + ' · all indexed sources current';
 
   const attentionPartial =
     stale(home, 'runtime-attention') ||
@@ -623,7 +648,7 @@ function renderRuns(runs) {
   }
 
   const rows = runs.map(run =>
-    '<tr data-run="' + esc(run.runId) + '">' +
+    '<tr tabindex="0" role="button" aria-label="Open run ' + esc(run.runId) + '" data-run="' + esc(run.runId) + '">' +
       '<td><code>' + esc(run.runId.slice(0, 12)) + '</code></td>' +
       '<td><span class="status-' + esc(run.status) + '">' + esc(run.status) + '</span>' +
         (run.humanRequired ? ' <span class="pill human">HUMAN</span>' : '') + '</td>' +
@@ -640,9 +665,15 @@ function renderRuns(runs) {
     '<th>Events</th><th>Models</th><th>Updated</th></tr></thead>' +
     '<tbody>' + rows + '</tbody></table>';
 
-  document.querySelectorAll('tr[data-run]').forEach(row =>
-    row.addEventListener('click', () => loadRun(row.dataset.run))
-  );
+  document.querySelectorAll('tr[data-run]').forEach(row => {
+    row.addEventListener('click', () => loadRun(row.dataset.run));
+    row.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        loadRun(row.dataset.run);
+      }
+    });
+  });
 }
 
 function renderModels(models) {
@@ -733,8 +764,22 @@ async function loadRun(runId) {
   }
 }
 
-load();
-setInterval(load, 15000);
+let refreshTimer;
+
+function scheduleRefresh() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(async () => {
+    await load();
+    scheduleRefresh();
+  }, document.hidden ? 60000 : 15000);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) void load();
+  scheduleRefresh();
+});
+
+void load().finally(scheduleRefresh);
 </script>
 </body>
 </html>`;
