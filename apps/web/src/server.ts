@@ -326,10 +326,7 @@ async function handleRequest(
 
       if (routineRoute.resource === 'plan') {
         json(response, 200, {
-          plan: buildFhKuikaRoutineActivationPlanV1(
-            routine,
-            url.searchParams.getAll('connector'),
-          ),
+          plan: buildFhKuikaRoutineActivationPlanV1(routine, url.searchParams.getAll('connector')),
         });
         return;
       }
