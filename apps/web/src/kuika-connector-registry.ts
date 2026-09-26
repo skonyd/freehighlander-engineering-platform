@@ -1,15 +1,8 @@
-export type FhKuikaConnectorTrustLevel =
-  | 'BUILT_IN'
-  | 'REVIEWED_PINNED'
-  | 'EXTERNAL_UNTRUSTED';
+export type FhKuikaConnectorTrustLevel = 'BUILT_IN' | 'REVIEWED_PINNED' | 'EXTERNAL_UNTRUSTED';
 
 export type FhKuikaConnectorProtocol = 'NATIVE' | 'MCP_2026_07_28' | 'OPENAPI_HTTP';
 
-export type FhKuikaConnectorDataClassification =
-  | 'PUBLIC'
-  | 'INTERNAL'
-  | 'CONFIDENTIAL'
-  | 'SECRET';
+export type FhKuikaConnectorDataClassification = 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'SECRET';
 
 export interface FhKuikaConnectorCapabilityV1 {
   readonly id: string;
