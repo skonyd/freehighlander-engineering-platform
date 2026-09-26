@@ -43,6 +43,19 @@ export {
 } from './home.js';
 
 export {
+  DEFAULT_CORE_HOME_UI_PREFERENCES,
+  coreHomeAttentionSeverityVisible,
+  coreHomeTimestampInWindow,
+  coreHomeUiPreferencesCanGrantAuthority,
+  coreHomeUiPreferencesCanInvokeModel,
+  parseCoreHomeUiPreferences,
+  serializeCoreHomeUiPreferences,
+  type CoreHomeAttentionFilter,
+  type CoreHomeTimeWindow,
+  type CoreHomeUiPreferencesV1,
+} from './home-preferences.js';
+
+export {
   buildManagementSnapshot,
   createManagementIntent,
   parseManagementIntent,
