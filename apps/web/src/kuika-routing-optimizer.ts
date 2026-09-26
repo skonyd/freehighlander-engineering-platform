@@ -155,8 +155,12 @@ function evaluateCandidate(
 }
 
 function validateRequest(request: FhKuikaRoutingRequestV1): void {
-  if (request.schemaVersion !== 1) throw new Error('routing request schemaVersion must be 1');
-  if (request.authority !== 'NONE') throw new Error('routing request authority must be NONE');
+  if (request.schemaVersion !== 1) {
+    throw new Error('routing request schemaVersion must be 1');
+  }
+  if (request.authority !== 'NONE') {
+    throw new Error('routing request authority must be NONE');
+  }
   requireIdentifier(request.logicalRole, 'logicalRole');
   requireIdentifier(request.preferredBindingId, 'preferredBindingId');
   requirePositiveInteger(request.requiredContextTokens, 'requiredContextTokens', 10_000_000);
@@ -170,10 +174,14 @@ function validateRequest(request: FhKuikaRoutingRequestV1): void {
     throw new Error('maxEstimatedCallCostUsd must be a non-negative finite number');
   }
 
-  if (request.candidates.length === 0) throw new Error('routing candidates are required');
+  if (request.candidates.length === 0) {
+    throw new Error('routing candidates are required');
+  }
   const ids = new Set<string>();
   for (const candidate of request.candidates) {
-    if (ids.has(candidate.bindingId)) throw new Error('routing candidate bindingIds must be unique');
+    if (ids.has(candidate.bindingId)) {
+      throw new Error('routing candidate bindingIds must be unique');
+    }
     ids.add(candidate.bindingId);
   }
 }
