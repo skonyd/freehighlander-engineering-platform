@@ -1,4 +1,13 @@
 export {
+  buildFhKuikaConnectorInstallReviewV1,
+  connectorInstallReviewCanGrantAuthority,
+  connectorInstallReviewCanInstallDirectly,
+  connectorInstallReviewCanRevealRawSecrets,
+  type FhKuikaConnectorInstallReviewV1,
+  type FhKuikaConnectorInstallWarning,
+} from './kuika-connector-install-review.js';
+
+export {
   buildFhKuikaMcpRegistryViewV1,
   mcpDiscoveryCanEnableConnector,
   mcpDiscoveryMetadataCanGrantAuthority,
