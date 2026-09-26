@@ -1,6 +1,14 @@
 import { existsSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 
+import {
+  createCoreHomeSnapshotV1,
+  type CoreHomeRecentRunView,
+  type CoreHomeSnapshotV1,
+  type CoreHomeUsageWindowKind,
+  type CoreHomeUsageWindowView,
+} from './home.js';
+
 export class MissingDashboardDatabaseError extends Error {
   constructor(readonly filePath: string) {
     super(`dashboard database does not exist: ${filePath}`);
@@ -123,6 +131,17 @@ export interface DashboardRunDetail {
   readonly artifacts: readonly DashboardArtifact[];
 }
 
+export interface DashboardHomeOptions {
+  readonly now?: string;
+  readonly recentRunLimit?: number;
+}
+
+export interface DashboardUsageWindowOptions {
+  readonly now?: string;
+  readonly runId?: string;
+  readonly repository?: string;
+}
+
 export class DashboardReadModel {
   constructor(readonly filePath: string) {
     if (!filePath.trim()) throw new Error('filePath is required');
@@ -189,22 +208,78 @@ export class DashboardReadModel {
 
   listRuns(limit = 100): readonly DashboardRun[] {
     assertLimit(limit);
+    return this.#withDatabase((db) => queryRuns(db, limit));
+  }
 
-    return this.#withDatabase((db) =>
-      db
-        .prepare(
-          `SELECT
-             run_id, task_id, first_timestamp, last_timestamp, status,
-             repository, pull_request, branch, head_sha,
-             workflow_id, workflow_version, human_required,
-             event_count, model_call_count
-           FROM runs
-           ORDER BY last_timestamp DESC, run_id ASC
-           LIMIT ?`,
-        )
-        .all(limit)
-        .map((row) => mapRun(row as SqlRow)),
-    );
+  homeSnapshot(options: DashboardHomeOptions = {}): CoreHomeSnapshotV1 {
+    const generatedAt = normalizeTimestamp(options.now ?? new Date().toISOString(), 'now');
+    const recentRunLimit = options.recentRunLimit ?? 8;
+    assertLimit(recentRunLimit);
+
+    return this.#withDatabase((db) => {
+      const runs = queryRuns(db, recentRunLimit);
+      const latestRun = runs[0] ?? null;
+      const usage = queryUsageWindow(db, 'TODAY', { now: generatedAt });
+      const sqliteUpdatedAt = queryLatestTelemetryTimestamp(db) ?? generatedAt;
+
+      return createCoreHomeSnapshotV1({
+        generatedAt,
+        sourceFreshness: {
+          generatedAt,
+          sqliteUpdatedAt,
+          staleSources: ['attention', 'continuity', 'current-work', 'findings', 'provider-state'],
+        },
+        project: {
+          repository: latestRun?.repository ?? null,
+          projectId: null,
+          branch: latestRun?.branch ?? null,
+          headSha: latestRun?.headSha ?? null,
+        },
+        authority: {
+          v3Authority: 'SHADOW_ONLY',
+        },
+        system: {
+          state: 'UNKNOWN',
+          database: 'HEALTHY',
+          providers: 'UNKNOWN',
+          continuity: 'UNKNOWN',
+          criticalErrorCount: 0,
+        },
+        currentWork: null,
+        attention: {
+          total: 0,
+          critical: 0,
+          errors: 0,
+          warnings: 0,
+          items: [],
+        },
+        usage,
+        roleBindings: [],
+        recentRuns: runs.map(mapRecentRun),
+        continuity: {
+          state: 'UNKNOWN',
+          latestCheckpointAt: null,
+          resumeReady: null,
+          sourceRevision: null,
+          warning: null,
+        },
+        findings: {
+          state: 'UNKNOWN',
+          critical: 0,
+          high: 0,
+          unresolved: 0,
+          latestFindingAt: null,
+        },
+      });
+    });
+  }
+
+  usageWindow(
+    window: CoreHomeUsageWindowKind,
+    options: DashboardUsageWindowOptions = {},
+  ): CoreHomeUsageWindowView {
+    const now = normalizeTimestamp(options.now ?? new Date().toISOString(), 'now');
+    return this.#withDatabase((db) => queryUsageWindow(db, window, { ...options, now }));
   }
 
   getRun(runId: string): DashboardRun | null {
@@ -426,6 +501,131 @@ function safeProjectionText(value: unknown): string | null {
 function safeProjectionTimestamp(value: unknown): string | null {
   if (typeof value !== 'string' || Number.isNaN(Date.parse(value))) return null;
   return new Date(value).toISOString();
+}
+
+function queryRuns(db: DatabaseSync, limit: number): readonly DashboardRun[] {
+  return db
+    .prepare(
+      `SELECT
+         run_id, task_id, first_timestamp, last_timestamp, status,
+         repository, pull_request, branch, head_sha,
+         workflow_id, workflow_version, human_required,
+         event_count, model_call_count
+       FROM runs
+       ORDER BY last_timestamp DESC, run_id ASC
+       LIMIT ?`,
+    )
+    .all(limit)
+    .map((row) => mapRun(row as SqlRow));
+}
+
+function queryUsageWindow(
+  db: DatabaseSync,
+  window: CoreHomeUsageWindowKind,
+  options: DashboardUsageWindowOptions & { readonly now: string },
+): CoreHomeUsageWindowView {
+  const clauses: string[] = [];
+  const params: string[] = [];
+
+  if (window === 'TODAY') {
+    clauses.push('mc.timestamp >= ?', 'mc.timestamp <= ?');
+    params.push(startOfUtcDay(options.now), options.now);
+  } else if (window === 'LAST_24H') {
+    clauses.push('mc.timestamp >= ?', 'mc.timestamp <= ?');
+    params.push(offsetIso(options.now, -24 * 60 * 60 * 1000), options.now);
+  } else if (window === 'LAST_7D') {
+    clauses.push('mc.timestamp >= ?', 'mc.timestamp <= ?');
+    params.push(offsetIso(options.now, -7 * 24 * 60 * 60 * 1000), options.now);
+  } else if (window === 'CURRENT_RUN') {
+    if (!options.runId?.trim()) throw new Error('CURRENT_RUN usage requires runId');
+    clauses.push('mc.run_id = ?');
+    params.push(options.runId);
+  } else if (window === 'CURRENT_PROJECT') {
+    if (!options.repository?.trim()) {
+      throw new Error('CURRENT_PROJECT usage requires repository');
+    }
+    clauses.push('r.repository = ?');
+    params.push(options.repository);
+  }
+
+  const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
+  const row = db
+    .prepare(
+      `SELECT
+         COUNT(*) AS model_calls,
+         COALESCE(SUM(mc.total_tokens), 0) AS total_tokens,
+         COALESCE(SUM(mc.input_tokens), 0) AS input_tokens,
+         COALESCE(SUM(mc.cached_input_tokens), 0) AS cached_input_tokens,
+         COALESCE(SUM(mc.output_tokens), 0) AS output_tokens,
+         COALESCE(SUM(mc.reasoning_tokens), 0) AS reasoning_tokens,
+         COALESCE(SUM(mc.estimated_cost_usd), 0) AS estimated_cost_usd,
+         COALESCE(SUM(mc.actual_cost_usd), 0) AS actual_cost_usd,
+         COALESCE(SUM(mc.retry_count), 0) AS retries,
+         COALESCE(SUM(mc.fallback_count), 0) AS fallbacks
+       FROM model_calls mc
+       LEFT JOIN runs r ON r.run_id = mc.run_id
+       ${where}`,
+    )
+    .get(...params) as SqlRow | undefined;
+
+  return {
+    window,
+    modelCalls: toNumber(row?.model_calls) ?? 0,
+    totalTokens: toNumber(row?.total_tokens) ?? 0,
+    inputTokens: toNumber(row?.input_tokens) ?? 0,
+    cachedInputTokens: toNumber(row?.cached_input_tokens) ?? 0,
+    outputTokens: toNumber(row?.output_tokens) ?? 0,
+    reasoningTokens: toNumber(row?.reasoning_tokens) ?? 0,
+    estimatedCostUsd: toNumber(row?.estimated_cost_usd) ?? 0,
+    actualCostUsd: toNumber(row?.actual_cost_usd) ?? 0,
+    retries: toNumber(row?.retries) ?? 0,
+    fallbacks: toNumber(row?.fallbacks) ?? 0,
+  };
+}
+
+function queryLatestTelemetryTimestamp(db: DatabaseSync): string | null {
+  const row = db
+    .prepare(
+      `SELECT MAX(timestamp) AS timestamp
+       FROM (
+         SELECT MAX(last_timestamp) AS timestamp FROM runs
+         UNION ALL
+         SELECT MAX(timestamp) AS timestamp FROM model_calls
+       )`,
+    )
+    .get() as SqlRow | undefined;
+  return toStringOrNull(row?.timestamp);
+}
+
+function mapRecentRun(run: DashboardRun): CoreHomeRecentRunView {
+  return {
+    runId: run.runId,
+    status: run.status,
+    workflowId: run.workflowId,
+    workflowVersion: run.workflowVersion,
+    branch: run.branch,
+    headSha: run.headSha,
+    humanRequired: run.humanRequired,
+    lastTimestamp: run.lastTimestamp,
+  };
+}
+
+function startOfUtcDay(timestamp: string): string {
+  const date = new Date(timestamp);
+  date.setUTCHours(0, 0, 0, 0);
+  return date.toISOString();
+}
+
+function offsetIso(timestamp: string, offsetMs: number): string {
+  return new Date(Date.parse(timestamp) + offsetMs).toISOString();
+}
+
+function normalizeTimestamp(value: string, name: string): string {
+  const normalized = value.trim();
+  if (!normalized || Number.isNaN(Date.parse(normalized))) {
+    throw new Error(`${name} must be a valid timestamp`);
+  }
+  return new Date(normalized).toISOString();
 }
 
 function mapRun(row: SqlRow): DashboardRun {
