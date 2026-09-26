@@ -12,6 +12,7 @@ import {
   getFhKuikaCuratedBlueprintV1,
   prepareFhKuikaBlueprintWorkflowV1,
   renderFhKuikaBlueprintSummaryV1,
+  createDashboardServer,
 } from '../dist/index.js';
 
 test('Blueprint Catalog UI is read-only and exposes deterministic preparation', () => {
@@ -61,4 +62,50 @@ test('blueprint summary retains provenance and hides no risk/evidence requiremen
   assert.deepEqual(summary.requiredEvidence, blueprint.requiredEvidence);
   assert.deepEqual(summary.requiredRoles, blueprint.requiredRoles);
   assert.equal(summary.authority, 'NONE');
+});
+
+
+test('Blueprint HTTP routes expose catalog, detail and preparation without local telemetry', async () => {
+  const server = createDashboardServer({ databasePath: '/tmp/fh-kuika-blueprint-no-db.sqlite' });
+
+  try {
+    await new Promise((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', () => {
+        server.off('error', reject);
+        resolve();
+      });
+    });
+
+    const address = server.address();
+    assert.ok(address && typeof address !== 'string');
+    const base = 'http://127.0.0.1:' + address.port;
+
+    const page = await fetch(base + '/modules/fh-kuika/build/blueprints');
+    assert.equal(page.status, 200);
+    assert.match(await page.text(), /Blueprint Catalog/);
+
+    const catalog = await (await fetch(base + '/api/modules/fh-kuika/blueprints')).json();
+    assert.equal(catalog.blueprints.length, 12);
+    assert.equal(catalog.blueprints[0].authority, 'NONE');
+
+    const detail = await (
+      await fetch(base + '/api/modules/fh-kuika/blueprints/security-patch')
+    ).json();
+    assert.equal(detail.blueprint.id, 'security-patch');
+
+    const prepared = await (
+      await fetch(base + '/api/modules/fh-kuika/blueprints/security-patch/prepare')
+    ).json();
+    assert.equal(prepared.preparation.authority, 'NONE');
+    assert.equal(prepared.preparation.executionAuthorized, false);
+
+    const missing = await fetch(base + '/api/modules/fh-kuika/blueprints/does-not-exist');
+    assert.equal(missing.status, 404);
+    assert.equal((await missing.json()).error, 'blueprint_not_found');
+  } finally {
+    await new Promise((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
 });
