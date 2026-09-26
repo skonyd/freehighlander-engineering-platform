@@ -1,4 +1,14 @@
 export {
+  createFhKuikaReviewRequestV1,
+  fhKuikaReviewRequestCanAuthorizeExecution,
+  fhKuikaReviewRequestCanGrantAuthority,
+  validateFhKuikaReviewRequestV1,
+  type FhKuikaReviewEvidenceRefV1,
+  type FhKuikaReviewRequestV1,
+  type FhKuikaReviewRequestValidationV1,
+} from './kuika-review-request.js';
+
+export {
   createFhKuikaPlanCandidateV1,
   fhKuikaPlanCandidateCanAuthorizeExecution,
   fhKuikaPlanCandidateCanGrantAuthority,
@@ -104,6 +114,7 @@ export {
   type FhKuikaWorkbenchMode,
   type FhKuikaWorkbenchModeView,
   type FhKuikaWorkbenchPreflightV1,
+  type FhKuikaWorkbenchSnapshotOptionsV1,
   type FhKuikaWorkbenchSnapshotV1,
 } from './kuika-workbench.js';
 

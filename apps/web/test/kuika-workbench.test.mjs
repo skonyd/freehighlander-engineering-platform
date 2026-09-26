@@ -136,28 +136,35 @@ test('only Execute mode is mutation-capable and requires enabled V3 authority', 
 });
 
 test('Workbench snapshot exposes deterministic context chips and exact revision binding', () => {
-  const snapshot = buildFhKuikaWorkbenchSnapshotV1(home(), 'REVIEW');
+  const snapshot = buildFhKuikaWorkbenchSnapshotV1(home(), 'REVIEW', {
+    evidenceIds: ['evidence-1'],
+  });
 
   assert.equal(snapshot.schemaVersion, 1);
   assert.equal(snapshot.projectionAuthority, 'NONE');
   assert.equal(snapshot.mode.mode, 'REVIEW');
+  assert.equal(snapshot.mode.outputContract, 'FH_KUIKA_REVIEW_REQUEST_V1');
   assert.equal(snapshot.preflight.canStartRequest, true);
   assert.equal(snapshot.preflight.exactRevisionBound, true);
   assert.equal(snapshot.preflight.sourceState, 'CURRENT');
 
   assert.deepEqual(
     snapshot.context.map((item) => item.kind),
-    ['REPOSITORY', 'BRANCH', 'EXACT_REVISION', 'WORKFLOW', 'RUN'],
+    ['REPOSITORY', 'BRANCH', 'EXACT_REVISION', 'WORKFLOW', 'RUN', 'EVIDENCE'],
   );
   const revision = snapshot.context.find((item) => item.kind === 'EXACT_REVISION');
   assert.equal(revision?.authoritative, true);
   assert.equal(revision?.removable, false);
 });
 
-test('Workbench preflight blocks Execute in SHADOW_ONLY and review without exact revision', () => {
+test('Workbench preflight blocks Execute in SHADOW_ONLY and REVIEW without required binding', () => {
   const execute = buildFhKuikaWorkbenchSnapshotV1(home(), 'EXECUTE');
   assert.equal(execute.preflight.canStartRequest, false);
   assert.match(execute.preflight.blockedReason, /SHADOW_ONLY/);
+
+  const noEvidence = buildFhKuikaWorkbenchSnapshotV1(home(), 'REVIEW');
+  assert.equal(noEvidence.preflight.canStartRequest, false);
+  assert.match(noEvidence.preflight.blockedReason, /evidence reference/i);
 
   const withoutRevision = home({
     project: {

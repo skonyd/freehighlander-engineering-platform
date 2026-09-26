@@ -3,7 +3,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
-import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { buildFhKuikaWorkbenchSnapshotV1, type FhKuikaWorkbenchMode } from './kuika-workbench.js';
@@ -118,11 +117,6 @@ async function handleRequest(
       return;
     }
 
-    if (url.pathname === '/modules/fh-kuika/build/workflows') {
-      html(response, method === 'HEAD' ? '' : FH_KUIKA_WORKFLOW_STUDIO_HTML);
-      return;
-    }
-
     if (url.pathname === '/modules/fh-kuika/integrate') {
       html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('INTEGRATE'));
       return;
@@ -188,7 +182,9 @@ async function handleRequest(
       json(
         response,
         200,
-        buildFhKuikaWorkbenchSnapshotV1(readModel.homeSnapshot(), rawMode as FhKuikaWorkbenchMode),
+        buildFhKuikaWorkbenchSnapshotV1(readModel.homeSnapshot(), rawMode as FhKuikaWorkbenchMode, {
+          evidenceIds: url.searchParams.getAll('evidenceId'),
+        }),
       );
       return;
     }
