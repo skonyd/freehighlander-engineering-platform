@@ -1,11 +1,5 @@
-import {
-  createCoreHomeSnapshotV1,
-  type CoreHomeSnapshotV1,
-} from './home-contract.js';
-import type {
-  DashboardRun,
-  DashboardUsageAggregate,
-} from './read-model.js';
+import { createCoreHomeSnapshotV1, type CoreHomeSnapshotV1 } from './home-contract.js';
+import type { DashboardRun, DashboardUsageAggregate } from './read-model.js';
 
 export interface CoreHomeReadSource {
   health(): { readonly databaseExists: boolean; readonly schemaVersion: number | null };
@@ -35,9 +29,7 @@ export function buildCoreHomeSnapshot(
   const runs = health.databaseExists ? source.listRuns(recentRunLimit) : [];
   const latest = runs[0] ?? null;
   const since = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-  const usage = health.databaseExists
-    ? source.usageSince(since)
-    : emptyUsage();
+  const usage = health.databaseExists ? source.usageSince(since) : emptyUsage();
 
   return createCoreHomeSnapshotV1({
     generatedAt,
