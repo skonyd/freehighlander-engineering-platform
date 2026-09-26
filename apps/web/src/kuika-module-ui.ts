@@ -84,7 +84,7 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
     </section>
 
     <section class="grid" aria-label="FH-KUIKA module areas">
-      <div class="card"><h2>Workbench</h2><p>Ask, Plan, Execute and Review modes. Mode selection never grants authority.</p></div>
+      <a class="card" href="/modules/fh-kuika/workbench"><h2>Workbench</h2><p>Ask, Plan, Execute and Review modes. Mode selection never grants authority.</p></a>
       <div class="card"><h2>Build</h2><p>Blueprints, Workflow Studio, roles and solution packs.</p></div>
       <div class="card"><h2>Integrate</h2><p>Connector Hub, model routing and routines.</p></div>
       <div class="card"><h2>Knowledge</h2><p>Engineering graph, evidence and deterministic search surfaces.</p></div>
