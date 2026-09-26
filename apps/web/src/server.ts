@@ -178,11 +178,7 @@ async function handleRequest(
 
     const kuikaRunRoute = parseFhKuikaRunRoute(url.pathname);
     if (kuikaRunRoute) {
-      const detail = buildFhKuikaRunDetailV1(
-        readModel,
-        kuikaRunRoute.runId,
-        readLimit(url, 1_000),
-      );
+      const detail = buildFhKuikaRunDetailV1(readModel, kuikaRunRoute.runId, readLimit(url, 1_000));
       if (!detail) {
         json(response, 404, { error: 'run_not_found', runId: kuikaRunRoute.runId });
         return;
