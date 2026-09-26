@@ -90,6 +90,21 @@ export {
 export { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 
 export {
+  createFhKuikaPlanCandidateV1,
+  createFhKuikaWorkbenchIntentV1,
+  workbenchIntentPreparationCanGrantAuthority,
+  workbenchIntentPreparationCanInvokeModel,
+  workbenchPlanCandidateCanPublishDirectly,
+  type FhKuikaPlanCandidateV1,
+  type FhKuikaPlanCandidateWorkItemV1,
+  type FhKuikaWorkbenchContextV1,
+  type FhKuikaWorkbenchIntentDisposition,
+  type FhKuikaWorkbenchIntentMode,
+  type FhKuikaWorkbenchIntentV1,
+} from './kuika-workbench-intent.js';
+
+
+export {
   buildFhKuikaRunDetailV1,
   fhKuikaRunDetailCanExposeRawPayload,
   fhKuikaRunDetailCanGrantAuthority,
