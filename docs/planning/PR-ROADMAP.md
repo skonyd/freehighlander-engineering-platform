@@ -124,7 +124,7 @@ Canonical detailed plan: [FH-KUIKA module roadmap](../modules/kuika-inspired-pro
 | **FH-KUIKA-02** | ASK / PLAN / EXECUTE / REVIEW Workbench | P0 | ASK/PLAN/REVIEW preparation | EXECUTE obeys authority/cutover |
 | **FH-KUIKA-03** | Engineering Blueprint Catalog | P0 | schema/catalog/validate/simulate | execution via normal workflow authority |
 | **FH-KUIKA-04** | Visual Workflow Studio | P0 | draft/validate/simulate | publish/execute obeys governance |
-| **FH-KUIKA-05** | Connector Hub / MCP Tool Manager | P0 | discovery/config/permission review | write-capable invocation obeys authority |
+| **FH-KUIKA-05** | Connector Hub / MCP Tool Manager | P0 | **.1–.5 COMPLETE authority-neutral** | .6 write-capable activation obeys FH-20/policy |
 | **FH-KUIKA-06** | Role Marketplace + Engineering Solution Packs | P1 | package/catalog/install planning | role authority remains policy-bounded |
 | **FH-KUIKA-07** | Engineering Knowledge Vault / Lineage-RAG | P1 | retrieval/read-only | no authority from semantic similarity |
 | **FH-KUIKA-08** | Routines / Trigger Engine | P1 | trigger/routine definitions and UI | authority-bearing activation post-gate |
