@@ -13,7 +13,7 @@ FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 - FH-20 readiness gate complete; Creator Marketplace external blocker cleared; explicit cutover still pending.
 - FH-30A..FH-37A complete and authority-neutral.
 - FH-30B..FH-37B remain post-cutover.
-- FH-KUIKA optional productization module is proposed; authority-neutral preparation may proceed before cutover while mutation activation remains gated.
+- FH-KUIKA optional productization module implementation is in progress; authority-neutral preparation may proceed before cutover while mutation activation remains gated.
 - Pre-cutover hardening through reproducible CI, repository hygiene, tracked-secret enforcement, 19/19 measured native coverage, opaque SecretHandle/EPHEMERAL injection, lockfile provenance, safe vulnerability reporting, deterministic build-output integrity accidental-publish safety, internal workspace dependency-confusion prevention and workspace package entrypoint integrity enforcement, source-to-dist build completeness enforcement, privacy export/delete manifest planning and fail-closed provider-egress preparation are complete.
 
 ```text
