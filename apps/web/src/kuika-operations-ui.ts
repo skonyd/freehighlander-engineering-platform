@@ -81,6 +81,9 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
     .compact-row { border-top: 1px solid var(--line); padding-top: 7px; }
     .compact-row:first-child { border-top: 0; padding-top: 0; }
     .empty { color: var(--muted); padding: 18px 0; }
+    .skip-link { position:absolute; left:-9999px; top:8px; z-index:10; background:var(--panel); color:var(--accent); padding:8px 10px; border-radius:8px; }
+    .skip-link:focus { left:8px; }
+    a:focus-visible, button:focus-visible, select:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
     @media (max-width: 820px) {
       .metrics { grid-template-columns: 1fr; }
       .layout { grid-template-columns: 1fr; }
@@ -89,6 +92,7 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to operations</a>
   <header>
     <div>
       <div class="eyebrow">FH-KUIKA · Operate</div>
@@ -98,7 +102,7 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
     <div><a href="/modules/fh-kuika/approvals">Approvals</a> · <a href="/modules/fh-kuika">FH-KUIKA Overview</a></div>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <section id="metrics" class="grid metrics"></section>
 
     <section class="card filters" aria-label="Operations filters">

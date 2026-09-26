@@ -204,7 +204,7 @@ Provider-routing panel should show:
 - **FH-KUIKA-01.2** Operations Console read model for structured runtime errors and routing transitions.
 - **FH-KUIKA-01.3** Run detail redesign with timeline, evidence, model/tool calls and gate decisions.
 - **FH-KUIKA-01.4** Approval Inbox read surface with exact revision/scope/currentness visualization.
-- **FH-KUIKA-01.5** accessibility/responsive/persistent-filter polish and UX contract tests.
+- **FH-KUIKA-01.5** accessibility/responsive/persistent-filter polish and UX contract tests. — COMPLETE
 
 ## Main impact
 
