@@ -1,4 +1,9 @@
 import type { FhKuikaPublishedBlueprintV1 } from './kuika-blueprint.js';
+import {
+  buildFhKuikaBlueprintTelemetryV1,
+  type FhKuikaBlueprintTelemetryV1,
+  type FhKuikaBlueprintUsageObservationV1,
+} from './kuika-blueprint-telemetry.js';
 
 export interface FhKuikaBlueprintCardViewV1 {
   readonly id: string;
@@ -10,6 +15,7 @@ export interface FhKuikaBlueprintCardViewV1 {
   readonly requiredEvidence: number;
   readonly independentReviewRequired: boolean;
   readonly blueprintHash: string;
+  readonly telemetry: FhKuikaBlueprintTelemetryV1;
   readonly authority: 'NONE';
 }
 
@@ -33,12 +39,13 @@ export interface FhKuikaBlueprintDetailViewV1 extends FhKuikaBlueprintCardViewV1
 
 export function buildFhKuikaBlueprintCatalogViewV1(
   blueprints: readonly FhKuikaPublishedBlueprintV1[],
+  observations: readonly FhKuikaBlueprintUsageObservationV1[] = [],
 ): FhKuikaBlueprintCatalogViewV1 {
   return {
     schemaVersion: 1,
     authority: 'NONE',
     blueprints: [...blueprints]
-      .map(toCard)
+      .map((blueprint) => toCard(blueprint, observations))
       .sort(
         (left, right) =>
           left.id.localeCompare(right.id) || right.version.localeCompare(left.version),
@@ -48,9 +55,10 @@ export function buildFhKuikaBlueprintCatalogViewV1(
 
 export function buildFhKuikaBlueprintDetailViewV1(
   blueprint: FhKuikaPublishedBlueprintV1,
+  observations: readonly FhKuikaBlueprintUsageObservationV1[] = [],
 ): FhKuikaBlueprintDetailViewV1 {
   return {
-    ...toCard(blueprint),
+    ...toCard(blueprint, observations),
     compatibleIntents: [...blueprint.compatibleIntents],
     requiredRoleIds: [...blueprint.requiredRoles],
     requiredEvidenceKinds: [...blueprint.requiredEvidence],
@@ -75,7 +83,10 @@ export function blueprintCatalogViewCanMutateBlueprint(): false {
   return false;
 }
 
-function toCard(blueprint: FhKuikaPublishedBlueprintV1): FhKuikaBlueprintCardViewV1 {
+function toCard(
+  blueprint: FhKuikaPublishedBlueprintV1,
+  observations: readonly FhKuikaBlueprintUsageObservationV1[],
+): FhKuikaBlueprintCardViewV1 {
   return {
     id: blueprint.id,
     version: blueprint.version,
@@ -86,6 +97,7 @@ function toCard(blueprint: FhKuikaPublishedBlueprintV1): FhKuikaBlueprintCardVie
     requiredEvidence: blueprint.requiredEvidence.length,
     independentReviewRequired: blueprint.independence.required,
     blueprintHash: blueprint.blueprintHash,
+    telemetry: buildFhKuikaBlueprintTelemetryV1(blueprint.id, blueprint.version, observations),
     authority: 'NONE',
   };
 }
