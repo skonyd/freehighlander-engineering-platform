@@ -104,14 +104,10 @@ test('Marketplace HTTP routes expose role and solution pack planning as GET-only
     const roles = await (await fetch(base + '/api/modules/fh-kuika/roles')).json();
     assert.equal(roles.roles.length, 10);
 
-    const role = await (
-      await fetch(base + '/api/modules/fh-kuika/roles/security-reviewer')
-    ).json();
+    const role = await (await fetch(base + '/api/modules/fh-kuika/roles/security-reviewer')).json();
     assert.equal(role.role.installAuthority, 'NONE');
 
-    const packs = await (
-      await fetch(base + '/api/modules/fh-kuika/solution-packs')
-    ).json();
+    const packs = await (await fetch(base + '/api/modules/fh-kuika/solution-packs')).json();
     assert.equal(packs.packs.length, 5);
 
     const plan = await (
