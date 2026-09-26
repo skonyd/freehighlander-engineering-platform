@@ -19,6 +19,9 @@ import {
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
+import { validateFhKuikaWorkflowDraftDefinitionV1 } from './kuika-workflow-draft.js';
+import { simulateFhKuikaWorkflowDraftV1 } from './kuika-workflow-simulation.js';
+import { buildFhKuikaWorkflowVersionDiffV1 } from './kuika-workflow-diff.js';
 import { buildFhKuikaWorkbenchSnapshotV1, type FhKuikaWorkbenchMode } from './kuika-workbench.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 import { FH_KUIKA_APPROVALS_HTML } from './kuika-approval-ui.js';
