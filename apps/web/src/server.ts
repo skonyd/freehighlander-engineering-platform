@@ -6,11 +6,16 @@ import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 import { DASHBOARD_HTML } from './ui.js';
+import {
+  createGithubExternalStatusProviderFromEnv,
+  type ExternalStatusProvider,
+} from './external-status.js';
 import { buildManagementSnapshot } from './management.js';
 import { DashboardReadModel, MissingDashboardDatabaseError } from './read-model.js';
 
 export interface DashboardServerOptions {
   readonly databasePath?: string;
+  readonly externalStatusProvider?: ExternalStatusProvider;
 }
 
 export interface StartedDashboardServer {
@@ -24,9 +29,11 @@ export function createDashboardServer(options: DashboardServerOptions = {}) {
     process.env.FREEHIGHLANDER_DB ??
     path.resolve(process.cwd(), '.freehighlander', 'runtime', 'freehighlander.sqlite');
   const readModel = new DashboardReadModel(databasePath);
+  const externalStatusProvider =
+    options.externalStatusProvider ?? createGithubExternalStatusProviderFromEnv();
 
   return createServer((request, response) => {
-    void handleRequest(request, response, readModel, databasePath);
+    void handleRequest(request, response, readModel, databasePath, externalStatusProvider);
   });
 }
 
@@ -63,6 +70,7 @@ async function handleRequest(
   response: ServerResponse,
   readModel: DashboardReadModel,
   databasePath: string,
+  externalStatusProvider: ExternalStatusProvider,
 ): Promise<void> {
   try {
     const method = request.method ?? 'GET';
@@ -106,6 +114,21 @@ async function handleRequest(
 
     if (url.pathname === '/api/home') {
       json(response, 200, readModel.homeSnapshot());
+      return;
+    }
+
+    if (url.pathname === '/api/external-status') {
+      const health = readModel.health();
+      const latestRun = health.databaseExists ? (readModel.listRuns(1)[0] ?? null) : null;
+      json(
+        response,
+        200,
+        await externalStatusProvider.read({
+          repository: latestRun?.repository ?? null,
+          exactRevision: latestRun?.headSha ?? null,
+          pullRequest: latestRun?.pullRequest ?? null,
+        }),
+      );
       return;
     }
 
