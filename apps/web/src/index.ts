@@ -103,7 +103,6 @@ export {
   type FhKuikaWorkbenchIntentV1,
 } from './kuika-workbench-intent.js';
 
-
 export {
   buildFhKuikaRunDetailV1,
   fhKuikaRunDetailCanExposeRawPayload,
