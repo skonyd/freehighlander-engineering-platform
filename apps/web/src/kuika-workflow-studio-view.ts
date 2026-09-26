@@ -94,7 +94,10 @@ export function createFhKuikaWorkflowNodeInspectorV1(input: {
 
   return {
     nodeId: requireSingleLine(input.node.id, 'nodeId'),
-    logicalRole: normalizeNullableSingleLine(input.logicalRole ?? input.node.role ?? null, 'logicalRole'),
+    logicalRole: normalizeNullableSingleLine(
+      input.logicalRole ?? input.node.role ?? null,
+      'logicalRole',
+    ),
     riskTier,
     timeoutMs: input.timeoutMs ?? null,
     retryLimit,
@@ -103,7 +106,10 @@ export function createFhKuikaWorkflowNodeInspectorV1(input: {
     timeBudgetMs: input.timeBudgetMs ?? null,
     requiredEvidence: normalizeList(input.requiredEvidence ?? [], 'requiredEvidence'),
     toolPermissions: normalizeList(input.toolPermissions ?? [], 'toolPermissions'),
-    sandboxPolicyRef: normalizeNullableSingleLine(input.sandboxPolicyRef ?? null, 'sandboxPolicyRef'),
+    sandboxPolicyRef: normalizeNullableSingleLine(
+      input.sandboxPolicyRef ?? null,
+      'sandboxPolicyRef',
+    ),
     approvalPolicy,
     authority: 'NONE',
     runtimeAuthoritative: false,
@@ -243,7 +249,8 @@ function topologicalNodeOrder(
 
 function classifyCanonicalError(message: string): FhKuikaWorkflowValidationIssueV1['category'] {
   if (message.includes('LOOP') || message.includes('maxIterations')) return 'LOOP_BOUND';
-  if (message.includes('edge') || message.includes('cycle') || message.includes('acyclic')) return 'GRAPH';
+  if (message.includes('edge') || message.includes('cycle') || message.includes('acyclic'))
+    return 'GRAPH';
   if (message.includes('unknown')) return 'REFERENCE';
   return 'SCHEMA';
 }
@@ -287,10 +294,7 @@ function validateNullablePositiveInteger(value: number | null | undefined, field
   }
 }
 
-function validateNullableNonNegativeFinite(
-  value: number | null | undefined,
-  field: string,
-): void {
+function validateNullableNonNegativeFinite(value: number | null | undefined, field: string): void {
   if (value === null || value === undefined) return;
   if (!Number.isFinite(value) || value < 0) {
     throw new Error(field + ' must be a non-negative finite number when provided');
