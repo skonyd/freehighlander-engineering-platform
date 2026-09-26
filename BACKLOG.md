@@ -76,8 +76,8 @@ Umbrella: #88.
 - [x] Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143
 
 ## Optional FH-KUIKA productization module — proposed
-- [x] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0 — shell, operations, run detail, approval inbox and persistent UX filters complete
-- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0
+- [ ] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0
+- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0 — .1–.4 complete/prepared; .5 EXECUTE activation blocked by FH-20
 - [ ] FH-KUIKA-03 Engineering Blueprint Catalog — P0
 - [ ] FH-KUIKA-04 Visual Workflow Studio — P0
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
