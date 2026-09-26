@@ -34,6 +34,13 @@ export const FH_KUIKA_BLUEPRINTS_HTML = String.raw`<!doctype html>
     .detail-grid > span:nth-child(odd) { color:var(--muted); }
     .section { margin-top:16px; padding-top:12px; border-top:1px solid var(--line); }
     .compact { margin:7px 0 0; padding-left:18px; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+    .actions button {
+      background:var(--panel2); color:var(--text); border:1px solid var(--line);
+      border-radius:8px; padding:8px 10px; cursor:pointer;
+    }
+    .actions button:hover,.actions button:focus-visible { border-color:var(--accent); outline:none; }
+    pre { white-space:pre-wrap; word-break:break-word; background:#090d12; border-radius:8px; padding:10px; max-height:260px; overflow:auto; }
     code { color:#c4d7ec; font-size:12px; overflow-wrap:anywhere; }
     .empty { color:var(--muted); padding:24px 0; text-align:center; }
     @media(max-width:820px){ .layout{grid-template-columns:1fr;} header{flex-direction:column;} }
@@ -106,8 +113,52 @@ async function loadDetail(id){
       '<div class="section"><strong>Authority-sensitive nodes</strong><ul class="compact">'+
         item.authoritySensitiveNodes.map(node=>'<li><code>'+esc(node)+'</code></li>').join('')+'</ul></div>'+
       '<div class="section"><strong>Simulation fixtures</strong><ul class="compact">'+
-        item.simulationFixtures.map(fixture=>'<li>'+esc(fixture.id)+' → '+esc(fixture.expectedTerminalState)+'</li>').join('')+'</ul></div>';
+        item.simulationFixtures.map(fixture=>'<li>'+esc(fixture.id)+' → '+esc(fixture.expectedTerminalState)+'</li>').join('')+'</ul></div>'+
+      '<div class="actions">'+
+        '<button type="button" data-preview="draft">Draft preview</button>'+
+        '<button type="button" data-preview="simulation">Simulation preview</button>'+
+      '</div>'+
+      '<div id="preview" class="section muted">Preview actions are deterministic and do not execute workflows.</div>';
+
+    target.querySelectorAll('button[data-preview]').forEach(button =>
+      button.addEventListener('click',()=>void loadPreview(id,button.dataset.preview))
+    );
   }catch(error){ target.innerHTML='<div class="empty">'+esc(error.message)+'</div>'; }
+}
+
+async function loadPreview(id,kind){
+  const target=document.querySelector('#preview');
+  if(!target)return;
+  target.innerHTML='<div class="empty">Loading preview…</div>';
+  try{
+    const payload=await api(
+      '/api/modules/fh-kuika/blueprints/'+encodeURIComponent(id)+'/'+encodeURIComponent(kind)
+    );
+    if(kind==='draft'){
+      target.innerHTML=
+        '<strong>Workflow draft preview</strong>'+
+        '<div class="detail-grid">'+
+          '<span>Template</span><code>'+esc(payload.workflowTemplateRef)+'</code>'+
+          '<span>Resolution</span><strong>'+esc(payload.templateResolution)+'</strong>'+
+          '<span>Publish</span><strong>'+String(payload.publishAuthorized)+'</strong>'+
+          '<span>Execute</span><strong>'+String(payload.executionAuthorized)+'</strong>'+
+        '</div><pre>'+esc(JSON.stringify(payload.draft.canonicalDefinition,null,2))+'</pre>';
+      return;
+    }
+
+    target.innerHTML=
+      '<strong>Simulation preview</strong>'+
+      '<div class="detail-grid">'+
+        '<span>Execution performed</span><strong>'+String(payload.executionPerformed)+'</strong>'+
+        '<span>Draft valid</span><strong>'+String(payload.draftValidation.valid)+'</strong>'+
+        '<span>Authority</span><strong>'+esc(payload.authority)+'</strong>'+
+      '</div>'+
+      '<ul class="compact">'+payload.fixtures.map(fixture=>
+        '<li>'+esc(fixture.fixtureId)+' → '+esc(fixture.expectedTerminalState)+' ('+esc(fixture.resultKind)+')</li>'
+      ).join('')+'</ul>';
+  }catch(error){
+    target.innerHTML='<div class="empty">'+esc(error.message)+'</div>';
+  }
 }
 
 async function load(){

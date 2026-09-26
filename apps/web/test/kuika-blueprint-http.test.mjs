@@ -60,6 +60,23 @@ test('FH-KUIKA blueprint catalog UI and API are deterministic read-only surfaces
     assert.equal(detail.defaultRiskTier, 'HIGH');
     assert.equal(detail.authority, 'NONE');
 
+    const draftResponse = await fetch(
+      base + '/api/modules/fh-kuika/blueprints/security-patch/draft',
+    );
+    assert.equal(draftResponse.status, 200);
+    const draft = await draftResponse.json();
+    assert.equal(draft.templateResolution, 'REQUIRED');
+    assert.equal(draft.publishAuthorized, false);
+    assert.equal(draft.executionAuthorized, false);
+
+    const simulationResponse = await fetch(
+      base + '/api/modules/fh-kuika/blueprints/security-patch/simulation',
+    );
+    assert.equal(simulationResponse.status, 200);
+    const simulation = await simulationResponse.json();
+    assert.equal(simulation.executionPerformed, false);
+    assert.ok(simulation.fixtures.every((item) => item.resultKind === 'EXPECTED_ONLY'));
+
     const missing = await fetch(base + '/api/modules/fh-kuika/blueprints/does-not-exist');
     assert.equal(missing.status, 404);
     assert.equal((await missing.json()).error, 'blueprint_not_found');
