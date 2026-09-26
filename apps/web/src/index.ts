@@ -1,4 +1,18 @@
 export {
+  blueprintPublicationCanGrantAuthority,
+  blueprintSuggestionCanModifyPublishedBlueprint,
+  publishFhKuikaBlueprintV1,
+  validateFhKuikaBlueprintDraftV1,
+  type FhKuikaBlueprintDraftV1,
+  type FhKuikaBlueprintIndependenceV1,
+  type FhKuikaBlueprintIntent,
+  type FhKuikaBlueprintParameterV1,
+  type FhKuikaBlueprintRiskTier,
+  type FhKuikaBlueprintSimulationFixtureV1,
+  type FhKuikaPublishedBlueprintV1,
+} from './kuika-blueprint.js';
+
+export {
   getFhKuikaWorkbenchModeView,
   listFhKuikaWorkbenchModes,
   workbenchModeSelectionCanGrantAuthority,
