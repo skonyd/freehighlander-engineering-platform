@@ -150,8 +150,7 @@ function normalizeIdentifiers(values: readonly string[], field: string): readonl
   const result = new Set<string>();
   for (const value of values) {
     const normalized = requireText(value, field + ' item');
-    if (/[
-	]/.test(normalized) || normalized.length > 500) {
+    if (/[\\r\\n\\t]/.test(normalized) || normalized.length > 500) {
       throw new Error(field + ' items must be bounded single-line identifiers');
     }
     result.add(normalized);
