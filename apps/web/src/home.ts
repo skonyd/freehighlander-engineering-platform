@@ -137,6 +137,7 @@ export interface CoreHomeUsageWindowView {
 
 export interface CoreHomeRoleBindingHealthView {
   readonly logicalRole: string;
+  readonly observedAt: string | null;
   readonly state: CoreHomeBindingState;
   readonly preferredBindingId: string | null;
   readonly preferredModel: string | null;
@@ -271,6 +272,21 @@ function assertAttentionSummary(value: CoreHomeAttentionSummaryView): void {
 
   if (value.total !== value.items.length) {
     throw new Error('attention.total must match attention.items length');
+  }
+
+  const severityCounts = {
+    critical: value.items.filter((item) => item.severity === 'CRITICAL').length,
+    errors: value.items.filter((item) => item.severity === 'ERROR').length,
+    warnings: value.items.filter((item) => item.severity === 'WARNING').length,
+  };
+  if (value.critical !== severityCounts.critical) {
+    throw new Error('attention.critical must match CRITICAL items');
+  }
+  if (value.errors !== severityCounts.errors) {
+    throw new Error('attention.errors must match ERROR items');
+  }
+  if (value.warnings !== severityCounts.warnings) {
+    throw new Error('attention.warnings must match WARNING items');
   }
 
   const ids = new Set<string>();
