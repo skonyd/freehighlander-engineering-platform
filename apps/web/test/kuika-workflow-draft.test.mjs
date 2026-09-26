@@ -136,10 +136,8 @@ test('Workflow Studio preserves bounded inspector metadata through round-trip', 
   assert.equal(node.approvalPolicy, 'MODEL_QUORUM_REQUIRED');
 });
 
-test(
-  'Workflow Studio inspector metadata validation fails closed on invalid budgets and policy',
-  () => {
-    const input = definition();
+test('Workflow Studio inspector metadata validation fails closed on invalid budgets and policy', () => {
+  const input = definition();
     input.nodes[0] = {
       ...input.nodes[0],
       timeoutMs: 0,
@@ -159,9 +157,8 @@ test(
     assert.ok(result.errors.some((error) => error.includes('costBudgetUsd')));
     assert.ok(result.errors.some((error) => error.includes('requiredEvidence')));
     assert.ok(result.errors.some((error) => error.includes('toolPermissions')));
-    assert.ok(result.errors.some((error) => error.includes('approvalPolicy')));
-  },
-);
+  assert.ok(result.errors.some((error) => error.includes('approvalPolicy')));
+});
 
 
 test('Workflow Studio validation exposes categorized node and graph issues', () => {
