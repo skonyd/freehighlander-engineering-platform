@@ -43,7 +43,10 @@ test('Workflow Studio draft canonicalizes and round-trips without semantic loss'
   assert.equal(first.draftHash.length, 64);
   assert.equal(first.draftHash, reordered.draftHash);
   assert.deepEqual(roundTripFhKuikaStudioWorkflowDraftV1(first), first);
-  assert.deepEqual(parseFhKuikaStudioWorkflowDraftV1(JSON.parse(serializeFhKuikaStudioWorkflowDraftV1(first))), first);
+  assert.deepEqual(
+    parseFhKuikaStudioWorkflowDraftV1(JSON.parse(serializeFhKuikaStudioWorkflowDraftV1(first))),
+    first,
+  );
   assert.equal(Object.isFrozen(first), true);
   assert.equal(Object.isFrozen(first.definition), true);
 
@@ -147,8 +150,5 @@ test('Workflow Studio supports all canonical node kinds without granting runtime
     edges,
   });
 
-  assert.deepEqual(
-    draft.definition.nodes.map((node) => node.kind).sort(),
-    [...kinds].sort(),
-  );
+  assert.deepEqual(draft.definition.nodes.map((node) => node.kind).sort(), [...kinds].sort());
 });
