@@ -4,7 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
 import { FH_KUIKA_CONNECTOR_HUB_HTML } from './kuika-connector-ui.js';
-import { getFhKuikaConnectorCatalogItemV1, listFhKuikaConnectorCatalogV1 } from './kuika-connector-catalog.js';
+import {
+  getFhKuikaConnectorCatalogItemV1,
+  listFhKuikaConnectorCatalogV1,
+} from './kuika-connector-catalog.js';
 import { buildFhKuikaConnectorInstallReviewV1 } from './kuika-connector-install-review.js';
 import { FH_KUIKA_BLUEPRINTS_HTML } from './kuika-blueprint-ui.js';
 import {
@@ -229,7 +232,10 @@ async function handleRequest(
     if (connectorRoute) {
       const connector = getFhKuikaConnectorCatalogItemV1(connectorRoute.connectorId);
       if (!connector) {
-        json(response, 404, { error: 'connector_not_found', connectorId: connectorRoute.connectorId });
+        json(response, 404, {
+          error: 'connector_not_found',
+          connectorId: connectorRoute.connectorId,
+        });
         return;
       }
       json(response, 200, { review: buildFhKuikaConnectorInstallReviewV1(connector) });
