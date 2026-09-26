@@ -1,4 +1,14 @@
 export {
+  lineageFirstRetrieverCanGrantAuthority,
+  lineageFirstRetrieverCanMutateDomain,
+  lineageFirstRetrieverCanPromoteSemanticResult,
+  retrieveFhKuikaKnowledgeV1,
+  type FhKuikaKnowledgeLineageSourceV1,
+  type FhKuikaKnowledgeRetrievalResultV1,
+  type FhKuikaKnowledgeRetrievalTraceV1,
+} from './kuika-knowledge-retriever.js';
+
+export {
   buildFhKuikaKnowledgeRetrievalPlanV1,
   createFhKuikaKnowledgeQueryV1,
   knowledgeQueryCanGrantAuthority,
