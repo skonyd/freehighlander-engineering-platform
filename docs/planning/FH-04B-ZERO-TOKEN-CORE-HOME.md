@@ -1,6 +1,6 @@
 # FH-04B — Zero-Token Core Home Dashboard
 
-**Status:** PROPOSED IMPLEMENTATION PLAN  
+**Status:** CORE IMPLEMENTATION COMPLETE (.1–.8); OPTIONAL .9 DEFERRED  
 **Parent:** FH-04 Read-only metrics dashboard  
 **Surface:** FreeHighlander Core Home  
 **Module relationship:** independent of FH-KUIKA  
@@ -848,23 +848,23 @@ No LLM interpretation.
 # 20. Recommended delivery order
 
 ~~~text
-FH-04B.1 Zero-token contract/schema
+FH-04B.1 Zero-token contract/schema      COMPLETE
         ↓
-FH-04B.2 SQLite aggregate
+FH-04B.2 SQLite aggregate                  COMPLETE
         ↓
-FH-04B.3 Minimal Home UI
+FH-04B.3 Minimal Home UI                   COMPLETE
         ↓
-FH-04B.4 Current work/approvals
+FH-04B.4 Current work/approvals            COMPLETE
         ↓
-FH-04B.5 Provider/quota/failover
+FH-04B.5 Provider/quota/failover           COMPLETE
         ↓
-FH-04B.6 Errors/attention
+FH-04B.6 Errors/attention                  COMPLETE
         ↓
-FH-04B.7 Continuity/findings/git
+FH-04B.7 Continuity/findings/local state   COMPLETE
         ↓
-FH-04B.8 UX hardening
+FH-04B.8 UX hardening                      COMPLETE
         ↓
-FH-04B.9 Optional external status
+FH-04B.9 Optional external status          DEFERRED / P1
 ~~~
 
 FH-04B.1–FH-04B.8 are Core roadmap work.
