@@ -1,3 +1,5 @@
+export { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
+
 export { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 
 export {
