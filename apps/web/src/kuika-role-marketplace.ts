@@ -232,9 +232,10 @@ export function getFhKuikaSolutionPackV1(
   id: string,
   version = '1.0.0',
 ): FhKuikaSolutionPackV1 | null {
-  return (
-    listFhKuikaSolutionPacksV1().find((item) => item.id === id && item.version === version) ?? null
+  const found = listFhKuikaSolutionPacksV1().find(
+    (item) => item.id === id && item.version === version,
   );
+  return found ?? null;
 }
 
 export function buildFhKuikaSolutionPackInstallPlanV1(
