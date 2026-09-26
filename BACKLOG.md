@@ -81,7 +81,7 @@ Umbrella: #88.
 - [ ] FH-KUIKA-03 Engineering Blueprint Catalog — P0
 - [ ] FH-KUIKA-04 Visual Workflow Studio — P0
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
-- [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
+- [x] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1 — .1–.5 authority-neutral catalog/provenance/UI/install-plan/version-diff complete; registration/activation remains Core-governed
 - [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1
 - [ ] FH-KUIKA-08 Routines / Trigger Engine — P1
 - [ ] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1
