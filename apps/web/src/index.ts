@@ -1,4 +1,21 @@
 export {
+  FH_KUIKA_BLUEPRINTS_HTML,
+  blueprintCatalogPageCanGrantAuthority,
+  blueprintCatalogPageCanInvokeModel,
+  blueprintCatalogPageCanMutateRuntime,
+  renderFhKuikaBlueprintSummaryV1,
+} from './kuika-blueprint-ui.js';
+
+export {
+  blueprintPreparationCanExecute,
+  blueprintPreparationCanGrantAuthority,
+  blueprintPreparationCanPublishDirectly,
+  prepareFhKuikaBlueprintWorkflowV1,
+  type FhKuikaBlueprintPreparationV1,
+  type FhKuikaBlueprintSimulationResultV1,
+} from './kuika-blueprint-workflow.js';
+
+export {
   createFhKuikaReviewRequestV1,
   fhKuikaReviewRequestCanAuthorizeExecution,
   fhKuikaReviewRequestCanGrantAuthority,
