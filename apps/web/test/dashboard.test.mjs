@@ -201,9 +201,7 @@ function insertCurrentWorkFixture(file, input) {
       timestamp: input.timestamp,
       runId: input.runId,
       taskId: input.taskId ?? 'task-work',
-      ...(input.nodeId
-        ? { node: { id: input.nodeId, type: input.nodeType ?? 'MODEL' } }
-        : {}),
+      ...(input.nodeId ? { node: { id: input.nodeId, type: input.nodeType ?? 'MODEL' } } : {}),
       execution: { status: input.status ?? 'ACTIVE' },
       payload: {},
     };
