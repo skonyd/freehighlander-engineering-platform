@@ -27,6 +27,53 @@ export interface FhKuikaWorkbenchIntentV1 {
   readonly requiresEnabledV3Authority: boolean;
 }
 
+export function createFhKuikaWorkbenchIntentV1(input: {
+  readonly mode: FhKuikaWorkbenchIntentMode;
+  readonly request: string;
+  readonly context: FhKuikaWorkbenchIntentContextV1;
+  readonly v3Authority: 'SHADOW_ONLY' | 'ENABLED' | 'UNKNOWN';
+}): FhKuikaWorkbenchIntentV1 {
+  const request = requireText(input.request, 'request');
+  const repository = requireText(input.context.repository, 'context.repository');
+  const selectedFiles = normalizeIdentifiers(input.context.selectedFiles, 'selectedFiles');
+  const evidenceIds = normalizeIdentifiers(input.context.evidenceIds, 'evidenceIds');
+
+  if (input.mode === 'REVIEW') {
+    if (!input.context.exactRevision?.trim()) {
+      throw new Error('REVIEW requires an exact revision');
+    }
+    if (evidenceIds.length === 0) {
+      throw new Error('REVIEW requires at least one evidence id');
+    }
+  }
+
+  if (input.mode === 'EXECUTE' && input.v3Authority !== 'ENABLED') {
+    throw new Error('EXECUTE requires ENABLED V3 authority');
+  }
+
+  return {
+    schemaVersion: 1,
+    mode: input.mode,
+    disposition: dispositionForMode(input.mode),
+    request,
+    context: {
+      repository,
+      branch: normalizeOptionalText(input.context.branch),
+      exactRevision: normalizeOptionalText(input.context.exactRevision),
+      selectedFiles,
+      evidenceIds,
+      blueprintId: normalizeOptionalText(input.context.blueprintId),
+      workflowId: normalizeOptionalText(input.context.workflowId),
+    },
+    selectionAuthority: 'NONE',
+    executionOwner: 'CONTROL_PLANE',
+    canInvokeModelOnPrepare: false,
+    canGrantAuthority: false,
+    mutationRequested: input.mode === 'EXECUTE',
+    requiresEnabledV3Authority: input.mode === 'EXECUTE',
+  };
+}
+
 export function workbenchIntentPreparationCanInvokeModel(): false {
   return false;
 }
