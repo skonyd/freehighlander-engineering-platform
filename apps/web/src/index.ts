@@ -1,3 +1,18 @@
+export {
+  buildFhKuikaWorkflowSimulationPreviewV1,
+  buildFhKuikaWorkflowValidationViewV1,
+  createFhKuikaWorkflowNodeInspectorV1,
+  workflowInspectorAnnotationsCanGrantAuthority,
+  workflowSimulationPreviewCanExecute,
+  workflowValidationViewCanPublishDirectly,
+  type FhKuikaWorkflowInspectorRiskTier,
+  type FhKuikaWorkflowNodeInspectorV1,
+  type FhKuikaWorkflowSimulationPreviewNodeV1,
+  type FhKuikaWorkflowSimulationPreviewV1,
+  type FhKuikaWorkflowValidationIssueV1,
+  type FhKuikaWorkflowValidationViewV1,
+} from './kuika-workflow-studio-view.js';
+
 export { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 
 export {
