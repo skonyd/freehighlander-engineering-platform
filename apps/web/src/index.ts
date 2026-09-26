@@ -1,11 +1,20 @@
 export {
-  blueprintMatcherCanGrantAuthority,
-  blueprintMatcherCanLowerRisk,
-  matchFhKuikaBlueprintsV1,
-  type FhKuikaBlueprintMatchCandidateV1,
-  type FhKuikaBlueprintMatchEvidenceV1,
-  type FhKuikaBlueprintMatchRequestV1,
-} from './kuika-blueprint-matcher.js';
+  fhKuikaAreaPageCanGrantAuthority,
+  fhKuikaAreaPageCanInvokeModel,
+  fhKuikaAreaPageCanMutateRuntime,
+  isFhKuikaPreparationArea,
+  renderFhKuikaAreaHtml,
+} from './kuika-area-ui.js';
+
+export {
+  fhKuikaNavigationCanGrantAuthority,
+  fhKuikaNavigationCanInvokeModel,
+  fhKuikaNavigationCanMutateRuntime,
+  getFhKuikaNavigationItem,
+  listFhKuikaNavigation,
+  type FhKuikaArea,
+  type FhKuikaNavigationItem,
+} from './kuika-navigation.js';
 
 export {
   blueprintPublicationCanGrantAuthority,
