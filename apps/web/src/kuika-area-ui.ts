@@ -25,7 +25,8 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
       {
         title: 'Blueprints',
         detail: 'Versioned engineering patterns for common delivery intents.',
-        status: 'PREPARATION',
+        status: 'AVAILABLE',
+        href: '/modules/fh-kuika/build/blueprints',
       },
       {
         title: 'Workflow Studio',

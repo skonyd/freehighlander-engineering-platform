@@ -96,6 +96,19 @@ export {
 } from './kuika-navigation.js';
 
 export {
+  blueprintCatalogViewCanGrantAuthority,
+  blueprintCatalogViewCanInvokeModel,
+  blueprintCatalogViewCanMutateBlueprint,
+  buildFhKuikaBlueprintCatalogViewV1,
+  buildFhKuikaBlueprintDetailViewV1,
+  type FhKuikaBlueprintCardViewV1,
+  type FhKuikaBlueprintCatalogViewV1,
+  type FhKuikaBlueprintDetailViewV1,
+} from './kuika-blueprint-view.js';
+
+export { FH_KUIKA_BLUEPRINTS_HTML } from './kuika-blueprint-ui.js';
+
+export {
   curatedBlueprintPackCanGrantAuthority,
   getFhKuikaCuratedBlueprintV1,
   getFhKuikaCuratedBlueprintsV1,
