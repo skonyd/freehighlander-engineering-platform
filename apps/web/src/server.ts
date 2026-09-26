@@ -207,7 +207,9 @@ async function handleRequest(
         200,
         buildFhKuikaBlueprintCatalogViewV1(
           getFhKuikaCuratedBlueprintsV1(),
-          collectFhKuikaBlueprintUsageObservationsV1(readModel),
+          readModel.health().databaseExists
+            ? collectFhKuikaBlueprintUsageObservationsV1(readModel)
+            : [],
         ),
       );
       return;
