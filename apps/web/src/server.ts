@@ -289,10 +289,8 @@ async function handleRequest(
       const availableRoleRefs = listFhKuikaMarketplaceRolesV1().map(
         (role) => role.id + '@' + role.version,
       );
-      json(response, 200, {
-        pack,
-        plan: buildFhKuikaSolutionPackInstallPlanV1(pack, availableRoleRefs, []),
-      });
+      const plan = buildFhKuikaSolutionPackInstallPlanV1(pack, availableRoleRefs, []);
+      json(response, 200, { pack, plan });
       return;
     }
 
@@ -453,9 +451,8 @@ function parseFhKuikaMarketplaceRoleRoute(pathname: string): {
 function parseFhKuikaSolutionPackRoute(pathname: string): {
   readonly packId: string;
 } | null {
-  const match = /^\/api\/modules\/fh-kuika\/solution-packs\/([^/]+)(?:\/plan)?$/.exec(
-    pathname,
-  );
+  const pattern = /^\/api\/modules\/fh-kuika\/solution-packs\/([^/]+)(?:\/plan)?$/;
+  const match = pattern.exec(pathname);
   if (!match?.[1]) return null;
   return { packId: decodeURIComponent(match[1]) };
 }
