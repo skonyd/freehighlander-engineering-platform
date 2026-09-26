@@ -105,7 +105,6 @@ test('parsed Studio payload cannot self-promote publish or execution authority',
   );
 });
 
-
 test('Workflow Studio preserves bounded inspector metadata through round-trip', () => {
   const input = definition();
   input.nodes[0] = {
@@ -202,9 +201,7 @@ test('Workflow Studio validation exposes categorized node and graph issues', () 
     ),
   );
   assert.ok(
-    result.issues.some(
-      (issue) => issue.category === 'LOOP_BOUND' && issue.nodeId === 'loop-1',
-    ),
+    result.issues.some((issue) => issue.category === 'LOOP_BOUND' && issue.nodeId === 'loop-1'),
   );
   assert.ok(result.issues.some((issue) => issue.category === 'REFERENCE'));
 });
