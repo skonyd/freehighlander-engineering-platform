@@ -11,8 +11,7 @@ export type FhKuikaWorkflowNodeKind =
   | 'SUBWORKFLOW';
 
 export type FhKuikaWorkflowRiskTier = 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
-export type FhKuikaWorkflowApprovalPolicy =
-  'NONE' | 'MODEL_QUORUM_REQUIRED' | 'HUMAN_REQUIRED';
+export type FhKuikaWorkflowApprovalPolicy = 'NONE' | 'MODEL_QUORUM_REQUIRED' | 'HUMAN_REQUIRED';
 
 export interface FhKuikaCanonicalWorkflowNodeV1 {
   readonly id: string;
@@ -143,13 +142,7 @@ export function validateFhKuikaWorkflowDraftDefinitionV1(
       86_400_000,
       errors,
     );
-    validateOptionalInteger(
-      node.retryLimit,
-      `workflow node ${node.id} retryLimit`,
-      0,
-      20,
-      errors,
-    );
+    validateOptionalInteger(node.retryLimit, `workflow node ${node.id} retryLimit`, 0, 20, errors);
     validateOptionalInteger(
       node.tokenBudget,
       `workflow node ${node.id} tokenBudget`,
@@ -164,16 +157,8 @@ export function validateFhKuikaWorkflowDraftDefinitionV1(
       100_000,
       errors,
     );
-    validateStringList(
-      node.requiredEvidence,
-      `workflow node ${node.id} requiredEvidence`,
-      errors,
-    );
-    validateStringList(
-      node.toolPermissions,
-      `workflow node ${node.id} toolPermissions`,
-      errors,
-    );
+    validateStringList(node.requiredEvidence, `workflow node ${node.id} requiredEvidence`, errors);
+    validateStringList(node.toolPermissions, `workflow node ${node.id} toolPermissions`, errors);
     if (
       node.approvalPolicy !== undefined &&
       !['NONE', 'MODEL_QUORUM_REQUIRED', 'HUMAN_REQUIRED'].includes(node.approvalPolicy)
@@ -301,7 +286,9 @@ function hasCycle(
 function classifyValidationError(message: string): FhKuikaWorkflowValidationIssueV1 {
   const nodeMatch = /(?:workflow node|LOOP node) ([A-Za-z0-9._-]+)/.exec(message);
   const edgeMatch = /(?:duplicate workflow edge: )([A-Za-z0-9._-]+->[A-Za-z0-9._-]+)/.exec(message);
-  const edgeEndpointMatch = /unknown workflow edge (?:source|target): ([A-Za-z0-9._-]+)/.exec(message);
+  const edgeEndpointMatch = /unknown workflow edge (?:source|target): ([A-Za-z0-9._-]+)/.exec(
+    message,
+  );
 
   let category: FhKuikaWorkflowValidationCategory = 'SCHEMA';
   if (/edge|acyclic|cycle|duplicate workflow node/.test(message)) category = 'GRAPH';
