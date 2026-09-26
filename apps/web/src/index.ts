@@ -1,4 +1,19 @@
 export {
+  GithubExternalStatusProvider,
+  createGithubExternalStatusProviderFromEnv,
+  externalStatusCanGrantAuthority,
+  externalStatusCanInvokeModel,
+  type ExternalCiState,
+  type ExternalCiStatusV1,
+  type ExternalPullRequestStatusV1,
+  type ExternalStatusContext,
+  type ExternalStatusProvider,
+  type ExternalStatusSnapshotV1,
+  type ExternalStatusState,
+  type GithubExternalStatusProviderOptions,
+} from './external-status.js';
+
+export {
   blueprintMatcherCanGrantAuthority,
   blueprintMatcherCanLowerRisk,
   matchFhKuikaBlueprintsV1,
