@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
+import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 import { DASHBOARD_HTML } from './ui.js';
 import { buildManagementSnapshot } from './management.js';
@@ -79,6 +80,11 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika' || url.pathname === '/modules/fh-kuika/') {
       html(response, method === 'HEAD' ? '' : FH_KUIKA_MODULE_HTML);
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/workbench') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_WORKBENCH_HTML);
       return;
     }
 
