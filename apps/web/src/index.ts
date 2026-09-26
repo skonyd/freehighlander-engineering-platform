@@ -118,6 +118,8 @@ export {
   type FhKuikaCanonicalWorkflowNodeV1,
   type FhKuikaWorkflowDraftV1,
   type FhKuikaWorkflowDraftValidationV1,
+  type FhKuikaWorkflowValidationCategory,
+  type FhKuikaWorkflowValidationIssueV1,
   type FhKuikaWorkflowNodeKind,
   type FhKuikaWorkflowRiskTier,
   type FhKuikaWorkflowApprovalPolicy,
