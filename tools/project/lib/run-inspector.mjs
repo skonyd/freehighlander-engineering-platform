@@ -107,6 +107,73 @@ export function buildRunInspectorReport(events) {
   };
 }
 
+export function projectRunInspectorReportToOtel(report) {
+  if (!report || report.schemaVersion !== 1) {
+    throw new Error('OTEL projection requires RunInspector report v1');
+  }
+  if (report.authority !== 'NONE' || report.hiddenReasoningPersisted !== false) {
+    throw new Error('OTEL projection requires authority-neutral metadata-only inspector report');
+  }
+  if (!report.traceAvailable || !report.traceId) return [];
+
+  return report.timeline.map((span) => ({
+    schemaVersion: 1,
+    traceId: span.traceId,
+    spanId: span.spanId,
+    parentSpanId: span.parentSpanId,
+    name: span.nodeId,
+    startTime: span.inferredStartedAt,
+    endTime: span.completedAt,
+    attributes: {
+      'freehighlander.span.kind': span.spanKind,
+      'freehighlander.span.status': span.status,
+      'freehighlander.span.attempt': span.attempt,
+      'freehighlander.span.queue_ms': span.queueMs,
+      'freehighlander.span.duration_ms': span.durationMs,
+      'freehighlander.span.critical_path': span.criticalPath,
+      ...(span.causationId === null
+        ? {}
+        : { 'freehighlander.span.causation_id': span.causationId }),
+      ...(span.model?.logicalRole === null || span.model?.logicalRole === undefined
+        ? {}
+        : { 'freehighlander.model.logical_role': span.model.logicalRole }),
+      ...(span.model?.bindingId === null || span.model?.bindingId === undefined
+        ? {}
+        : { 'freehighlander.binding.id': span.model.bindingId }),
+      ...(span.model?.provider === null || span.model?.provider === undefined
+        ? {}
+        : { 'freehighlander.provider.id': span.model.provider }),
+      ...(span.model?.model === null || span.model?.model === undefined
+        ? {}
+        : { 'freehighlander.model.id': span.model.model }),
+      ...(span.model?.effort === null || span.model?.effort === undefined
+        ? {}
+        : { 'freehighlander.model.effort': span.model.effort }),
+      ...(span.execution?.retryCount === null || span.execution?.retryCount === undefined
+        ? {}
+        : { 'freehighlander.execution.retry_count': span.execution.retryCount }),
+      ...(span.execution?.fallbackCount === null || span.execution?.fallbackCount === undefined
+        ? {}
+        : { 'freehighlander.execution.fallback_count': span.execution.fallbackCount }),
+      ...(span.execution?.failureClass === null || span.execution?.failureClass === undefined
+        ? {}
+        : { 'freehighlander.execution.failure_class': span.execution.failureClass }),
+      ...(span.artifactIds.length === 0
+        ? {}
+        : { 'freehighlander.artifact.ids': [...span.artifactIds] }),
+      ...(span.evidenceIds.length === 0
+        ? {}
+        : { 'freehighlander.evidence.ids': [...span.evidenceIds] }),
+    },
+    sourceOfTruth: false,
+    persistenceAuthority: 'NONE',
+  }));
+}
+
+export function otelProjectionCanBecomeSourceOfTruth() {
+  return false;
+}
+
 export function runInspectorCanGrantAuthority() {
   return false;
 }
