@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
+import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 import { buildFhKuikaWorkbenchSnapshotV1, type FhKuikaWorkbenchMode } from './kuika-workbench.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 import { FH_KUIKA_APPROVALS_HTML } from './kuika-approval-ui.js';
@@ -114,6 +115,11 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika/build') {
       html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('BUILD'));
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/build/workflows') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_WORKFLOW_STUDIO_HTML);
       return;
     }
 
