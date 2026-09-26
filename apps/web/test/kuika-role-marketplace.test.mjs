@@ -5,6 +5,7 @@ import {
   FH_KUIKA_ROLE_MARKETPLACE_HTML,
   buildFhKuikaSolutionPackInstallPlanV1,
   createDashboardServer,
+  diffFhKuikaMarketplaceRoleVersionsV1,
   getFhKuikaMarketplaceRoleV1,
   getFhKuikaSolutionPackV1,
   listFhKuikaMarketplaceRolesV1,
@@ -14,6 +15,8 @@ import {
   roleMarketplacePageCanGrantAuthority,
   roleMarketplacePageCanInstall,
   roleMarketplacePageCanInvokeModel,
+  roleVersionDiffCanRollback,
+  roleVersionDiffCanUpdate,
   solutionPackPlanCanActivate,
 } from '../dist/index.js';
 
@@ -122,4 +125,40 @@ test('Marketplace HTTP routes expose role and solution pack planning as GET-only
       server.close((error) => (error ? reject(error) : resolve())),
     );
   }
+});
+
+
+test('role version diff marks authority-sensitive changes breaking and plans rollback only', () => {
+  const before = getFhKuikaMarketplaceRoleV1('security-reviewer');
+  assert.ok(before);
+
+  const after = {
+    ...before,
+    version: '2.0.0',
+    allowedRiskTiers: ['NORMAL', 'HIGH'],
+    sandboxPolicy: 'reviewer-expanded-v2',
+  };
+
+  const diff = diffFhKuikaMarketplaceRoleVersionsV1(before, after);
+  assert.equal(diff.roleId, 'security-reviewer');
+  assert.equal(diff.fromVersion, '1.0.0');
+  assert.equal(diff.toVersion, '2.0.0');
+  assert.equal(diff.breaking, true);
+  assert.ok(diff.changedFields.includes('allowedRiskTiers'));
+  assert.ok(diff.changedFields.includes('sandboxPolicy'));
+  assert.equal(diff.rollbackRef, 'security-reviewer@1.0.0');
+  assert.equal(diff.authority, 'NONE');
+  assert.equal(diff.updateAuthorized, false);
+  assert.equal(diff.rollbackAuthorized, false);
+  assert.equal(roleVersionDiffCanUpdate(), false);
+  assert.equal(roleVersionDiffCanRollback(), false);
+
+  assert.throws(
+    () =>
+      diffFhKuikaMarketplaceRoleVersionsV1(before, {
+        ...after,
+        id: 'different-role',
+      }),
+    /same role id/,
+  );
 });
