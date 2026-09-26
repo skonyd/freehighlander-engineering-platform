@@ -74,9 +74,7 @@ export function optimizeFhKuikaRoutingV1(
 ): FhKuikaRoutingDecisionV1 {
   validateRequest(request);
 
-  const evaluations = request.candidates.map((candidate) =>
-    evaluateCandidate(candidate, request),
-  );
+  const evaluations = request.candidates.map((candidate) => evaluateCandidate(candidate, request));
   const eligible = evaluations.filter((evaluation) => evaluation.eligible);
   const preferred = eligible.find((evaluation) => evaluation.preferred);
   const selected = preferred ?? eligible[0] ?? null;
@@ -163,7 +161,11 @@ function validateRequest(request: FhKuikaRoutingRequestV1): void {
   }
   requireIdentifier(request.logicalRole, 'logicalRole');
   requireIdentifier(request.preferredBindingId, 'preferredBindingId');
-  requirePositiveInteger(request.requiredContextTokens, 'requiredContextTokens', 10_000_000);
+  requirePositiveInteger(
+    request.requiredContextTokens,
+    'requiredContextTokens',
+    10_000_000,
+  );
   normalizeIdentifiers(request.requiredCapabilities, 'required capability');
   normalizeIdentifiers(request.excludedIndependenceGroups, 'excluded independence group');
 
