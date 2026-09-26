@@ -10,10 +10,21 @@ export type FhKuikaWorkflowNodeKind =
   | 'HUMAN'
   | 'SUBWORKFLOW';
 
+export type FhKuikaWorkflowRiskTier = 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+export type FhKuikaWorkflowApprovalPolicy = 'NONE' | 'MODEL_QUORUM_REQUIRED' | 'HUMAN_REQUIRED';
+
 export interface FhKuikaCanonicalWorkflowNodeV1 {
   readonly id: string;
   readonly kind: FhKuikaWorkflowNodeKind;
   readonly role?: string;
+  readonly riskTier?: FhKuikaWorkflowRiskTier;
+  readonly timeoutMs?: number;
+  readonly retryLimit?: number;
+  readonly tokenBudget?: number;
+  readonly costBudgetUsd?: number;
+  readonly requiredEvidence?: readonly string[];
+  readonly toolPermissions?: readonly string[];
+  readonly approvalPolicy?: FhKuikaWorkflowApprovalPolicy;
   readonly maxIterations?: number;
 }
 
@@ -96,6 +107,60 @@ export function validateFhKuikaWorkflowDraftDefinitionV1(
     nodeIds.add(node.id);
 
     if (!NODE_KINDS.has(node.kind)) errors.push(`unknown workflow node kind: ${node.kind}`);
+    if (node.role !== undefined && !node.role.trim()) {
+      errors.push(`workflow node ${node.id} role cannot be empty`);
+    }
+    if (
+      node.riskTier !== undefined &&
+      !['LOW', 'NORMAL', 'HIGH', 'CRITICAL'].includes(node.riskTier)
+    ) {
+      errors.push(`workflow node ${node.id} has invalid riskTier`);
+    }
+    validateOptionalInteger(
+      node.timeoutMs,
+      `workflow node ${node.id} timeoutMs`,
+      1,
+      86_400_000,
+      errors,
+    );
+    validateOptionalInteger(
+      node.retryLimit,
+      `workflow node ${node.id} retryLimit`,
+      0,
+      20,
+      errors,
+    );
+    validateOptionalInteger(
+      node.tokenBudget,
+      `workflow node ${node.id} tokenBudget`,
+      1,
+      10_000_000,
+      errors,
+    );
+    validateOptionalNumber(
+      node.costBudgetUsd,
+      `workflow node ${node.id} costBudgetUsd`,
+      0,
+      100_000,
+      errors,
+    );
+    validateStringList(
+      node.requiredEvidence,
+      `workflow node ${node.id} requiredEvidence`,
+      errors,
+    );
+    validateStringList(
+      node.toolPermissions,
+      `workflow node ${node.id} toolPermissions`,
+      errors,
+    );
+    if (
+      node.approvalPolicy !== undefined &&
+      !['NONE', 'MODEL_QUORUM_REQUIRED', 'HUMAN_REQUIRED'].includes(node.approvalPolicy)
+    ) {
+      errors.push(`workflow node ${node.id} has invalid approvalPolicy`);
+    }
+
     if (node.kind === 'LOOP') {
       if (!Number.isInteger(node.maxIterations) || (node.maxIterations ?? 0) < 1) {
         errors.push(`LOOP node ${node.id} must define maxIterations >= 1`);
@@ -174,7 +239,11 @@ function cloneDefinition(
   return {
     id: definition.id,
     version: definition.version,
-    nodes: definition.nodes.map((node) => ({ ...node })),
+    nodes: definition.nodes.map((node) => ({
+      ...node,
+      ...(node.requiredEvidence ? { requiredEvidence: [...node.requiredEvidence] } : {}),
+      ...(node.toolPermissions ? { toolPermissions: [...node.toolPermissions] } : {}),
+    })),
     edges: definition.edges.map((edge) => ({ ...edge })),
   };
 }
@@ -205,6 +274,45 @@ function hasCycle(
     }
   }
   return visited !== nodes.length;
+}
+
+function validateOptionalInteger(
+  value: number | undefined,
+  name: string,
+  minimum: number,
+  maximum: number,
+  errors: string[],
+): void {
+  if (value === undefined) return;
+  if (!Number.isInteger(value) || value < minimum || value > maximum) {
+    errors.push(`${name} must be an integer between ${minimum} and ${maximum}`);
+  }
+}
+
+function validateOptionalNumber(
+  value: number | undefined,
+  name: string,
+  minimum: number,
+  maximum: number,
+  errors: string[],
+): void {
+  if (value === undefined) return;
+  if (!Number.isFinite(value) || value < minimum || value > maximum) {
+    errors.push(`${name} must be between ${minimum} and ${maximum}`);
+  }
+}
+
+function validateStringList(
+  values: readonly string[] | undefined,
+  name: string,
+  errors: string[],
+): void {
+  if (values === undefined) return;
+  const normalized = values.map((value) => value.trim());
+  if (normalized.some((value) => !value)) errors.push(`${name} cannot contain empty values`);
+  if (new Set(normalized).size !== normalized.length) {
+    errors.push(`${name} must contain unique values`);
+  }
 }
 
 function requireText(value: string, name: string, errors?: string[]): void {

@@ -170,6 +170,15 @@ function renderInspector(){
   target.innerHTML=
     '<div class="inspector-row"><span>ID</span><code>'+esc(node.id)+'</code></div>'+
     '<div class="inspector-row"><span>Kind</span><strong>'+esc(node.kind)+'</strong></div>'+
+    '<div class="inspector-row"><span>Role</span><strong>'+esc(node.role||'Not configured')+'</strong></div>'+
+    '<div class="inspector-row"><span>Risk tier</span><strong>'+esc(node.riskTier||'Not configured')+'</strong></div>'+
+    '<div class="inspector-row"><span>Timeout</span><strong>'+esc(node.timeoutMs??'Not configured')+'</strong></div>'+
+    '<div class="inspector-row"><span>Retry limit</span><strong>'+esc(node.retryLimit??'Not configured')+'</strong></div>'+
+    '<div class="inspector-row"><span>Token budget</span><strong>'+esc(node.tokenBudget??'Not configured')+'</strong></div>'+
+    '<div class="inspector-row"><span>Cost budget USD</span><strong>'+esc(node.costBudgetUsd??'Not configured')+'</strong></div>'+
+    '<div class="inspector-row"><span>Required evidence</span><strong>'+esc((node.requiredEvidence||[]).join(', ')||'None configured')+'</strong></div>'+
+    '<div class="inspector-row"><span>Tool permissions</span><strong>'+esc((node.toolPermissions||[]).join(', ')||'None configured')+'</strong></div>'+
+    '<div class="inspector-row"><span>Approval policy</span><strong>'+esc(node.approvalPolicy||'NONE')+'</strong></div>'+
     '<div class="inspector-row"><span>Authority</span><strong>NONE</strong></div>'+
     (node.kind==='LOOP'
       ? '<div class="inspector-row"><span>Max iterations</span><strong>'+esc(node.maxIterations)+'</strong></div>'

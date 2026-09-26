@@ -1,32 +1,4 @@
 export {
-  buildFhKuikaWorkflowSimulationPreviewV1,
-  buildFhKuikaWorkflowValidationViewV1,
-  createFhKuikaWorkflowNodeInspectorV1,
-  workflowInspectorAnnotationsCanGrantAuthority,
-  workflowSimulationPreviewCanExecute,
-  workflowValidationViewCanPublishDirectly,
-  type FhKuikaWorkflowInspectorRiskTier,
-  type FhKuikaWorkflowNodeInspectorV1,
-  type FhKuikaWorkflowSimulationPreviewNodeV1,
-  type FhKuikaWorkflowSimulationPreviewV1,
-  type FhKuikaWorkflowValidationIssueV1,
-  type FhKuikaWorkflowValidationViewV1,
-} from './kuika-workflow-studio-view.js';
-
-export {
-  FH_KUIKA_CONNECTOR_HUB_HTML,
-  connectorHubPageCanActivate,
-  connectorHubPageCanGrantAuthority,
-  connectorHubPageCanInvokeModel,
-} from './kuika-connector-ui.js';
-
-export {
-  connectorCatalogCanActivate,
-  getFhKuikaConnectorCatalogItemV1,
-  listFhKuikaConnectorCatalogV1,
-} from './kuika-connector-catalog.js';
-
-export {
   buildFhKuikaWorkflowVersionDiffV1,
   workflowVersionDiffCanGrantAuthority,
   workflowVersionDiffCanPublish,
@@ -119,6 +91,8 @@ export {
   type FhKuikaWorkflowDraftV1,
   type FhKuikaWorkflowDraftValidationV1,
   type FhKuikaWorkflowNodeKind,
+  type FhKuikaWorkflowRiskTier,
+  type FhKuikaWorkflowApprovalPolicy,
 } from './kuika-workflow-draft.js';
 
 export {

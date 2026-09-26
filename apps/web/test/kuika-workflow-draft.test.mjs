@@ -104,3 +104,61 @@ test('parsed Studio payload cannot self-promote publish or execution authority',
     /publishAuthorized must be false/,
   );
 });
+
+test('Workflow Studio preserves bounded inspector metadata through round-trip', () => {
+  const input = definition();
+  input.nodes[0] = {
+    ...input.nodes[0],
+    riskTier: 'HIGH',
+    timeoutMs: 120000,
+    retryLimit: 2,
+    tokenBudget: 50000,
+    costBudgetUsd: 10,
+    requiredEvidence: ['plan-evidence', 'architecture-review'],
+    toolPermissions: ['repo.read', 'issue.read'],
+    approvalPolicy: 'MODEL_QUORUM_REQUIRED',
+  };
+
+  const draft = createFhKuikaWorkflowDraftV1({
+    draftId: 'draft-inspector',
+    canonicalDefinition: input,
+  });
+  const parsed = parseFhKuikaWorkflowDraftV1(serializeFhKuikaWorkflowDraftV1(draft));
+  const node = parsed.canonicalDefinition.nodes[0];
+
+  assert.equal(node.riskTier, 'HIGH');
+  assert.equal(node.timeoutMs, 120000);
+  assert.equal(node.retryLimit, 2);
+  assert.equal(node.tokenBudget, 50000);
+  assert.equal(node.costBudgetUsd, 10);
+  assert.deepEqual(node.requiredEvidence, ['plan-evidence', 'architecture-review']);
+  assert.deepEqual(node.toolPermissions, ['repo.read', 'issue.read']);
+  assert.equal(node.approvalPolicy, 'MODEL_QUORUM_REQUIRED');
+});
+
+test(
+  'Workflow Studio inspector metadata validation fails closed on invalid budgets and policy',
+  () => {
+    const input = definition();
+    input.nodes[0] = {
+      ...input.nodes[0],
+      timeoutMs: 0,
+      retryLimit: 99,
+      tokenBudget: -1,
+      costBudgetUsd: Number.NaN,
+      requiredEvidence: ['same', 'same'],
+      toolPermissions: [''],
+      approvalPolicy: 'BYPASS',
+    };
+
+    const result = validateFhKuikaWorkflowDraftDefinitionV1(input);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((error) => error.includes('timeoutMs')));
+    assert.ok(result.errors.some((error) => error.includes('retryLimit')));
+    assert.ok(result.errors.some((error) => error.includes('tokenBudget')));
+    assert.ok(result.errors.some((error) => error.includes('costBudgetUsd')));
+    assert.ok(result.errors.some((error) => error.includes('requiredEvidence')));
+    assert.ok(result.errors.some((error) => error.includes('toolPermissions')));
+    assert.ok(result.errors.some((error) => error.includes('approvalPolicy')));
+  },
+);
