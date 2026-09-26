@@ -247,7 +247,6 @@ test('run inspector rejects invalid limits and missing databases', () => {
   assert.throws(() => buildRunInspectorReport([]), /at least one event/);
 });
 
-
 test('run inspector projects causal metadata to authority-neutral OTEL spans', () => {
   const report = buildRunInspectorReport(representativeEvents());
   const spans = projectRunInspectorReportToOtel(report);
