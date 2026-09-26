@@ -1193,8 +1193,29 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(workbenchHtml, /data-mode="ASK"/);
     assert.match(workbenchHtml, /data-mode="EXECUTE"/);
     assert.match(workbenchHtml, /NO MODEL CALL ON SELECT/);
-    assert.match(workbenchHtml, /\/api\/home/);
+    assert.match(workbenchHtml, /\/api\/modules\/fh-kuika\/workbench\?mode=/);
     assert.equal(workbench.headers.get('x-freehighlander-mode'), 'read-only');
+
+    const workbenchSnapshot = await (
+      await fetch(`${base}/api/modules/fh-kuika/workbench?mode=REVIEW`)
+    ).json();
+    assert.equal(workbenchSnapshot.schemaVersion, 1);
+    assert.equal(workbenchSnapshot.projectionAuthority, 'NONE');
+    assert.equal(workbenchSnapshot.mode.mode, 'REVIEW');
+    assert.equal(workbenchSnapshot.preflight.exactRevisionBound, true);
+    assert.equal(workbenchSnapshot.preflight.canStartRequest, true);
+    assert.ok(workbenchSnapshot.context.some((item) => item.kind === 'EXACT_REVISION'));
+
+    const executeSnapshot = await (
+      await fetch(`${base}/api/modules/fh-kuika/workbench?mode=EXECUTE`)
+    ).json();
+    assert.equal(executeSnapshot.preflight.canStartRequest, false);
+    assert.match(executeSnapshot.preflight.blockedReason, /SHADOW_ONLY/);
+
+    const invalidWorkbenchMode = await fetch(`${base}/api/modules/fh-kuika/workbench?mode=INVALID`);
+    assert.equal(invalidWorkbenchMode.status, 400);
+    assert.equal((await invalidWorkbenchMode.json()).error, 'invalid_workbench_mode');
+
     assert.match(kuikaHtml, /href="\/modules\/fh-kuika\/operate"/);
     assert.equal(kuika.headers.get('x-freehighlander-mode'), 'read-only');
 

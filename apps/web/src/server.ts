@@ -6,6 +6,7 @@ import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
 import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
+import { buildFhKuikaWorkbenchSnapshotV1, type FhKuikaWorkbenchMode } from './kuika-workbench.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 import { FH_KUIKA_APPROVALS_HTML } from './kuika-approval-ui.js';
 import { buildFhKuikaApprovalInboxV1 } from './kuika-approval-inbox.js';
@@ -175,6 +176,20 @@ async function handleRequest(
 
     if (url.pathname === '/api/models') {
       json(response, 200, { models: readModel.modelAggregates(readLimit(url, 100)) });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/workbench') {
+      const rawMode = (url.searchParams.get('mode') ?? 'ASK').toUpperCase();
+      if (!['ASK', 'PLAN', 'EXECUTE', 'REVIEW'].includes(rawMode)) {
+        json(response, 400, { error: 'invalid_workbench_mode', mode: rawMode });
+        return;
+      }
+      json(
+        response,
+        200,
+        buildFhKuikaWorkbenchSnapshotV1(readModel.homeSnapshot(), rawMode as FhKuikaWorkbenchMode),
+      );
       return;
     }
 
