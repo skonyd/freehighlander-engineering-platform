@@ -255,9 +255,16 @@ test('model catalog telemetry accepts metadata-only refresh/binding/qualificatio
       currentHash: 'c'.repeat(64),
       previousState: 'model-old',
       currentState: 'model-a',
+      fallbackBindingIds: ['reviewer-fallback-a', 'reviewer-fallback-b'],
+      returnPolicy: 'ASK_BEFORE_RETURN',
     },
   });
   assert.equal(binding.payload.bindingId, 'reviewer-primary');
+  assert.deepEqual(binding.payload.fallbackBindingIds, [
+    'reviewer-fallback-a',
+    'reviewer-fallback-b',
+  ]);
+  assert.equal(binding.payload.returnPolicy, 'ASK_BEFORE_RETURN');
 
   const qualification = createModelCatalogEvent({
     type: 'model.qualification.changed',
@@ -412,6 +419,80 @@ test('model catalog telemetry validates bounded optional metadata branches', () 
       /itemCount/,
     );
   }
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        ...base,
+        payload: {
+          action: 'BINDING_CHANGE',
+          providerId: 'provider-a',
+          currentHash: 'a'.repeat(64),
+          fallbackBindingIds: ['fallback-a', 'fallback-a'],
+        },
+      }),
+    /fallbackBindingIds must be unique/,
+  );
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        ...base,
+        payload: {
+          action: 'BINDING_CHANGE',
+          providerId: 'provider-a',
+          currentHash: 'a'.repeat(64),
+          fallbackBindingIds: ['bad fallback!'],
+        },
+      }),
+    /fallbackBindingIds contain an invalid identifier/,
+  );
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        ...base,
+        payload: {
+          action: 'BINDING_CHANGE',
+          providerId: 'provider-a',
+          currentHash: 'a'.repeat(64),
+          returnPolicy: 'MAYBE',
+        },
+      }),
+    /returnPolicy is invalid/,
+  );
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        type: 'model.catalog.refreshed',
+        timestamp: base.timestamp,
+        runId: base.runId,
+        payload: {
+          action: 'REFRESH',
+          providerId: 'provider-a',
+          currentHash: 'a'.repeat(64),
+          fallbackBindingIds: ['fallback-a'],
+        },
+      }),
+    /fallbackBindingIds are only valid/,
+  );
+
+  assert.throws(
+    () =>
+      createModelCatalogEvent({
+        type: 'model.catalog.refreshed',
+        timestamp: base.timestamp,
+        runId: base.runId,
+        payload: {
+          action: 'REFRESH',
+          providerId: 'provider-a',
+          currentHash: 'a'.repeat(64),
+          returnPolicy: 'AUTO_RETURN',
+        },
+      }),
+    /returnPolicy is only valid/,
+  );
 
   assert.throws(
     () =>

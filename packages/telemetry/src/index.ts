@@ -407,6 +407,8 @@ export interface ModelCatalogEventPayload extends Record<string, unknown> {
   readonly previousState?: string;
   readonly currentState?: string;
   readonly itemCount?: number;
+  readonly fallbackBindingIds?: readonly string[];
+  readonly returnPolicy?: 'STAY_ON_FALLBACK' | 'ASK_BEFORE_RETURN' | 'AUTO_RETURN';
 }
 
 const modelCatalogPayloadKeys = new Set([
@@ -421,6 +423,8 @@ const modelCatalogPayloadKeys = new Set([
   'previousState',
   'currentState',
   'itemCount',
+  'fallbackBindingIds',
+  'returnPolicy',
 ]);
 
 export function createModelCatalogEvent(
@@ -485,6 +489,35 @@ function validateModelCatalogPayload(payload: ModelCatalogEventPayload): void {
     (!Number.isInteger(payload.itemCount) || payload.itemCount < 0)
   ) {
     throw new Error('model catalog telemetry itemCount must be a non-negative integer');
+  }
+
+  if (payload.fallbackBindingIds !== undefined) {
+    if (payload.action !== 'BINDING_CHANGE') {
+      throw new Error('fallbackBindingIds are only valid for binding-change telemetry');
+    }
+    if (!Array.isArray(payload.fallbackBindingIds)) {
+      throw new Error('model catalog telemetry fallbackBindingIds must be an array');
+    }
+    const seen = new Set<string>();
+    for (const bindingId of payload.fallbackBindingIds) {
+      if (typeof bindingId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{1,127}$/.test(bindingId)) {
+        throw new Error('model catalog telemetry fallbackBindingIds contain an invalid identifier');
+      }
+      if (seen.has(bindingId)) {
+        throw new Error('model catalog telemetry fallbackBindingIds must be unique');
+      }
+      seen.add(bindingId);
+    }
+  }
+
+  if (
+    payload.returnPolicy !== undefined &&
+    !['STAY_ON_FALLBACK', 'ASK_BEFORE_RETURN', 'AUTO_RETURN'].includes(payload.returnPolicy)
+  ) {
+    throw new Error('model catalog telemetry returnPolicy is invalid');
+  }
+  if (payload.returnPolicy !== undefined && payload.action !== 'BINDING_CHANGE') {
+    throw new Error('returnPolicy is only valid for binding-change telemetry');
   }
 
   if (payload.action === 'REFRESH' && payload.modelId !== undefined) {
