@@ -35,6 +35,10 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
     .inspector-row span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
     .inspector-row strong,.inspector-row code{display:block;margin-top:3px;overflow-wrap:anywhere}
     .boundary{margin-top:14px;color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:10px}
+    .validation-list{display:grid;gap:8px;margin-top:8px}
+    .validation-issue{display:block;width:100%;text-align:left;background:#0d131b;border:1px solid var(--line);border-radius:8px;padding:9px;color:var(--text)}
+    .validation-issue:hover,.validation-issue:focus-visible{border-color:var(--accent);outline:2px solid transparent}
+    .validation-issue .issue-meta{display:block;color:var(--muted);font-size:11px;margin-top:3px}
     .toolbar{display:flex;gap:8px;flex-wrap:wrap}
     .empty{color:var(--muted);padding:50px 10px;text-align:center}
     @media(max-width:980px){.layout{grid-template-columns:1fr}.palette{grid-template-columns:repeat(5,minmax(0,1fr))}}
@@ -122,10 +126,45 @@ async function inspectDraft(mode){
     const definition=encodeURIComponent(JSON.stringify(buildDefinition()));
     const suffix=mode==='simulate'?'simulate':mode==='diff'?'diff':'validate';
     const result=await api('/api/modules/fh-kuika/workflows/'+suffix+'?definition='+definition);
+    if(mode==='validate'){
+      renderValidation(result);
+      return;
+    }
     output.textContent=JSON.stringify(result,null,2);
   }catch(error){
     output.textContent='Inspection failed: '+error.message;
   }
+}
+
+function renderValidation(result){
+  const output=document.querySelector('#validation-output');
+  if(result.valid){
+    output.innerHTML='<strong>Validation passed.</strong><div class="issue-meta">Canonical publish validation is still required.</div>';
+    return;
+  }
+
+  const issues=result.issues||[];
+  output.innerHTML=
+    '<strong>'+esc(issues.length)+' validation issue'+(issues.length===1?'':'s')+'</strong>'+
+    '<div class="validation-list">'+issues.map((issue,index)=>
+      '<button type="button" class="validation-issue" data-issue-index="'+index+'"'+
+        (issue.nodeId?' data-node-ref="'+esc(issue.nodeId)+'"':'')+'>'+
+        '<strong>'+esc(issue.category)+'</strong> · '+esc(issue.message)+
+        '<span class="issue-meta">'+
+          (issue.nodeId?'node '+esc(issue.nodeId):issue.edgeRef?'edge '+esc(issue.edgeRef):'workflow')+
+        '</span>'+
+      '</button>'
+    ).join('')+'</div>';
+
+  output.querySelectorAll('[data-node-ref]').forEach(button=>
+    button.addEventListener('click',()=>{
+      const nodeId=button.dataset.nodeRef;
+      if(nodes.some(node=>node.id===nodeId)){
+        selectedId=nodeId;
+        render();
+      }
+    })
+  );
 }
 
 function nextId(kind){

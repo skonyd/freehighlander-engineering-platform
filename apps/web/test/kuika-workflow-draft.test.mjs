@@ -159,3 +159,48 @@ test('Workflow Studio inspector metadata validation fails closed on invalid budg
   assert.ok(result.errors.some((error) => error.includes('toolPermissions')));
   assert.ok(result.errors.some((error) => error.includes('approvalPolicy')));
 });
+
+test('Workflow Studio validation exposes categorized node and graph issues', () => {
+  const invalid = {
+    id: 'validation-demo',
+    version: '1.0.0',
+    nodes: [
+      {
+        id: 'model-1',
+        kind: 'MODEL',
+        tokenBudget: -1,
+        requiredEvidence: ['same', 'same'],
+      },
+      { id: 'loop-1', kind: 'LOOP' },
+    ],
+    edges: [
+      { from: 'model-1', to: 'missing-node' },
+      { from: 'loop-1', to: 'loop-1' },
+    ],
+  };
+
+  const result = validateFhKuikaWorkflowDraftDefinitionV1(invalid);
+
+  assert.equal(result.valid, false);
+  assert.ok(result.issues.length >= 4);
+  assert.ok(
+    result.issues.some(
+      (issue) =>
+        issue.category === 'BUDGET' &&
+        issue.nodeId === 'model-1' &&
+        issue.message.includes('tokenBudget'),
+    ),
+  );
+  assert.ok(
+    result.issues.some(
+      (issue) =>
+        issue.category === 'EVIDENCE' &&
+        issue.nodeId === 'model-1' &&
+        issue.message.includes('requiredEvidence'),
+    ),
+  );
+  assert.ok(
+    result.issues.some((issue) => issue.category === 'LOOP_BOUND' && issue.nodeId === 'loop-1'),
+  );
+  assert.ok(result.issues.some((issue) => issue.category === 'REFERENCE'));
+});

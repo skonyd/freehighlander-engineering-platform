@@ -50,9 +50,28 @@ export interface FhKuikaWorkflowDraftV1 {
   readonly executionAuthorized: false;
 }
 
+export type FhKuikaWorkflowValidationCategory =
+  | 'SCHEMA'
+  | 'GRAPH'
+  | 'REFERENCE'
+  | 'LOOP_BOUND'
+  | 'ROLE'
+  | 'BUDGET'
+  | 'EVIDENCE'
+  | 'TOOL_PERMISSION'
+  | 'POLICY';
+
+export interface FhKuikaWorkflowValidationIssueV1 {
+  readonly category: FhKuikaWorkflowValidationCategory;
+  readonly message: string;
+  readonly nodeId: string | null;
+  readonly edgeRef: string | null;
+}
+
 export interface FhKuikaWorkflowDraftValidationV1 {
   readonly valid: boolean;
   readonly errors: readonly string[];
+  readonly issues: readonly FhKuikaWorkflowValidationIssueV1[];
   readonly requiresCanonicalPublishValidation: true;
 }
 
@@ -168,6 +187,7 @@ export function validateFhKuikaWorkflowDraftDefinitionV1(
     return {
       valid: errors.length === 0,
       errors,
+      issues: errors.map(classifyValidationError),
       requiresCanonicalPublishValidation: true,
     };
   }
@@ -176,6 +196,7 @@ export function validateFhKuikaWorkflowDraftDefinitionV1(
   return {
     valid: false,
     errors,
+    issues: errors.map(classifyValidationError),
     requiresCanonicalPublishValidation: true,
   };
 }
@@ -260,6 +281,32 @@ function hasCycle(
     }
   }
   return visited !== nodes.length;
+}
+
+// Validation issue projection is descriptive only and cannot grant execution or publish authority.
+function classifyValidationError(message: string): FhKuikaWorkflowValidationIssueV1 {
+  const nodeMatch = /(?:workflow node|LOOP node) ([A-Za-z0-9._-]+)/.exec(message);
+  const edgeMatch = /(?:duplicate workflow edge: )([A-Za-z0-9._-]+->[A-Za-z0-9._-]+)/.exec(message);
+  const edgeEndpointMatch = /unknown workflow edge (?:source|target): ([A-Za-z0-9._-]+)/.exec(
+    message,
+  );
+
+  let category: FhKuikaWorkflowValidationCategory = 'SCHEMA';
+  if (/edge|acyclic|cycle|duplicate workflow node/.test(message)) category = 'GRAPH';
+  if (/unknown workflow edge/.test(message)) category = 'REFERENCE';
+  if (/maxIterations/.test(message)) category = 'LOOP_BOUND';
+  if (/role/.test(message)) category = 'ROLE';
+  if (/timeoutMs|retryLimit|tokenBudget|costBudgetUsd/.test(message)) category = 'BUDGET';
+  if (/requiredEvidence/.test(message)) category = 'EVIDENCE';
+  if (/toolPermissions/.test(message)) category = 'TOOL_PERMISSION';
+  if (/approvalPolicy|riskTier/.test(message)) category = 'POLICY';
+
+  return {
+    category,
+    message,
+    nodeId: nodeMatch?.[1] ?? edgeEndpointMatch?.[1] ?? null,
+    edgeRef: edgeMatch?.[1] ?? null,
+  };
 }
 
 function validateOptionalInteger(
