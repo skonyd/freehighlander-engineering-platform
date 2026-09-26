@@ -1,4 +1,17 @@
 export {
+  connectorCatalogCanActivate,
+  getFhKuikaConnectorCatalogItemV1,
+  listFhKuikaConnectorCatalogV1,
+} from './kuika-connector-catalog.js';
+
+export {
+  FH_KUIKA_CONNECTOR_HUB_HTML,
+  connectorHubPageCanActivate,
+  connectorHubPageCanGrantAuthority,
+  connectorHubPageCanInvokeModel,
+} from './kuika-connector-ui.js';
+
+export {
   buildFhKuikaConnectorInstallReviewV1,
   connectorInstallReviewCanGrantAuthority,
   connectorInstallReviewCanInstallDirectly,
