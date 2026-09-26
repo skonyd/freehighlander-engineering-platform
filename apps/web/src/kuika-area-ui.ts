@@ -37,7 +37,8 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
       {
         title: 'Roles & Solution Packs',
         detail: 'Reusable role packages and curated engineering solution bundles.',
-        status: 'PREPARATION',
+        status: 'AVAILABLE',
+        href: '/modules/fh-kuika/build/roles',
       },
     ],
   },
