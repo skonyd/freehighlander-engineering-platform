@@ -149,7 +149,6 @@ test('blueprint validation requires semantic versioning, unique bounded fields a
   );
 });
 
-
 test('blueprint publication validates and clones all supported typed defaults', () => {
   const published = publishFhKuikaBlueprintV1(
     draft({
