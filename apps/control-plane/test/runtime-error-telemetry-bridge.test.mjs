@@ -45,7 +45,6 @@ test('legacy runtime report without diagnosis is not projected as causal telemet
   assert.throws(() => runtimeErrorReportToTelemetryInput(report), /requires safe diagnosis/);
 });
 
-
 test('runtime report telemetry bridge rejects malformed report identity and unsafe diagnosis flags', () => {
   const report = createRuntimeErrorReport({
     code: 'PROVIDER_QUOTA',
