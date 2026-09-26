@@ -133,9 +133,12 @@ Implemented by this PR:
 
 - **FH-KUIKA-03.4** Blueprint Catalog + Blueprint Detail UI.
 
+Implemented by the stacked FH-KUIKA-03.5 PR:
+
+- **FH-KUIKA-03.5** blueprint → canonical-shape workflow candidate + deterministic simulation.
+
 Still open in FH-KUIKA-03:
 
-- **FH-KUIKA-03.5** blueprint → canonical workflow draft + deterministic simulation;
 - **FH-KUIKA-03.6** measured blueprint quality/usage telemetry.
 
 The status above describes authority-neutral productization only. It does not imply FH-20 cutover or mutation authority.
