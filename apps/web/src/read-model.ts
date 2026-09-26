@@ -3,10 +3,14 @@ import { DatabaseSync } from 'node:sqlite';
 
 import {
   createCoreHomeSnapshotV1,
+  type CoreHomeAttentionItemV1,
+  type CoreHomeAttentionSummaryView,
+  type CoreHomeCurrentWorkView,
   type CoreHomeRecentRunView,
   type CoreHomeSnapshotV1,
   type CoreHomeUsageWindowKind,
   type CoreHomeUsageWindowView,
+  type CoreHomeWorkState,
 } from './home.js';
 
 export class MissingDashboardDatabaseError extends Error {
@@ -221,13 +225,15 @@ export class DashboardReadModel {
       const latestRun = runs[0] ?? null;
       const usage = queryUsageWindow(db, 'TODAY', { now: generatedAt });
       const sqliteUpdatedAt = queryLatestTelemetryTimestamp(db) ?? generatedAt;
+      const currentWork = queryCurrentWork(db);
+      const approvalAttention = queryHumanApprovalAttention(db);
 
       return createCoreHomeSnapshotV1({
         generatedAt,
         sourceFreshness: {
           generatedAt,
           sqliteUpdatedAt,
-          staleSources: ['attention', 'continuity', 'current-work', 'findings', 'provider-state'],
+          staleSources: ['continuity', 'findings', 'provider-state', 'runtime-attention'],
         },
         project: {
           repository: latestRun?.repository ?? null,
@@ -245,14 +251,8 @@ export class DashboardReadModel {
           continuity: 'UNKNOWN',
           criticalErrorCount: 0,
         },
-        currentWork: null,
-        attention: {
-          total: 0,
-          critical: 0,
-          errors: 0,
-          warnings: 0,
-          items: [],
-        },
+        currentWork,
+        attention: approvalAttention,
         usage,
         roleBindings: [],
         recentRuns: runs.map(mapRecentRun),
@@ -517,6 +517,221 @@ function queryRuns(db: DatabaseSync, limit: number): readonly DashboardRun[] {
     )
     .all(limit)
     .map((row) => mapRun(row as SqlRow));
+}
+
+function queryCurrentWork(db: DatabaseSync): CoreHomeCurrentWorkView | null {
+  const run = db
+    .prepare(
+      `SELECT
+         run_id, task_id, last_timestamp, status, workflow_id, workflow_version, last_event_type
+       FROM runs
+       WHERE last_event_type <> 'run.completed'
+       ORDER BY last_timestamp DESC, run_id ASC
+       LIMIT 1`,
+    )
+    .get() as SqlRow | undefined;
+
+  if (!run) return null;
+
+  const runId = String(run.run_id);
+  const event = db
+    .prepare(
+      `SELECT type, timestamp, node_id, node_type, status, result
+       FROM events
+       WHERE run_id = ?
+       ORDER BY timestamp DESC, id DESC
+       LIMIT 1`,
+    )
+    .get(runId) as SqlRow | undefined;
+
+  const latestEventType = toStringOrNull(event?.type);
+  const runEventType = toStringOrNull(run.last_event_type);
+  const eventType = latestEventType ?? runEventType ?? 'unknown';
+  const status = toStringOrNull(event?.status) ?? toStringOrNull(run.status);
+  const result = toStringOrNull(event?.result);
+  const nodeId = toStringOrNull(event?.node_id);
+  const nodeType = toStringOrNull(event?.node_type);
+  const workflowId = toStringOrNull(run.workflow_id);
+  const state = mapCurrentWorkState(eventType, status, result);
+
+  return {
+    runId,
+    workItemId: toStringOrNull(run.task_id),
+    workflowId,
+    workflowVersion: toStringOrNull(run.workflow_version),
+    nodeId,
+    state,
+    label: currentWorkLabel(nodeId, nodeType, workflowId, runId),
+    humanRequired: state === 'WAITING_HUMAN',
+    updatedAt: String(event?.timestamp ?? run.last_timestamp),
+  };
+}
+
+function currentWorkLabel(
+  nodeId: string | null,
+  nodeType: string | null,
+  workflowId: string | null,
+  runId: string,
+): string {
+  if (nodeId && nodeType) return nodeType + ' · ' + nodeId;
+  if (nodeId) return nodeId;
+  return workflowId ?? runId;
+}
+
+interface PendingHumanApproval {
+  readonly decisionId: string | null;
+  readonly runId: string;
+  readonly nodeId: string | null;
+  readonly item: CoreHomeAttentionItemV1;
+}
+
+function queryHumanApprovalAttention(db: DatabaseSync): CoreHomeAttentionSummaryView {
+  const rows = db
+    .prepare(
+      `SELECT type, timestamp, run_id, task_id, node_id, status, result, event_json
+       FROM (
+         SELECT id, type, timestamp, run_id, task_id, node_id, status, result, event_json
+         FROM events
+         WHERE type IN ('human.required', 'human.decision')
+         ORDER BY timestamp DESC, id DESC
+         LIMIT 5000
+       )
+       ORDER BY timestamp ASC`,
+    )
+    .all() as SqlRow[];
+
+  const pending = new Map<string, PendingHumanApproval>();
+
+  for (const row of rows) {
+    const type = String(row.type);
+    const runId = String(row.run_id);
+    const nodeId = toStringOrNull(row.node_id);
+    const event = parseEventRecord(row.event_json);
+    const payload = asRecord(event?.payload);
+    const decisionId = safeProjectionIdentifier(payload?.decisionId);
+    const key = decisionId ? 'decision:' + decisionId : approvalFallbackKey(runId, nodeId);
+
+    if (type === 'human.required') {
+      const reason = safeProjectionText(payload?.reason);
+      pending.set(key, {
+        decisionId,
+        runId,
+        nodeId,
+        item: {
+          id: 'human-approval:' + key,
+          kind: 'HUMAN_APPROVAL',
+          severity: 'WARNING',
+          headline: 'Human approval required',
+          source: 'human-decision-queue',
+          occurredAt: String(row.timestamp),
+          runId,
+          ...(toStringOrNull(row.task_id) ? { workItemId: String(row.task_id) } : {}),
+          nextAction: reason ?? 'Review the pending human decision.',
+          authority: 'NONE',
+        },
+      });
+      continue;
+    }
+
+    const stale = humanDecisionIsStale(row, payload);
+    const matching =
+      decisionId === null ? findPendingApproval(pending, runId, nodeId) : pending.get(key);
+
+    if (!matching) continue;
+    const matchingKey = approvalMapKey(pending, matching);
+    if (!matchingKey) continue;
+
+    if (stale) {
+      pending.set(matchingKey, {
+        ...matching,
+        item: {
+          ...matching.item,
+          headline: 'Human approval response is stale',
+          nextAction: 'Review the current decision before resuming work.',
+        },
+      });
+    } else {
+      pending.delete(matchingKey);
+    }
+  }
+
+  const items = [...pending.values()]
+    .map((entry) => entry.item)
+    .sort((left, right) => left.occurredAt.localeCompare(right.occurredAt));
+
+  return {
+    total: items.length,
+    critical: 0,
+    errors: 0,
+    warnings: items.length,
+    items,
+  };
+}
+
+function mapCurrentWorkState(
+  eventType: string,
+  status: string | null,
+  result: string | null,
+): CoreHomeWorkState {
+  const normalized = (status ?? result ?? '').trim().toUpperCase();
+  if (
+    eventType === 'human.required' ||
+    normalized === 'HUMAN_REQUIRED' ||
+    (eventType === 'human.decision' && normalized === 'STALE')
+  ) {
+    return 'WAITING_HUMAN';
+  }
+  if (normalized === 'BLOCKED') return 'BLOCKED';
+  if (normalized === 'FAILED' || normalized === 'FAIL') return 'FAILED';
+  return 'UNKNOWN';
+}
+
+function humanDecisionIsStale(row: SqlRow, payload: Record<string, unknown> | null): boolean {
+  for (const value of [row.status, row.result, payload?.status, payload?.result]) {
+    if (typeof value === 'string' && value.trim().toUpperCase() === 'STALE') return true;
+  }
+  return false;
+}
+
+function approvalFallbackKey(runId: string, nodeId: string | null): string {
+  return 'run:' + runId + ':node:' + (nodeId ?? 'unknown');
+}
+
+function findPendingApproval(
+  pending: ReadonlyMap<string, PendingHumanApproval>,
+  runId: string,
+  nodeId: string | null,
+): PendingHumanApproval | null {
+  for (const entry of pending.values()) {
+    if (entry.runId === runId && entry.nodeId === nodeId) return entry;
+  }
+  return null;
+}
+
+function approvalMapKey(
+  pending: ReadonlyMap<string, PendingHumanApproval>,
+  target: PendingHumanApproval,
+): string | null {
+  for (const [key, entry] of pending) {
+    if (entry === target) return key;
+  }
+  return null;
+}
+
+function parseEventRecord(value: string | number | bigint | null): Record<string, unknown> | null {
+  if (typeof value !== 'string') return null;
+  try {
+    return asRecord(JSON.parse(value));
+  } catch {
+    return null;
+  }
+}
+
+function safeProjectionIdentifier(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/.test(normalized)) return null;
+  return normalized;
 }
 
 function queryUsageWindow(

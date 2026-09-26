@@ -129,6 +129,67 @@ async function fixture() {
   };
 }
 
+function insertHumanEvent(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    if (input.createRun) {
+      const insertRun = db.prepare(
+        `INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      );
+      insertRun.run(
+        input.runId,
+        'task-human',
+        input.timestamp,
+        input.timestamp,
+        input.status,
+        'skonyd/freehighlander-engineering-platform',
+        26,
+        'feat/human',
+        'base-human',
+        'head-human',
+        'human-workflow',
+        '1.0.0',
+        'wf-human',
+        1,
+        1,
+        0,
+        input.type,
+      );
+    }
+
+    const event = {
+      schemaVersion: 1,
+      type: input.type,
+      timestamp: input.timestamp,
+      runId: input.runId,
+      taskId: 'task-human',
+      node: { id: input.nodeId, type: 'HUMAN' },
+      execution: { status: input.status },
+      payload: input.payload,
+    };
+
+    db.prepare(
+      `INSERT INTO events(
+        event_hash, schema_version, type, timestamp, run_id, task_id,
+        node_id, node_type, status, event_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      input.eventHash,
+      1,
+      input.type,
+      input.timestamp,
+      input.runId,
+      'task-human',
+      input.nodeId,
+      'HUMAN',
+      input.status,
+      JSON.stringify(event),
+    );
+  } finally {
+    db.close();
+  }
+}
+
 test('dashboard read model exposes summary, runs, model usage and artifacts', async () => {
   const data = await fixture();
   try {
@@ -199,6 +260,99 @@ test('dashboard read model exposes summary, runs, model usage and artifacts', as
     assert.equal(detail.events.length, 1);
     assert.equal(detail.modelCalls.length, 1);
     assert.equal(detail.artifacts[0]?.artifactId, 'artifact-1');
+  } finally {
+    await data.cleanup();
+  }
+});
+
+test('Core Home projects current work and only unresolved human approvals', async () => {
+  const data = await fixture();
+  try {
+    insertHumanEvent(data.file, {
+      createRun: true,
+      eventHash: 'human-required-1',
+      type: 'human.required',
+      timestamp: '2026-09-19T21:00:00.000Z',
+      runId: 'run-human',
+      nodeId: 'approve-change',
+      status: 'HUMAN_REQUIRED',
+      payload: {
+        decisionId: 'decision-1',
+        reason: 'Approve the exact revision before continuing.',
+      },
+    });
+
+    const model = new DashboardReadModel(data.file);
+    let home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+
+    assert.equal(home.currentWork?.runId, 'run-human');
+    assert.equal(home.currentWork?.state, 'WAITING_HUMAN');
+    assert.equal(home.currentWork?.nodeId, 'approve-change');
+    assert.equal(home.attention.total, 1);
+    assert.equal(home.attention.items[0]?.kind, 'HUMAN_APPROVAL');
+    assert.equal(
+      home.attention.items[0]?.nextAction,
+      'Approve the exact revision before continuing.',
+    );
+    assert.ok(!home.sourceFreshness.staleSources.includes('current-work'));
+    assert.ok(home.sourceFreshness.staleSources.includes('runtime-attention'));
+
+    insertHumanEvent(data.file, {
+      createRun: false,
+      eventHash: 'human-decision-stale',
+      type: 'human.decision',
+      timestamp: '2026-09-19T21:01:00.000Z',
+      runId: 'run-human',
+      nodeId: 'approve-change',
+      status: 'STALE',
+      payload: { decisionId: 'decision-1' },
+    });
+
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.currentWork?.state, 'WAITING_HUMAN');
+    assert.equal(home.attention.total, 1);
+    assert.equal(home.attention.items[0]?.headline, 'Human approval response is stale');
+
+    insertHumanEvent(data.file, {
+      createRun: false,
+      eventHash: 'human-decision-resolved',
+      type: 'human.decision',
+      timestamp: '2026-09-19T21:02:00.000Z',
+      runId: 'run-human',
+      nodeId: 'approve-change',
+      status: 'RESUME_READY',
+      payload: { decisionId: 'decision-1' },
+    });
+
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.attention.total, 0);
+    assert.equal(home.currentWork?.state, 'UNKNOWN');
+
+    insertHumanEvent(data.file, {
+      createRun: false,
+      eventHash: 'human-required-fallback',
+      type: 'human.required',
+      timestamp: '2026-09-19T21:03:00.000Z',
+      runId: 'run-human',
+      nodeId: 'approve-fallback',
+      status: 'HUMAN_REQUIRED',
+      payload: {},
+    });
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.attention.total, 1);
+
+    insertHumanEvent(data.file, {
+      createRun: false,
+      eventHash: 'human-decision-fallback',
+      type: 'human.decision',
+      timestamp: '2026-09-19T21:04:00.000Z',
+      runId: 'run-human',
+      nodeId: 'approve-fallback',
+      status: 'RESUME_READY',
+      payload: {},
+    });
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.attention.total, 0);
   } finally {
     await data.cleanup();
   }
