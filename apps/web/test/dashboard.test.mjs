@@ -1200,10 +1200,7 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
 
     const build = await fetch(`${base}/modules/fh-kuika/build`);
     const buildHtml = await build.text();
-    assert.match(
-      buildHtml,
-      /href="\/modules\/fh-kuika\/build\/blueprints"/,
-    );
+    assert.match(buildHtml, /href="\/modules\/fh-kuika\/build\/blueprints"/);
 
     const blueprintPage = await fetch(`${base}/modules/fh-kuika/build/blueprints`);
     assert.equal(blueprintPage.status, 200);
@@ -1229,9 +1226,7 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.equal(blueprintDetail.authority, 'NONE');
     assert.equal(blueprintDetail.defaultRiskTier, 'HIGH');
 
-    const missingBlueprint = await fetch(
-      `${base}/api/modules/fh-kuika/blueprints/does-not-exist`,
-    );
+    const missingBlueprint = await fetch(`${base}/api/modules/fh-kuika/blueprints/does-not-exist`);
     assert.equal(missingBlueprint.status, 404);
     assert.equal((await missingBlueprint.json()).error, 'blueprint_not_found');
 
