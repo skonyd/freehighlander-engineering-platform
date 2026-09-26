@@ -573,6 +573,7 @@ function queryCurrentWork(db: DatabaseSync): CoreHomeCurrentWorkView | null {
   });
 
   return {
+    classificationVersion: CURRENT_WORK_STAGE_TAXONOMY_VERSION,
     runId,
     workItemId: toStringOrNull(run.task_id),
     workflowId,
@@ -794,8 +795,6 @@ function mapCurrentWorkState(input: CurrentWorkStateInput): CoreHomeWorkState {
 }
 
 function classifyCurrentWorkStage(input: CurrentWorkStateInput): CoreHomeWorkState {
-  void CURRENT_WORK_STAGE_TAXONOMY_VERSION;
-
   const tokens = new Set(
     [input.nodeId, input.nodeType, input.workflowId]
       .filter((value): value is string => value !== null)
