@@ -1,11 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export type FhKuikaMarketplaceAuthority =
-  | 'ADVISORY'
-  | 'CANDIDATE'
-  | 'WRITER'
-  | 'ADJUDICATOR'
-  | 'FINAL_REVIEWER';
+  'ADVISORY' | 'CANDIDATE' | 'WRITER' | 'ADJUDICATOR' | 'FINAL_REVIEWER';
 
 export type FhKuikaMarketplaceRiskTier = 'NORMAL' | 'HIGH' | 'CRITICAL';
 
@@ -165,11 +161,7 @@ const PACKS = Object.freeze([
   pack(
     'pull-request-quality',
     'Pull Request Quality Pack',
-    [
-      'implementation-agent@1.0.0',
-      'test-reviewer@1.0.0',
-      'architecture-reviewer@1.0.0',
-    ],
+    ['implementation-agent@1.0.0', 'test-reviewer@1.0.0', 'architecture-reviewer@1.0.0'],
     ['feature-implementation@1.0.0', 'bug-fix@1.0.0'],
     ['github'],
   ),
@@ -190,11 +182,7 @@ const PACKS = Object.freeze([
   pack(
     'incident-response',
     'Incident Response Pack',
-    [
-      'incident-investigator@1.0.0',
-      'implementation-agent@1.0.0',
-      'test-reviewer@1.0.0',
-    ],
+    ['incident-investigator@1.0.0', 'implementation-agent@1.0.0', 'test-reviewer@1.0.0'],
     ['incident-response@1.0.0'],
     ['prometheus-mcp'],
   ),
