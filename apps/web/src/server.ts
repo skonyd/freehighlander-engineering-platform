@@ -3,6 +3,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
+import { FH_KUIKA_CONNECTOR_HUB_HTML } from './kuika-connector-ui.js';
+import { getFhKuikaConnectorCatalogItemV1, listFhKuikaConnectorCatalogV1 } from './kuika-connector-catalog.js';
+import { buildFhKuikaConnectorInstallReviewV1 } from './kuika-connector-install-review.js';
 import { FH_KUIKA_BLUEPRINTS_HTML } from './kuika-blueprint-ui.js';
 import {
   getFhKuikaCuratedBlueprintV1,
@@ -142,6 +145,11 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/modules/fh-kuika/integrate/connectors') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_CONNECTOR_HUB_HTML);
+      return;
+    }
+
     if (url.pathname === '/modules/fh-kuika/knowledge') {
       html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('KNOWLEDGE'));
       return;
@@ -209,6 +217,22 @@ async function handleRequest(
         return;
       }
       json(response, 200, buildFhKuikaBlueprintDetailViewV1(blueprint));
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/connectors') {
+      json(response, 200, { connectors: listFhKuikaConnectorCatalogV1() });
+      return;
+    }
+
+    const connectorRoute = parseFhKuikaConnectorRoute(url.pathname);
+    if (connectorRoute) {
+      const connector = getFhKuikaConnectorCatalogItemV1(connectorRoute.connectorId);
+      if (!connector) {
+        json(response, 404, { error: 'connector_not_found', connectorId: connectorRoute.connectorId });
+        return;
+      }
+      json(response, 200, { review: buildFhKuikaConnectorInstallReviewV1(connector) });
       return;
     }
 
@@ -312,6 +336,14 @@ function parseFhKuikaBlueprintRoute(pathname: string): { readonly blueprintId: s
   const match = /^\/api\/modules\/fh-kuika\/blueprints\/([^/]+)$/.exec(pathname);
   if (!match?.[1]) return null;
   return { blueprintId: decodeURIComponent(match[1]) };
+}
+
+function parseFhKuikaConnectorRoute(pathname: string): {
+  readonly connectorId: string;
+} | null {
+  const match = /^\/api\/modules\/fh-kuika\/connectors\/([^/]+)\/review$/.exec(pathname);
+  if (!match?.[1]) return null;
+  return { connectorId: decodeURIComponent(match[1]) };
 }
 
 function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {
