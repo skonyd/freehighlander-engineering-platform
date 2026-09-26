@@ -45,10 +45,7 @@ test('FH-KUIKA knowledge query fails closed on invalid exact bindings and bounds
     () => createFhKuikaKnowledgeQueryV1({ text: 'x', mode: 'EXACT_REVISION' }),
     /EXACT_REVISION requires revision/,
   );
-  assert.throws(
-    () => createFhKuikaKnowledgeQueryV1({ text: 'x', maxDepth: 11 }),
-    /maxDepth/,
-  );
+  assert.throws(() => createFhKuikaKnowledgeQueryV1({ text: 'x', maxDepth: 11 }), /maxDepth/);
   assert.throws(
     () => createFhKuikaKnowledgeQueryV1({ text: 'x', resultLimit: 101 }),
     /resultLimit/,
@@ -123,3 +120,6 @@ test('authoritative lineage relations require evidence provenance', () => {
     authority: 'NONE',
   });
 });
+##[group]Run npm run verify
+npm run verify
+shell: /usr/bin/bash -e {0}
