@@ -1,10 +1,5 @@
 export type FhKuikaArea =
-  | 'OVERVIEW'
-  | 'WORKBENCH'
-  | 'BUILD'
-  | 'INTEGRATE'
-  | 'KNOWLEDGE'
-  | 'OPERATE';
+  'OVERVIEW' | 'WORKBENCH' | 'BUILD' | 'INTEGRATE' | 'KNOWLEDGE' | 'OPERATE';
 
 export interface FhKuikaNavigationItem {
   readonly area: FhKuikaArea;
