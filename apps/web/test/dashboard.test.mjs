@@ -1198,6 +1198,37 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(kuikaHtml, /href="\/modules\/fh-kuika\/operate"/);
     assert.equal(kuika.headers.get('x-freehighlander-mode'), 'read-only');
 
+    const build = await fetch(`${base}/modules/fh-kuika/build`);
+    const buildHtml = await build.text();
+    assert.match(buildHtml, /href="\/modules\/fh-kuika\/build\/blueprints"/);
+
+    const blueprintPage = await fetch(`${base}/modules/fh-kuika/build/blueprints`);
+    assert.equal(blueprintPage.status, 200);
+    const blueprintHtml = await blueprintPage.text();
+    assert.match(blueprintHtml, /Engineering Blueprints/);
+    assert.match(blueprintHtml, /\/api\/modules\/fh-kuika\/blueprints/);
+    assert.equal(blueprintPage.headers.get('x-freehighlander-mode'), 'read-only');
+
+    const blueprintCatalog = await (
+      await fetch(`${base}/api/modules/fh-kuika/blueprints`)
+    ).json();
+    assert.equal(blueprintCatalog.schemaVersion, 1);
+    assert.equal(blueprintCatalog.authority, 'NONE');
+    assert.equal(blueprintCatalog.blueprints.length, 12);
+
+    const blueprintDetail = await (
+      await fetch(`${base}/api/modules/fh-kuika/blueprints/security-patch`)
+    ).json();
+    assert.equal(blueprintDetail.id, 'security-patch');
+    assert.equal(blueprintDetail.authority, 'NONE');
+    assert.equal(blueprintDetail.defaultRiskTier, 'HIGH');
+
+    const missingBlueprint = await fetch(
+      `${base}/api/modules/fh-kuika/blueprints/does-not-exist`,
+    );
+    assert.equal(missingBlueprint.status, 404);
+    assert.equal((await missingBlueprint.json()).error, 'blueprint_not_found');
+
     for (const area of ['build', 'integrate', 'knowledge']) {
       const areaResponse = await fetch(`${base}/modules/fh-kuika/${area}`);
       assert.equal(areaResponse.status, 200);
