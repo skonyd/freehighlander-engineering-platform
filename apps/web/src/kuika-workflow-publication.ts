@@ -42,10 +42,7 @@ export function prepareFhKuikaWorkflowPublicationCandidateV1(
     validation,
     simulationReady: simulation.valid && simulation.terminalState === 'READY_FOR_CANONICAL_REVIEW',
     versionDiff,
-    status:
-      validation.valid && simulation.valid
-        ? 'READY_FOR_CORE_PUBLICATION_REVIEW'
-        : 'BLOCKED',
+    status: validation.valid && simulation.valid ? 'READY_FOR_CORE_PUBLICATION_REVIEW' : 'BLOCKED',
     publicationAuthorized: false,
     executionAuthorized: false,
     authority: 'NONE',
@@ -65,7 +62,9 @@ export function workflowPublicationCandidateCanGrantAuthority(): false {
 }
 
 function hashWorkflowDefinition(definition: FhKuikaCanonicalWorkflowDefinitionV1): string {
-  return createHash('sha256').update(stableJson(normalizeDefinition(definition))).digest('hex');
+  return createHash('sha256')
+    .update(stableJson(normalizeDefinition(definition)))
+    .digest('hex');
 }
 
 function normalizeDefinition(
