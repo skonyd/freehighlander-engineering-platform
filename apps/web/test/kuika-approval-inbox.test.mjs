@@ -9,7 +9,7 @@ import {
   fhKuikaApprovalInboxCanMutateRuntime,
 } from '../dist/index.js';
 
-const hash = character => character.repeat(64);
+const hash = (character) => character.repeat(64);
 
 function run(overrides = {}) {
   return {
