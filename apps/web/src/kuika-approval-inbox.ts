@@ -1,7 +1,8 @@
 import type { DashboardEvent, DashboardRun } from './read-model.js';
 
 export type FhKuikaApprovalCurrentness = 'CURRENT' | 'RESOLVED' | 'STALE' | 'UNKNOWN';
-export type FhKuikaApprovalBindingState = 'EXACT_SCOPE_BOUND' | 'REVISION_BOUND' | 'PARTIAL' | 'UNKNOWN';
+export type FhKuikaApprovalBindingState =
+  'EXACT_SCOPE_BOUND' | 'REVISION_BOUND' | 'PARTIAL' | 'UNKNOWN';
 
 export interface FhKuikaApprovalInboxItemV1 {
   readonly approvalId: string;
@@ -117,7 +118,9 @@ function findDecision(
   requirement: DashboardEvent,
   requirementIndex: number,
 ): DashboardEvent | null {
-  const later = events.slice(requirementIndex + 1).filter((event) => event.type === 'human.decision');
+  const later = events
+    .slice(requirementIndex + 1)
+    .filter((event) => event.type === 'human.decision');
   const sameNode = later.find(
     (event) => requirement.nodeId !== null && event.nodeId === requirement.nodeId,
   );
