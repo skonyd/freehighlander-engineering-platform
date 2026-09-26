@@ -81,7 +81,9 @@ test('Marketplace UI stays one Build surface and exposes no install action', () 
 });
 
 test('Marketplace HTTP routes expose role and solution pack planning as GET-only', async () => {
-  const server = createDashboardServer({ databasePath: '/tmp/fh-kuika-role-market-no-db.sqlite' });
+  const server = createDashboardServer({
+    databasePath: '/tmp/fh-kuika-role-market-no-db.sqlite',
+  });
 
   try {
     await new Promise((resolve, reject) => {
@@ -126,7 +128,6 @@ test('Marketplace HTTP routes expose role and solution pack planning as GET-only
     );
   }
 });
-
 
 test('role version diff marks authority-sensitive changes breaking and plans rollback only', () => {
   const before = getFhKuikaMarketplaceRoleV1('security-reviewer');
