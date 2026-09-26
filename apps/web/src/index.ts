@@ -1,3 +1,5 @@
+export { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
+
 export {
   coreHomeSnapshotCanGrantAuthority,
   coreHomeSnapshotCanMutateState,
