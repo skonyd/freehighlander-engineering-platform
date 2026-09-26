@@ -1,4 +1,14 @@
 export {
+  FhKuikaLocalSemanticIndexV1,
+  localSemanticIndexCanCreateAuthoritativeLineage,
+  localSemanticIndexCanGrantAuthority,
+  localSemanticIndexCanInvokeModel,
+  localSemanticIndexCanUseRemoteProvider,
+  type FhKuikaLocalSemanticDocumentV1,
+  type FhKuikaLocalSemanticIndexOptionsV1,
+} from './kuika-local-semantic-index.js';
+
+export {
   lineageFirstRetrieverCanGrantAuthority,
   lineageFirstRetrieverCanMutateDomain,
   lineageFirstRetrieverCanPromoteSemanticResult,
