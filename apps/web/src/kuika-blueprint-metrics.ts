@@ -78,7 +78,9 @@ export function measureFhKuikaBlueprintCatalogV1(
     if (blueprint.defaultRiskTier === 'HIGH' || blueprint.defaultRiskTier === 'CRITICAL') {
       highOrCriticalBlueprints += 1;
     }
-    if (blueprint.authoritySensitiveNodes.length > 0) authoritySensitiveBlueprints += 1;
+    if (blueprint.authoritySensitiveNodes.length > 0) {
+      authoritySensitiveBlueprints += 1;
+    }
 
     totalSimulationFixtures += blueprint.simulationFixtures.length;
     if (blueprint.simulationFixtures.some((fixture) => fixture.expectedTerminalState === 'PASS')) {
@@ -90,7 +92,9 @@ export function measureFhKuikaBlueprintCatalogV1(
       blueprintsWithBlockedFixture += 1;
     }
 
-    if (hashes.has(blueprint.blueprintHash)) duplicateBlueprintHashes += 1;
+    if (hashes.has(blueprint.blueprintHash)) {
+      duplicateBlueprintHashes += 1;
+    }
     hashes.add(blueprint.blueprintHash);
   }
 
@@ -215,8 +219,12 @@ export function fhKuikaBlueprintMetricsCanGrantAuthority(): false {
 }
 
 function validateUsageEvent(event: FhKuikaBlueprintUsageEventV1): void {
-  if (event.schemaVersion !== 1) throw new Error('blueprint usage schemaVersion must be 1');
-  if (event.authority !== 'NONE') throw new Error('blueprint usage event authority must be NONE');
+  if (event.schemaVersion !== 1) {
+    throw new Error('blueprint usage schemaVersion must be 1');
+  }
+  if (event.authority !== 'NONE') {
+    throw new Error('blueprint usage event authority must be NONE');
+  }
   if (Number.isNaN(Date.parse(event.timestamp))) {
     throw new Error('blueprint usage event timestamp must be valid');
   }
