@@ -139,27 +139,27 @@ test('Workflow Studio preserves bounded inspector metadata through round-trip', 
 test(
   'Workflow Studio inspector metadata validation fails closed on invalid budgets and policy',
   () => {
-  const input = definition();
-  input.nodes[0] = {
-    ...input.nodes[0],
-    timeoutMs: 0,
-    retryLimit: 99,
-    tokenBudget: -1,
-    costBudgetUsd: Number.NaN,
-    requiredEvidence: ['same', 'same'],
-    toolPermissions: [''],
-    approvalPolicy: 'BYPASS',
-  };
+    const input = definition();
+    input.nodes[0] = {
+      ...input.nodes[0],
+      timeoutMs: 0,
+      retryLimit: 99,
+      tokenBudget: -1,
+      costBudgetUsd: Number.NaN,
+      requiredEvidence: ['same', 'same'],
+      toolPermissions: [''],
+      approvalPolicy: 'BYPASS',
+    };
 
-  const result = validateFhKuikaWorkflowDraftDefinitionV1(input);
-  assert.equal(result.valid, false);
-  assert.ok(result.errors.some((error) => error.includes('timeoutMs')));
-  assert.ok(result.errors.some((error) => error.includes('retryLimit')));
-  assert.ok(result.errors.some((error) => error.includes('tokenBudget')));
-  assert.ok(result.errors.some((error) => error.includes('costBudgetUsd')));
-  assert.ok(result.errors.some((error) => error.includes('requiredEvidence')));
-  assert.ok(result.errors.some((error) => error.includes('toolPermissions')));
-  assert.ok(result.errors.some((error) => error.includes('approvalPolicy')));
+    const result = validateFhKuikaWorkflowDraftDefinitionV1(input);
+    assert.equal(result.valid, false);
+    assert.ok(result.errors.some((error) => error.includes('timeoutMs')));
+    assert.ok(result.errors.some((error) => error.includes('retryLimit')));
+    assert.ok(result.errors.some((error) => error.includes('tokenBudget')));
+    assert.ok(result.errors.some((error) => error.includes('costBudgetUsd')));
+    assert.ok(result.errors.some((error) => error.includes('requiredEvidence')));
+    assert.ok(result.errors.some((error) => error.includes('toolPermissions')));
+    assert.ok(result.errors.some((error) => error.includes('approvalPolicy')));
   },
 );
 
