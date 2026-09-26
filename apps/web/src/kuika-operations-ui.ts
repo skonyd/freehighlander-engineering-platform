@@ -60,6 +60,14 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
     .error-card strong { color: var(--bad); }
     .error-grid { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 5px 10px; margin-top: 9px; }
     .error-grid span:nth-child(odd) { color: var(--muted); }
+    .run-section { margin-top: 16px; }
+    .run-section h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .timeline-item { border-left: 2px solid var(--line); padding: 4px 0 10px 10px; margin-left: 5px; }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-meta { color: var(--muted); font-size: 12px; }
+    .compact-list { display: grid; gap: 7px; }
+    .compact-row { border-top: 1px solid var(--line); padding-top: 7px; }
+    .compact-row:first-child { border-top: 0; padding-top: 0; }
     .empty { color: var(--muted); padding: 18px 0; }
     @media (max-width: 820px) {
       .metrics { grid-template-columns: 1fr; }
@@ -100,7 +108,7 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
       </div>
 
       <div class="card">
-        <h2>Selected run diagnostics</h2>
+        <h2>Run detail</h2>
         <div id="diagnostics"><div class="empty">Select a run to inspect structured runtime errors.</div></div>
       </div>
     </section>
@@ -184,39 +192,91 @@ function renderRuns(runs) {
 
 async function loadRun(runId) {
   const target = document.querySelector('#diagnostics');
-  target.innerHTML = '<div class="empty">Loading diagnostics…</div>';
+  target.innerHTML = '<div class="empty">Loading run detail…</div>';
 
   try {
-    const detail = await api('/api/runs/' + encodeURIComponent(runId));
+    const detail = await api('/api/modules/fh-kuika/runs/' + encodeURIComponent(runId));
+    const run = detail.run || {};
+    const timeline = detail.timeline || [];
+    const calls = detail.modelCalls || [];
+    const artifacts = detail.artifacts || [];
+    const evidenceIds = detail.evidence?.evidenceIds || [];
     const errors = detail.runtimeErrors || [];
 
-    if (!errors.length) {
-      target.innerHTML =
-        '<div><code>' + esc(runId) + '</code></div>' +
-        '<div class="empty">No structured runtime errors are recorded for this run.</div>';
-      return;
-    }
+    const context =
+      '<div><strong>' + esc(run.status || 'UNKNOWN') + '</strong> · <code>' + esc(run.runId || runId) + '</code></div>' +
+      '<div class="muted">' +
+        esc(run.workflowId || 'workflow unknown') +
+        (run.workflowVersion ? ' · v' + esc(run.workflowVersion) : '') +
+        (run.branch ? ' · ' + esc(run.branch) : '') +
+        (run.headSha ? ' · <code>' + esc(run.headSha.slice(0, 12)) + '</code>' : '') +
+      '</div>';
+
+    const timelineHtml = timeline.length
+      ? timeline.map(item =>
+          '<div class="timeline-item">' +
+            '<div><span class="pill">' + esc(item.kind) + '</span> <strong>' + esc(item.eventType) + '</strong></div>' +
+            '<div class="timeline-meta">' +
+              esc(new Date(item.timestamp).toLocaleString()) +
+              (item.nodeId ? ' · node ' + esc(item.nodeId) : '') +
+              (item.status ? ' · ' + esc(item.status) : '') +
+              (item.result ? ' · ' + esc(item.result) : '') +
+              (item.model ? ' · ' + esc(item.model) : '') +
+            '</div>' +
+          '</div>'
+        ).join('')
+      : '<div class="empty">No timeline events recorded.</div>';
+
+    const callsHtml = calls.length
+      ? '<div class="compact-list">' + calls.map(call =>
+          '<div class="compact-row">' +
+            '<strong>' + esc(call.logicalRole || 'model call') + '</strong>' +
+            '<div class="muted">' +
+              esc(call.provider || 'provider unknown') + ' / ' + esc(call.model || 'model unknown') +
+              (call.effort ? ' · ' + esc(call.effort) : '') +
+              (call.status ? ' · ' + esc(call.status) : '') +
+              (call.totalTokens !== null ? ' · ' + fmt.format(call.totalTokens) + ' tokens' : '') +
+            '</div>' +
+          '</div>'
+        ).join('') + '</div>'
+      : '<div class="empty">No model calls recorded.</div>';
+
+    const evidenceHtml =
+      '<div class="muted">Artifacts: ' + fmt.format(artifacts.length) +
+      ' · Evidence IDs: ' + fmt.format(evidenceIds.length) + '</div>' +
+      (artifacts.length
+        ? '<div class="compact-list">' + artifacts.map(item =>
+            '<div class="compact-row"><code>' + esc(item.artifactId) + '</code> · ' + esc(item.state) + '</div>'
+          ).join('') + '</div>'
+        : '');
+
+    const errorsHtml = errors.length
+      ? errors.map(error =>
+          '<div class="error-card">' +
+            '<strong>[' + esc(error.code) + '] ' + esc(error.headline) + '</strong>' +
+            '<div class="error-grid">' +
+              '<span>Certainty</span><span>' + esc(error.certainty) + '</span>' +
+              '<span>Cause</span><span>' + esc(error.rootCause) + '</span>' +
+              '<span>Source</span><span>' + esc(error.sourceComponent) + '/' + esc(error.sourceOperation) + '</span>' +
+              '<span>Failed</span><span>' + esc(error.failedStep) + '</span>' +
+              '<span>Signal</span><span>' + esc(error.observedSignal) + '</span>' +
+              '<span>Next</span><span>' + esc(error.nextAction) + '</span>' +
+              '<span>Correlation</span><span><code>' + esc(error.correlationId) + '</code></span>' +
+            '</div>' +
+          '</div>'
+        ).join('')
+      : '<div class="empty">No structured runtime errors are recorded.</div>';
 
     target.innerHTML =
-      '<div><code>' + esc(runId) + '</code></div>' +
-      errors.map(error =>
-        '<div class="error-card">' +
-          '<strong>[' + esc(error.code) + '] ' + esc(error.headline) + '</strong>' +
-          '<div class="error-grid">' +
-            '<span>Cause</span><span>' + esc(error.rootCause) + '</span>' +
-            '<span>Source</span><span>' + esc(error.sourceComponent) + '/' + esc(error.sourceOperation) + '</span>' +
-            '<span>Failed</span><span>' + esc(error.failedStep) + '</span>' +
-            '<span>Signal</span><span>' + esc(error.observedSignal) + '</span>' +
-            '<span>Next</span><span>' + esc(error.nextAction) + '</span>' +
-            '<span>Correlation</span><span><code>' + esc(error.correlationId) + '</code></span>' +
-          '</div>' +
-        '</div>'
-      ).join('');
+      context +
+      '<div class="run-section"><h3>Timeline</h3>' + timelineHtml + '</div>' +
+      '<div class="run-section"><h3>Model calls</h3>' + callsHtml + '</div>' +
+      '<div class="run-section"><h3>Evidence & artifacts</h3>' + evidenceHtml + '</div>' +
+      '<div class="run-section"><h3>Errors</h3>' + errorsHtml + '</div>';
   } catch (error) {
     target.innerHTML = '<div class="bad">' + esc(error.message) + '</div>';
   }
 }
-
 async function load() {
   try {
     const [home, runs] = await Promise.all([

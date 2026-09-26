@@ -71,6 +71,20 @@ export {
 
 export { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 
+export {
+  buildFhKuikaRunDetailV1,
+  fhKuikaRunDetailCanExposeRawPayload,
+  fhKuikaRunDetailCanGrantAuthority,
+  fhKuikaRunDetailCanInvokeModel,
+  fhKuikaRunDetailCanMutateRuntime,
+  type FhKuikaRunDetailReadSource,
+  type FhKuikaRunDetailV1,
+  type FhKuikaRunEvidenceV1,
+  type FhKuikaRunModelCallV1,
+  type FhKuikaRunTimelineItemV1,
+  type FhKuikaRunTimelineKind,
+} from './kuika-run-detail.js';
+
 export { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 
 export { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
