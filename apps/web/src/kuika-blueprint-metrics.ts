@@ -9,7 +9,7 @@ export interface FhKuikaBlueprintUsageEventV1 {
   readonly action: FhKuikaBlueprintUsageAction;
   readonly blueprintId?: string;
   readonly blueprintVersion?: string;
-  readonly outcome?: 'PASS' | 'BLOCKED' | 'HUMAN_REQUIRED' | 'UNKNOWN';
+  readonly outcome?: 'PASS' | 'FAIL' | 'BLOCKED' | 'HUMAN_REQUIRED' | 'UNKNOWN';
   readonly authority: 'NONE';
 }
 
@@ -35,6 +35,7 @@ export interface FhKuikaBlueprintUsageByBlueprintV1 {
   readonly draftsCreated: number;
   readonly simulations: number;
   readonly simulationPasses: number;
+  readonly simulationFailures: number;
   readonly simulationBlocks: number;
 }
 
@@ -46,6 +47,7 @@ export interface FhKuikaBlueprintUsageSummaryV1 {
   readonly draftsCreated: number;
   readonly simulations: number;
   readonly simulationPasses: number;
+  readonly simulationFailures: number;
   readonly simulationBlocks: number;
   readonly simulationHumanRequired: number;
   readonly byBlueprint: readonly FhKuikaBlueprintUsageByBlueprintV1[];
@@ -119,6 +121,7 @@ export function aggregateFhKuikaBlueprintUsageV1(
   let draftsCreated = 0;
   let simulations = 0;
   let simulationPasses = 0;
+  let simulationFailures = 0;
   let simulationBlocks = 0;
   let simulationHumanRequired = 0;
   const byBlueprint = new Map<
@@ -129,6 +132,7 @@ export function aggregateFhKuikaBlueprintUsageV1(
       draftsCreated: number;
       simulations: number;
       simulationPasses: number;
+      simulationFailures: number;
       simulationBlocks: number;
     }
   >();
@@ -148,6 +152,7 @@ export function aggregateFhKuikaBlueprintUsageV1(
       draftsCreated: 0,
       simulations: 0,
       simulationPasses: 0,
+      simulationFailures: 0,
       simulationBlocks: 0,
     };
 
@@ -170,6 +175,9 @@ export function aggregateFhKuikaBlueprintUsageV1(
         if (event.outcome === 'PASS') {
           simulationPasses += 1;
           current.simulationPasses += 1;
+        } else if (event.outcome === 'FAIL') {
+          simulationFailures += 1;
+          current.simulationFailures += 1;
         } else if (event.outcome === 'BLOCKED') {
           simulationBlocks += 1;
           current.simulationBlocks += 1;
@@ -190,6 +198,7 @@ export function aggregateFhKuikaBlueprintUsageV1(
     draftsCreated,
     simulations,
     simulationPasses,
+    simulationFailures,
     simulationBlocks,
     simulationHumanRequired,
     byBlueprint: [...byBlueprint.entries()]
