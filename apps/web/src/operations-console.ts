@@ -66,6 +66,9 @@ export interface OperationsConsoleSnapshotV1 {
   readonly generatedAt: string;
   readonly sourceState: 'CURRENT' | 'PARTIAL';
   readonly staleSources: readonly string[];
+  readonly v3Authority: CoreHomeSnapshotV1['authority']['v3Authority'];
+  readonly attention: CoreHomeSnapshotV1['attention'];
+  readonly recentRuns: CoreHomeSnapshotV1['recentRuns'];
   readonly errors: readonly OperationsConsoleErrorView[];
   readonly routing: readonly OperationsConsoleRoutingView[];
   readonly projectionAuthority: 'NONE';
@@ -117,6 +120,9 @@ export function buildOperationsConsoleSnapshot(
     generatedAt: home.generatedAt,
     sourceState: home.sourceFreshness.staleSources.length === 0 ? 'CURRENT' : 'PARTIAL',
     staleSources: [...home.sourceFreshness.staleSources].sort(),
+    v3Authority: home.authority.v3Authority,
+    attention: home.attention,
+    recentRuns: home.recentRuns,
     errors,
     routing,
     projectionAuthority: 'NONE',

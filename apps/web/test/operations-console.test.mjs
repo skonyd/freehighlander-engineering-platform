@@ -217,6 +217,10 @@ test('Operations Console projects safe errors, routing and matching usage determ
   assert.equal(snapshot.generatedAt, now);
   assert.equal(snapshot.sourceState, 'CURRENT');
   assert.equal(snapshot.projectionAuthority, 'NONE');
+  assert.equal(snapshot.v3Authority, 'SHADOW_ONLY');
+  assert.equal(snapshot.attention.total, 0);
+  assert.equal(snapshot.recentRuns.length, 2);
+  assert.equal(snapshot.recentRuns[0]?.runId, 'run-2');
 
   assert.equal(snapshot.errors.length, 1);
   assert.equal(snapshot.errors[0]?.runId, 'run-2');

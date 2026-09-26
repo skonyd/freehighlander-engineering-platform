@@ -12,6 +12,7 @@ import {
   type ExternalStatusProvider,
 } from './external-status.js';
 import { buildManagementSnapshot } from './management.js';
+import { buildOperationsConsoleSnapshot } from './operations-console.js';
 import { DashboardReadModel, MissingDashboardDatabaseError } from './read-model.js';
 
 export interface DashboardServerOptions {
@@ -160,6 +161,17 @@ async function handleRequest(
 
     if (url.pathname === '/api/models') {
       json(response, 200, { models: readModel.modelAggregates(readLimit(url, 100)) });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/operate') {
+      json(
+        response,
+        200,
+        buildOperationsConsoleSnapshot(readModel, {
+          recentRunLimit: readLimit(url, 20),
+        }),
+      );
       return;
     }
 
