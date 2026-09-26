@@ -788,7 +788,7 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
     const preferredBindingId = safeProjectionIdentifier(payload.bindingId);
     if (!logicalRole || !preferredBindingId) continue;
 
-    const preferredModel = safeProjectionIdentifier(payload.modelId);
+    const preferredModel = safeProjectionText(payload.modelId);
     const preferredProviderId = safeProjectionIdentifier(payload.providerId);
     const returnPolicy = safeReturnPolicy(payload.returnPolicy);
 
@@ -870,14 +870,18 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
       const activeBindingId = toStringOrNull(latestCall?.binding_id);
       const activeModel = toStringOrNull(latestCall?.model);
       const activeProviderId = toStringOrNull(latestCall?.provider);
-      const providerState =
-        providers.get(activeProviderId ?? publication.preferredProviderId ?? '') ?? null;
+      const preferredProviderState =
+        providers.get(publication.preferredProviderId ?? '') ?? null;
+      const activeProviderState = providers.get(activeProviderId ?? '') ?? null;
       const activeObserved = latestCall !== undefined;
       const fallbackActive =
         activeBindingId !== null && activeBindingId !== publication.preferredBindingId;
+      const relevantFailureState = fallbackActive ? preferredProviderState : activeProviderState;
       const unavailable =
-        providerState !== null &&
-        (providerState.available === false || providerState.circuitState === 'OPEN');
+        !fallbackActive &&
+        preferredProviderState !== null &&
+        (preferredProviderState.available === false ||
+          preferredProviderState.circuitState === 'OPEN');
 
       let state: CoreHomeRoleBindingHealthView['state'] = 'UNKNOWN';
       if (fallbackActive) state = 'FALLBACK_ACTIVE';
@@ -891,12 +895,13 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
         preferredModel: publication.preferredModel,
         activeBindingId,
         activeModel,
-        providerId:
-          providerState?.providerId ??
-          activeProviderId ??
-          publication.preferredProviderId,
-        ...(providerState?.failureKind ? { failureKind: providerState.failureKind } : {}),
-        ...(providerState?.nextCheckAt ? { nextCheckAt: providerState.nextCheckAt } : {}),
+        providerId: activeProviderId ?? publication.preferredProviderId,
+        ...(relevantFailureState?.failureKind
+          ? { failureKind: relevantFailureState.failureKind }
+          : {}),
+        ...(relevantFailureState?.nextCheckAt
+          ? { nextCheckAt: relevantFailureState.nextCheckAt }
+          : {}),
         ...(publication.returnPolicy ? { returnPolicy: publication.returnPolicy } : {}),
       };
     });
