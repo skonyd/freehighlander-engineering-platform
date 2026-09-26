@@ -78,7 +78,7 @@ Umbrella: #88.
 ## Optional FH-KUIKA productization module — implementation in progress
 - [~] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0; navigation shell + explainable operations read surface implemented
 - [~] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0; mode contract + read-only Workbench UI implemented
-- [~] FH-KUIKA-03 Engineering Blueprint Catalog — P0; schema, deterministic matcher, curated pack and catalog/detail UI implemented; workflow-draft/simulation + telemetry remain
+- [~] FH-KUIKA-03 Engineering Blueprint Catalog — P0; schema, deterministic matcher, curated pack, catalog/detail UI and workflow-draft/simulation implemented; telemetry remains
 - [ ] FH-KUIKA-04 Visual Workflow Studio — P0
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
 - [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
