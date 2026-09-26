@@ -95,9 +95,7 @@ export function normalizeFhKuikaMcpDiscoveryV1(
   };
 }
 
-export function buildFhKuikaMcpRegistryViewV1(
-  discoveries: readonly FhKuikaMcpServerDiscoveryV1[],
-) {
+export function buildFhKuikaMcpRegistryViewV1(discoveries: readonly FhKuikaMcpServerDiscoveryV1[]) {
   return buildFhKuikaConnectorRegistryViewV1(
     discoveries.map((discovery) => normalizeFhKuikaMcpDiscoveryV1(discovery).connector),
   );
