@@ -197,8 +197,7 @@ function requireIdentifier(value: string, field: string): string {
 function requireSingleLine(value: string, field: string): string {
   const normalized = value.trim();
   if (!normalized) throw new Error(field + ' is required');
-  if (/[
-	]/.test(normalized) || normalized.length > 500) {
+  if (/[\r\n\t]/.test(normalized) || normalized.length > 500) {
     throw new Error(field + ' must be a bounded single-line value');
   }
   return normalized;
