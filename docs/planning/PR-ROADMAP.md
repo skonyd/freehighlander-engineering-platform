@@ -30,13 +30,13 @@ V3 authority = SHADOW_ONLY
 - **FH-02** Telemetry event schema + emitter — complete
 - **FH-03** SQLite telemetry/state index — complete
 - **FH-04** Read-only dashboard — complete
-- **FH-04B** Zero-Token Core Home Dashboard — core .1–.8 complete; optional .9 deferred; read-only and independent of FH-20
+- **FH-04B** Zero-Token Core Home Dashboard — .1–.9 complete; read-only and independent of FH-20
 
 ## Core Home extension
 
 Detailed implementation plan: [FH-04B-ZERO-TOKEN-CORE-HOME.md](FH-04B-ZERO-TOKEN-CORE-HOME.md).
 
-FH-04B turns the existing telemetry-first FH-04 surface into the default Core Home without introducing any model call on render/refresh. Core slices .1–.8 are complete.
+FH-04B turns the existing telemetry-first FH-04 surface into the default Core Home without introducing any model call on render/refresh. Slices .1–.9 are complete.
 
 Recommended slices:
 

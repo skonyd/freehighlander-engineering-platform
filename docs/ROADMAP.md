@@ -9,7 +9,7 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 0 | Creator Marketplace reference acceptance | **COMPLETE** — #207 merged, #209 hardening merged, final accepted SHA recorded |
 | 1 | FreeHighlander automation bootstrap | **COMPLETE** — FH-01A + FH-01B1 + FH-01B2 complete |
 | 2 | V2.5 telemetry foundation | **COMPLETE** |
-| 3 | SQLite + read-only dashboard | **COMPLETE; FH-04B Core Home .1–.8 COMPLETE** |
+| 3 | SQLite + read-only dashboard | **COMPLETE; FH-04B Core Home .1–.9 COMPLETE** |
 | 4 | Qwen shadow benchmark/offloading | **COMPLETE foundation** |
 | 5 | Token/context/provider optimization | **COMPLETE foundation** |
 | 6 | V3 architecture freeze | **COMPLETE** |
@@ -73,7 +73,7 @@ SQLite + deterministic read models
 NO LLM / NO ProviderAdapter / NO model quota
 ~~~
 
-Delivered core capabilities include current work, attention, approvals, structured errors, provider/quota/failover state, time-window token/cost usage, continuity/checkpoint status, findings, freshness semantics and progressive-disclosure UX. Optional deterministic GitHub/CI enrichment remains a deferred P1 add-on.
+Delivered capabilities include current work, attention, approvals, structured errors, provider/quota/failover state, time-window token/cost usage, continuity/checkpoint status, findings, freshness semantics, progressive-disclosure UX and optional disabled-by-default deterministic GitHub PR/CI enrichment.
 
 Detailed plan: [FH-04B Zero-Token Core Home](planning/FH-04B-ZERO-TOKEN-CORE-HOME.md).
 

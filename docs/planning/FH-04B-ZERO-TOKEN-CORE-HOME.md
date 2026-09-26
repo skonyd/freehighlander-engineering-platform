@@ -1,6 +1,6 @@
 # FH-04B — Zero-Token Core Home Dashboard
 
-**Status:** CORE IMPLEMENTATION COMPLETE (.1–.8); OPTIONAL .9 DEFERRED  
+**Status:** IMPLEMENTATION COMPLETE (.1–.9)  
 **Parent:** FH-04 Read-only metrics dashboard  
 **Surface:** FreeHighlander Core Home  
 **Module relationship:** independent of FH-KUIKA  
@@ -869,7 +869,7 @@ FH-04B.9 Optional external status          DEFERRED / P1
 
 FH-04B.1–FH-04B.8 are Core roadmap work.
 
-FH-04B.9 is optional and may ship later.
+FH-04B.9 is complete as an optional, disabled-by-default deterministic GitHub status enrichment.
 
 ---
 
@@ -953,3 +953,36 @@ The Core Home Dashboard is an observer first.
 Its job is to make FreeHighlander understandable before the user spends another token.
 
 If a future feature needs an LLM call, it must be an explicit user action outside the automatic Home refresh path and must clearly indicate that it will consume model resources.
+
+
+## FH-04B.9 implementation note
+
+Optional GitHub PR/CI enrichment is implemented without changing the zero-token invariant.
+
+Default behavior:
+
+~~~text
+FREEHIGHLANDER_GITHUB_STATUS unset/0
+        ↓
+no GitHub request
+        ↓
+Core Home remains fully local
+~~~
+
+Optional enablement:
+
+~~~text
+FREEHIGHLANDER_GITHUB_STATUS=1
+GITHUB_TOKEN=<optional credential>
+~~~
+
+Safeguards:
+
+- deterministic GitHub REST only; no model call;
+- disabled by default;
+- bounded request timeout and short-lived cache;
+- failed refresh cannot block Core Home;
+- cached values are explicitly marked stale;
+- credentials are never returned in dashboard payloads;
+- external status has `authority: NONE`;
+- PR links are restricted to `https://github.com`.
