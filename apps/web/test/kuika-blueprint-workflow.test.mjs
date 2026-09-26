@@ -69,6 +69,22 @@ test('blueprint workflow simulation passes standard fixture only with required e
   assert.equal(blocked.observedTerminalState, 'BLOCKED');
   assert.equal(blocked.passed, true);
   assert.ok(blocked.checks.some((check) => check.id === 'required-evidence' && !check.passed));
+
+  const failBlueprint = {
+    ...blueprint,
+    simulationFixtures: [
+      ...blueprint.simulationFixtures,
+      {
+        id: 'deterministic-fail',
+        description: 'Ready workflow reaches expected semantic failure terminal state.',
+        expectedTerminalState: 'FAIL',
+      },
+    ],
+  };
+  const fail = simulateFhKuikaBlueprintDraftV1(ready, 'deterministic-fail', failBlueprint);
+  assert.equal(fail.expectedTerminalState, 'FAIL');
+  assert.equal(fail.observedTerminalState, 'FAIL');
+  assert.equal(fail.passed, true);
 });
 
 test('workflow draft and simulation fail closed on revision, fixture and blueprint mismatch', () => {
