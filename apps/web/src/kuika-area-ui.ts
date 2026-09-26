@@ -55,6 +55,7 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
         title: 'Models & Routing',
         detail: 'Inspect role bindings, fallback state and routing constraints.',
         status: 'AVAILABLE',
+        href: '/modules/fh-kuika/integrate/routing',
       },
       {
         title: 'Routines',
