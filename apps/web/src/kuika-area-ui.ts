@@ -59,7 +59,8 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
       {
         title: 'Routines',
         detail: 'Event and schedule trigger definitions with authority-aware activation.',
-        status: 'PREPARATION',
+        status: 'AVAILABLE',
+        href: '/modules/fh-kuika/integrate/routines',
       },
     ],
   },
