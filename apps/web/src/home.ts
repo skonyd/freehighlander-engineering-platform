@@ -87,6 +87,7 @@ export interface CoreHomeSystemHealthView {
 }
 
 export interface CoreHomeCurrentWorkView {
+  readonly classificationVersion: 1;
   readonly runId: string;
   readonly workItemId: string | null;
   readonly workflowId: string | null;
