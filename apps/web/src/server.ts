@@ -3,6 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
+import {
+  renderFhKuikaBlueprintCatalogHtml,
+  renderFhKuikaBlueprintDetailHtml,
+} from './kuika-blueprint-ui.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
@@ -105,6 +109,22 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika/build') {
       html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('BUILD'));
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/build/blueprints') {
+      html(response, method === 'HEAD' ? '' : renderFhKuikaBlueprintCatalogHtml());
+      return;
+    }
+
+    const blueprintMatch = /^\/modules\/fh-kuika\/build\/blueprints\/([^/]+)$/.exec(url.pathname);
+    if (blueprintMatch?.[1]) {
+      const blueprintHtml = renderFhKuikaBlueprintDetailHtml(decodeURIComponent(blueprintMatch[1]));
+      if (!blueprintHtml) {
+        htmlNotFound(response, method === 'HEAD' ? '' : 'Blueprint not found');
+        return;
+      }
+      html(response, method === 'HEAD' ? '' : blueprintHtml);
       return;
     }
 
@@ -256,6 +276,16 @@ function json(response: ServerResponse, status: number, value: unknown): void {
   const body = JSON.stringify(value);
   response.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    'content-length': Buffer.byteLength(body),
+    'x-freehighlander-mode': 'read-only',
+  });
+  response.end(body);
+}
+
+function htmlNotFound(response: ServerResponse, body: string): void {
+  response.writeHead(404, {
+    'content-type': 'text/plain; charset=utf-8',
     'cache-control': 'no-store',
     'content-length': Buffer.byteLength(body),
     'x-freehighlander-mode': 'read-only',
