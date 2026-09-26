@@ -34,6 +34,9 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
     .inspector-row:first-child{border-top:0}
     .inspector-row span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
     .inspector-row strong,.inspector-row code{display:block;margin-top:3px;overflow-wrap:anywhere}
+    .detail-grid{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 10px;margin-top:10px}
+    .detail-grid>span:nth-child(odd){color:var(--muted)}
+    .detail-grid code{overflow-wrap:anywhere}
     .boundary{margin-top:14px;color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:10px}
     .validation-list{display:grid;gap:8px;margin-top:8px}
     .validation-issue{display:block;width:100%;text-align:left;background:#0d131b;border:1px solid var(--line);border-radius:8px;padding:9px;color:var(--text)}
