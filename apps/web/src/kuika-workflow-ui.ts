@@ -77,6 +77,7 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
           <button type="button" id="validate">Validate</button>
           <button type="button" id="simulate">Simulate</button>
           <button type="button" id="review-diff">Review diff</button>
+          <button type="button" id="prepare-publication">Prepare publication</button>
           <button type="button" id="reset">Reset</button>
           <span class="pill">AUTHORITY NONE</span>
         </div>
@@ -132,12 +133,20 @@ async function inspectDraft(mode){
   const labels={
     validate:'Validating canonical draft…',
     simulate:'Simulating deterministic draft…',
-    diff:'Building non-authoritative version diff…'
+    diff:'Building non-authoritative version diff…',
+    publication:'Preparing non-authoritative publication candidate…'
   };
   output.textContent=labels[mode];
   try{
     const definition=encodeURIComponent(JSON.stringify(buildDefinition()));
-    const suffix=mode==='simulate'?'simulate':mode==='diff'?'diff':'validate';
+    const suffix=
+      mode==='simulate'
+        ?'simulate'
+        :mode==='diff'
+          ?'diff'
+          :mode==='publication'
+            ?'publication-candidate'
+            :'validate';
     const result=await api('/api/modules/fh-kuika/workflows/'+suffix+'?definition='+definition);
     if(mode==='validate'){
       renderValidation(result);
@@ -147,10 +156,31 @@ async function inspectDraft(mode){
       renderSimulation(result);
       return;
     }
+    if(mode==='publication'){
+      renderPublicationCandidate(result);
+      return;
+    }
     output.textContent=JSON.stringify(result,null,2);
   }catch(error){
     output.textContent='Inspection failed: '+error.message;
   }
+}
+
+function renderPublicationCandidate(candidate){
+  const output=document.querySelector('#validation-output');
+  output.innerHTML=
+    '<strong>Publication candidate · '+esc(candidate.status)+'</strong>'+
+    '<div class="detail-grid">'+
+      '<span>Workflow hash</span><code>'+esc(candidate.workflowHash)+'</code>'+
+      '<span>Validation</span><strong>'+esc(candidate.validation.valid)+'</strong>'+
+      '<span>Simulation ready</span><strong>'+esc(candidate.simulationReady)+'</strong>'+
+      '<span>Authority-sensitive diff</span><strong>'+
+        esc(candidate.versionDiff.authoritySensitiveChange)+'</strong>'+
+      '<span>Publish authorized</span><strong>'+esc(candidate.publicationAuthorized)+'</strong>'+
+      '<span>Execute authorized</span><strong>'+esc(candidate.executionAuthorized)+'</strong>'+
+      '<span>Authority</span><strong>'+esc(candidate.authority)+'</strong>'+
+    '</div>'+
+    '<div class="issue-meta">Actual publish remains owned by Core governance and is unavailable from this module surface.</div>';
 }
 
 function renderSimulation(result){
@@ -292,6 +322,10 @@ document.querySelectorAll('[data-kind]').forEach(button=>
 document.querySelector('#validate').addEventListener('click',()=>void inspectDraft('validate'));
 document.querySelector('#simulate').addEventListener('click',()=>void inspectDraft('simulate'));
 document.querySelector('#review-diff').addEventListener('click',()=>void inspectDraft('diff'));
+document.querySelector('#prepare-publication').addEventListener(
+  'click',
+  ()=>void inspectDraft('publication')
+);
 document.querySelector('#replay-run').addEventListener('click',()=>void loadReplayPreview());
 document.querySelector('#reset').addEventListener('click',()=>{
   nodes=[];
