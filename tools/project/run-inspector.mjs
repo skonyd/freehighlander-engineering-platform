@@ -4,7 +4,11 @@ import path from 'node:path';
 import process from 'node:process';
 
 import { findRepoRoot } from './lib/state.mjs';
-import { buildRunInspectorReport, loadRunEvents } from './lib/run-inspector.mjs';
+import {
+  buildRunInspectorReport,
+  loadRunEvents,
+  projectRunInspectorReportToOtel,
+} from './lib/run-inspector.mjs';
 
 try {
   const root = await findRepoRoot();
@@ -18,7 +22,13 @@ try {
   const events = loadRunEvents(databasePath, runId, limit);
   if (events.length === 0) throw new Error(`run not found: ${runId}`);
 
-  process.stdout.write(JSON.stringify(buildRunInspectorReport(events), null, 2) + '\n');
+  const report = buildRunInspectorReport(events);
+  const format = options.format ?? 'report';
+  if (format !== 'report' && format !== 'otel') {
+    throw new Error('--format must be report or otel');
+  }
+  const output = format === 'otel' ? projectRunInspectorReportToOtel(report) : report;
+  process.stdout.write(JSON.stringify(output, null, 2) + '\n');
 } catch (error) {
   process.stderr.write(
     JSON.stringify(
