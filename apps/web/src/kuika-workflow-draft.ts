@@ -287,7 +287,9 @@ function hasCycle(
 function classifyValidationError(message: string): FhKuikaWorkflowValidationIssueV1 {
   const nodeMatch = /(?:workflow node|LOOP node) ([A-Za-z0-9._-]+)/.exec(message);
   const edgeMatch = /(?:duplicate workflow edge: )([A-Za-z0-9._-]+->[A-Za-z0-9._-]+)/.exec(message);
-  const edgeEndpointMatch = /unknown workflow edge (?:source|target): ([A-Za-z0-9._-]+)/.exec(message);
+  const edgeEndpointMatch = /unknown workflow edge (?:source|target): ([A-Za-z0-9._-]+)/.exec(
+    message,
+  );
 
   let category: FhKuikaWorkflowValidationCategory = 'SCHEMA';
   if (/edge|acyclic|cycle|duplicate workflow node/.test(message)) category = 'GRAPH';
