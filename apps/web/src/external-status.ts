@@ -57,7 +57,7 @@ interface CacheEntry {
 
 export class GithubExternalStatusProvider implements ExternalStatusProvider {
   readonly #enabled: boolean;
-  readonly #token: string | undefined;
+  readonly #token?: string;
   readonly #apiBase: string;
   readonly #timeoutMs: number;
   readonly #cacheTtlMs: number;
@@ -67,7 +67,8 @@ export class GithubExternalStatusProvider implements ExternalStatusProvider {
 
   constructor(options: GithubExternalStatusProviderOptions = {}) {
     this.#enabled = options.enabled ?? false;
-    this.#token = normalizeOptionalText(options.token);
+    const token = normalizeOptionalText(options.token);
+    if (token !== undefined) this.#token = token;
     this.#apiBase = (options.apiBase ?? 'https://api.github.com').replace(/\/+$/, '');
     this.#timeoutMs = positiveInteger(options.timeoutMs ?? 1_500, 'timeoutMs');
     this.#cacheTtlMs = positiveInteger(options.cacheTtlMs ?? 60_000, 'cacheTtlMs');
