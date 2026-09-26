@@ -342,7 +342,7 @@ function role(
 
 function finalizeRole(input: ReturnType<typeof role>): FhKuikaRolePackageManifestV1 {
   const identity = {
-    schemaVersion: 1,
+    schemaVersion: 1 as const,
     ...input,
     provenance: {
       source: 'BUILT_IN_CATALOG' as const,
