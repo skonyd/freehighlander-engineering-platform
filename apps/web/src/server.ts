@@ -187,11 +187,7 @@ async function handleRequest(
     }
 
     if (url.pathname === '/api/modules/fh-kuika/blueprints') {
-      json(
-        response,
-        200,
-        buildFhKuikaBlueprintCatalogViewV1(getFhKuikaCuratedBlueprintsV1()),
-      );
+      json(response, 200, buildFhKuikaBlueprintCatalogViewV1(getFhKuikaCuratedBlueprintsV1()));
       return;
     }
 
@@ -289,9 +285,7 @@ async function handleRequest(
   }
 }
 
-function parseFhKuikaBlueprintRoute(
-  pathname: string,
-): { readonly blueprintId: string } | null {
+function parseFhKuikaBlueprintRoute(pathname: string): { readonly blueprintId: string } | null {
   const match = /^\/api\/modules\/fh-kuika\/blueprints\/([^/]+)$/.exec(pathname);
   if (!match?.[1]) return null;
   return { blueprintId: decodeURIComponent(match[1]) };
