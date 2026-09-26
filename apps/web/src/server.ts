@@ -225,6 +225,24 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/api/modules/fh-kuika/workflows/validate') {
+      const definition = readWorkflowDefinition(url);
+      json(response, 200, validateFhKuikaWorkflowDraftDefinitionV1(definition));
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/workflows/simulate') {
+      const definition = readWorkflowDefinition(url);
+      json(response, 200, simulateFhKuikaWorkflowDraftV1(definition));
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/workflows/diff') {
+      const definition = readWorkflowDefinition(url);
+      json(response, 200, buildFhKuikaWorkflowVersionDiffV1(null, definition));
+      return;
+    }
+
     if (url.pathname === '/api/modules/fh-kuika/workbench') {
       const rawMode = (url.searchParams.get('mode') ?? 'ASK').toUpperCase();
       if (!['ASK', 'PLAN', 'EXECUTE', 'REVIEW'].includes(rawMode)) {
@@ -319,6 +337,19 @@ async function handleRequest(
     const message = error instanceof Error ? error.message : 'unknown error';
     json(response, 500, { error: 'dashboard_error', message });
   }
+}
+
+function readWorkflowDefinition(url: URL) {
+  const raw = url.searchParams.get('definition');
+  if (!raw) throw new Error('workflow definition query parameter is required');
+  if (raw.length > 100_000) throw new Error('workflow definition query parameter is too large');
+
+  const parsed = JSON.parse(raw) as unknown;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('workflow definition must be an object');
+  }
+
+  return parsed as Parameters<typeof validateFhKuikaWorkflowDraftDefinitionV1>[0];
 }
 
 function parseFhKuikaBlueprintRoute(pathname: string): {
