@@ -35,6 +35,8 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
     .status { margin-top: 6px; }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
     .card { background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-height: 118px; }
+    a.card { display: block; color: var(--text); text-decoration: none; }
+    a.card:hover, a.card:focus-visible { border-color: #52677d; text-decoration: none; outline: none; }
     .card p { margin: 0; color: var(--muted); }
     .overview { margin-top: 18px; display: grid; grid-template-columns: 1.4fr .6fr; gap: 14px; }
     .metric { display: flex; justify-content: space-between; gap: 14px; padding: 7px 0; border-top: 1px solid var(--line); }
@@ -86,7 +88,7 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
       <div class="card"><h2>Build</h2><p>Blueprints, Workflow Studio, roles and solution packs.</p></div>
       <div class="card"><h2>Integrate</h2><p>Connector Hub, model routing and routines.</p></div>
       <div class="card"><h2>Knowledge</h2><p>Engineering graph, evidence and deterministic search surfaces.</p></div>
-      <div class="card"><h2>Operate</h2><p>Operations, approvals, errors, routing and audit views.</p></div>
+      <a class="card" href="/modules/fh-kuika/operate"><h2>Operate</h2><p>Operations, approvals, errors, routing and audit views.</p></a>
       <div class="card"><h2>Module boundary</h2><p>Disable this module and Core runtime remains valid and usable.</p></div>
     </section>
 
