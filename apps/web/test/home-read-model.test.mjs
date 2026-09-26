@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-  buildCoreHomeSnapshot,
-  dashboardRefreshCanInvokeModel,
-} from '../dist/index.js';
+import { buildCoreHomeSnapshot, dashboardRefreshCanInvokeModel } from '../dist/index.js';
 
 const run = {
   runId: 'run-2',
