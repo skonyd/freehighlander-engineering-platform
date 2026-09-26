@@ -40,6 +40,11 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
     .validation-issue:hover,.validation-issue:focus-visible{border-color:var(--accent);outline:2px solid transparent}
     .validation-issue .issue-meta{display:block;color:var(--muted);font-size:11px;margin-top:3px}
     .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .replay-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+    .replay-controls input{min-width:220px;flex:1;background:#090d12;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 9px}
+    .replay-controls input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .preview-steps{display:grid;gap:6px;margin-top:8px}
+    .preview-step{border-left:2px solid var(--line);padding:4px 0 4px 9px}
     .empty{color:var(--muted);padding:50px 10px;text-align:center}
     @media(max-width:980px){.layout{grid-template-columns:1fr}.palette{grid-template-columns:repeat(5,minmax(0,1fr))}}
     @media(max-width:650px){.palette{grid-template-columns:repeat(2,minmax(0,1fr))}header{flex-direction:column}}
@@ -79,8 +84,16 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
       <div id="nodes" class="node-list"><div class="empty">Choose a node type from the palette.</div></div>
       <div>
         <h2>Validation / Simulation</h2>
-        <pre id="validation-output" class="boundary">No validation performed yet.</pre>
+        <div id="validation-output" class="boundary">No validation performed yet.</div>
       </div>
+      <details class="boundary">
+        <summary>Recorded replay preview</summary>
+        <div class="replay-controls">
+          <input id="replay-run-id" type="text" aria-label="Recorded run ID" placeholder="run ID" />
+          <button type="button" id="replay-run">Preview recorded run</button>
+        </div>
+        <div id="replay-output" class="muted">No replay preview loaded.</div>
+      </details>
     </section>
 
     <aside class="card">
@@ -130,9 +143,54 @@ async function inspectDraft(mode){
       renderValidation(result);
       return;
     }
+    if(mode==='simulate'){
+      renderSimulation(result);
+      return;
+    }
     output.textContent=JSON.stringify(result,null,2);
   }catch(error){
     output.textContent='Inspection failed: '+error.message;
+  }
+}
+
+function renderSimulation(result){
+  const output=document.querySelector('#validation-output');
+  if(!result.valid){
+    renderValidation(result.validation);
+    return;
+  }
+  output.innerHTML=
+    '<strong>Simulation preview · '+esc(result.terminalState)+'</strong>'+
+    '<div class="issue-meta">Execution authorized: '+esc(result.executionAuthorized)+'</div>'+
+    '<div class="preview-steps">'+(result.orderedSteps||[]).map(step=>
+      '<div class="preview-step"><strong>'+esc(step.index)+'. '+esc(step.nodeId)+'</strong> · '+
+        esc(step.kind)+(step.role?' · '+esc(step.role):'')+
+        '<div class="issue-meta">runtime effect '+esc(step.runtimeEffect)+'</div></div>'
+    ).join('')+'</div>';
+}
+
+async function loadReplayPreview(){
+  const runId=document.querySelector('#replay-run-id').value.trim();
+  const target=document.querySelector('#replay-output');
+  if(!runId){target.textContent='Run ID is required.';return;}
+  target.textContent='Loading recorded replay preview…';
+  try{
+    const preview=await api(
+      '/api/modules/fh-kuika/workflows/replay?runId='+encodeURIComponent(runId)
+    );
+    target.innerHTML=
+      '<div><strong>'+esc(preview.workflowId||'workflow unknown')+'</strong> · <code>'+esc(preview.runId)+'</code></div>'+
+      '<div class="issue-meta">Recorded events only · replay performed '+esc(preview.replayPerformed)+
+        ' · authority '+esc(preview.authority)+'</div>'+
+      '<div class="preview-steps">'+(preview.recordedSteps||[]).map(step=>
+        '<div class="preview-step"><strong>'+esc(step.index)+'. '+esc(step.eventType)+'</strong>'+
+          '<div class="issue-meta">'+esc(step.timestamp)+
+            (step.nodeId?' · node '+esc(step.nodeId):'')+
+            (step.status?' · '+esc(step.status):'')+
+          '</div></div>'
+      ).join('')+'</div>';
+  }catch(error){
+    target.textContent='Replay preview unavailable: '+error.message;
   }
 }
 
@@ -234,6 +292,7 @@ document.querySelectorAll('[data-kind]').forEach(button=>
 document.querySelector('#validate').addEventListener('click',()=>void inspectDraft('validate'));
 document.querySelector('#simulate').addEventListener('click',()=>void inspectDraft('simulate'));
 document.querySelector('#review-diff').addEventListener('click',()=>void inspectDraft('diff'));
+document.querySelector('#replay-run').addEventListener('click',()=>void loadReplayPreview());
 document.querySelector('#reset').addEventListener('click',()=>{
   nodes=[];
   selectedId=null;

@@ -1,4 +1,14 @@
 export {
+  buildFhKuikaWorkflowReplayPreviewV1,
+  workflowReplayPreviewCanExecute,
+  workflowReplayPreviewCanGrantAuthority,
+  workflowReplayPreviewCanInvokeModel,
+  type FhKuikaWorkflowReplayPreviewV1,
+  type FhKuikaWorkflowReplayReadSource,
+  type FhKuikaWorkflowReplayStepV1,
+} from './kuika-workflow-replay.js';
+
+export {
   buildFhKuikaWorkflowSimulationPreviewV1,
   buildFhKuikaWorkflowValidationViewV1,
   createFhKuikaWorkflowNodeInspectorV1,
