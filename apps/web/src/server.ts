@@ -256,11 +256,7 @@ async function handleRequest(
 
     if (url.pathname === '/api/modules/fh-kuika/workflows/replay') {
       const runId = url.searchParams.get('runId') ?? '';
-      const preview = buildFhKuikaWorkflowReplayPreviewV1(
-        readModel,
-        runId,
-        readLimit(url, 5_000),
-      );
+      const preview = buildFhKuikaWorkflowReplayPreviewV1(readModel, runId, readLimit(url, 5_000));
       if (!preview) {
         json(response, 404, { error: 'run_not_found', runId });
         return;
