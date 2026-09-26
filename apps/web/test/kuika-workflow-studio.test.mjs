@@ -121,7 +121,6 @@ test('Workflow Studio HTTP route and canonical validation endpoints remain read-
   }
 });
 
-
 test('Workflow Studio version diff highlights authority-sensitive changes without publish authority', () => {
   const diff = buildFhKuikaWorkflowVersionDiffV1(null, definition());
 
