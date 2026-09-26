@@ -38,6 +38,9 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       font-weight: 700;
     }
     .muted { color: var(--muted); }
+    .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .module-link { color: var(--accent); text-decoration: none; font-size: 12px; }
+    .module-link:hover, .module-link:focus-visible { text-decoration: underline; }
     .readonly {
       border: 1px solid #225773;
       background: #102838;
@@ -248,7 +251,10 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       <div id="health" class="muted" role="status" aria-live="polite">Connecting to local read model…</div>
       <div id="freshness" class="freshness" aria-live="polite"></div>
     </div>
-    <div class="readonly">READ ONLY · ZERO-TOKEN HOME</div>
+    <div class="header-actions">
+      <a class="module-link" href="/modules/fh-kuika">Modules · FH-KUIKA</a>
+      <div class="readonly">READ ONLY · ZERO-TOKEN HOME</div>
+    </div>
   </header>
   <main>
     <section id="home-metrics" class="grid home-metrics"></section>
