@@ -57,7 +57,7 @@ interface CacheEntry {
 
 export class GithubExternalStatusProvider implements ExternalStatusProvider {
   readonly #enabled: boolean;
-  readonly #token?: string;
+  readonly #token: string | undefined;
   readonly #apiBase: string;
   readonly #timeoutMs: number;
   readonly #cacheTtlMs: number;
