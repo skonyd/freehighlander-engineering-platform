@@ -79,7 +79,7 @@ Umbrella: #88.
 - [ ] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0
 - [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0
 - [ ] FH-KUIKA-03 Engineering Blueprint Catalog — P0
-- [ ] FH-KUIKA-04 Visual Workflow Studio — P0
+- [ ] FH-KUIKA-04 Visual Workflow Studio — P0 — .1–.5 pre-cutover preparation complete; .6 publish/version-diff lifecycle open
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
 - [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
 - [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1
