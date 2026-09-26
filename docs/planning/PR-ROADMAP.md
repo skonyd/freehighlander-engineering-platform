@@ -120,9 +120,9 @@ Canonical detailed plan: [FH-KUIKA module roadmap](../modules/kuika-inspired-pro
 
 | Work item | Product capability | Priority | Pre-cutover scope | Activation dependency |
 | --- | --- | --- | --- | --- |
-| **FH-KUIKA-01** | Studio shell + Explainable Operations Console | P0 | read-only/read-model/control-intent UX | none for read-only surfaces |
+| **FH-KUIKA-01** | Studio shell + Explainable Operations Console | P0 | **COMPLETE read-only surface** | none for read-only surfaces |
 | **FH-KUIKA-02** | ASK / PLAN / EXECUTE / REVIEW Workbench | P0 | ASK/PLAN/REVIEW preparation | EXECUTE obeys authority/cutover |
-| **FH-KUIKA-03** | Engineering Blueprint Catalog | P0 | schema/catalog/validate/simulate | execution via normal workflow authority |
+| **FH-KUIKA-03** | Engineering Blueprint Catalog | P0 | **COMPLETE through draft preparation/simulation** | execution via normal workflow authority |
 | **FH-KUIKA-04** | Visual Workflow Studio | P0 | draft/validate/simulate | publish/execute obeys governance |
 | **FH-KUIKA-05** | Connector Hub / MCP Tool Manager | P0 | discovery/config/permission review | write-capable invocation obeys authority |
 | **FH-KUIKA-06** | Role Marketplace + Engineering Solution Packs | P1 | package/catalog/install planning | role authority remains policy-bounded |
