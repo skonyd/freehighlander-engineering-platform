@@ -7,7 +7,9 @@ import {
   type CoreHomeAttentionSummaryView,
   type CoreHomeCurrentWorkView,
   type CoreHomeRecentRunView,
+  type CoreHomeRoleBindingHealthView,
   type CoreHomeSnapshotV1,
+  type CoreHomeSystemState,
   type CoreHomeUsageWindowKind,
   type CoreHomeUsageWindowView,
   type CoreHomeWorkState,
@@ -227,13 +229,19 @@ export class DashboardReadModel {
       const sqliteUpdatedAt = queryLatestTelemetryTimestamp(db) ?? generatedAt;
       const currentWork = queryCurrentWork(db);
       const approvalAttention = queryHumanApprovalAttention(db);
+      const providerProjection = queryProviderBindingProjection(db);
+      const staleSources = ['continuity', 'findings', 'runtime-attention'];
+      if (providerProjection.updatedAt === null) staleSources.push('provider-state');
 
       return createCoreHomeSnapshotV1({
         generatedAt,
         sourceFreshness: {
           generatedAt,
           sqliteUpdatedAt,
-          staleSources: ['continuity', 'findings', 'provider-state', 'runtime-attention'],
+          ...(providerProjection.updatedAt === null
+            ? {}
+            : { providerStateUpdatedAt: providerProjection.updatedAt }),
+          staleSources,
         },
         project: {
           repository: latestRun?.repository ?? null,
@@ -245,16 +253,16 @@ export class DashboardReadModel {
           v3Authority: 'SHADOW_ONLY',
         },
         system: {
-          state: 'UNKNOWN',
+          state: providerProjection.state === 'DEGRADED' ? 'DEGRADED' : 'UNKNOWN',
           database: 'HEALTHY',
-          providers: 'UNKNOWN',
+          providers: providerProjection.state,
           continuity: 'UNKNOWN',
           criticalErrorCount: 0,
         },
         currentWork,
         attention: approvalAttention,
         usage,
-        roleBindings: [],
+        roleBindings: providerProjection.roleBindings,
         recentRuns: runs.map(mapRecentRun),
         continuity: {
           state: 'UNKNOWN',
@@ -732,6 +740,257 @@ function safeProjectionIdentifier(value: unknown): string | null {
   const normalized = value.trim();
   if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/.test(normalized)) return null;
   return normalized;
+}
+
+
+interface ProviderProjection {
+  readonly state: CoreHomeSystemState;
+  readonly updatedAt: string | null;
+  readonly roleBindings: readonly CoreHomeRoleBindingHealthView[];
+}
+
+interface PublishedBindingView {
+  readonly logicalRole: string;
+  readonly timestamp: string;
+  readonly preferredBindingId: string;
+  readonly preferredModel: string | null;
+  readonly preferredProviderId: string | null;
+  readonly returnPolicy?: CoreHomeRoleBindingHealthView['returnPolicy'];
+}
+
+interface ProviderStateView {
+  readonly providerId: string;
+  readonly timestamp: string;
+  readonly available: boolean | null;
+  readonly circuitState: 'CLOSED' | 'OPEN' | 'HALF_OPEN' | null;
+  readonly failureKind: string | null;
+  readonly nextCheckAt: string | null;
+}
+
+function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
+  const bindingRows = db
+    .prepare(
+      `SELECT timestamp, event_json
+       FROM events
+       WHERE type = 'model.binding.changed'
+       ORDER BY timestamp ASC, id ASC
+       LIMIT 5000`,
+    )
+    .all() as SqlRow[];
+
+  const publications = new Map<string, PublishedBindingView>();
+  for (const row of bindingRows) {
+    const event = parseEventRecord(row.event_json ?? null);
+    const payload = asRecord(event?.payload);
+    if (payload?.action !== 'BINDING_CHANGE') continue;
+
+    const logicalRole = safeProjectionIdentifier(payload.logicalRole);
+    const preferredBindingId = safeProjectionIdentifier(payload.bindingId);
+    if (!logicalRole || !preferredBindingId) continue;
+
+    const preferredModel = safeProjectionIdentifier(payload.modelId);
+    const preferredProviderId = safeProjectionIdentifier(payload.providerId);
+    const returnPolicy = safeReturnPolicy(payload.returnPolicy);
+
+    publications.set(logicalRole, {
+      logicalRole,
+      timestamp: String(row.timestamp),
+      preferredBindingId,
+      preferredModel,
+      preferredProviderId,
+      ...(returnPolicy === null ? {} : { returnPolicy }),
+    });
+  }
+
+  const providerRows = db
+    .prepare(
+      `SELECT timestamp, event_json
+       FROM events
+       WHERE type IN (
+         'provider.health.checked',
+         'provider.unavailable',
+         'provider.circuit.opened',
+         'provider.circuit.half_opened',
+         'provider.circuit.closed',
+         'quota.exhausted'
+       )
+       ORDER BY timestamp ASC, id ASC
+       LIMIT 5000`,
+    )
+    .all() as SqlRow[];
+
+  const providers = new Map<string, ProviderStateView>();
+  let providerUpdatedAt: string | null = null;
+  for (const row of providerRows) {
+    const event = parseEventRecord(row.event_json ?? null);
+    const provider = asRecord(event?.provider);
+    const providerId = safeProjectionIdentifier(provider?.id);
+    if (!providerId) continue;
+
+    const timestamp = String(row.timestamp);
+    const available = typeof provider?.available === 'boolean' ? provider.available : null;
+    const circuitState = safeCircuitState(provider?.circuitState);
+    const failureKind = safeProjectionIdentifier(provider?.failureKind);
+    const nextCheckAt = providerNextCheckAt(timestamp, provider);
+
+    providers.set(providerId, {
+      providerId,
+      timestamp,
+      available,
+      circuitState,
+      failureKind,
+      nextCheckAt,
+    });
+    if (providerUpdatedAt === null || timestamp > providerUpdatedAt) providerUpdatedAt = timestamp;
+  }
+
+  const callRows = db
+    .prepare(
+      `SELECT timestamp, logical_role, binding_id, provider, model, status, result
+       FROM model_calls
+       WHERE logical_role IS NOT NULL
+       ORDER BY timestamp ASC, event_hash ASC
+       LIMIT 10000`,
+    )
+    .all() as SqlRow[];
+
+  const latestCallByRole = new Map<string, SqlRow>();
+  for (const row of callRows) {
+    const logicalRole = toStringOrNull(row.logical_role);
+    if (!logicalRole) continue;
+    const publication = publications.get(logicalRole);
+    if (publication && String(row.timestamp) < publication.timestamp) continue;
+    latestCallByRole.set(logicalRole, row);
+  }
+
+  const roleBindings = [...publications.values()]
+    .sort((left, right) => left.logicalRole.localeCompare(right.logicalRole))
+    .map((publication): CoreHomeRoleBindingHealthView => {
+      const latestCall = latestCallByRole.get(publication.logicalRole);
+      const activeBindingId = toStringOrNull(latestCall?.binding_id);
+      const activeModel = toStringOrNull(latestCall?.model);
+      const activeProviderId = toStringOrNull(latestCall?.provider);
+      const providerState =
+        providers.get(activeProviderId ?? publication.preferredProviderId ?? '') ?? null;
+      const activeObserved = latestCall !== undefined;
+      const fallbackActive =
+        activeBindingId !== null && activeBindingId !== publication.preferredBindingId;
+      const unavailable =
+        providerState !== null &&
+        (providerState.available === false || providerState.circuitState === 'OPEN');
+
+      let state: CoreHomeRoleBindingHealthView['state'] = 'UNKNOWN';
+      if (fallbackActive) state = 'FALLBACK_ACTIVE';
+      else if (unavailable) state = 'UNAVAILABLE';
+      else if (activeObserved) state = 'ACTIVE';
+
+      return {
+        logicalRole: publication.logicalRole,
+        state,
+        preferredBindingId: publication.preferredBindingId,
+        preferredModel: publication.preferredModel,
+        activeBindingId,
+        activeModel,
+        providerId:
+          providerState?.providerId ??
+          activeProviderId ??
+          publication.preferredProviderId,
+        ...(providerState?.failureKind ? { failureKind: providerState.failureKind } : {}),
+        ...(providerState?.nextCheckAt ? { nextCheckAt: providerState.nextCheckAt } : {}),
+        ...(publication.returnPolicy ? { returnPolicy: publication.returnPolicy } : {}),
+      };
+    });
+
+  return {
+    state: providerSystemState(providers, publications),
+    updatedAt: providerUpdatedAt,
+    roleBindings,
+  };
+}
+
+function providerSystemState(
+  providers: ReadonlyMap<string, ProviderStateView>,
+  publications: ReadonlyMap<string, PublishedBindingView>,
+): CoreHomeSystemState {
+  if (providers.size === 0) return 'UNKNOWN';
+
+  const relevantProviderIds = new Set(
+    [...publications.values()]
+      .map((publication) => publication.preferredProviderId)
+      .filter((providerId): providerId is string => providerId !== null),
+  );
+  const states =
+    relevantProviderIds.size === 0
+      ? [...providers.values()]
+      : [...relevantProviderIds]
+          .map((providerId) => providers.get(providerId))
+          .filter((provider): provider is ProviderStateView => provider !== undefined);
+
+  if (states.length === 0) return 'UNKNOWN';
+  if (
+    states.some(
+      (provider) =>
+        provider.available === false ||
+        provider.circuitState === 'OPEN' ||
+        provider.circuitState === 'HALF_OPEN',
+    )
+  ) {
+    return 'DEGRADED';
+  }
+  if (
+    states.length === relevantProviderIds.size &&
+    states.every(
+      (provider) => provider.available === true || provider.circuitState === 'CLOSED',
+    )
+  ) {
+    return 'HEALTHY';
+  }
+  return 'UNKNOWN';
+}
+
+function providerNextCheckAt(
+  eventTimestamp: string,
+  provider: Record<string, unknown>,
+): string | null {
+  const eventTimeMs = Date.parse(eventTimestamp);
+  if (Number.isNaN(eventTimeMs)) return null;
+
+  const nextProbeAtMs = safeNonNegativeNumber(provider.nextProbeAtMs);
+  if (nextProbeAtMs !== null && nextProbeAtMs >= eventTimeMs) {
+    return new Date(nextProbeAtMs).toISOString();
+  }
+
+  const retryAfterMs = safeNonNegativeNumber(provider.retryAfterMs);
+  if (retryAfterMs !== null) {
+    return new Date(eventTimeMs + retryAfterMs).toISOString();
+  }
+
+  return null;
+}
+
+function safeNonNegativeNumber(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return null;
+  return value;
+}
+
+function safeCircuitState(
+  value: unknown,
+): 'CLOSED' | 'OPEN' | 'HALF_OPEN' | null {
+  if (value === 'CLOSED' || value === 'OPEN' || value === 'HALF_OPEN') return value;
+  return null;
+}
+
+function safeReturnPolicy(
+  value: unknown,
+): CoreHomeRoleBindingHealthView['returnPolicy'] | null {
+  if (
+    value === 'STAY_ON_FALLBACK' ||
+    value === 'ASK_BEFORE_RETURN' ||
+    value === 'AUTO_RETURN'
+  ) {
+    return value;
+  }
+  return null;
 }
 
 function queryUsageWindow(
