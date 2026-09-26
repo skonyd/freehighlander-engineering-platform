@@ -237,14 +237,22 @@ export class DashboardReadModel {
       const providerAttention = queryProviderAttention(providerProjection);
       const budgetAttention = queryBudgetAttention(db);
       const blockedWorkAttention = queryBlockedWorkAttention(currentWork);
+      const continuity = queryContinuitySummary(db, latestRun?.headSha ?? null);
+      const findings = queryFindingSummary(db, latestRun?.headSha ?? null);
+      const continuityAttention = queryContinuityAttention(continuity);
+      const findingAttention = queryFindingAttention(findings);
       const attention = mergeAttentionSummaries(
         approvalAttention,
         runtimeAttention,
         providerAttention,
         budgetAttention,
         blockedWorkAttention,
+        continuityAttention,
+        findingAttention,
       );
-      const staleSources = ['continuity', 'findings'];
+      const staleSources: string[] = [];
+      if (continuity.latestCheckpointAt === null) staleSources.push('continuity');
+      if (findings.latestFindingAt === null) staleSources.push('findings');
       if (providerProjection.updatedAt === null) staleSources.push('provider-state');
 
       return createCoreHomeSnapshotV1({
@@ -255,6 +263,9 @@ export class DashboardReadModel {
           ...(providerProjection.updatedAt === null
             ? {}
             : { providerStateUpdatedAt: providerProjection.updatedAt }),
+          ...(continuity.latestCheckpointAt === null
+            ? {}
+            : { continuityUpdatedAt: continuity.latestCheckpointAt }),
           staleSources,
         },
         project: {
@@ -275,7 +286,7 @@ export class DashboardReadModel {
                 : 'UNKNOWN',
           database: 'HEALTHY',
           providers: providerProjection.state,
-          continuity: 'UNKNOWN',
+          continuity: continuity.state,
           criticalErrorCount: runtimeAttention.critical,
         },
         currentWork,
@@ -284,20 +295,8 @@ export class DashboardReadModel {
         economy,
         roleBindings: providerProjection.roleBindings,
         recentRuns: runs.map(mapRecentRun),
-        continuity: {
-          state: 'UNKNOWN',
-          latestCheckpointAt: null,
-          resumeReady: null,
-          sourceRevision: null,
-          warning: null,
-        },
-        findings: {
-          state: 'UNKNOWN',
-          critical: 0,
-          high: 0,
-          unresolved: 0,
-          latestFindingAt: null,
-        },
+        continuity,
+        findings,
       });
     });
   }
@@ -769,6 +768,208 @@ const CURRENT_WORK_STAGE_TOKENS: ReadonlyArray<{
     ]),
   },
 ];
+
+interface SecurityFindingProjection {
+  readonly findingId: string;
+  readonly severity: 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  readonly state: 'OPEN' | 'REMEDIATED';
+  readonly timestamp: string;
+}
+
+function queryContinuitySummary(
+  db: DatabaseSync,
+  currentHeadSha: string | null,
+): CoreHomeSnapshotV1['continuity'] {
+  const row = db
+    .prepare(
+      `SELECT timestamp, event_json
+       FROM events
+       WHERE type = 'checkpoint.created'
+       ORDER BY timestamp DESC, id DESC
+       LIMIT 1`,
+    )
+    .get() as SqlRow | undefined;
+
+  if (!row) {
+    return {
+      state: 'UNKNOWN',
+      latestCheckpointAt: null,
+      resumeReady: null,
+      sourceRevision: null,
+      warning: null,
+    };
+  }
+
+  const event = parseEventRecord(row.event_json ?? null);
+  const payload = asRecord(event?.payload);
+  const revision = asRecord(event?.revision);
+  const sourceRevision =
+    safeProjectionIdentifier(revision?.headSha) ?? safeProjectionIdentifier(payload?.sourceRevision);
+  const resumeReady = typeof payload?.resumeReady === 'boolean' ? payload.resumeReady : null;
+  const payloadWarning = safeProjectionText(payload?.warning);
+  const revisionMismatch =
+    currentHeadSha !== null && sourceRevision !== null && currentHeadSha !== sourceRevision;
+
+  let state: CoreHomeSystemState = 'UNKNOWN';
+  let warning = payloadWarning;
+
+  if (revisionMismatch) {
+    state = 'ATTENTION';
+    warning = 'Checkpoint revision does not match the current project revision.';
+  } else if (resumeReady === false) {
+    state = 'ATTENTION';
+    warning ??= 'Latest checkpoint is not resume-ready.';
+  } else if (resumeReady === true) {
+    state = warning === null ? 'HEALTHY' : 'DEGRADED';
+  }
+
+  return {
+    state,
+    latestCheckpointAt: String(row.timestamp),
+    resumeReady,
+    sourceRevision,
+    warning,
+  };
+}
+
+function queryFindingSummary(
+  db: DatabaseSync,
+  currentHeadSha: string | null,
+): CoreHomeSnapshotV1['findings'] {
+  if (currentHeadSha === null) {
+    return {
+      state: 'UNKNOWN',
+      critical: 0,
+      high: 0,
+      unresolved: 0,
+      latestFindingAt: null,
+    };
+  }
+
+  const rows = db
+    .prepare(
+      `SELECT timestamp, event_json
+       FROM (
+         SELECT id, timestamp, event_json
+         FROM events
+         WHERE type = 'finding.adjudicated'
+         ORDER BY timestamp DESC, id DESC
+         LIMIT 5000
+       )
+       ORDER BY timestamp ASC, id ASC`,
+    )
+    .all() as SqlRow[];
+
+  const current = new Map<string, SecurityFindingProjection>();
+  let latestFindingAt: string | null = null;
+
+  for (const row of rows) {
+    const event = parseEventRecord(row.event_json ?? null);
+    const payload = asRecord(event?.payload);
+    const revision = asRecord(event?.revision);
+    if (safeProjectionIdentifier(revision?.headSha) !== currentHeadSha) continue;
+
+    const findingId = safeProjectionIdentifier(payload?.findingId);
+    const severity = safeFindingSeverity(payload?.severity);
+    const state = safeFindingState(payload?.state);
+    if (!findingId || !severity || !state) continue;
+
+    const timestamp = String(row.timestamp);
+    current.set(findingId, { findingId, severity, state, timestamp });
+    if (latestFindingAt === null || timestamp > latestFindingAt) latestFindingAt = timestamp;
+  }
+
+  if (latestFindingAt === null) {
+    return {
+      state: 'UNKNOWN',
+      critical: 0,
+      high: 0,
+      unresolved: 0,
+      latestFindingAt: null,
+    };
+  }
+
+  const open = [...current.values()].filter((finding) => finding.state === 'OPEN');
+  const critical = open.filter((finding) => finding.severity === 'CRITICAL').length;
+  const high = open.filter((finding) => finding.severity === 'HIGH').length;
+  const unresolved = open.length;
+
+  return {
+    state: critical > 0 || high > 0 ? 'ATTENTION' : unresolved > 0 ? 'DEGRADED' : 'HEALTHY',
+    critical,
+    high,
+    unresolved,
+    latestFindingAt,
+  };
+}
+
+function queryContinuityAttention(
+  continuity: CoreHomeSnapshotV1['continuity'],
+): CoreHomeAttentionSummaryView {
+  if (continuity.state !== 'ATTENTION' || continuity.latestCheckpointAt === null) {
+    return summarizeAttention([]);
+  }
+
+  return summarizeAttention([
+    {
+      id: 'continuity:' + continuity.latestCheckpointAt,
+      kind: 'CONTINUITY_RISK',
+      severity: 'WARNING',
+      headline: 'Project continuity requires attention',
+      source: 'checkpoint',
+      occurredAt: continuity.latestCheckpointAt,
+      nextAction: continuity.warning ?? 'Inspect the latest checkpoint before resuming work.',
+      authority: 'NONE',
+    },
+  ]);
+}
+
+function queryFindingAttention(
+  findings: CoreHomeSnapshotV1['findings'],
+): CoreHomeAttentionSummaryView {
+  if (
+    findings.latestFindingAt === null ||
+    (findings.critical === 0 && findings.high === 0)
+  ) {
+    return summarizeAttention([]);
+  }
+
+  const headline =
+    'Open security findings: ' +
+    findings.critical +
+    ' critical, ' +
+    findings.high +
+    ' high';
+
+  return summarizeAttention([
+    {
+      id: 'security-findings:' + findings.latestFindingAt,
+      kind: 'SECURITY_FINDING',
+      severity: findings.critical > 0 ? 'CRITICAL' : 'ERROR',
+      headline,
+      source: 'security-findings',
+      occurredAt: findings.latestFindingAt,
+      nextAction: 'Inspect the current-revision security findings and remediation evidence.',
+      authority: 'NONE',
+    },
+  ]);
+}
+
+function safeFindingSeverity(
+  value: unknown,
+): SecurityFindingProjection['severity'] | null {
+  return value === 'INFO' ||
+    value === 'LOW' ||
+    value === 'MEDIUM' ||
+    value === 'HIGH' ||
+    value === 'CRITICAL'
+    ? value
+    : null;
+}
+
+function safeFindingState(value: unknown): SecurityFindingProjection['state'] | null {
+  return value === 'OPEN' || value === 'REMEDIATED' ? value : null;
+}
 
 function queryRuntimeAttention(db: DatabaseSync): CoreHomeAttentionSummaryView {
   const rows = db
