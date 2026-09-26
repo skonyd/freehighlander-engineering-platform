@@ -96,6 +96,18 @@ export {
 } from './kuika-navigation.js';
 
 export {
+  blueprintSimulationPreviewCanExecute,
+  blueprintWorkflowDraftCanExecute,
+  blueprintWorkflowDraftCanGrantAuthority,
+  blueprintWorkflowDraftCanPublish,
+  createFhKuikaBlueprintWorkflowDraftV1,
+  simulateFhKuikaBlueprintV1,
+  type FhKuikaBlueprintSimulationFixtureResultV1,
+  type FhKuikaBlueprintSimulationPreviewV1,
+  type FhKuikaBlueprintWorkflowDraftV1,
+} from './kuika-blueprint-draft.js';
+
+export {
   blueprintCatalogViewCanGrantAuthority,
   blueprintCatalogViewCanInvokeModel,
   blueprintCatalogViewCanMutateBlueprint,
