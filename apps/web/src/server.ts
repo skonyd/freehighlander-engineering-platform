@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { DASHBOARD_HTML } from './ui.js';
 import { buildManagementSnapshot } from './management.js';
 import { DashboardReadModel, MissingDashboardDatabaseError } from './read-model.js';
@@ -72,6 +73,11 @@ async function handleRequest(
 
     if (url.pathname === '/') {
       html(response, method === 'HEAD' ? '' : DASHBOARD_HTML);
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika' || url.pathname === '/modules/fh-kuika/') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_MODULE_HTML);
       return;
     }
 
