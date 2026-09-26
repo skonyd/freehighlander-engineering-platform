@@ -6,6 +6,8 @@ import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
+import { FH_KUIKA_APPROVALS_HTML } from './kuika-approval-ui.js';
+import { buildFhKuikaApprovalInboxV1 } from './kuika-approval-inbox.js';
 import { DASHBOARD_HTML } from './ui.js';
 import {
   createGithubExternalStatusProviderFromEnv,
@@ -104,6 +106,11 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/modules/fh-kuika/approvals') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_APPROVALS_HTML);
+      return;
+    }
+
     if (url.pathname === '/modules/fh-kuika/build') {
       html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('BUILD'));
       return;
@@ -184,6 +191,11 @@ async function handleRequest(
         return;
       }
       json(response, 200, detail);
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/approvals') {
+      json(response, 200, buildFhKuikaApprovalInboxV1(readModel));
       return;
     }
 
