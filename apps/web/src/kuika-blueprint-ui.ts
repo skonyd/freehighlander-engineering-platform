@@ -19,7 +19,8 @@ export function renderFhKuikaBlueprintCatalogHtml(): string {
 
   return page(
     'Blueprints',
-    'Deterministic, versioned engineering patterns. Catalog inspection never invokes a model or grants authority.',
+    'Deterministic, versioned engineering patterns. ' +
+      'Catalog inspection never invokes a model or grants authority.',
     summary + '<section class="grid">' + cards + '</section>',
   );
 }
@@ -28,11 +29,21 @@ export function renderFhKuikaBlueprintDetailHtml(id: string): string | null {
   const blueprint = getFhKuikaCuratedBlueprintV1(id);
   if (!blueprint) return null;
 
-  const stages = blueprint.lifecycleStages.map((stage) => '<span class="chip">' + esc(stage) + '</span>').join('');
-  const roles = blueprint.requiredRoles.map((role) => '<li><code>' + esc(role) + '</code></li>').join('');
-  const evidence = blueprint.requiredEvidence.map((item) => '<li><code>' + esc(item) + '</code></li>').join('');
-  const gates = blueprint.authoritySensitiveNodes.map((item) => '<li><code>' + esc(item) + '</code></li>').join('');
-  const rules = blueprint.validationRules.map((item) => '<li>' + esc(item) + '</li>').join('');
+  const stages = blueprint.lifecycleStages
+    .map((stage) => '<span class="chip">' + esc(stage) + '</span>')
+    .join('');
+  const roles = blueprint.requiredRoles
+    .map((role) => '<li><code>' + esc(role) + '</code></li>')
+    .join('');
+  const evidence = blueprint.requiredEvidence
+    .map((item) => '<li><code>' + esc(item) + '</code></li>')
+    .join('');
+  const gates = blueprint.authoritySensitiveNodes
+    .map((item) => '<li><code>' + esc(item) + '</code></li>')
+    .join('');
+  const rules = blueprint.validationRules
+    .map((item) => '<li>' + esc(item) + '</li>')
+    .join('');
   const fixtures = blueprint.simulationFixtures
     .map(
       (fixture) =>
@@ -227,7 +238,13 @@ function page(title: string, subtitle: string, body: string): string {
 }
 
 function summaryMetric(label: string, value: number): string {
-  return '<div class="summary-metric"><span>' + esc(label) + '</span><strong>' + String(value) + '</strong></div>';
+  return (
+    '<div class="summary-metric"><span>' +
+    esc(label) +
+    '</span><strong>' +
+    String(value) +
+    '</strong></div>'
+  );
 }
 
 function titleCase(value: string): string {
