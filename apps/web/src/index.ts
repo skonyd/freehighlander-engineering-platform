@@ -1,3 +1,19 @@
+export {
+  buildFhKuikaConnectorRegistryViewV1,
+  connectorCatalogCacheCanBypassPermissionRevalidation,
+  connectorExternalMetadataCanGrantAuthority,
+  connectorRegistryCanGrantAuthority,
+  createFhKuikaConnectorRegistryEntryV1,
+  diffFhKuikaConnectorPermissionsV1,
+  type FhKuikaConnectorCapabilityV1,
+  type FhKuikaConnectorDataClassification,
+  type FhKuikaConnectorPermissionDiffV1,
+  type FhKuikaConnectorProtocol,
+  type FhKuikaConnectorRegistryEntryV1,
+  type FhKuikaConnectorRegistryViewV1,
+  type FhKuikaConnectorTrustLevel,
+} from './kuika-connector-registry.js';
+
 export { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 
 export {
