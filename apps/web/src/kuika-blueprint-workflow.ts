@@ -136,5 +136,12 @@ function parseWorkflowTemplateRef(value: string): { readonly id: string; readonl
 }
 
 function deterministicDraftId(blueprint: FhKuikaPublishedBlueprintV1): string {
-  return 'blueprint-' + blueprint.id + '-' + blueprint.version + '-' + blueprint.blueprintHash.slice(0, 12);
+  return (
+    'blueprint-' +
+    blueprint.id +
+    '-' +
+    blueprint.version +
+    '-' +
+    blueprint.blueprintHash.slice(0, 12)
+  );
 }
