@@ -70,6 +70,17 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     .project-line { margin-top: 5px; }
     .work-title { font-size: 18px; margin-bottom: 4px; }
     .usage-line { font-size: 17px; font-variant-numeric: tabular-nums; }
+    .binding-list { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+    .binding-row {
+      display: grid;
+      grid-template-columns: minmax(110px, .8fr) minmax(0, 1.7fr) auto;
+      gap: 8px 12px;
+      align-items: center;
+      padding: 7px 0;
+    }
+    .binding-row + .binding-row { border-top: 1px solid #ffffff08; }
+    .binding-model { min-width: 0; overflow-wrap: anywhere; }
+    .binding-recovery { grid-column: 2 / -1; font-size: 12px; color: var(--muted); }
     .attention-item {
       border-top: 1px solid var(--line);
       padding: 10px 0;
@@ -173,6 +184,9 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       header, main { padding: 16px; }
       header { align-items: flex-start; flex-direction: column; }
       .home-metrics { grid-template-columns: 1fr 1fr; }
+      .binding-row { grid-template-columns: 1fr auto; }
+      .binding-model { grid-column: 1 / -1; }
+      .binding-recovery { grid-column: 1 / -1; }
       .wide { overflow-x: auto; }
     }
   </style>
@@ -204,6 +218,9 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     <section class="card" style="margin-top:14px">
       <div class="section-label">AI usage today</div>
       <div id="usage"><div class="empty">Loading usage…</div></div>
+      <div id="role-bindings" class="binding-list">
+        <div class="empty">Loading active models…</div>
+      </div>
     </section>
 
     <div class="details-heading">Engineering details</div>
@@ -351,6 +368,48 @@ function renderHome(home) {
     ' · Reasoning ' + fmt.format(usage.reasoningTokens) +
     ' · Retries ' + fmt.format(usage.retries) +
     ' · Fallbacks ' + fmt.format(usage.fallbacks) + '</div>';
+
+  renderRoleBindings(home);
+}
+
+function renderRoleBindings(home) {
+  const target = document.querySelector('#role-bindings');
+  if (stale(home, 'provider-state')) {
+    target.innerHTML =
+      '<div class="muted">Active model status is not available yet.</div>';
+    return;
+  }
+
+  const bindings = home.roleBindings || [];
+  if (!bindings.length) {
+    target.innerHTML = '<div class="muted">No published role bindings observed.</div>';
+    return;
+  }
+
+  const visible = bindings.slice(0, 4);
+  target.innerHTML =
+    '<div class="section-label">Active models</div>' +
+    visible.map(binding => {
+      const preferred = binding.preferredModel || binding.preferredBindingId || 'Unknown';
+      const active = binding.activeModel || binding.activeBindingId || 'Unknown';
+      const modelText = binding.state === 'FALLBACK_ACTIVE'
+        ? preferred + ' → ' + active
+        : active;
+      const recovery = binding.nextCheckAt
+        ? '<div class="binding-recovery">Preferred recovery check ' +
+          esc(new Date(binding.nextCheckAt).toLocaleString()) + '</div>'
+        : '';
+      return '<div class="binding-row">' +
+        '<strong>' + esc(binding.logicalRole) + '</strong>' +
+        '<span class="binding-model">' + esc(modelText) + '</span>' +
+        '<span class="pill ' + stateClass(binding.state) + '">' + esc(binding.state) + '</span>' +
+        recovery +
+      '</div>';
+    }).join('') +
+    (bindings.length > visible.length
+      ? '<div class="muted">+' + fmt.format(bindings.length - visible.length) +
+        ' more role bindings</div>'
+      : '');
 }
 
 async function load() {
@@ -368,6 +427,8 @@ async function load() {
         '<div class="empty">Attention state is not available yet.</div>';
       document.querySelector('#usage').innerHTML =
         '<div class="empty">No usage telemetry yet.</div>';
+      document.querySelector('#role-bindings').innerHTML =
+        '<div class="empty">No active model state yet.</div>';
       document.querySelector('#runs').innerHTML =
         '<div class="empty">Run telemetry has not been indexed yet.</div>';
       document.querySelector('#models').innerHTML =
