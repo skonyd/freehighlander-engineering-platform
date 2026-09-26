@@ -188,7 +188,6 @@ test('Workbench preflight preserves partial source state without inventing conte
   assert.equal(snapshot.preflight.canStartRequest, true);
 });
 
-
 test('Workbench UI has one clean snapshot-driven intent preparation flow', () => {
   assert.match(FH_KUIKA_WORKBENCH_HTML, /id="prepare-intent"/);
   assert.match(FH_KUIKA_WORKBENCH_HTML, /id="evidence-ids"/);
