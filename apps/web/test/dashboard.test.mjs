@@ -478,6 +478,7 @@ test('Core Home current work uses deterministic stage taxonomy and provider wait
     const model = new DashboardReadModel(data.file);
     let home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
     assert.equal(home.currentWork?.state, 'PLANNING');
+    assert.equal(home.currentWork?.classificationVersion, 1);
 
     insertCurrentWorkFixture(data.file, {
       runId: 'run-implement',
