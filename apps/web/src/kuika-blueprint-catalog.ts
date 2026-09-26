@@ -122,7 +122,7 @@ const DEFINITIONS: readonly CuratedBlueprintDefinition[] = [
     intent: 'PERFORMANCE_REGRESSION',
     purpose: 'Measure, isolate and repair a performance regression with reproducible benchmark evidence.',
     risk: 'NORMAL',
-    stages: ['BENCHMARK', 'INVESTIGATE', 'IMPLEMENT', 'BENCHMARK', 'REVIEW'],
+    stages: ['BASELINE_BENCHMARK', 'INVESTIGATE', 'IMPLEMENT', 'VERIFY_BENCHMARK', 'REVIEW'],
     roles: ['performance-reviewer', 'implementation-agent'],
     evidence: ['baseline-benchmark', 'candidate-benchmark', 'review-result'],
     authoritySensitiveNodes: ['final-review'],
