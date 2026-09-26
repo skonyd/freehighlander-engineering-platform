@@ -27,11 +27,17 @@ import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 import { FH_KUIKA_APPROVALS_HTML } from './kuika-approval-ui.js';
 import { buildFhKuikaApprovalInboxV1 } from './kuika-approval-inbox.js';
 import { FH_KUIKA_CONNECTOR_HUB_HTML } from './kuika-connector-ui.js';
+import { FH_KUIKA_ROUTINES_HTML } from './kuika-routine-ui.js';
 import {
   getFhKuikaConnectorCatalogItemV1,
   listFhKuikaConnectorCatalogV1,
 } from './kuika-connector-catalog.js';
 import { buildFhKuikaConnectorInstallReviewV1 } from './kuika-connector-install-review.js';
+import {
+  getFhKuikaRoutineTemplateV1,
+  listFhKuikaRoutineTemplatesV1,
+} from './kuika-routine-catalog.js';
+import { buildFhKuikaRoutineActivationPlanV1 } from './kuika-routines.js';
 import { DASHBOARD_HTML } from './ui.js';
 import {
   createGithubExternalStatusProviderFromEnv,
@@ -142,6 +148,11 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika/integrate/connectors') {
       html(response, method === 'HEAD' ? '' : FH_KUIKA_CONNECTOR_HUB_HTML);
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/integrate/routines') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_ROUTINES_HTML);
       return;
     }
 
@@ -300,6 +311,30 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/api/modules/fh-kuika/routines') {
+      json(response, 200, { routines: listFhKuikaRoutineTemplatesV1() });
+      return;
+    }
+
+    const routineRoute = parseFhKuikaRoutineRoute(url.pathname);
+    if (routineRoute) {
+      const routine = getFhKuikaRoutineTemplateV1(routineRoute.routineId);
+      if (!routine) {
+        json(response, 404, { error: 'routine_not_found', routineId: routineRoute.routineId });
+        return;
+      }
+
+      if (routineRoute.resource === 'plan') {
+        json(response, 200, {
+          plan: buildFhKuikaRoutineActivationPlanV1(routine, url.searchParams.getAll('connector')),
+        });
+        return;
+      }
+
+      json(response, 200, { routine });
+      return;
+    }
+
     const connectorRoute = parseFhKuikaConnectorRoute(url.pathname);
     if (connectorRoute) {
       const connector = getFhKuikaConnectorCatalogItemV1(connectorRoute.connectorId);
@@ -405,6 +440,18 @@ function parseFhKuikaConnectorRoute(pathname: string): {
   const match = /^\/api\/modules\/fh-kuika\/connectors\/([^/]+)\/review$/.exec(pathname);
   if (!match?.[1]) return null;
   return { connectorId: decodeURIComponent(match[1]) };
+}
+
+function parseFhKuikaRoutineRoute(pathname: string): {
+  readonly routineId: string;
+  readonly resource: 'detail' | 'plan';
+} | null {
+  const match = /^\/api\/modules\/fh-kuika\/routines\/([^/]+)(?:\/(plan))?$/.exec(pathname);
+  if (!match?.[1]) return null;
+  return {
+    routineId: decodeURIComponent(match[1]),
+    resource: (match[2] ?? 'detail') as 'detail' | 'plan',
+  };
 }
 
 function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {
