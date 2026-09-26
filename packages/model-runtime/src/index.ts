@@ -109,6 +109,7 @@ export {
 } from './provider-failover-integration.js';
 
 export {
+  buildRoleBindingFailoverTelemetrySnapshot,
   createPreferredBindingReturnApproval,
   createRoleBindingFailoverState,
   evaluatePreferredBindingReturn,
@@ -135,6 +136,8 @@ export {
   type PreferredBindingReturnTransition,
   type PreferredReturnStatus,
   type RoleBindingFailoverStateV1,
+  type RoleBindingFailoverTelemetrySnapshotV1,
+  type RoleBindingRecoveryState,
 } from './quota-aware-failover.js';
 
 export {

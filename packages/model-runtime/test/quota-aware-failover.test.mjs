@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   BindingRegistry,
   ProviderRegistry,
+  buildRoleBindingFailoverTelemetrySnapshot,
   createPreferredBindingReturnApproval,
   createRoleBindingFailoverState,
   evaluatePreferredBindingReturn,
@@ -430,4 +431,40 @@ test('invalid reset timing and policy fail closed', () => {
       }),
     /resetAt cannot be before/,
   );
+});
+
+test('failover telemetry snapshot exposes preferred active recovery state without authority', () => {
+  const plan = planWithThreeBindings();
+  let state = recordActiveBindingFailure(createRoleBindingFailoverState(plan, askPolicy), plan, {
+    failureKind: 'quota_exhausted',
+    scope: 'BINDING',
+    observedAt: '2026-09-25T18:00:00.000Z',
+    retryAfterMs: 60_000,
+    availabilityByBinding: { opus: false, gpt: true, gemini: true },
+  }).state;
+
+  const fallback = buildRoleBindingFailoverTelemetrySnapshot(state, plan);
+  assert.equal(fallback.logicalRole, 'implementation');
+  assert.equal(fallback.preferredBindingId, 'opus');
+  assert.equal(fallback.preferredModel, 'opus-5.5');
+  assert.equal(fallback.activeBindingId, 'gpt');
+  assert.equal(fallback.activeModel, 'gpt-6');
+  assert.equal(fallback.activeProviderId, 'openai');
+  assert.equal(fallback.failureKind, 'quota_exhausted');
+  assert.equal(fallback.recoveryState, 'WAITING_FOR_RECOVERY');
+  assert.equal(fallback.nextCheckAt, '2026-09-25T18:01:00.000Z');
+  assert.equal(fallback.returnPolicy, 'ASK_BEFORE_RETURN');
+  assert.equal(fallback.authority, 'NONE');
+
+  state = recordBindingRecoveryObservation(state, plan, {
+    bindingId: 'opus',
+    observedAt: '2026-09-25T18:01:01.000Z',
+    available: true,
+  });
+
+  const recovered = buildRoleBindingFailoverTelemetrySnapshot(state, plan);
+  assert.equal(recovered.recoveryState, 'APPROVAL_REQUIRED');
+  assert.equal(recovered.failureKind, undefined);
+  assert.equal(recovered.nextCheckAt, undefined);
+  assert.match(recovered.stateHash, /^[a-f0-9]{64}$/);
 });
