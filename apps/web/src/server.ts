@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
@@ -90,6 +91,21 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika/operate') {
       html(response, method === 'HEAD' ? '' : FH_KUIKA_OPERATIONS_HTML);
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/build') {
+      html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('BUILD'));
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/integrate') {
+      html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('INTEGRATE'));
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/knowledge') {
+      html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('KNOWLEDGE'));
       return;
     }
 
