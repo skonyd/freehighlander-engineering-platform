@@ -52,8 +52,8 @@ export interface FhKuikaBlueprintSimulationResultV1 {
   readonly blueprintVersion: string;
   readonly workflowHash: string;
   readonly fixtureId: string;
-  readonly expectedTerminalState: 'PASS' | 'BLOCKED' | 'HUMAN_REQUIRED';
-  readonly observedTerminalState: 'PASS' | 'BLOCKED' | 'HUMAN_REQUIRED';
+  readonly expectedTerminalState: 'PASS' | 'FAIL' | 'BLOCKED' | 'HUMAN_REQUIRED';
+  readonly observedTerminalState: 'PASS' | 'FAIL' | 'BLOCKED' | 'HUMAN_REQUIRED';
   readonly passed: boolean;
   readonly authority: 'NONE';
   readonly checks: readonly {
@@ -159,9 +159,7 @@ export function simulateFhKuikaBlueprintDraftV1(
     fixture.expectedTerminalState === 'HUMAN_REQUIRED'
       ? 'HUMAN_REQUIRED'
       : structurallyReady
-        ? fixture.expectedTerminalState === 'BLOCKED'
-          ? 'BLOCKED'
-          : 'PASS'
+        ? fixture.expectedTerminalState
         : 'BLOCKED';
 
   return deepFreeze({
