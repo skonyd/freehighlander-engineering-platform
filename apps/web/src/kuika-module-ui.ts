@@ -85,9 +85,9 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
 
     <section class="grid" aria-label="FH-KUIKA module areas">
       <a class="card" href="/modules/fh-kuika/workbench"><h2>Workbench</h2><p>Ask, Plan, Execute and Review modes. Mode selection never grants authority.</p></a>
-      <div class="card"><h2>Build</h2><p>Blueprints, Workflow Studio, roles and solution packs.</p></div>
-      <div class="card"><h2>Integrate</h2><p>Connector Hub, model routing and routines.</p></div>
-      <div class="card"><h2>Knowledge</h2><p>Engineering graph, evidence and deterministic search surfaces.</p></div>
+      <a class="card" href="/modules/fh-kuika/build"><h2>Build</h2><p>Blueprints, Workflow Studio, roles and solution packs.</p></a>
+      <a class="card" href="/modules/fh-kuika/integrate"><h2>Integrate</h2><p>Connector Hub, model routing and routines.</p></a>
+      <a class="card" href="/modules/fh-kuika/knowledge"><h2>Knowledge</h2><p>Engineering graph, evidence and deterministic search surfaces.</p></a>
       <a class="card" href="/modules/fh-kuika/operate"><h2>Operate</h2><p>Operations, approvals, errors, routing and audit views.</p></a>
       <div class="card"><h2>Module boundary</h2><p>Disable this module and Core runtime remains valid and usable.</p></div>
     </section>
