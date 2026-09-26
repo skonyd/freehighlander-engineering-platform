@@ -3,15 +3,24 @@ import {
   getFhKuikaCuratedBlueprintsV1,
 } from './kuika-blueprint-catalog.js';
 import type { FhKuikaPublishedBlueprintV1 } from './kuika-blueprint.js';
+import { measureFhKuikaBlueprintCatalogV1 } from './kuika-blueprint-metrics.js';
 
 export function renderFhKuikaBlueprintCatalogHtml(): string {
   const blueprints = getFhKuikaCuratedBlueprintsV1();
+  const quality = measureFhKuikaBlueprintCatalogV1(blueprints);
   const cards = blueprints.map(renderCard).join('');
+  const summary =
+    '<section class="summary-grid">' +
+    summaryMetric('Blueprints', quality.totalBlueprints) +
+    summaryMetric('Intents', quality.uniqueIntents) +
+    summaryMetric('Roles', quality.totalRequiredRoles) +
+    summaryMetric('Simulation fixtures', quality.totalSimulationFixtures) +
+    '</section>';
 
   return page(
     'Blueprints',
     'Deterministic, versioned engineering patterns. Catalog inspection never invokes a model or grants authority.',
-    '<section class="grid">' + cards + '</section>',
+    summary + '<section class="grid">' + cards + '</section>',
   );
 }
 
@@ -165,6 +174,10 @@ function page(title: string, subtitle: string, body: string): string {
     .eyebrow { color:var(--accent); text-transform:uppercase; font-size:11px; letter-spacing:.14em; font-weight:700; }
     .muted { color:var(--muted); }
     .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+    .summary-metric { background:#0f151e; border:1px solid var(--line); border-radius:10px; padding:12px; }
+    .summary-metric span { display:block; color:var(--muted); font-size:11px; }
+    .summary-metric strong { display:block; margin-top:4px; font-size:19px; }
     .columns { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:14px; }
     .columns.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .card {
@@ -185,7 +198,11 @@ function page(title: string, subtitle: string, body: string): string {
     th { color:var(--muted); font-size:11px; text-transform:uppercase; }
     .advanced { margin-top:14px; } summary { cursor:pointer; color:var(--accent); }
     .boundary { margin-top:18px; color:var(--muted); font-size:12px; }
-    @media (max-width:850px) { .grid,.columns,.columns.two { grid-template-columns:1fr; } header { flex-direction:column; } }
+    @media (max-width:850px) {
+      .grid,.columns,.columns.two { grid-template-columns:1fr; }
+      .summary-grid { grid-template-columns:1fr 1fr; }
+      header { flex-direction:column; }
+    }
     @media (max-width:560px) { header,main { padding:16px; } .wide { overflow-x:auto; } }
   </style>
 </head>
@@ -207,6 +224,10 @@ function page(title: string, subtitle: string, body: string): string {
 </main>
 </body>
 </html>`;
+}
+
+function summaryMetric(label: string, value: number): string {
+  return '<div class="summary-metric"><span>' + esc(label) + '</span><strong>' + String(value) + '</strong></div>';
 }
 
 function titleCase(value: string): string {
