@@ -83,7 +83,7 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
       <h1>Explainable Operations</h1>
       <div id="status" class="muted" role="status" aria-live="polite">Loading deterministic operations state…</div>
     </div>
-    <div><a href="/modules/fh-kuika">← FH-KUIKA Overview</a></div>
+    <div><a href="/modules/fh-kuika/approvals">Approvals</a> · <a href="/modules/fh-kuika">FH-KUIKA Overview</a></div>
   </header>
 
   <main>
