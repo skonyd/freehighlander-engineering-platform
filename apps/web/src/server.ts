@@ -18,6 +18,14 @@ import {
 } from './kuika-blueprint-view.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
+import { FH_KUIKA_ROLE_MARKETPLACE_HTML } from './kuika-role-marketplace-ui.js';
+import {
+  buildFhKuikaSolutionPackInstallPlanV1,
+  getFhKuikaMarketplaceRoleV1,
+  getFhKuikaSolutionPackV1,
+  listFhKuikaMarketplaceRolesV1,
+  listFhKuikaSolutionPacksV1,
+} from './kuika-role-marketplace.js';
 import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 import { validateFhKuikaWorkflowDraftDefinitionV1 } from './kuika-workflow-draft.js';
 import { simulateFhKuikaWorkflowDraftV1 } from './kuika-workflow-simulation.js';
@@ -28,6 +36,14 @@ import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 import { FH_KUIKA_APPROVALS_HTML } from './kuika-approval-ui.js';
 import { buildFhKuikaApprovalInboxV1 } from './kuika-approval-inbox.js';
 import { FH_KUIKA_CONNECTOR_HUB_HTML } from './kuika-connector-ui.js';
+import { FH_KUIKA_ROUTINES_HTML } from './kuika-routine-ui.js';
+import {
+  getFhKuikaRoutineTemplateV1,
+  listFhKuikaRoutineTemplatesV1,
+} from './kuika-routine-catalog.js';
+import { buildFhKuikaRoutineActivationPlanV1 } from './kuika-routines.js';
+import { FH_KUIKA_ROUTING_HTML } from './kuika-routing-ui.js';
+import { simulateFhKuikaRoutingScenarioV1 } from './kuika-routing-simulation.js';
 import {
   getFhKuikaConnectorCatalogItemV1,
   listFhKuikaConnectorCatalogV1,
@@ -146,6 +162,11 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/modules/fh-kuika/build/roles') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_ROLE_MARKETPLACE_HTML);
+      return;
+    }
+
     if (url.pathname === '/modules/fh-kuika/build/workflows') {
       html(response, method === 'HEAD' ? '' : FH_KUIKA_WORKFLOW_STUDIO_HTML);
       return;
@@ -153,6 +174,16 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika/build/blueprints') {
       html(response, method === 'HEAD' ? '' : FH_KUIKA_BLUEPRINTS_HTML);
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/integrate/routines') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_ROUTINES_HTML);
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/integrate/routing') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_ROUTING_HTML);
       return;
     }
 
@@ -237,6 +268,126 @@ async function handleRequest(
       }
 
       json(response, 200, buildFhKuikaBlueprintDetailViewV1(blueprint));
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/roles') {
+      json(response, 200, { roles: listFhKuikaMarketplaceRolesV1() });
+      return;
+    }
+
+    const marketplaceRoleRoute = parseFhKuikaMarketplaceRoleRoute(url.pathname);
+    if (marketplaceRoleRoute) {
+      const role = getFhKuikaMarketplaceRoleV1(marketplaceRoleRoute.roleId);
+      if (!role) {
+        json(response, 404, {
+          error: 'role_not_found',
+          roleId: marketplaceRoleRoute.roleId,
+        });
+        return;
+      }
+      json(response, 200, { role });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/solution-packs') {
+      json(response, 200, { packs: listFhKuikaSolutionPacksV1() });
+      return;
+    }
+
+    const solutionPackRoute = parseFhKuikaSolutionPackRoute(url.pathname);
+    if (solutionPackRoute) {
+      const pack = getFhKuikaSolutionPackV1(solutionPackRoute.packId);
+      if (!pack) {
+        json(response, 404, {
+          error: 'solution_pack_not_found',
+          packId: solutionPackRoute.packId,
+        });
+        return;
+      }
+      const availableRoleRefs = listFhKuikaMarketplaceRolesV1().map(
+        (role) => role.id + '@' + role.version,
+      );
+      const plan = buildFhKuikaSolutionPackInstallPlanV1(pack, availableRoleRefs, []);
+      json(response, 200, { pack, plan });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/routines') {
+      json(response, 200, { routines: listFhKuikaRoutineTemplatesV1() });
+      return;
+    }
+
+    const routineRoute = parseFhKuikaRoutineRoute(url.pathname);
+    if (routineRoute) {
+      const routine = getFhKuikaRoutineTemplateV1(routineRoute.routineId);
+      if (!routine) {
+        json(response, 404, {
+          error: 'routine_not_found',
+          routineId: routineRoute.routineId,
+        });
+        return;
+      }
+
+      if (routineRoute.resource === 'plan') {
+        const plan = buildFhKuikaRoutineActivationPlanV1(
+          routine,
+          url.searchParams.getAll('connector'),
+        );
+        json(response, 200, { plan });
+        return;
+      }
+
+      json(response, 200, { routine });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/routing/simulate') {
+      const risk = (url.searchParams.get('risk') ?? 'HIGH').toUpperCase();
+      const data = (url.searchParams.get('data') ?? 'INTERNAL').toUpperCase();
+      const preferredHealth = (
+        url.searchParams.get('preferredHealth') ?? 'AVAILABLE'
+      ).toUpperCase();
+      const context = Number(url.searchParams.get('context') ?? '50000');
+
+      if (!['NORMAL', 'HIGH', 'CRITICAL'].includes(risk)) {
+        json(response, 400, { error: 'invalid_routing_risk', risk });
+        return;
+      }
+      if (!['PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'SECRET'].includes(data)) {
+        json(response, 400, { error: 'invalid_routing_data_class', data });
+        return;
+      }
+      if (
+        ![
+          'AVAILABLE',
+          'RATE_LIMITED',
+          'QUOTA_EXHAUSTED',
+          'PROVIDER_UNAVAILABLE',
+          'AUTH_FAILED',
+          'UNKNOWN',
+        ].includes(preferredHealth)
+      ) {
+        json(response, 400, {
+          error: 'invalid_routing_health',
+          preferredHealth,
+        });
+        return;
+      }
+
+      const decision = simulateFhKuikaRoutingScenarioV1({
+        riskTier: risk as 'NORMAL' | 'HIGH' | 'CRITICAL',
+        dataClassification: data as 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'SECRET',
+        requiredContextTokens: context,
+        preferredHealth: preferredHealth as
+          | 'AVAILABLE'
+          | 'RATE_LIMITED'
+          | 'QUOTA_EXHAUSTED'
+          | 'PROVIDER_UNAVAILABLE'
+          | 'AUTH_FAILED'
+          | 'UNKNOWN',
+      });
+      json(response, 200, { decision });
       return;
     }
 
@@ -395,6 +546,35 @@ function readWorkflowDefinition(url: URL) {
   }
 
   return parsed as Parameters<typeof validateFhKuikaWorkflowDraftDefinitionV1>[0];
+}
+
+function parseFhKuikaMarketplaceRoleRoute(pathname: string): {
+  readonly roleId: string;
+} | null {
+  const match = /^\/api\/modules\/fh-kuika\/roles\/([^/]+)$/.exec(pathname);
+  if (!match?.[1]) return null;
+  return { roleId: decodeURIComponent(match[1]) };
+}
+
+function parseFhKuikaSolutionPackRoute(pathname: string): {
+  readonly packId: string;
+} | null {
+  const pattern = /^\/api\/modules\/fh-kuika\/solution-packs\/([^/]+)(?:\/plan)?$/;
+  const match = pattern.exec(pathname);
+  if (!match?.[1]) return null;
+  return { packId: decodeURIComponent(match[1]) };
+}
+
+function parseFhKuikaRoutineRoute(pathname: string): {
+  readonly routineId: string;
+  readonly resource: 'detail' | 'plan';
+} | null {
+  const match = /^\/api\/modules\/fh-kuika\/routines\/([^/]+)(?:\/(plan))?$/.exec(pathname);
+  if (!match?.[1]) return null;
+  return {
+    routineId: decodeURIComponent(match[1]),
+    resource: (match[2] ?? 'detail') as 'detail' | 'plan',
+  };
 }
 
 function parseFhKuikaBlueprintRoute(pathname: string): {

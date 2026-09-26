@@ -1,4 +1,130 @@
 export {
+  buildFhKuikaSolutionPackInstallPlanV1,
+  diffFhKuikaMarketplaceRoleVersionsV1,
+  getFhKuikaMarketplaceRoleV1,
+  getFhKuikaSolutionPackV1,
+  listFhKuikaMarketplaceRolesV1,
+  listFhKuikaSolutionPacksV1,
+  roleMarketplaceCanGrantAuthority,
+  roleMarketplaceCanInstallDirectly,
+  roleVersionDiffCanRollback,
+  roleVersionDiffCanUpdate,
+  solutionPackPlanCanActivate,
+  type FhKuikaMarketplaceAuthority,
+  type FhKuikaMarketplaceRiskTier,
+  type FhKuikaRolePackageManifestV1,
+  type FhKuikaRoleVersionDiffV1,
+  type FhKuikaSolutionPackInstallPlanV1,
+  type FhKuikaSolutionPackV1,
+} from './kuika-role-marketplace.js';
+
+export {
+  FH_KUIKA_ROLE_MARKETPLACE_HTML,
+  roleMarketplacePageCanGrantAuthority,
+  roleMarketplacePageCanInstall,
+  roleMarketplacePageCanInvokeModel,
+} from './kuika-role-marketplace-ui.js';
+
+export {
+  FhKuikaLocalSemanticIndexV1,
+  localSemanticIndexCanCreateAuthoritativeLineage,
+  localSemanticIndexCanGrantAuthority,
+  localSemanticIndexCanInvokeModel,
+  localSemanticIndexCanUseRemoteProvider,
+  type FhKuikaLocalSemanticDocumentV1,
+  type FhKuikaLocalSemanticIndexOptionsV1,
+} from './kuika-local-semantic-index.js';
+
+export {
+  lineageFirstRetrieverCanGrantAuthority,
+  lineageFirstRetrieverCanMutateDomain,
+  lineageFirstRetrieverCanPromoteSemanticResult,
+  retrieveFhKuikaKnowledgeV1,
+  type FhKuikaKnowledgeLineageSourceV1,
+  type FhKuikaKnowledgeRetrievalResultV1,
+  type FhKuikaKnowledgeRetrievalTraceV1,
+} from './kuika-knowledge-retriever.js';
+
+export {
+  buildFhKuikaKnowledgeRetrievalPlanV1,
+  createFhKuikaKnowledgeQueryV1,
+  knowledgeQueryCanGrantAuthority,
+  knowledgeRetrievalCanMutateDomain,
+  knowledgeRetrievalRequiresModelCall,
+  semanticDiscoveryCanEstablishAuthoritativeLineage,
+  validateFhKuikaKnowledgeQueryV1,
+  validateFhKuikaKnowledgeResultV1,
+  type FhKuikaKnowledgeProvenanceV1,
+  type FhKuikaKnowledgeQueryMode,
+  type FhKuikaKnowledgeQueryV1,
+  type FhKuikaKnowledgeQueryValidationV1,
+  type FhKuikaKnowledgeResultClass,
+  type FhKuikaKnowledgeResultV1,
+  type FhKuikaKnowledgeRetrievalPlanV1,
+  type FhKuikaKnowledgeRevisionRefV1,
+  type FhKuikaKnowledgeSourceKind,
+} from './kuika-knowledge-contract.js';
+
+export {
+  buildFhKuikaRoutineActivationPlanV1,
+  createFhKuikaRoutineDraftV1,
+  normalizeFhKuikaTriggerEventV1,
+  routineDraftCanActivate,
+  routineDraftCanGrantAuthority,
+  triggerNormalizationCanExecuteWorkflow,
+  triggerNormalizationCanInvokeModel,
+  type FhKuikaNormalizedTriggerEventV1,
+  type FhKuikaRoutineActivationPlanV1,
+  type FhKuikaRoutineDraftV1,
+  type FhKuikaRoutineRetryV1,
+  type FhKuikaRoutineTriggerKind,
+  type FhKuikaRoutineTriggerV1,
+} from './kuika-routines.js';
+
+export {
+  getFhKuikaRoutineTemplateV1,
+  listFhKuikaRoutineTemplatesV1,
+  routineCatalogCanActivate,
+} from './kuika-routine-catalog.js';
+
+export {
+  FH_KUIKA_ROUTINES_HTML,
+  routinesPageCanActivate,
+  routinesPageCanGrantAuthority,
+  routinesPageCanInvokeModel,
+} from './kuika-routine-ui.js';
+
+export {
+  optimizeFhKuikaRoutingV1,
+  routingOptimizerCanExecuteCall,
+  routingOptimizerCanGrantAuthority,
+  routingOptimizerCanRetrySemanticFailure,
+  routingOptimizerCanUseSemanticOutcome,
+  type FhKuikaRoutingCandidateEvaluationV1,
+  type FhKuikaRoutingCandidateV1,
+  type FhKuikaRoutingDataClass,
+  type FhKuikaRoutingDecisionV1,
+  type FhKuikaRoutingExclusionReason,
+  type FhKuikaRoutingHealth,
+  type FhKuikaRoutingLocality,
+  type FhKuikaRoutingRequestV1,
+  type FhKuikaRoutingRiskTier,
+} from './kuika-routing-optimizer.js';
+
+export {
+  routingSimulationCanExecuteCall,
+  simulateFhKuikaRoutingScenarioV1,
+  type FhKuikaRoutingSimulationInputV1,
+} from './kuika-routing-simulation.js';
+
+export {
+  FH_KUIKA_ROUTING_HTML,
+  routingPageCanGrantAuthority,
+  routingPageCanInvokeModel,
+  routingPageCanMutateBindings,
+} from './kuika-routing-ui.js';
+
+export {
   buildFhKuikaWorkflowReplayPreviewV1,
   workflowReplayPreviewCanExecute,
   workflowReplayPreviewCanGrantAuthority,
