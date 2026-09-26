@@ -283,6 +283,7 @@ function hasCycle(
   return visited !== nodes.length;
 }
 
+// Validation issue projection is descriptive only and cannot grant execution or publish authority.
 function classifyValidationError(message: string): FhKuikaWorkflowValidationIssueV1 {
   const nodeMatch = /(?:workflow node|LOOP node) ([A-Za-z0-9._-]+)/.exec(message);
   const edgeMatch = /(?:duplicate workflow edge: )([A-Za-z0-9._-]+->[A-Za-z0-9._-]+)/.exec(message);
