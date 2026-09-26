@@ -1160,6 +1160,9 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(homeHtml, /id="continuity"/);
     assert.match(homeHtml, /Security/);
     assert.match(homeHtml, /id="security-findings"/);
+    assert.match(homeHtml, /Source Control \/ CI/);
+    assert.match(homeHtml, /id="external-status"/);
+    assert.match(homeHtml, /\/api\/external-status/);
     assert.match(homeHtml, /role-bindings/);
     assert.match(homeHtml, /<details class="advanced-details">/);
     assert.match(homeHtml, /<summary>Engineering details<\/summary>/);
@@ -1212,6 +1215,13 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.equal(homeSnapshot.economy.mode, 'TOKEN_ECONOMY');
     assert.equal(homeSnapshot.economy.authority, 'NONE');
 
+    const externalStatus = await (await fetch(`${base}/api/external-status`)).json();
+    assert.equal(externalStatus.schemaVersion, 1);
+    assert.equal(externalStatus.state, 'DISABLED');
+    assert.equal(externalStatus.authority, 'NONE');
+    assert.equal(externalStatus.repository, 'skonyd/freehighlander-engineering-platform');
+    assert.equal(externalStatus.exactRevision, 'head');
+
     const summary = await (await fetch(`${base}/api/summary`)).json();
     assert.equal(summary.totalTokens, 140);
 
@@ -1249,6 +1259,10 @@ test('missing database keeps health available and returns 503 for data endpoints
 
     const health = await (await fetch(`${base}/api/health`)).json();
     assert.equal(health.status, 'waiting_for_database');
+
+    const externalStatus = await (await fetch(`${base}/api/external-status`)).json();
+    assert.equal(externalStatus.state, 'DISABLED');
+    assert.equal(externalStatus.repository, null);
 
     const home = await fetch(`${base}/api/home`);
     assert.equal(home.status, 503);

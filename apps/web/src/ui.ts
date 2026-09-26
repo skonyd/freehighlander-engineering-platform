@@ -237,7 +237,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     }
     .stage-list { margin-top: 10px; color: var(--muted); font-size: 12px; }
     .operational-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       margin-top: 14px;
     }
     .state-summary {
@@ -343,6 +343,10 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       <div class="card">
         <div class="section-label">Security</div>
         <div id="security-findings"><div class="empty">Loading finding state…</div></div>
+      </div>
+      <div class="card">
+        <div class="section-label">Source Control / CI</div>
+        <div id="external-status"><div class="empty">Loading optional external status…</div></div>
       </div>
     </section>
 
@@ -468,8 +472,13 @@ function stale(home, source) {
 }
 
 function stateClass(value) {
-  if (value === 'HEALTHY' || value === 'ACTIVE') return 'good';
-  if (value === 'DEGRADED' || value === 'ATTENTION' || value === 'FALLBACK_ACTIVE') return 'warn';
+  if (value === 'HEALTHY' || value === 'ACTIVE' || value === 'OK' || value === 'PASSING') return 'good';
+  if (
+    value === 'DEGRADED' ||
+    value === 'ATTENTION' ||
+    value === 'FALLBACK_ACTIVE' ||
+    value === 'PENDING'
+  ) return 'warn';
   if (value === 'FAILED' || value === 'ERROR' || value === 'CRITICAL') return 'bad';
   return 'muted';
 }
@@ -635,6 +644,58 @@ function renderOperationalState(home) {
       : '');
 }
 
+async function loadExternalStatus() {
+  const target = document.querySelector('#external-status');
+  try {
+    const status = await api('/api/external-status');
+    renderExternalStatus(status);
+  } catch (error) {
+    target.innerHTML =
+      '<div class="state-summary"><strong>GitHub</strong>' +
+      '<span class="pill muted">UNKNOWN</span></div>' +
+      '<div class="state-detail">External status is unavailable. Core Home remains local and usable.</div>';
+  }
+}
+
+function renderExternalStatus(status) {
+  const target = document.querySelector('#external-status');
+  if (status.state === 'DISABLED') {
+    target.innerHTML =
+      '<div class="state-summary"><strong>GitHub</strong>' +
+      '<span class="pill muted">DISABLED</span></div>' +
+      '<div class="state-detail">Optional external status is disabled by default.</div>';
+    return;
+  }
+
+  const ci = status.ci || {};
+  const pr = status.pullRequest;
+  const prText = pr
+    ? 'PR #' + fmt.format(pr.number) + ' · ' + pr.state + (pr.draft ? ' · draft' : '')
+    : 'No PR context';
+
+  const prLink = pr && pr.htmlUrl
+    ? '<div class="state-detail"><a class="module-link" href="' + esc(pr.htmlUrl) +
+      '" target="_blank" rel="noreferrer">Open PR</a></div>'
+    : '';
+
+  target.innerHTML =
+    '<div class="state-summary"><strong>GitHub</strong>' +
+    '<span class="pill ' + stateClass(status.state) + '">' + esc(status.state) + '</span></div>' +
+    '<div class="state-detail">' + esc(prText) + '</div>' +
+    '<div class="state-detail">CI <span class="' + stateClass(ci.state) + '">' +
+      esc(ci.state || 'UNKNOWN') + '</span> · ' +
+      fmt.format(ci.successfulChecks || 0) + ' passed · ' +
+      fmt.format(ci.failedChecks || 0) + ' failed · ' +
+      fmt.format(ci.pendingChecks || 0) + ' pending</div>' +
+    (status.stale
+      ? '<div class="state-detail warn">Cached external status · refresh unavailable</div>'
+      : '') +
+    (status.message
+      ? '<div class="state-detail">' + esc(status.message) + '</div>'
+      : '') +
+    prLink;
+}
+
 function renderEconomy(economy) {
   const target = document.querySelector('#economy');
   if (!economy || economy.mode === 'UNKNOWN') {
@@ -758,6 +819,8 @@ async function loadInternal() {
         '<div class="empty">No checkpoint telemetry yet.</div>';
       document.querySelector('#security-findings').innerHTML =
         '<div class="empty">No security finding telemetry yet.</div>';
+      document.querySelector('#external-status').innerHTML =
+        '<div class="muted">External CI status needs repository/revision context.</div>';
       document.querySelector('#runs').innerHTML =
         '<div class="empty">Run telemetry has not been indexed yet.</div>';
       document.querySelector('#models').innerHTML =
@@ -774,6 +837,7 @@ async function loadInternal() {
     lastRuns = values[1].runs;
     lastModels = values[2].models;
     renderCachedState();
+    void loadExternalStatus();
     refreshState.textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch (error) {
     document.querySelector('#health').innerHTML =
