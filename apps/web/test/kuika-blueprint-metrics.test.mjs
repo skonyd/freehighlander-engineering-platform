@@ -71,6 +71,15 @@ test('blueprint usage aggregation counts only supplied metadata events', () => {
       outcome: 'BLOCKED',
       authority: 'NONE',
     },
+    {
+      schemaVersion: 1,
+      timestamp: '2026-09-26T11:05:00.000Z',
+      action: 'SIMULATION_COMPLETED',
+      blueprintId: 'security-patch',
+      blueprintVersion: '1.0.0',
+      outcome: 'FAIL',
+      authority: 'NONE',
+    },
   ];
 
   const summary = aggregateFhKuikaBlueprintUsageV1(events);
@@ -78,8 +87,9 @@ test('blueprint usage aggregation counts only supplied metadata events', () => {
   assert.equal(summary.catalogViews, 1);
   assert.equal(summary.blueprintViews, 1);
   assert.equal(summary.draftsCreated, 1);
-  assert.equal(summary.simulations, 2);
+  assert.equal(summary.simulations, 3);
   assert.equal(summary.simulationPasses, 1);
+  assert.equal(summary.simulationFailures, 1);
   assert.equal(summary.simulationBlocks, 1);
   assert.equal(summary.byBlueprint.length, 2);
   assert.equal(summary.authority, 'NONE');
