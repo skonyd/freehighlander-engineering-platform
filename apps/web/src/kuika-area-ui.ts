@@ -82,9 +82,7 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
   },
 };
 
-export function renderFhKuikaAreaHtml(
-  area: 'BUILD' | 'INTEGRATE' | 'KNOWLEDGE',
-): string {
+export function renderFhKuikaAreaHtml(area: 'BUILD' | 'INTEGRATE' | 'KNOWLEDGE'): string {
   const definition = DEFINITIONS[area];
   const active = getFhKuikaNavigationItem(area);
   const navigation = listFhKuikaNavigation()
