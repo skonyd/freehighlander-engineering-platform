@@ -13,7 +13,7 @@ FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 - FH-20 readiness gate complete; Creator Marketplace external blocker cleared; explicit cutover still pending.
 - FH-30A..FH-37A complete and authority-neutral.
 - FH-30B..FH-37B remain post-cutover.
-- FH-KUIKA optional productization module is proposed; authority-neutral preparation may proceed before cutover while mutation activation remains gated.
+- FH-KUIKA optional productization module implementation is in progress; authority-neutral preparation may proceed before cutover while mutation activation remains gated.
 - Pre-cutover hardening through reproducible CI, repository hygiene, tracked-secret enforcement, 19/19 measured native coverage, opaque SecretHandle/EPHEMERAL injection, lockfile provenance, safe vulnerability reporting, deterministic build-output integrity accidental-publish safety, internal workspace dependency-confusion prevention and workspace package entrypoint integrity enforcement, source-to-dist build completeness enforcement, privacy export/delete manifest planning and fail-closed provider-egress preparation are complete.
 
 ```text
@@ -30,13 +30,13 @@ V3 authority = SHADOW_ONLY
 - **FH-02** Telemetry event schema + emitter — complete
 - **FH-03** SQLite telemetry/state index — complete
 - **FH-04** Read-only dashboard — complete
-- **FH-04B** Zero-Token Core Home Dashboard — core .1–.8 complete; optional .9 deferred; read-only and independent of FH-20
+- **FH-04B** Zero-Token Core Home Dashboard — .1–.9 complete; read-only and independent of FH-20
 
 ## Core Home extension
 
 Detailed implementation plan: [FH-04B-ZERO-TOKEN-CORE-HOME.md](FH-04B-ZERO-TOKEN-CORE-HOME.md).
 
-FH-04B turns the existing telemetry-first FH-04 surface into the default Core Home without introducing any model call on render/refresh. Core slices .1–.8 are complete.
+FH-04B turns the existing telemetry-first FH-04 surface into the default Core Home without introducing any model call on render/refresh. Slices .1–.9 are complete; optional GitHub PR/CI enrichment is deterministic and disabled by default.
 
 Recommended slices:
 
