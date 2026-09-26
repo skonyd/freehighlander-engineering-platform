@@ -416,12 +416,12 @@ Selecting a node exposes:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-04.1** workflow draft/read contract and canonical round-trip.
-- **FH-KUIKA-04.2** graph canvas + node palette.
-- **FH-KUIKA-04.3** node inspector + policy/evidence/budget surfaces.
-- **FH-KUIKA-04.4** deterministic validation visualization.
-- **FH-KUIKA-04.5** simulation/replay preview.
-- **FH-KUIKA-04.6** publish/version-diff lifecycle.
+- **FH-KUIKA-04.1** workflow draft/read contract and canonical round-trip. — COMPLETE
+- **FH-KUIKA-04.2** graph canvas + node palette. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-04.3** node inspector + non-authoritative policy/evidence/budget annotations. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-04.4** deterministic validation visualization. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-04.5** non-executing simulation/replay preview. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-04.6** publish/version-diff lifecycle. — OPEN; publication remains authority-gated
 
 ## Acceptance criteria
 
