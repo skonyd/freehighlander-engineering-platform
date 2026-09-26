@@ -298,11 +298,15 @@ async function handleRequest(
         json(response, 404, { error: 'solution_pack_not_found', packId: solutionPackRoute.packId });
         return;
       }
-      const roles = listFhKuikaMarketplaceRolesV1().map((role) => role.id + '@' + role.version);
-      json(response, 200, {
-        pack,
-        plan: buildFhKuikaSolutionPackInstallPlanV1(pack, roles, []),
-      });
+      if (solutionPackRoute.resource === 'plan') {
+        const roles = listFhKuikaMarketplaceRolesV1().map((role) => role.id + '@' + role.version);
+        json(response, 200, {
+          pack,
+          plan: buildFhKuikaSolutionPackInstallPlanV1(pack, roles, []),
+        });
+        return;
+      }
+      json(response, 200, { pack });
       return;
     }
 
@@ -466,10 +470,16 @@ function parseFhKuikaMarketplaceRoleRoute(pathname: string): {
 
 function parseFhKuikaSolutionPackRoute(pathname: string): {
   readonly packId: string;
+  readonly resource: 'detail' | 'plan';
 } | null {
-  const match = /^\/api\/modules\/fh-kuika\/solution-packs\/([^/]+)$/.exec(pathname);
+  const match = /^\/api\/modules\/fh-kuika\/solution-packs\/([^/]+)(?:\/(plan))?$/.exec(
+    pathname,
+  );
   if (!match?.[1]) return null;
-  return { packId: decodeURIComponent(match[1]) };
+  return {
+    packId: decodeURIComponent(match[1]),
+    resource: (match[2] ?? 'detail') as 'detail' | 'plan',
+  };
 }
 
 function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {
