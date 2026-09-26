@@ -1,6 +1,6 @@
 # FH-04B — Zero-Token Core Home Dashboard
 
-**Status:** CORE IMPLEMENTATION COMPLETE (.1–.8); OPTIONAL .9 DEFERRED  
+**Status:** COMPLETE (.1–.9)  
 **Parent:** FH-04 Read-only metrics dashboard  
 **Surface:** FreeHighlander Core Home  
 **Module relationship:** independent of FH-KUIKA  
@@ -864,12 +864,12 @@ FH-04B.7 Continuity/findings/local state   COMPLETE
         ↓
 FH-04B.8 UX hardening                      COMPLETE
         ↓
-FH-04B.9 Optional external status          DEFERRED / P1
+FH-04B.9 Optional external status          COMPLETE
 ~~~
 
 FH-04B.1–FH-04B.8 are Core roadmap work.
 
-FH-04B.9 is optional and may ship later.
+FH-04B.9 is implemented as optional deterministic GitHub PR/CI enrichment. It remains disabled by default and Core Home stays functional without it.
 
 ---
 
