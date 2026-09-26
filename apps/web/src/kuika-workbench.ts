@@ -12,6 +12,7 @@ export interface FhKuikaWorkbenchModeView {
   readonly canGrantAuthority: false;
   readonly mutationCapable: boolean;
   readonly requiresEnabledV3Authority: boolean;
+  readonly outputContract: 'FH_KUIKA_PLAN_CANDIDATE_V1' | null;
 }
 
 export type FhKuikaWorkbenchContextKind =
@@ -59,6 +60,7 @@ const MODE_VIEWS: Record<FhKuikaWorkbenchMode, FhKuikaWorkbenchModeView> = {
     canGrantAuthority: false,
     mutationCapable: false,
     requiresEnabledV3Authority: false,
+    outputContract: null,
   },
   PLAN: {
     mode: 'PLAN',
@@ -70,6 +72,7 @@ const MODE_VIEWS: Record<FhKuikaWorkbenchMode, FhKuikaWorkbenchModeView> = {
     canGrantAuthority: false,
     mutationCapable: false,
     requiresEnabledV3Authority: false,
+    outputContract: 'FH_KUIKA_PLAN_CANDIDATE_V1',
   },
   EXECUTE: {
     mode: 'EXECUTE',
@@ -81,6 +84,7 @@ const MODE_VIEWS: Record<FhKuikaWorkbenchMode, FhKuikaWorkbenchModeView> = {
     canGrantAuthority: false,
     mutationCapable: true,
     requiresEnabledV3Authority: true,
+    outputContract: null,
   },
   REVIEW: {
     mode: 'REVIEW',
@@ -92,6 +96,7 @@ const MODE_VIEWS: Record<FhKuikaWorkbenchMode, FhKuikaWorkbenchModeView> = {
     canGrantAuthority: false,
     mutationCapable: false,
     requiresEnabledV3Authority: false,
+    outputContract: null,
   },
 };
 

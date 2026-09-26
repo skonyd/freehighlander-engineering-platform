@@ -196,7 +196,9 @@ function renderSnapshot(snapshot) {
     '<div class="preflight-row"><span>Exact revision</span><strong>' +
       (preflight.exactRevisionBound ? 'BOUND' : 'MISSING') + '</strong></div>' +
     '<div class="preflight-row"><span>Source state</span><strong>' +
-      esc(preflight.sourceState) + '</strong></div>';
+      esc(preflight.sourceState) + '</strong></div>' +
+    '<div class="preflight-row"><span>Output contract</span><strong>' +
+      esc(snapshot.mode.outputContract || 'None') + '</strong></div>';
 
   document.querySelector('#action-status').innerHTML = preflight.canStartRequest
     ? 'Preflight passed. This slice still does not start model or runtime work.'

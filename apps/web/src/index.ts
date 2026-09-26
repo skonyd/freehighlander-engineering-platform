@@ -1,3 +1,17 @@
+export {
+  createFhKuikaPlanCandidateV1,
+  fhKuikaPlanCandidateCanAuthorizeExecution,
+  fhKuikaPlanCandidateCanGrantAuthority,
+  validateFhKuikaPlanCandidateV1,
+  type FhKuikaPlanAcceptanceCriterionV1,
+  type FhKuikaPlanBlockerV1,
+  type FhKuikaPlanBlueprintSuggestionV1,
+  type FhKuikaPlanCandidateStatus,
+  type FhKuikaPlanCandidateV1,
+  type FhKuikaPlanCandidateValidationV1,
+  type FhKuikaPlanWorkItemV1,
+} from './kuika-plan-candidate.js';
+
 export { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 
 export {
