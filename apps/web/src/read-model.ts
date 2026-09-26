@@ -563,7 +563,14 @@ function queryCurrentWork(db: DatabaseSync): CoreHomeCurrentWorkView | null {
   const nodeId = toStringOrNull(event?.node_id);
   const nodeType = toStringOrNull(event?.node_type);
   const workflowId = toStringOrNull(run.workflow_id);
-  const state = mapCurrentWorkState(eventType, status, result);
+  const state = mapCurrentWorkState({
+    eventType,
+    status,
+    result,
+    nodeId,
+    nodeType,
+    workflowId,
+  });
 
   return {
     runId,
@@ -679,21 +686,133 @@ function queryHumanApprovalAttention(db: DatabaseSync): CoreHomeAttentionSummary
   };
 }
 
-function mapCurrentWorkState(
-  eventType: string,
-  status: string | null,
-  result: string | null,
-): CoreHomeWorkState {
-  const normalized = (status ?? result ?? '').trim().toUpperCase();
+interface CurrentWorkStateInput {
+  readonly eventType: string;
+  readonly status: string | null;
+  readonly result: string | null;
+  readonly nodeId: string | null;
+  readonly nodeType: string | null;
+  readonly workflowId: string | null;
+}
+
+const CURRENT_WORK_STAGE_TAXONOMY_VERSION = 1 as const;
+
+const CURRENT_WORK_STAGE_TOKENS: ReadonlyArray<{
+  readonly state: CoreHomeWorkState;
+  readonly tokens: ReadonlySet<string>;
+}> = [
+  {
+    state: 'SECURITY_REVIEW',
+    tokens: new Set([
+      'security',
+      'secure',
+      'vulnerability',
+      'vulnerabilities',
+      'threat',
+      'scan',
+      'scanning',
+    ]),
+  },
+  {
+    state: 'TESTING',
+    tokens: new Set([
+      'test',
+      'tests',
+      'testing',
+      'qa',
+      'verify',
+      'verification',
+      'acceptance',
+    ]),
+  },
+  {
+    state: 'REVIEW',
+    tokens: new Set([
+      'review',
+      'reviewer',
+      'adjudication',
+      'adjudicate',
+      'inspect',
+      'inspection',
+    ]),
+  },
+  {
+    state: 'PLANNING',
+    tokens: new Set([
+      'plan',
+      'planning',
+      'requirement',
+      'requirements',
+      'architecture',
+      'design',
+      'discovery',
+    ]),
+  },
+  {
+    state: 'IMPLEMENTING',
+    tokens: new Set([
+      'implement',
+      'implementation',
+      'develop',
+      'development',
+      'code',
+      'coding',
+      'repair',
+      'fix',
+      'refactor',
+      'migration',
+      'upgrade',
+      'patch',
+    ]),
+  },
+];
+
+function mapCurrentWorkState(input: CurrentWorkStateInput): CoreHomeWorkState {
+  const normalized = (input.status ?? input.result ?? '').trim().toUpperCase();
+
   if (
-    eventType === 'human.required' ||
+    input.eventType === 'human.required' ||
     normalized === 'HUMAN_REQUIRED' ||
-    (eventType === 'human.decision' && normalized === 'STALE')
+    (input.eventType === 'human.decision' && normalized === 'STALE')
   ) {
     return 'WAITING_HUMAN';
   }
+
+  if (
+    input.eventType === 'quota.exhausted' ||
+    input.eventType === 'provider.unavailable' ||
+    normalized === 'WAITING_PROVIDER'
+  ) {
+    return 'WAITING_PROVIDER';
+  }
+
   if (normalized === 'BLOCKED') return 'BLOCKED';
   if (normalized === 'FAILED' || normalized === 'FAIL') return 'FAILED';
+  if (input.eventType === 'run.completed') return 'COMPLETE';
+
+  return classifyCurrentWorkStage(input);
+}
+
+function classifyCurrentWorkStage(input: CurrentWorkStateInput): CoreHomeWorkState {
+  void CURRENT_WORK_STAGE_TAXONOMY_VERSION;
+
+  const tokens = new Set(
+    [input.nodeId, input.nodeType, input.workflowId]
+      .filter((value): value is string => value !== null)
+      .flatMap((value) =>
+        value
+          .toLowerCase()
+          .split(/[^a-z0-9]+/)
+          .filter(Boolean),
+      ),
+  );
+
+  for (const entry of CURRENT_WORK_STAGE_TOKENS) {
+    for (const token of tokens) {
+      if (entry.tokens.has(token)) return entry.state;
+    }
+  }
+
   return 'UNKNOWN';
 }
 
