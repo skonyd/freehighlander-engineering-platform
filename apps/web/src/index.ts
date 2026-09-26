@@ -1,3 +1,14 @@
+export {
+  getFhKuikaWorkbenchModeView,
+  listFhKuikaWorkbenchModes,
+  workbenchModeSelectionCanGrantAuthority,
+  workbenchModeSelectionCanInvokeModel,
+  type FhKuikaWorkbenchMode,
+  type FhKuikaWorkbenchModeView,
+} from './kuika-workbench.js';
+
+export { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
+
 export { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 
 export { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
