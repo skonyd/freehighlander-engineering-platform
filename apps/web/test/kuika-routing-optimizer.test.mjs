@@ -47,7 +47,10 @@ test('routing optimizer prefers eligible preferred binding and is non-authoritat
     excludedIndependenceGroups: [],
     maxEstimatedCallCostUsd: 1,
     authority: 'NONE',
-    candidates: [candidate(), candidate({ bindingId: 'fallback', independenceGroup: 'group-b' })],
+    candidates: [
+      candidate(),
+      candidate({ bindingId: 'fallback', independenceGroup: 'group-b' }),
+    ],
   });
 
   assert.equal(decision.selectedBindingId, 'preferred');
