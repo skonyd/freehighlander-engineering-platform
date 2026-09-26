@@ -1,4 +1,24 @@
 export {
+  buildFhKuikaKnowledgeRetrievalPlanV1,
+  createFhKuikaKnowledgeQueryV1,
+  knowledgeQueryCanGrantAuthority,
+  knowledgeRetrievalCanMutateDomain,
+  knowledgeRetrievalRequiresModelCall,
+  semanticDiscoveryCanEstablishAuthoritativeLineage,
+  validateFhKuikaKnowledgeQueryV1,
+  validateFhKuikaKnowledgeResultV1,
+  type FhKuikaKnowledgeProvenanceV1,
+  type FhKuikaKnowledgeQueryMode,
+  type FhKuikaKnowledgeQueryV1,
+  type FhKuikaKnowledgeQueryValidationV1,
+  type FhKuikaKnowledgeResultClass,
+  type FhKuikaKnowledgeResultV1,
+  type FhKuikaKnowledgeRetrievalPlanV1,
+  type FhKuikaKnowledgeRevisionRefV1,
+  type FhKuikaKnowledgeSourceKind,
+} from './kuika-knowledge-contract.js';
+
+export {
   buildFhKuikaWorkflowSimulationPreviewV1,
   buildFhKuikaWorkflowValidationViewV1,
   createFhKuikaWorkflowNodeInspectorV1,
