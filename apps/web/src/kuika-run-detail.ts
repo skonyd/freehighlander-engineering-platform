@@ -8,16 +8,7 @@ import type {
 } from './read-model.js';
 
 export type FhKuikaRunTimelineKind =
-  | 'RUN'
-  | 'NODE'
-  | 'GATE'
-  | 'MODEL'
-  | 'TOOL'
-  | 'HUMAN'
-  | 'ERROR'
-  | 'ARTIFACT'
-  | 'POLICY'
-  | 'OTHER';
+  'RUN' | 'NODE' | 'GATE' | 'MODEL' | 'TOOL' | 'HUMAN' | 'ERROR' | 'ARTIFACT' | 'POLICY' | 'OTHER';
 
 export interface FhKuikaRunTimelineItemV1 {
   readonly timestamp: string;
