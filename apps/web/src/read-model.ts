@@ -942,9 +942,7 @@ function providerSystemState(
   }
   if (
     states.length === relevantProviderIds.size &&
-    states.every(
-      (provider) => provider.available === true || provider.circuitState === 'CLOSED',
-    )
+    states.every((provider) => provider.available === true || provider.circuitState === 'CLOSED')
   ) {
     return 'HEALTHY';
   }
@@ -982,11 +980,7 @@ function safeCircuitState(value: unknown): 'CLOSED' | 'OPEN' | 'HALF_OPEN' | nul
 }
 
 function safeReturnPolicy(value: unknown): CoreHomeRoleBindingHealthView['returnPolicy'] | null {
-  if (
-    value === 'STAY_ON_FALLBACK' ||
-    value === 'ASK_BEFORE_RETURN' ||
-    value === 'AUTO_RETURN'
-  ) {
+  if (value === 'STAY_ON_FALLBACK' || value === 'ASK_BEFORE_RETURN' || value === 'AUTO_RETURN') {
     return value;
   }
   return null;
