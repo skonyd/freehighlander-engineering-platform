@@ -30,6 +30,14 @@ void load();
 </body>
 </html>`;
 
-export function connectorHubPageCanInvokeModel(): false { return false; }
-export function connectorHubPageCanGrantAuthority(): false { return false; }
-export function connectorHubPageCanActivate(): false { return false; }
+export function connectorHubPageCanInvokeModel(): false {
+  return false;
+}
+
+export function connectorHubPageCanGrantAuthority(): false {
+  return false;
+}
+
+export function connectorHubPageCanActivate(): false {
+  return false;
+}
