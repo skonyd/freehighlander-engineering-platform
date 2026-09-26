@@ -1180,15 +1180,11 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(blueprintCatalogHtml, /Blueprints/);
     assert.match(blueprintCatalogHtml, /Feature Implementation/);
 
-    const blueprintDetail = await fetch(
-      `${base}/modules/fh-kuika/build/blueprints/security-patch`,
-    );
+    const blueprintDetail = await fetch(`${base}/modules/fh-kuika/build/blueprints/security-patch`);
     assert.equal(blueprintDetail.status, 200);
     assert.match(await blueprintDetail.text(), /security-reviewer/);
 
-    const missingBlueprint = await fetch(
-      `${base}/modules/fh-kuika/build/blueprints/not-present`,
-    );
+    const missingBlueprint = await fetch(`${base}/modules/fh-kuika/build/blueprints/not-present`);
     assert.equal(missingBlueprint.status, 404);
     assert.match(await missingBlueprint.text(), /Blueprint not found/);
 
