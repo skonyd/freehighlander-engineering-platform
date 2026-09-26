@@ -71,9 +71,7 @@ export function simulateFhKuikaBlueprintV1(
   blueprint: FhKuikaPublishedBlueprintV1,
 ): FhKuikaBlueprintSimulationPreviewV1 {
   const draft = createFhKuikaBlueprintWorkflowDraftV1(blueprint);
-  const draftValidation = validateFhKuikaWorkflowDraftDefinitionV1(
-    draft.draft.canonicalDefinition,
-  );
+  const draftValidation = validateFhKuikaWorkflowDraftDefinitionV1(draft.draft.canonicalDefinition);
 
   return {
     schemaVersion: 1,
