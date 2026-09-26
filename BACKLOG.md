@@ -81,6 +81,12 @@ Umbrella: #88.
 - [ ] FH-KUIKA-03 Engineering Blueprint Catalog — P0
 - [ ] FH-KUIKA-04 Visual Workflow Studio — P0
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
+  - [x] FH-KUIKA-05.1 ToolAdapter-aligned connector registry/read model
+  - [ ] FH-KUIKA-05.2 MCP discovery/normalization
+  - [ ] FH-KUIKA-05.3 install-review + permission diff UX contract
+  - [ ] FH-KUIKA-05.4 Connector Hub UI
+  - [ ] FH-KUIKA-05.5 SecretHandle credential configuration
+  - [ ] FH-KUIKA-05.6 authority-bearing activation (post-gate)
 - [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
 - [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1
 - [ ] FH-KUIKA-08 Routines / Trigger Engine — P1
