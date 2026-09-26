@@ -277,14 +277,30 @@ function renderHome(home) {
   document.querySelector('#project-context').innerHTML =
     '<strong>' + esc(repository) + '</strong> · ' + esc(branch) + '@<code>' + esc(revision) + '</code>';
 
-  const attentionValue = stale(home, 'attention') ? 'Unknown' : fmt.format(home.attention.total);
+  const attentionPartial =
+    stale(home, 'runtime-attention') ||
+    stale(home, 'provider-state') ||
+    stale(home, 'findings') ||
+    stale(home, 'continuity');
+  const attentionValue =
+    fmt.format(home.attention.total) + (attentionPartial ? ' known' : '');
   const providerValue = stale(home, 'provider-state') ? 'Unknown' : home.system.providers;
-  const errorValue = stale(home, 'attention') ? 'Unknown' : fmt.format(home.attention.errors);
+  const errorValue = stale(home, 'runtime-attention')
+    ? 'Unknown'
+    : fmt.format(home.attention.errors);
 
   document.querySelector('#home-metrics').innerHTML = [
     metric('System', home.system.state, 'Database: ' + home.system.database),
-    metric('Attention', attentionValue, stale(home, 'attention') ? 'Projection pending' : 'Current'),
-    metric('Errors', errorValue, stale(home, 'attention') ? 'Projection pending' : 'Current'),
+    metric(
+      'Attention',
+      attentionValue,
+      attentionPartial ? 'Known items · other sources pending' : 'Current'
+    ),
+    metric(
+      'Errors',
+      errorValue,
+      stale(home, 'runtime-attention') ? 'Projection pending' : 'Current'
+    ),
     metric('Providers', providerValue, stale(home, 'provider-state') ? 'Projection pending' : 'Current')
   ].join('');
 
@@ -305,20 +321,23 @@ function renderHome(home) {
   }
 
   const attentionTarget = document.querySelector('#attention');
-  if (stale(home, 'attention')) {
-    attentionTarget.innerHTML =
-      '<div class="muted">Attention projection not available yet.</div>';
-  } else if (!home.attention.items.length) {
-    attentionTarget.innerHTML = '<div class="muted">Nothing currently needs attention.</div>';
+  if (!home.attention.items.length) {
+    attentionTarget.innerHTML = attentionPartial
+      ? '<div class="muted">No known approval items. Other attention sources are pending.</div>'
+      : '<div class="muted">Nothing currently needs attention.</div>';
   } else {
-    attentionTarget.innerHTML = home.attention.items.map(item =>
-      '<div class="attention-item">' +
-        '<strong class="' + stateClass(item.severity) + '">' + esc(item.headline) + '</strong>' +
-        '<div class="muted">' + esc(item.kind) + ' · ' +
-        esc(new Date(item.occurredAt).toLocaleString()) + '</div>' +
-        (item.nextAction ? '<div>' + esc(item.nextAction) + '</div>' : '') +
-      '</div>'
-    ).join('');
+    attentionTarget.innerHTML =
+      home.attention.items.map(item =>
+        '<div class="attention-item">' +
+          '<strong class="' + stateClass(item.severity) + '">' + esc(item.headline) + '</strong>' +
+          '<div class="muted">' + esc(item.kind) + ' · ' +
+          esc(new Date(item.occurredAt).toLocaleString()) + '</div>' +
+          (item.nextAction ? '<div>' + esc(item.nextAction) + '</div>' : '') +
+        '</div>'
+      ).join('') +
+      (attentionPartial
+        ? '<div class="muted">Other attention sources are still pending.</div>'
+        : '');
   }
 
   const usage = home.usage;
