@@ -47,6 +47,10 @@ test('FH-KUIKA Workflow Studio route serves authority-neutral local draft UI', a
     assert.match(html, /Required evidence/);
     assert.match(html, /Tool permissions/);
     assert.match(html, /Approval policy/);
+    assert.match(html, /Recorded replay preview/);
+    assert.match(html, /id="replay-run-id"/);
+    assert.match(html, /\/api\/modules\/fh-kuika\/workflows\/replay/);
+    assert.match(html, /renderSimulation/);
 
     const head = await fetch(base + '/modules/fh-kuika/build/workflows', { method: 'HEAD' });
     assert.equal(head.status, 200);
