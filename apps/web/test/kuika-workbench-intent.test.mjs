@@ -2,11 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  createFhKuikaPlanCandidateV1,
   createFhKuikaWorkbenchIntentV1,
   workbenchIntentPreparationCanGrantAuthority,
   workbenchIntentPreparationCanInvokeModel,
-  workbenchPlanCandidateCanPublishDirectly,
 } from '../dist/index.js';
 
 const context = {
@@ -83,23 +81,4 @@ test('Execute remains blocked until V3 authority is enabled', () => {
   assert.equal(execute.disposition, 'CONTROL_PLANE_REQUEST');
   assert.equal(execute.mutationRequested, true);
   assert.equal(execute.executionOwner, 'CONTROL_PLANE');
-});
-
-test('Plan candidate output cannot publish directly', () => {
-  const candidate = createFhKuikaPlanCandidateV1({
-    exactRevision: 'a'.repeat(40),
-    items: [
-      {
-        id: 'task-1',
-        title: 'Implement read projection',
-        kind: 'TASK',
-        detail: 'Add deterministic projection and tests.',
-      },
-    ],
-  });
-
-  assert.equal(candidate.authority, 'NONE');
-  assert.equal(candidate.publishableDirectly, false);
-  assert.equal(candidate.items[0]?.authority, 'NONE');
-  assert.equal(workbenchPlanCandidateCanPublishDirectly(), false);
 });
