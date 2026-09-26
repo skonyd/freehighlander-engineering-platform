@@ -294,6 +294,26 @@ export {
 } from './token-economy.js';
 
 export {
+  buildCompactAgentHandoff,
+  buildLocalPreSolveVerificationPacket,
+  economyHandoffCanIncludeFullPrivateTrajectory,
+  localPreSolveCanLeakVerdictIntoIndependentRoundZero,
+  planReadOnlyRemoteCallCoalescing,
+  remoteCallCoalescingCanMergeIndependentOpinions,
+  type CompactAgentFinding,
+  type CompactAgentHandoffInput,
+  type CompactAgentHandoffV1,
+  type EconomyEvidenceReference,
+  type LocalPreSolveSlice,
+  type LocalPreSolveVerificationPacketInput,
+  type LocalPreSolveVerificationPacketV1,
+  type ReadOnlyRemoteQuestion,
+  type RemoteCallCoalescingPlanV1,
+  type RemoteCallCoalescingReason,
+  type RemoteCallCoalescingStatus,
+} from './economy-handoff.js';
+
+export {
   buildOfflineEconomyCalibrationReport,
   economyCalibrationCanGrantAuthority,
   economyQualificationCanIgnoreParityMismatch,
