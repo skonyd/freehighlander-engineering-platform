@@ -117,7 +117,9 @@ function validateAndNormalizeParameters(
   }
 
   const normalized: Record<string, FhKuikaBlueprintParameterValue> = {};
-  for (const definition of [...definitions].sort((left, right) => left.id.localeCompare(right.id))) {
+  for (const definition of [...definitions].sort((left, right) =>
+    left.id.localeCompare(right.id),
+  )) {
     const supplied = values[definition.id];
     const value = supplied === undefined ? definition.defaultValue : supplied;
 
