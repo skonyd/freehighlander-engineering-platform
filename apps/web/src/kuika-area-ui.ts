@@ -95,9 +95,14 @@ export function renderFhKuikaAreaHtml(area: 'BUILD' | 'INTEGRATE' | 'KNOWLEDGE')
     .join('');
 
   const cards = definition.cards
-    .map(
-      (card) =>
-        (card.href ? '<a class="card linked-card" href="' + card.href + '">' : '<article class="card">') +
+    .map((card) => {
+      const openingTag = card.href
+        ? '<a class="card linked-card" href="' + card.href + '">'
+        : '<article class="card">';
+      const closingTag = card.href ? '</a>' : '</article>';
+
+      return (
+        openingTag +
         '<div class="card-head"><h2>' +
         card.title +
         '</h2><span class="badge">' +
@@ -106,8 +111,9 @@ export function renderFhKuikaAreaHtml(area: 'BUILD' | 'INTEGRATE' | 'KNOWLEDGE')
         '<p>' +
         card.detail +
         '</p>' +
-        (card.href ? '</a>' : '</article>'),
-    )
+        closingTag
+      );
+    })
     .join('');
 
   return String.raw`<!doctype html>
