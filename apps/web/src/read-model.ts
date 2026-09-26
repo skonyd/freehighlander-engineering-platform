@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   createCoreHomeSnapshotV1,
   type CoreHomeAttentionItemV1,
+  type CoreHomeEconomyView,
   type CoreHomeAttentionSummaryView,
   type CoreHomeCurrentWorkView,
   type CoreHomeRecentRunView,
@@ -226,6 +227,7 @@ export class DashboardReadModel {
       const runs = queryRuns(db, recentRunLimit);
       const latestRun = runs[0] ?? null;
       const usage = queryUsageWindow(db, 'TODAY', { now: generatedAt });
+      const economy = queryLatestEconomyStatus(db);
       const sqliteUpdatedAt = queryLatestTelemetryTimestamp(db) ?? generatedAt;
       const currentWork = queryCurrentWork(db);
       const approvalAttention = queryHumanApprovalAttention(db);
@@ -262,6 +264,7 @@ export class DashboardReadModel {
         currentWork,
         attention: approvalAttention,
         usage,
+        economy,
         roleBindings: providerProjection.roleBindings,
         recentRuns: runs.map(mapRecentRun),
         continuity: {
@@ -1048,6 +1051,148 @@ function queryUsageWindow(
     retries: toNumber(row?.retries) ?? 0,
     fallbacks: toNumber(row?.fallbacks) ?? 0,
   };
+}
+
+function queryLatestEconomyStatus(db: DatabaseSync): CoreHomeEconomyView {
+  const unknown: CoreHomeEconomyView = {
+    mode: 'UNKNOWN',
+    optimizerBindingId: null,
+    optimizerModelId: null,
+    remoteTokenTarget: null,
+    candidateRemoteInputTokens: null,
+    finalRemoteInputTokens: null,
+    remoteOutputTokens: null,
+    cachedInputTokens: null,
+    reductionStages: [],
+    protectedContentCount: null,
+    localOptimizationDurationMs: null,
+    remoteTokenSavingRatio: null,
+    bypassReason: null,
+    roleEligibility: [],
+    observedAt: null,
+    authority: 'NONE',
+  };
+
+  const row = db
+    .prepare(
+      `SELECT timestamp, event_json
+       FROM events
+       WHERE type = 'economy.runtime.summary'
+       ORDER BY timestamp DESC, id DESC
+       LIMIT 1`,
+    )
+    .get() as SqlRow | undefined;
+  if (!row) return unknown;
+
+  let event: Record<string, unknown>;
+  try {
+    event = JSON.parse(String(row.event_json)) as Record<string, unknown>;
+  } catch {
+    return unknown;
+  }
+  const payload = asRecord(event.payload);
+  if (!payload || payload.authority !== 'NONE') return unknown;
+
+  const mode =
+    payload.mode === 'STANDARD' || payload.mode === 'TOKEN_ECONOMY' ? payload.mode : null;
+  const candidateRemoteInputTokens = safeEconomyInteger(payload.candidateRemoteInputTokens);
+  const finalRemoteInputTokens = safeEconomyInteger(payload.finalRemoteInputTokens);
+  const remoteOutputTokens = safeEconomyInteger(payload.remoteOutputTokens);
+  const cachedInputTokens = safeEconomyInteger(payload.cachedInputTokens);
+  const protectedContentCount = safeEconomyInteger(payload.protectedContentCount);
+  const localOptimizationDurationMs = safeEconomyInteger(payload.localOptimizationDurationMs);
+  const remoteTokenSavingRatio = safeEconomyRatio(payload.remoteTokenSavingRatio);
+  const reductionStages = safeEconomyStringArray(payload.reductionStages);
+  const roleEligibility = safeEconomyRoles(payload.roleEligibility);
+
+  if (
+    mode === null ||
+    candidateRemoteInputTokens === null ||
+    finalRemoteInputTokens === null ||
+    remoteOutputTokens === null ||
+    cachedInputTokens === null ||
+    protectedContentCount === null ||
+    localOptimizationDurationMs === null ||
+    remoteTokenSavingRatio === null ||
+    reductionStages === null ||
+    roleEligibility === null
+  ) {
+    return unknown;
+  }
+
+  return {
+    mode,
+    optimizerBindingId: safeOptionalProjectionText(payload.optimizerBindingId),
+    optimizerModelId: safeOptionalProjectionText(payload.optimizerModelId),
+    remoteTokenTarget: safeOptionalEconomyInteger(payload.remoteTokenTarget),
+    candidateRemoteInputTokens,
+    finalRemoteInputTokens,
+    remoteOutputTokens,
+    cachedInputTokens,
+    reductionStages,
+    protectedContentCount,
+    localOptimizationDurationMs,
+    remoteTokenSavingRatio,
+    bypassReason: safeOptionalProjectionText(payload.bypassReason),
+    roleEligibility,
+    observedAt: safeProjectionTimestamp(row.timestamp) ?? null,
+    authority: 'NONE',
+  };
+}
+
+function safeEconomyInteger(value: unknown): number | null {
+  return Number.isInteger(value) && Number(value) >= 0 ? Number(value) : null;
+}
+
+function safeOptionalEconomyInteger(value: unknown): number | null {
+  return value === undefined ? null : safeEconomyInteger(value);
+}
+
+function safeEconomyRatio(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1
+    ? value
+    : null;
+}
+
+function safeOptionalProjectionText(value: unknown): string | null {
+  return value === undefined ? null : safeProjectionText(value);
+}
+
+function safeEconomyStringArray(value: unknown): readonly string[] | null {
+  if (!Array.isArray(value)) return null;
+  const values = value.map((entry) => safeProjectionText(entry));
+  if (values.some((entry) => entry === null)) return null;
+  const result = values as string[];
+  if (new Set(result).size !== result.length) return null;
+  return result;
+}
+
+function safeEconomyRoles(value: unknown): CoreHomeEconomyView['roleEligibility'] | null {
+  if (!Array.isArray(value)) return null;
+  const result: Array<CoreHomeEconomyView['roleEligibility'][number]> = [];
+  const seen = new Set<string>();
+
+  for (const raw of value) {
+    const entry = asRecord(raw);
+    if (!entry) return null;
+    const logicalRole = safeProjectionText(entry.logicalRole);
+    const riskTier =
+      entry.riskTier === 'NORMAL' || entry.riskTier === 'HIGH' || entry.riskTier === 'CRITICAL'
+        ? entry.riskTier
+        : null;
+    if (!logicalRole || !riskTier || typeof entry.eligible !== 'boolean') return null;
+    const key = logicalRole + ':' + riskTier;
+    if (seen.has(key)) return null;
+    seen.add(key);
+    result.push({
+      logicalRole,
+      riskTier,
+      eligible: entry.eligible,
+      reason: safeOptionalProjectionText(entry.reason),
+    });
+  }
+
+  return result;
 }
 
 function queryLatestTelemetryTimestamp(db: DatabaseSync): string | null {

@@ -171,6 +171,27 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       margin-top: 9px;
     }
     .error-grid span:nth-child(odd) { color: var(--muted); }
+    .economy-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .economy-grid .cell {
+      background: var(--panel-2);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .economy-grid .cell span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .economy-grid .cell strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 15px;
+    }
+    .stage-list { margin-top: 10px; color: var(--muted); font-size: 12px; }
     .zero-token-note {
       margin-top: 14px;
       color: var(--muted);
@@ -221,6 +242,11 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       <div id="role-bindings" class="binding-list">
         <div class="empty">Loading active models…</div>
       </div>
+    </section>
+
+    <section class="card" style="margin-top:14px">
+      <div class="section-label">Token Economy</div>
+      <div id="economy"><div class="empty">Loading economy status…</div></div>
     </section>
 
     <div class="details-heading">Engineering details</div>
@@ -370,6 +396,57 @@ function renderHome(home) {
     ' · Fallbacks ' + fmt.format(usage.fallbacks) + '</div>';
 
   renderRoleBindings(home);
+  renderEconomy(home.economy);
+}
+
+function renderEconomy(economy) {
+  const target = document.querySelector('#economy');
+  if (!economy || economy.mode === 'UNKNOWN') {
+    target.innerHTML =
+      '<div class="muted">No Token Economy runtime summary has been indexed yet.</div>';
+    return;
+  }
+
+  const ratio =
+    economy.remoteTokenSavingRatio == null
+      ? '—'
+      : (economy.remoteTokenSavingRatio * 100).toFixed(1) + '%';
+  const remoteInput =
+    economy.candidateRemoteInputTokens == null
+      ? '—'
+      : fmt.format(economy.candidateRemoteInputTokens) +
+        ' → ' +
+        fmt.format(economy.finalRemoteInputTokens);
+  const optimizer = economy.optimizerModelId || economy.optimizerBindingId || '—';
+  const targetValue =
+    economy.remoteTokenTarget == null ? '—' : fmt.format(economy.remoteTokenTarget);
+  const localDuration =
+    economy.localOptimizationDurationMs == null
+      ? '—'
+      : economy.localOptimizationDurationMs < 1000
+        ? economy.localOptimizationDurationMs + ' ms'
+        : (economy.localOptimizationDurationMs / 1000).toFixed(1) + ' s';
+  const stages = (economy.reductionStages || []).length
+    ? economy.reductionStages
+        .map(stage => '<span class="pill">' + esc(stage) + '</span>')
+        .join(' ')
+    : '<span class="muted">No reduction stage recorded.</span>';
+
+  target.innerHTML =
+    '<div class="economy-grid">' +
+      '<div class="cell"><span>Mode</span><strong>' + esc(economy.mode) + '</strong></div>' +
+      '<div class="cell"><span>Remote input</span><strong>' + esc(remoteInput) + '</strong></div>' +
+      '<div class="cell"><span>Saving</span><strong>' + esc(ratio) + '</strong></div>' +
+      '<div class="cell"><span>Target</span><strong>' + esc(targetValue) + '</strong></div>' +
+      '<div class="cell"><span>Local optimizer</span><strong>' + esc(optimizer) + '</strong></div>' +
+      '<div class="cell"><span>Local duration</span><strong>' + esc(localDuration) + '</strong></div>' +
+      '<div class="cell"><span>Protected items</span><strong>' +
+        esc(economy.protectedContentCount == null ? '—' : fmt.format(economy.protectedContentCount)) +
+      '</strong></div>' +
+      '<div class="cell"><span>Bypass</span><strong>' +
+        esc(economy.bypassReason || '—') + '</strong></div>' +
+    '</div>' +
+    '<div class="stage-list"><strong>Stages:</strong> ' + stages + '</div>';
 }
 
 function renderRoleBindings(home) {
@@ -429,6 +506,8 @@ async function load() {
         '<div class="empty">No usage telemetry yet.</div>';
       document.querySelector('#role-bindings').innerHTML =
         '<div class="empty">No active model state yet.</div>';
+      document.querySelector('#economy').innerHTML =
+        '<div class="empty">No Token Economy telemetry yet.</div>';
       document.querySelector('#runs').innerHTML =
         '<div class="empty">Run telemetry has not been indexed yet.</div>';
       document.querySelector('#models').innerHTML =

@@ -85,6 +85,47 @@ async function fixture() {
     ) VALUES (?, ?, ?, ?, ?, ?)`,
   ).run('event-1', 1, 'run.started', rawEvent.timestamp, 'run-1', JSON.stringify(rawEvent));
 
+  const economyEvent = {
+    schemaVersion: 1,
+    type: 'economy.runtime.summary',
+    timestamp: '2026-09-19T20:00:02.000Z',
+    runId: 'run-1',
+    payload: {
+      mode: 'TOKEN_ECONOMY',
+      optimizerBindingId: 'local-optimizer',
+      optimizerModelId: 'local-model',
+      remoteTokenTarget: 80,
+      candidateRemoteInputTokens: 100,
+      finalRemoteInputTokens: 60,
+      remoteOutputTokens: 30,
+      cachedInputTokens: 20,
+      reductionStages: ['DETERMINISTIC_REDUCTION', 'REPOSITORY_JIT'],
+      protectedContentCount: 2,
+      localOptimizationDurationMs: 25,
+      remoteTokenSavingRatio: 0.4,
+      roleEligibility: [
+        {
+          logicalRole: 'context-optimizer',
+          riskTier: 'NORMAL',
+          eligible: true,
+        },
+      ],
+      authority: 'NONE',
+    },
+  };
+  db.prepare(
+    `INSERT INTO events(
+      event_hash, schema_version, type, timestamp, run_id, event_json
+    ) VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(
+    'event-economy',
+    1,
+    'economy.runtime.summary',
+    economyEvent.timestamp,
+    'run-1',
+    JSON.stringify(economyEvent),
+  );
+
   db.prepare(
     `INSERT INTO model_calls VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
@@ -219,6 +260,10 @@ test('dashboard read model exposes summary, runs, model usage and artifacts', as
     assert.equal(home.usage.modelCalls, 1);
     assert.equal(home.usage.totalTokens, 140);
     assert.equal(home.usage.actualCostUsd, 0.09);
+    assert.equal(home.economy.mode, 'TOKEN_ECONOMY');
+    assert.equal(home.economy.finalRemoteInputTokens, 60);
+    assert.equal(home.economy.remoteTokenSavingRatio, 0.4);
+    assert.equal(home.economy.authority, 'NONE');
     assert.equal(home.recentRuns[0]?.runId, 'run-1');
     assert.equal(home.findings.state, 'UNKNOWN');
     assert.ok(home.sourceFreshness.staleSources.includes('provider-state'));
@@ -257,7 +302,7 @@ test('dashboard read model exposes summary, runs, model usage and artifacts', as
     const detail = model.runDetail('run-1');
     assert.ok(detail);
     assert.equal(detail.run.status, 'PASSED');
-    assert.equal(detail.events.length, 1);
+    assert.equal(detail.events.length, 2);
     assert.equal(detail.modelCalls.length, 1);
     assert.equal(detail.artifacts[0]?.artifactId, 'artifact-1');
   } finally {
@@ -393,6 +438,8 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(homeHtml, /FreeHighlander · Core Home/);
     assert.match(homeHtml, /ZERO-TOKEN HOME/);
     assert.match(homeHtml, /Active models/);
+    assert.match(homeHtml, /Token Economy/);
+    assert.match(homeHtml, /id="economy"/);
     assert.match(homeHtml, /role-bindings/);
     assert.match(homeHtml, /\/api\/home/);
     assert.equal(home.headers.get('x-freehighlander-mode'), 'read-only');
@@ -405,6 +452,8 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.equal(homeSnapshot.schemaVersion, 1);
     assert.equal(homeSnapshot.projectionAuthority, 'NONE');
     assert.equal(homeSnapshot.project.repository, 'skonyd/freehighlander-engineering-platform');
+    assert.equal(homeSnapshot.economy.mode, 'TOKEN_ECONOMY');
+    assert.equal(homeSnapshot.economy.authority, 'NONE');
 
     const summary = await (await fetch(`${base}/api/summary`)).json();
     assert.equal(summary.totalTokens, 140);
