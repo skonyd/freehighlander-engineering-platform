@@ -194,7 +194,10 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
 
     const home = await fetch(`${base}/`);
     assert.equal(home.status, 200);
-    assert.match(await home.text(), /Engineering Telemetry/);
+    const homeHtml = await home.text();
+    assert.match(homeHtml, /<h1>Home<\/h1>/);
+    assert.match(homeHtml, /ZERO-TOKEN · READ ONLY/);
+    assert.match(homeHtml, /Engineering telemetry/);
     assert.equal(home.headers.get('x-freehighlander-mode'), 'read-only');
 
     const health = await (await fetch(`${base}/api/health`)).json();
