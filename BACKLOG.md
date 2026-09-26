@@ -11,7 +11,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-02 Telemetry event emitter / durable event history — issue #22 / PR #23
 - [x] FH-03 SQLite run/event/artifact metadata store — issue #24 / PR #25
 - [x] FH-04 Read-only metrics dashboard — issue #26 / PR #27
-- [x] FH-04B Zero-Token Core Home Dashboard — core .1–.8 complete; optional .9 external CI/PR enrichment deferred; detailed plan in `docs/planning/FH-04B-ZERO-TOKEN-CORE-HOME.md`
+- [x] FH-04B Zero-Token Core Home Dashboard — .1–.9 complete, including optional deterministic GitHub PR/CI enrichment; detailed plan in `docs/planning/FH-04B-ZERO-TOKEN-CORE-HOME.md`
 
 ## Qwen / model economics
 - [x] FH-05 Qwen specialist shadow roles — issue #29 / PR #30
@@ -75,10 +75,10 @@ Umbrella: #88.
 - [x] Privacy export/delete manifest planning — issue #140 / PR #141
 - [x] Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143
 
-## Optional FH-KUIKA productization module — proposed
-- [ ] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0
-- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0
-- [ ] FH-KUIKA-03 Engineering Blueprint Catalog — P0
+## Optional FH-KUIKA productization module — implementation in progress
+- [~] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0; navigation shell + explainable operations read surface implemented
+- [~] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0; mode contract + read-only Workbench UI implemented
+- [~] FH-KUIKA-03 Engineering Blueprint Catalog — P0; schema, deterministic matcher, curated pack and catalog/detail UI implemented; workflow-draft/simulation + telemetry remain
 - [ ] FH-KUIKA-04 Visual Workflow Studio — P0
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
 - [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
