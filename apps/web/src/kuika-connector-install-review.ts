@@ -41,9 +41,7 @@ export function buildFhKuikaConnectorInstallReviewV1(
     throw new Error('install review previous connector must use the same connector id');
   }
 
-  const permissionDiff = previous
-    ? diffFhKuikaConnectorPermissionsV1(previous, candidate)
-    : null;
+  const permissionDiff = previous ? diffFhKuikaConnectorPermissionsV1(previous, candidate) : null;
   const mutationCapable = candidate.capabilities.some((item) => item.mutationCapable);
   const warnings = new Set<FhKuikaConnectorInstallWarning>();
 
