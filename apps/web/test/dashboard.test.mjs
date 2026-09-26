@@ -392,6 +392,8 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     const homeHtml = await home.text();
     assert.match(homeHtml, /FreeHighlander · Core Home/);
     assert.match(homeHtml, /ZERO-TOKEN HOME/);
+    assert.match(homeHtml, /Active models/);
+    assert.match(homeHtml, /role-bindings/);
     assert.match(homeHtml, /\/api\/home/);
     assert.equal(home.headers.get('x-freehighlander-mode'), 'read-only');
 
