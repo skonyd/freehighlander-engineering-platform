@@ -716,26 +716,11 @@ const CURRENT_WORK_STAGE_TOKENS: ReadonlyArray<{
   },
   {
     state: 'TESTING',
-    tokens: new Set([
-      'test',
-      'tests',
-      'testing',
-      'qa',
-      'verify',
-      'verification',
-      'acceptance',
-    ]),
+    tokens: new Set(['test', 'tests', 'testing', 'qa', 'verify', 'verification', 'acceptance']),
   },
   {
     state: 'REVIEW',
-    tokens: new Set([
-      'review',
-      'reviewer',
-      'adjudication',
-      'adjudicate',
-      'inspect',
-      'inspection',
-    ]),
+    tokens: new Set(['review', 'reviewer', 'adjudication', 'adjudicate', 'inspect', 'inspection']),
   },
   {
     state: 'PLANNING',
@@ -798,12 +783,7 @@ function classifyCurrentWorkStage(input: CurrentWorkStateInput): CoreHomeWorkSta
   const tokens = new Set(
     [input.nodeId, input.nodeType, input.workflowId]
       .filter((value): value is string => value !== null)
-      .flatMap((value) =>
-        value
-          .toLowerCase()
-          .split(/[^a-z0-9]+/)
-          .filter(Boolean),
-      ),
+      .flatMap((value) => value.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)),
   );
 
   for (const entry of CURRENT_WORK_STAGE_TOKENS) {
