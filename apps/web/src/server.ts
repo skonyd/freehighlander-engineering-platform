@@ -9,6 +9,10 @@ import {
   getFhKuikaCuratedBlueprintsV1,
 } from './kuika-blueprint-catalog.js';
 import {
+  createFhKuikaBlueprintWorkflowDraftV1,
+  simulateFhKuikaBlueprintV1,
+} from './kuika-blueprint-draft.js';
+import {
   buildFhKuikaBlueprintCatalogViewV1,
   buildFhKuikaBlueprintDetailViewV1,
 } from './kuika-blueprint-view.js';
@@ -208,6 +212,15 @@ async function handleRequest(
         });
         return;
       }
+      if (blueprintRoute.resource === 'draft') {
+        json(response, 200, createFhKuikaBlueprintWorkflowDraftV1(blueprint));
+        return;
+      }
+      if (blueprintRoute.resource === 'simulation') {
+        json(response, 200, simulateFhKuikaBlueprintV1(blueprint));
+        return;
+      }
+
       json(response, 200, buildFhKuikaBlueprintDetailViewV1(blueprint));
       return;
     }
@@ -308,10 +321,17 @@ async function handleRequest(
   }
 }
 
-function parseFhKuikaBlueprintRoute(pathname: string): { readonly blueprintId: string } | null {
-  const match = /^\/api\/modules\/fh-kuika\/blueprints\/([^/]+)$/.exec(pathname);
+function parseFhKuikaBlueprintRoute(pathname: string): {
+  readonly blueprintId: string;
+  readonly resource: 'detail' | 'draft' | 'simulation';
+} | null {
+  const match =
+    /^\/api\/modules\/fh-kuika\/blueprints\/([^/]+)(?:\/(draft|simulation))?$/.exec(pathname);
   if (!match?.[1]) return null;
-  return { blueprintId: decodeURIComponent(match[1]) };
+  return {
+    blueprintId: decodeURIComponent(match[1]),
+    resource: (match[2] ?? 'detail') as 'detail' | 'draft' | 'simulation',
+  };
 }
 
 function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {
