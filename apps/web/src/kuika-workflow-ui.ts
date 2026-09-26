@@ -76,7 +76,8 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
       <h2>Inspector</h2>
       <div id="inspector" class="muted">Select a node.</div>
       <div class="boundary">
-        Publish and Execute are intentionally unavailable. Canonical validation remains owned by Core.
+        Publish and Execute are intentionally unavailable. Budget, evidence, policy and tool permissions
+        remain unresolved until canonical Core publish validation; Studio does not invent unsupported fields.
       </div>
     </aside>
   </section>
@@ -130,9 +131,16 @@ function renderInspector(){
     '<div class="inspector-row"><span>ID</span><code>'+esc(node.id)+'</code></div>'+
     '<div class="inspector-row"><span>Kind</span><strong>'+esc(node.kind)+'</strong></div>'+
     '<div class="inspector-row"><span>Authority</span><strong>NONE</strong></div>'+
-    (node.kind==='LOOP'
-      ? '<div class="inspector-row"><span>Max iterations</span><strong>'+esc(node.maxIterations)+'</strong></div>'
-      : '')+
+    '<div class="inspector-row"><span>Role</span><strong>'+
+      (node.role?esc(node.role):(node.kind==='MODEL'?'UNRESOLVED':'NOT APPLICABLE'))+
+    '</strong></div>'+
+    '<div class="inspector-row"><span>Loop bound</span><strong>'+
+      (node.kind==='LOOP'?esc(node.maxIterations??'UNRESOLVED'):'NOT APPLICABLE')+
+    '</strong></div>'+
+    '<div class="inspector-row"><span>Budget</span><strong>UNRESOLVED IN CANONICAL V1</strong></div>'+
+    '<div class="inspector-row"><span>Evidence</span><strong>UNRESOLVED IN CANONICAL V1</strong></div>'+
+    '<div class="inspector-row"><span>Policy</span><strong>UNRESOLVED IN CANONICAL V1</strong></div>'+
+    '<div class="inspector-row"><span>Tool permissions</span><strong>UNRESOLVED IN CANONICAL V1</strong></div>'+
     '<div class="inspector-row"><span>Runtime effect</span><strong>NONE</strong></div>';
 }
 
