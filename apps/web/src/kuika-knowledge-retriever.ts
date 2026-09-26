@@ -5,10 +5,7 @@ import {
 } from './kuika-knowledge-contract.js';
 
 export interface FhKuikaKnowledgeLineageSourceV1 {
-  exactEntity(
-    entityId: string,
-    entityVersion?: number,
-  ): readonly FhKuikaKnowledgeResultV1[];
+  exactEntity(entityId: string, entityVersion?: number): readonly FhKuikaKnowledgeResultV1[];
   exactRevision(repository: string, sha: string): readonly FhKuikaKnowledgeResultV1[];
   traverseAuthoritative(
     entityId: string,
@@ -18,18 +15,12 @@ export interface FhKuikaKnowledgeLineageSourceV1 {
   evidenceForResults(
     results: readonly FhKuikaKnowledgeResultV1[],
   ): readonly FhKuikaKnowledgeResultV1[];
-  semanticDiscover?(
-    text: string,
-    limit: number,
-  ): readonly FhKuikaKnowledgeResultV1[];
+  semanticDiscover?(text: string, limit: number): readonly FhKuikaKnowledgeResultV1[];
 }
 
 export interface FhKuikaKnowledgeRetrievalTraceV1 {
   readonly stage:
-    | 'EXACT_LOOKUP'
-    | 'LINEAGE_TRAVERSAL'
-    | 'EVIDENCE_RETRIEVAL'
-    | 'SEMANTIC_DISCOVERY';
+    'EXACT_LOOKUP' | 'LINEAGE_TRAVERSAL' | 'EVIDENCE_RETRIEVAL' | 'SEMANTIC_DISCOVERY';
   readonly executed: boolean;
   readonly resultCount: number;
 }
