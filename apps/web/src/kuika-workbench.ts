@@ -12,7 +12,7 @@ export interface FhKuikaWorkbenchModeView {
   readonly canGrantAuthority: false;
   readonly mutationCapable: boolean;
   readonly requiresEnabledV3Authority: boolean;
-  readonly outputContract: 'FH_KUIKA_PLAN_CANDIDATE_V1' | null;
+  readonly outputContract: 'FH_KUIKA_PLAN_CANDIDATE_V1' | 'FH_KUIKA_REVIEW_REQUEST_V1' | null;
 }
 
 export type FhKuikaWorkbenchContextKind =
@@ -38,6 +38,10 @@ export interface FhKuikaWorkbenchPreflightV1 {
   readonly exactRevisionBound: boolean;
   readonly sourceState: 'CURRENT' | 'PARTIAL';
   readonly staleSources: readonly string[];
+}
+
+export interface FhKuikaWorkbenchSnapshotOptionsV1 {
+  readonly evidenceIds?: readonly string[];
 }
 
 export interface FhKuikaWorkbenchSnapshotV1 {
@@ -96,7 +100,7 @@ const MODE_VIEWS: Record<FhKuikaWorkbenchMode, FhKuikaWorkbenchModeView> = {
     canGrantAuthority: false,
     mutationCapable: false,
     requiresEnabledV3Authority: false,
-    outputContract: null,
+    outputContract: 'FH_KUIKA_REVIEW_REQUEST_V1',
   },
 };
 
@@ -113,9 +117,10 @@ export function listFhKuikaWorkbenchModes(): readonly FhKuikaWorkbenchModeView[]
 export function buildFhKuikaWorkbenchSnapshotV1(
   home: CoreHomeSnapshotV1,
   mode: FhKuikaWorkbenchMode = 'ASK',
+  options: FhKuikaWorkbenchSnapshotOptionsV1 = {},
 ): FhKuikaWorkbenchSnapshotV1 {
   const modeView = getFhKuikaWorkbenchModeView(mode);
-  const context = buildContext(home);
+  const context = buildContext(home, options);
   const exactRevisionBound = context.some((item) => item.kind === 'EXACT_REVISION');
   const staleSources = [...home.sourceFreshness.staleSources];
   const sourceState = staleSources.length === 0 ? 'CURRENT' : 'PARTIAL';
@@ -125,6 +130,8 @@ export function buildFhKuikaWorkbenchSnapshotV1(
     blockedReason = 'Repository context is unavailable.';
   } else if ((mode === 'REVIEW' || mode === 'EXECUTE') && !exactRevisionBound) {
     blockedReason = 'An exact revision is required for this mode.';
+  } else if (mode === 'REVIEW' && !context.some((item) => item.kind === 'EVIDENCE')) {
+    blockedReason = 'REVIEW requires at least one exact-revision-bound evidence reference.';
   } else if (modeView.requiresEnabledV3Authority && home.authority.v3Authority !== 'ENABLED') {
     blockedReason = `V3 authority is ${home.authority.v3Authority}; EXECUTE remains unavailable.`;
   }
@@ -162,7 +169,10 @@ export function workbenchSnapshotCanMutateRuntime(): false {
   return false;
 }
 
-function buildContext(home: CoreHomeSnapshotV1): readonly FhKuikaWorkbenchContextChipV1[] {
+function buildContext(
+  home: CoreHomeSnapshotV1,
+  options: FhKuikaWorkbenchSnapshotOptionsV1,
+): readonly FhKuikaWorkbenchContextChipV1[] {
   const result: FhKuikaWorkbenchContextChipV1[] = [];
   const project = home.project;
 
@@ -226,5 +236,26 @@ function buildContext(home: CoreHomeSnapshotV1): readonly FhKuikaWorkbenchContex
     });
   }
 
+  for (const evidenceId of uniqueEvidenceIds(options.evidenceIds ?? [])) {
+    result.push({
+      kind: 'EVIDENCE',
+      label: 'Evidence',
+      value: evidenceId,
+      source: 'CORE_HOME',
+      removable: true,
+      authoritative: true,
+    });
+  }
+
   return result;
+}
+
+function uniqueEvidenceIds(values: readonly string[]): readonly string[] {
+  const result = new Set<string>();
+  for (const value of values) {
+    const normalized = value.trim();
+    if (!normalized) throw new Error('evidenceId must not be empty');
+    result.add(normalized);
+  }
+  return [...result].sort();
 }

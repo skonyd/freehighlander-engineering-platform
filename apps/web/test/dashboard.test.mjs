@@ -1197,7 +1197,7 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.equal(workbench.headers.get('x-freehighlander-mode'), 'read-only');
 
     const workbenchSnapshot = await (
-      await fetch(`${base}/api/modules/fh-kuika/workbench?mode=REVIEW`)
+      await fetch(`${base}/api/modules/fh-kuika/workbench?mode=REVIEW&evidenceId=evidence-1`)
     ).json();
     assert.equal(workbenchSnapshot.schemaVersion, 1);
     assert.equal(workbenchSnapshot.projectionAuthority, 'NONE');
@@ -1205,6 +1205,13 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.equal(workbenchSnapshot.preflight.exactRevisionBound, true);
     assert.equal(workbenchSnapshot.preflight.canStartRequest, true);
     assert.ok(workbenchSnapshot.context.some((item) => item.kind === 'EXACT_REVISION'));
+    assert.ok(workbenchSnapshot.context.some((item) => item.kind === 'EVIDENCE'));
+
+    const reviewWithoutEvidence = await (
+      await fetch(`${base}/api/modules/fh-kuika/workbench?mode=REVIEW`)
+    ).json();
+    assert.equal(reviewWithoutEvidence.preflight.canStartRequest, false);
+    assert.match(reviewWithoutEvidence.preflight.blockedReason, /evidence reference/i);
 
     const executeSnapshot = await (
       await fetch(`${base}/api/modules/fh-kuika/workbench?mode=EXECUTE`)

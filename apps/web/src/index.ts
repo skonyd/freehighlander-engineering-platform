@@ -1,4 +1,14 @@
 export {
+  createFhKuikaReviewRequestV1,
+  fhKuikaReviewRequestCanAuthorizeExecution,
+  fhKuikaReviewRequestCanGrantAuthority,
+  validateFhKuikaReviewRequestV1,
+  type FhKuikaReviewEvidenceRefV1,
+  type FhKuikaReviewRequestV1,
+  type FhKuikaReviewRequestValidationV1,
+} from './kuika-review-request.js';
+
+export {
   createFhKuikaPlanCandidateV1,
   fhKuikaPlanCandidateCanAuthorizeExecution,
   fhKuikaPlanCandidateCanGrantAuthority,
@@ -11,24 +21,6 @@ export {
   type FhKuikaPlanCandidateValidationV1,
   type FhKuikaPlanWorkItemV1,
 } from './kuika-plan-candidate.js';
-
-export { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
-
-export {
-  createFhKuikaWorkflowDraftV1,
-  parseFhKuikaWorkflowDraftV1,
-  serializeFhKuikaWorkflowDraftV1,
-  validateFhKuikaWorkflowDraftDefinitionV1,
-  workflowStudioDraftCanExecute,
-  workflowStudioDraftCanGrantAuthority,
-  workflowStudioDraftCanPublishDirectly,
-  type FhKuikaCanonicalWorkflowDefinitionV1,
-  type FhKuikaCanonicalWorkflowEdgeV1,
-  type FhKuikaCanonicalWorkflowNodeV1,
-  type FhKuikaWorkflowDraftV1,
-  type FhKuikaWorkflowDraftValidationV1,
-  type FhKuikaWorkflowNodeKind,
-} from './kuika-workflow-draft.js';
 
 export {
   fhKuikaAreaPageCanGrantAuthority,
@@ -104,6 +96,7 @@ export {
   type FhKuikaWorkbenchMode,
   type FhKuikaWorkbenchModeView,
   type FhKuikaWorkbenchPreflightV1,
+  type FhKuikaWorkbenchSnapshotOptionsV1,
   type FhKuikaWorkbenchSnapshotV1,
 } from './kuika-workbench.js';
 
