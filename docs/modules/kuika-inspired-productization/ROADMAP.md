@@ -137,9 +137,11 @@ Implemented by the stacked FH-KUIKA-03.5 PR:
 
 - **FH-KUIKA-03.5** blueprint → canonical-shape workflow candidate + deterministic simulation.
 
-Still open in FH-KUIKA-03:
+Implemented by the stacked FH-KUIKA-03.6 PR:
 
-- **FH-KUIKA-03.6** measured blueprint quality/usage telemetry.
+- **FH-KUIKA-03.6** deterministic catalog-quality metrics + metadata-only usage aggregation.
+
+**FH-KUIKA-03 Engineering Blueprint Catalog is complete through .1–.6.**
 
 The status above describes authority-neutral productization only. It does not imply FH-20 cutover or mutation authority.
 
