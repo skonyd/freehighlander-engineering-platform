@@ -1,4 +1,12 @@
 export {
+  fhKuikaBlueprintCatalogUiCanGrantAuthority,
+  fhKuikaBlueprintCatalogUiCanInvokeModel,
+  fhKuikaBlueprintCatalogUiCanMutateRuntime,
+  renderFhKuikaBlueprintCatalogHtml,
+  renderFhKuikaBlueprintDetailHtml,
+} from './kuika-blueprint-ui.js';
+
+export {
   fhKuikaAreaPageCanGrantAuthority,
   fhKuikaAreaPageCanInvokeModel,
   fhKuikaAreaPageCanMutateRuntime,
