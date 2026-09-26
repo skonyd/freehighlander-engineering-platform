@@ -85,6 +85,21 @@ export {
   type FhKuikaRunTimelineKind,
 } from './kuika-run-detail.js';
 
+export {
+  buildFhKuikaApprovalInboxV1,
+  fhKuikaApprovalInboxCanApproveDirectly,
+  fhKuikaApprovalInboxCanGrantAuthority,
+  fhKuikaApprovalInboxCanInvokeModel,
+  fhKuikaApprovalInboxCanMutateRuntime,
+  type FhKuikaApprovalBindingState,
+  type FhKuikaApprovalCurrentness,
+  type FhKuikaApprovalInboxItemV1,
+  type FhKuikaApprovalInboxReadSource,
+  type FhKuikaApprovalInboxV1,
+} from './kuika-approval-inbox.js';
+
+export { FH_KUIKA_APPROVALS_HTML } from './kuika-approval-ui.js';
+
 export { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 
 export { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
