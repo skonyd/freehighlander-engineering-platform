@@ -32,9 +32,17 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
     }
     button[aria-selected="true"] { border-color:var(--accent); color:var(--accent); }
     button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
-    textarea {
-      width:100%; min-height:180px; resize:vertical; background:#090d12; color:var(--text);
+    textarea,input {
+      width:100%; background:#090d12; color:var(--text);
       border:1px solid var(--line); border-radius:9px; padding:12px; font:inherit;
+    }
+    textarea { min-height:180px; resize:vertical; }
+    input:focus-visible, textarea:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    .field { display:grid; gap:5px; margin-top:12px; }
+    .field label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+    .intent-preview {
+      margin-top:14px; background:#090d12; border:1px solid var(--line); border-radius:9px;
+      padding:12px; white-space:pre-wrap; word-break:break-word; min-height:90px;
     }
     .mode-note { margin:10px 0 14px; color:var(--muted); min-height:42px; }
     .context-row { border-top:1px solid var(--line); padding:9px 0; }
@@ -76,9 +84,19 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
 
         <textarea id="prompt" aria-label="Workbench request" placeholder="Describe the work or question…"></textarea>
 
+        <div class="field">
+          <label for="evidence-ids">Evidence IDs (comma separated; required for Review)</label>
+          <input id="evidence-ids" type="text" placeholder="evidence-123, evidence-456" />
+        </div>
+
         <div class="action">
           <span id="action-status" class="muted">Mode selection is local UI state only.</span>
-          <span class="pill">NO MODEL CALL ON SELECT</span>
+          <button id="prepare-intent" type="button">Prepare intent</button>
+        </div>
+
+        <div>
+          <div class="muted" style="margin-top:12px">Prepared intent preview · no model call</div>
+          <pre id="intent-preview" class="intent-preview">Nothing prepared yet.</pre>
         </div>
       </div>
 
@@ -124,6 +142,7 @@ const modeViews = {
 };
 
 let homeState = null;
+let selectedMode = 'ASK';
 
 const esc = value => String(value ?? '—').replace(
   /[&<>"']/g,
@@ -131,6 +150,7 @@ const esc = value => String(value ?? '—').replace(
 );
 
 function selectMode(mode) {
+  selectedMode = mode;
   const view = modeViews[mode];
   document.querySelectorAll('button[data-mode]').forEach(button =>
     button.setAttribute('aria-selected', String(button.dataset.mode === mode))
@@ -142,7 +162,59 @@ function selectMode(mode) {
   const blocked = view.requiresEnabled && authority !== 'ENABLED';
   document.querySelector('#action-status').innerHTML = blocked
     ? '<span class="warn">Execute request unavailable while V3 authority is ' + esc(authority) + '.</span>'
-    : 'Mode selected. Starting work is not wired in this preparation slice.';
+    : 'Mode selected. Prepare intent to inspect the deterministic request envelope.';
+}
+
+function prepareIntent() {
+  const preview = document.querySelector('#intent-preview');
+  const request = document.querySelector('#prompt').value.trim();
+  const evidenceIds = document.querySelector('#evidence-ids').value
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean);
+  const authority = homeState?.authority?.v3Authority || 'UNKNOWN';
+  const project = homeState?.project || {};
+
+  if (!request) {
+    preview.textContent = 'Request is required.';
+    return;
+  }
+  if (selectedMode === 'EXECUTE' && authority !== 'ENABLED') {
+    preview.textContent = 'EXECUTE blocked: V3 authority is ' + authority + '.';
+    return;
+  }
+  if (selectedMode === 'REVIEW' && !project.headSha) {
+    preview.textContent = 'REVIEW blocked: exact revision is unavailable.';
+    return;
+  }
+  if (selectedMode === 'REVIEW' && evidenceIds.length === 0) {
+    preview.textContent = 'REVIEW blocked: at least one evidence ID is required.';
+    return;
+  }
+
+  const disposition = {
+    ASK:'READ_ONLY_QUERY',
+    PLAN:'CANDIDATE_PLAN',
+    EXECUTE:'CONTROL_PLANE_REQUEST',
+    REVIEW:'INDEPENDENT_REVIEW_REQUEST'
+  }[selectedMode];
+
+  preview.textContent = JSON.stringify({
+    schemaVersion:1,
+    mode:selectedMode,
+    disposition,
+    request,
+    context:{
+      repository:project.repository || null,
+      branch:project.branch || null,
+      exactRevision:project.headSha || null,
+      evidenceIds
+    },
+    selectionAuthority:'NONE',
+    executionOwner:'CONTROL_PLANE',
+    canInvokeModelOnPrepare:false,
+    mutationRequested:selectedMode === 'EXECUTE'
+  }, null, 2);
 }
 
 function renderContext(home) {
@@ -179,6 +251,7 @@ async function load() {
 document.querySelectorAll('button[data-mode]').forEach(button =>
   button.addEventListener('click', () => selectMode(button.dataset.mode))
 );
+document.querySelector('#prepare-intent').addEventListener('click', prepareIntent);
 
 void load();
 </script>
