@@ -67,7 +67,10 @@ test('local semantic index normalizes cosine ranking and uses stable tie break',
   );
 
   const results = index.search([2, 2], 2);
-  assert.deepEqual(results.map((item) => item.id), ['semantic:a', 'semantic:b']);
+  assert.deepEqual(
+    results.map((item) => item.id),
+    ['semantic:a', 'semantic:b'],
+  );
   assert.equal(results[0]?.semanticScore, 1);
 });
 
@@ -77,19 +80,12 @@ test('local semantic index rejects invalid vectors, duplicates and unsafe bounds
     /dimensions must equal/,
   );
   assert.throws(
-    () =>
-      new FhKuikaLocalSemanticIndexV1(
-        [documents[0], documents[0]],
-        { dimensions: 3 },
-      ),
+    () => new FhKuikaLocalSemanticIndexV1([documents[0], documents[0]], { dimensions: 3 }),
     /duplicate semantic document id/,
   );
   assert.throws(
     () =>
-      new FhKuikaLocalSemanticIndexV1(
-        [{ ...documents[0], vector: [0, 0, 0] }],
-        { dimensions: 3 },
-      ),
+      new FhKuikaLocalSemanticIndexV1([{ ...documents[0], vector: [0, 0, 0] }], { dimensions: 3 }),
     /zero vector/,
   );
 
