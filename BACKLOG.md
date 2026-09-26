@@ -75,10 +75,10 @@ Umbrella: #88.
 - [x] Privacy export/delete manifest planning — issue #140 / PR #141
 - [x] Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143
 
-## Optional FH-KUIKA productization module — proposed
-- [ ] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0
-- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0
-- [ ] FH-KUIKA-03 Engineering Blueprint Catalog — P0
+## Optional FH-KUIKA productization module — implementation in progress
+- [~] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0; shell/operations/run-detail preparation implemented
+- [~] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0; mode contract + read-only Workbench implemented
+- [x] FH-KUIKA-03 Engineering Blueprint Catalog — P0; .1–.6 complete
 - [ ] FH-KUIKA-04 Visual Workflow Studio — P0
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
 - [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
