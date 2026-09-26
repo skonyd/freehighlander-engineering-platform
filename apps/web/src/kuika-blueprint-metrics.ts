@@ -1,11 +1,7 @@
 import type { FhKuikaPublishedBlueprintV1 } from './kuika-blueprint.js';
 
 export type FhKuikaBlueprintUsageAction =
-  | 'CATALOG_VIEW'
-  | 'BLUEPRINT_VIEW'
-  | 'MATCHED'
-  | 'DRAFT_CREATED'
-  | 'SIMULATION_COMPLETED';
+  'CATALOG_VIEW' | 'BLUEPRINT_VIEW' | 'MATCHED' | 'DRAFT_CREATED' | 'SIMULATION_COMPLETED';
 
 export interface FhKuikaBlueprintUsageEventV1 {
   readonly schemaVersion: 1;
