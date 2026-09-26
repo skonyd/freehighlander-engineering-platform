@@ -22,6 +22,16 @@ export {
   type FhKuikaPlanWorkItemV1,
 } from './kuika-plan-candidate.js';
 
+export {
+  buildFhKuikaWorkflowNodeInspectorV1,
+  workflowInspectorCanGrantAuthority,
+  workflowInspectorCanInventUnsupportedFields,
+  workflowInspectorCanMutateRuntime,
+  type FhKuikaWorkflowInspectorFieldV1,
+  type FhKuikaWorkflowInspectorResolution,
+  type FhKuikaWorkflowNodeInspectorV1,
+} from './kuika-workflow-inspector.js';
+
 export { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 
 export {
