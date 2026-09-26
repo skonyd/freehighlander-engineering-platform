@@ -1174,6 +1174,24 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.equal(home.headers.get('x-freehighlander-mode'), 'read-only');
     assert.match(homeHtml, /href="\/modules\/fh-kuika"/);
 
+    const blueprintCatalog = await fetch(`${base}/modules/fh-kuika/build/blueprints`);
+    assert.equal(blueprintCatalog.status, 200);
+    const blueprintCatalogHtml = await blueprintCatalog.text();
+    assert.match(blueprintCatalogHtml, /Blueprints/);
+    assert.match(blueprintCatalogHtml, /Feature Implementation/);
+
+    const blueprintDetail = await fetch(
+      `${base}/modules/fh-kuika/build/blueprints/security-patch`,
+    );
+    assert.equal(blueprintDetail.status, 200);
+    assert.match(await blueprintDetail.text(), /security-reviewer/);
+
+    const missingBlueprint = await fetch(
+      `${base}/modules/fh-kuika/build/blueprints/not-present`,
+    );
+    assert.equal(missingBlueprint.status, 404);
+    assert.match(await missingBlueprint.text(), /Blueprint not found/);
+
     const kuika = await fetch(`${base}/modules/fh-kuika`);
     assert.equal(kuika.status, 200);
     const kuikaHtml = await kuika.text();
