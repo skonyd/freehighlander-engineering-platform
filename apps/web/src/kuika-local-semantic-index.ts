@@ -30,7 +30,11 @@ export class FhKuikaLocalSemanticIndexV1 {
     documents: readonly FhKuikaLocalSemanticDocumentV1[],
     options: FhKuikaLocalSemanticIndexOptionsV1,
   ) {
-    if (!Number.isInteger(options.dimensions) || options.dimensions < 1 || options.dimensions > 4096) {
+    if (
+      !Number.isInteger(options.dimensions) ||
+      options.dimensions < 1 ||
+      options.dimensions > 4096
+    ) {
       throw new Error('semantic index dimensions must be an integer between 1 and 4096');
     }
 
