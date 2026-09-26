@@ -476,7 +476,7 @@ Show before enablement:
 
 - **FH-KUIKA-05.1** ToolAdapter-aligned connector registry/read model. — COMPLETE PRE-CUTOVER
 - **FH-KUIKA-05.2** MCP discovery/normalization adapter. — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-05.3** connector install-review contract and permission diff.
+- **FH-KUIKA-05.3** connector install-review contract and permission diff. — COMPLETE PRE-CUTOVER
 - **FH-KUIKA-05.4** Connector Hub UI.
 - **FH-KUIKA-05.5** credential-reference configuration using SecretHandle only.
 - **FH-KUIKA-05.6** activation/runtime invocation after authority prerequisites.
