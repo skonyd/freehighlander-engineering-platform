@@ -1,4 +1,17 @@
 export {
+  aggregateFhKuikaBlueprintUsageV1,
+  fhKuikaBlueprintMetricsCanGrantAuthority,
+  fhKuikaBlueprintMetricsCanInvokeModel,
+  fhKuikaBlueprintMetricsCanMutateRuntime,
+  measureFhKuikaBlueprintCatalogV1,
+  type FhKuikaBlueprintCatalogQualityV1,
+  type FhKuikaBlueprintUsageAction,
+  type FhKuikaBlueprintUsageByBlueprintV1,
+  type FhKuikaBlueprintUsageEventV1,
+  type FhKuikaBlueprintUsageSummaryV1,
+} from './kuika-blueprint-metrics.js';
+
+export {
   createFhKuikaWorkflowDraftV1,
   fhKuikaBlueprintWorkflowDraftCanGrantAuthority,
   fhKuikaBlueprintWorkflowDraftCanInvokeModel,
