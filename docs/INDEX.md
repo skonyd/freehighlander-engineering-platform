@@ -12,6 +12,7 @@
 ## Planning / Delivery
 - [Roadmap](ROADMAP.md)
 - [PR Roadmap](planning/PR-ROADMAP.md)
+- [FH-04B Zero-Token Core Home](planning/FH-04B-ZERO-TOKEN-CORE-HOME.md)
 - [FH-KUIKA — Kuika-inspired Productization Module](modules/kuika-inspired-productization/ROADMAP.md)
 - [FH-KUIKA Product UX](modules/kuika-inspired-productization/UX.md)
 - [FH-00 Final Audit](planning/FH-00-FINAL-AUDIT.md)

@@ -78,3 +78,19 @@ last checkpoint, active work item, remote state, resume health.
 1. append-only `events.jsonl` for first instrumentation
 2. SQLite current/query/metadata store
 3. PostgreSQL only when centralized/multi-user scale justifies it
+
+
+## FH-04B Core Home evolution
+
+The FH-04 telemetry dashboard remains the detailed observability foundation.
+
+The default Home evolution is planned in [FH-04B Zero-Token Core Home](../planning/FH-04B-ZERO-TOKEN-CORE-HOME.md).
+
+Non-negotiable rule:
+
+~~~text
+Dashboard render/refresh = deterministic reads only.
+No model call, agent call or ProviderAdapter invocation.
+~~~
+
+Existing telemetry tables remain available as drill-down views; FH-04B adds a compact current-work/attention/provider/usage Home aggregate above them.
