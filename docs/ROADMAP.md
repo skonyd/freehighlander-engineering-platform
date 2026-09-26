@@ -17,7 +17,7 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 8 | V2/V3 parity + authority cutover | **READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED** |
 | 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane BLOCKED** |
 | 10 | Authority-bearing full lifecycle | **BLOCKED until explicit FH-20 cutover** |
-| 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PROPOSED; authority-neutral preparation can proceed** |
+| 11 | Optional Kuika-inspired productization module — FH-KUIKA | **IMPLEMENTATION IN PROGRESS; authority-neutral preparation can proceed** |
 | 12 | FH-KUIKA-10 enterprise collaboration submodule | **DEFERRED; ADR required** |
 
 Current authority state remains:
