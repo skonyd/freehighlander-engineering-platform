@@ -192,6 +192,19 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       font-size: 15px;
     }
     .stage-list { margin-top: 10px; color: var(--muted); font-size: 12px; }
+    .operational-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+    .state-summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .state-detail { color: var(--muted); font-size: 12px; }
+    .state-detail + .state-detail { margin-top: 4px; }
     .zero-token-note {
       margin-top: 14px;
       color: var(--muted);
@@ -199,7 +212,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     }
     @media (max-width: 1050px) {
       .home-metrics { grid-template-columns: repeat(2, 1fr); }
-      .home-layout, .telemetry-layout { grid-template-columns: 1fr; }
+      .home-layout, .telemetry-layout, .operational-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 620px) {
       header, main { padding: 16px; }
@@ -247,6 +260,17 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     <section class="card" style="margin-top:14px">
       <div class="section-label">Token Economy</div>
       <div id="economy"><div class="empty">Loading economy status…</div></div>
+    </section>
+
+    <section class="grid operational-grid">
+      <div class="card">
+        <div class="section-label">Continuity</div>
+        <div id="continuity"><div class="empty">Loading checkpoint state…</div></div>
+      </div>
+      <div class="card">
+        <div class="section-label">Security</div>
+        <div id="security-findings"><div class="empty">Loading finding state…</div></div>
+      </div>
     </section>
 
     <div class="details-heading">Engineering details</div>
@@ -397,6 +421,65 @@ function renderHome(home) {
 
   renderRoleBindings(home);
   renderEconomy(home.economy);
+  renderOperationalState(home);
+}
+
+function renderOperationalState(home) {
+  const continuityTarget = document.querySelector('#continuity');
+  if (stale(home, 'continuity')) {
+    continuityTarget.innerHTML =
+      '<div class="state-summary"><strong>Continuity</strong>' +
+      '<span class="pill muted">UNKNOWN</span></div>' +
+      '<div class="state-detail">No checkpoint telemetry has been indexed yet.</div>';
+  } else {
+    const continuity = home.continuity;
+    const checkpoint = continuity.latestCheckpointAt
+      ? new Date(continuity.latestCheckpointAt).toLocaleString()
+      : 'Unknown';
+    const revision = continuity.sourceRevision
+      ? String(continuity.sourceRevision).slice(0, 12)
+      : 'Unknown';
+    const resume = continuity.resumeReady == null
+      ? 'Unknown'
+      : continuity.resumeReady
+        ? 'Ready'
+        : 'Not ready';
+
+    continuityTarget.innerHTML =
+      '<div class="state-summary"><strong>Continuity</strong>' +
+      '<span class="pill ' + stateClass(continuity.state) + '">' +
+      esc(continuity.state) + '</span></div>' +
+      '<div class="state-detail">Checkpoint ' + esc(checkpoint) + '</div>' +
+      '<div class="state-detail">Revision <code>' + esc(revision) + '</code> · Resume ' +
+      esc(resume) + '</div>' +
+      (continuity.warning
+        ? '<div class="state-detail ' + stateClass(continuity.state) + '">' +
+          esc(continuity.warning) + '</div>'
+        : '');
+  }
+
+  const findingTarget = document.querySelector('#security-findings');
+  if (stale(home, 'findings')) {
+    findingTarget.innerHTML =
+      '<div class="state-summary"><strong>Security</strong>' +
+      '<span class="pill muted">UNKNOWN</span></div>' +
+      '<div class="state-detail">No current-revision finding telemetry has been indexed yet.</div>';
+    return;
+  }
+
+  const findings = home.findings;
+  findingTarget.innerHTML =
+    '<div class="state-summary"><strong>Security</strong>' +
+    '<span class="pill ' + stateClass(findings.state) + '">' +
+    esc(findings.state) + '</span></div>' +
+    '<div class="state-detail">' +
+    fmt.format(findings.critical) + ' critical · ' +
+    fmt.format(findings.high) + ' high · ' +
+    fmt.format(findings.unresolved) + ' unresolved</div>' +
+    (findings.latestFindingAt
+      ? '<div class="state-detail">Updated ' +
+        esc(new Date(findings.latestFindingAt).toLocaleString()) + '</div>'
+      : '');
 }
 
 function renderEconomy(economy) {
@@ -508,6 +591,10 @@ async function load() {
         '<div class="empty">No active model state yet.</div>';
       document.querySelector('#economy').innerHTML =
         '<div class="empty">No Token Economy telemetry yet.</div>';
+      document.querySelector('#continuity').innerHTML =
+        '<div class="empty">No checkpoint telemetry yet.</div>';
+      document.querySelector('#security-findings').innerHTML =
+        '<div class="empty">No security finding telemetry yet.</div>';
       document.querySelector('#runs').innerHTML =
         '<div class="empty">Run telemetry has not been indexed yet.</div>';
       document.querySelector('#models').innerHTML =

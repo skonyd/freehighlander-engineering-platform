@@ -479,6 +479,79 @@ function insertBudgetEvent(file, input) {
   }
 }
 
+function insertCheckpointEvent(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    const event = {
+      schemaVersion: 1,
+      type: 'checkpoint.created',
+      timestamp: input.timestamp,
+      runId: 'run-1',
+      revision: {
+        repository: 'skonyd/freehighlander-engineering-platform',
+        branch: 'feat/test',
+        headSha: input.sourceRevision,
+      },
+      payload: {
+        ...(input.resumeReady === undefined ? {} : { resumeReady: input.resumeReady }),
+        ...(input.warning === undefined ? {} : { warning: input.warning }),
+      },
+    };
+
+    db.prepare(
+      `INSERT INTO events(
+        event_hash, schema_version, type, timestamp, run_id, event_json
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+    ).run(
+      input.eventHash,
+      1,
+      'checkpoint.created',
+      input.timestamp,
+      'run-1',
+      JSON.stringify(event),
+    );
+  } finally {
+    db.close();
+  }
+}
+
+function insertFindingEvent(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    const event = {
+      schemaVersion: 1,
+      type: 'finding.adjudicated',
+      timestamp: input.timestamp,
+      runId: 'run-1',
+      revision: {
+        repository: 'skonyd/freehighlander-engineering-platform',
+        branch: 'feat/test',
+        headSha: input.revision,
+      },
+      payload: {
+        findingId: input.findingId,
+        severity: input.severity,
+        state: input.state,
+      },
+    };
+
+    db.prepare(
+      `INSERT INTO events(
+        event_hash, schema_version, type, timestamp, run_id, event_json
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+    ).run(
+      input.eventHash,
+      1,
+      'finding.adjudicated',
+      input.timestamp,
+      'run-1',
+      JSON.stringify(event),
+    );
+  } finally {
+    db.close();
+  }
+}
+
 test('dashboard read model exposes summary, runs, model usage and artifacts', async () => {
   const data = await fixture();
   try {
@@ -942,6 +1015,110 @@ test('Core Home aggregates active structured errors and budget attention without
   }
 });
 
+test('Core Home continuity is revision-aware and clears stale checkpoint attention', async () => {
+  const data = await fixture();
+  try {
+    insertCheckpointEvent(data.file, {
+      eventHash: 'checkpoint-stale',
+      timestamp: '2026-09-19T21:40:00.000Z',
+      sourceRevision: 'old-head',
+      resumeReady: true,
+    });
+
+    const model = new DashboardReadModel(data.file);
+    let home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+
+    assert.equal(home.continuity.state, 'ATTENTION');
+    assert.equal(home.continuity.latestCheckpointAt, '2026-09-19T21:40:00.000Z');
+    assert.equal(home.continuity.sourceRevision, 'old-head');
+    assert.equal(home.system.continuity, 'ATTENTION');
+    assert.equal(home.sourceFreshness.continuityUpdatedAt, '2026-09-19T21:40:00.000Z');
+    assert.ok(!home.sourceFreshness.staleSources.includes('continuity'));
+    assert.ok(home.attention.items.some((item) => item.kind === 'CONTINUITY_RISK'));
+
+    insertCheckpointEvent(data.file, {
+      eventHash: 'checkpoint-current',
+      timestamp: '2026-09-19T21:41:00.000Z',
+      sourceRevision: 'head',
+      resumeReady: true,
+    });
+
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+
+    assert.equal(home.continuity.state, 'HEALTHY');
+    assert.equal(home.continuity.resumeReady, true);
+    assert.equal(home.continuity.sourceRevision, 'head');
+    assert.equal(home.system.continuity, 'HEALTHY');
+    assert.ok(!home.attention.items.some((item) => item.kind === 'CONTINUITY_RISK'));
+  } finally {
+    await data.cleanup();
+  }
+});
+
+test('Core Home security findings are current-revision bound and remediation-aware', async () => {
+  const data = await fixture();
+  try {
+    insertFindingEvent(data.file, {
+      eventHash: 'finding-old-revision',
+      timestamp: '2026-09-19T21:45:00.000Z',
+      revision: 'old-head',
+      findingId: 'finding-old',
+      severity: 'CRITICAL',
+      state: 'OPEN',
+    });
+    insertFindingEvent(data.file, {
+      eventHash: 'finding-critical-open',
+      timestamp: '2026-09-19T21:46:00.000Z',
+      revision: 'head',
+      findingId: 'finding-critical',
+      severity: 'CRITICAL',
+      state: 'OPEN',
+    });
+    insertFindingEvent(data.file, {
+      eventHash: 'finding-medium-open',
+      timestamp: '2026-09-19T21:47:00.000Z',
+      revision: 'head',
+      findingId: 'finding-medium',
+      severity: 'MEDIUM',
+      state: 'OPEN',
+    });
+
+    const model = new DashboardReadModel(data.file);
+    let home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+
+    assert.equal(home.findings.state, 'ATTENTION');
+    assert.equal(home.findings.critical, 1);
+    assert.equal(home.findings.high, 0);
+    assert.equal(home.findings.unresolved, 2);
+    assert.equal(home.findings.latestFindingAt, '2026-09-19T21:47:00.000Z');
+    assert.ok(!home.sourceFreshness.staleSources.includes('findings'));
+    const securityAttention = home.attention.items.find((item) => item.kind === 'SECURITY_FINDING');
+    assert.ok(securityAttention);
+    assert.equal(securityAttention.severity, 'CRITICAL');
+    assert.equal(home.system.criticalErrorCount, 0);
+
+    insertFindingEvent(data.file, {
+      eventHash: 'finding-critical-remediated',
+      timestamp: '2026-09-19T21:48:00.000Z',
+      revision: 'head',
+      findingId: 'finding-critical',
+      severity: 'CRITICAL',
+      state: 'REMEDIATED',
+    });
+
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+
+    assert.equal(home.findings.state, 'DEGRADED');
+    assert.equal(home.findings.critical, 0);
+    assert.equal(home.findings.high, 0);
+    assert.equal(home.findings.unresolved, 1);
+    assert.ok(!home.attention.items.some((item) => item.kind === 'SECURITY_FINDING'));
+    assert.equal(home.system.criticalErrorCount, 0);
+  } finally {
+    await data.cleanup();
+  }
+});
+
 test('missing database is reported without creating it', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'freehighlander-dashboard-missing-'));
   const file = path.join(root, 'does-not-exist.sqlite');
@@ -979,6 +1156,10 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(homeHtml, /Active models/);
     assert.match(homeHtml, /Token Economy/);
     assert.match(homeHtml, /id="economy"/);
+    assert.match(homeHtml, /Continuity/);
+    assert.match(homeHtml, /id="continuity"/);
+    assert.match(homeHtml, /Security/);
+    assert.match(homeHtml, /id="security-findings"/);
     assert.match(homeHtml, /role-bindings/);
     assert.match(homeHtml, /\/api\/home/);
     assert.equal(home.headers.get('x-freehighlander-mode'), 'read-only');
