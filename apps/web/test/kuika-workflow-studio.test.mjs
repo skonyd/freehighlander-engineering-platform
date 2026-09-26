@@ -121,7 +121,6 @@ test('Workflow Studio HTTP route and canonical validation endpoints remain read-
   }
 });
 
-
 test('Workflow Studio version diff highlights authority-sensitive changes without publish authority', () => {
   const diff = buildFhKuikaWorkflowVersionDiffV1(null, definition());
 
@@ -130,7 +129,9 @@ test('Workflow Studio version diff highlights authority-sensitive changes withou
   assert.equal(diff.authority, 'NONE');
   assert.equal(diff.publishAuthorized, false);
   assert.equal(diff.authoritySensitiveChange, true);
-  assert.ok(diff.nodeChanges.some((item) => item.nodeId === 'review' && item.authoritySensitive));
+  assert.ok(
+    diff.nodeChanges.some((item) => item.nodeId === 'review' && item.authoritySensitive),
+  );
   assert.equal(workflowVersionDiffCanPublish(), false);
   assert.equal(workflowVersionDiffCanGrantAuthority(), false);
 });
