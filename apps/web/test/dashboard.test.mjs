@@ -388,6 +388,97 @@ function insertModelCall(file, input) {
   }
 }
 
+function insertRuntimeErrorEvent(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    const event = {
+      schemaVersion: 1,
+      type: 'runtime.error.reported',
+      timestamp: input.timestamp,
+      runId: input.runId,
+      taskId: input.taskId ?? 'task-runtime',
+      node: { id: input.nodeId ?? 'implementation-agent', type: 'MODEL' },
+      execution: { status: 'FAILED' },
+      payload: {
+        code: input.code ?? 'PROVIDER_QUOTA_EXHAUSTED',
+        severity: input.severity,
+        retryable: input.retryable ?? true,
+        correlationId: input.correlationId,
+        causeCode: input.causeCode ?? 'quota_exhausted',
+        causeKind: input.causeKind ?? 'QUOTA_EXHAUSTED',
+        certainty: 'CONFIRMED_SIGNAL',
+        headline: input.headline,
+        sourceComponent: input.sourceComponent ?? 'model-runtime',
+        sourceOperation: input.sourceOperation ?? 'provider-call',
+        failedStep: input.failedStep ?? 'Invoke preferred provider',
+        rootCause: input.rootCause ?? 'Provider quota is exhausted.',
+        observedSignal: input.observedSignal ?? 'Quota exhaustion signal received.',
+        nextAction: input.nextAction ?? 'Continue with the configured eligible fallback.',
+        ...(input.retryAt ? { retryAt: input.retryAt } : {}),
+        redactionStatus: 'NOT_REQUIRED',
+        safeForUserDisplay: true,
+      },
+    };
+
+    db.prepare(
+      `INSERT INTO events(
+        event_hash, schema_version, type, timestamp, run_id, task_id,
+        node_id, node_type, status, event_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      input.eventHash,
+      1,
+      'runtime.error.reported',
+      input.timestamp,
+      input.runId,
+      input.taskId ?? 'task-runtime',
+      input.nodeId ?? 'implementation-agent',
+      'MODEL',
+      'FAILED',
+      JSON.stringify(event),
+    );
+  } finally {
+    db.close();
+  }
+}
+
+function insertBudgetEvent(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    const event = {
+      schemaVersion: 1,
+      type: input.type,
+      timestamp: input.timestamp,
+      runId: input.runId,
+      taskId: input.taskId ?? 'task-runtime',
+      budget: {
+        scope: input.scope,
+        action: input.action,
+      },
+      payload: {},
+    };
+
+    db.prepare(
+      `INSERT INTO events(
+        event_hash, schema_version, type, timestamp, run_id, task_id,
+        budget_scope, budget_action, event_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      input.eventHash,
+      1,
+      input.type,
+      input.timestamp,
+      input.runId,
+      input.taskId ?? 'task-runtime',
+      input.scope,
+      input.action,
+      JSON.stringify(event),
+    );
+  } finally {
+    db.close();
+  }
+}
+
 test('dashboard read model exposes summary, runs, model usage and artifacts', async () => {
   const data = await fixture();
   try {
@@ -689,6 +780,7 @@ test('Core Home projects preferred, fallback, recovery timing and return policy'
     assert.equal(binding?.preferredModel, 'opus-5');
     assert.equal(binding?.activeModel, 'opus-5');
     assert.equal(binding?.returnPolicy, 'ASK_BEFORE_RETURN');
+    assert.equal(home.attention.total, 0);
 
     insertProviderState(data.file, {
       eventHash: 'provider-quota',
@@ -722,6 +814,12 @@ test('Core Home projects preferred, fallback, recovery timing and return policy'
     assert.equal(binding?.failureKind, 'quota');
     assert.equal(binding?.nextCheckAt, '2026-09-19T21:22:00.000Z');
     assert.equal(binding?.returnPolicy, 'ASK_BEFORE_RETURN');
+    const providerAttention = home.attention.items.find(
+      (item) => item.kind === 'QUOTA_WAIT' || item.kind === 'PROVIDER_FALLBACK',
+    );
+    assert.ok(providerAttention);
+    assert.equal(providerAttention.severity, 'WARNING');
+    assert.match(providerAttention.headline, /security-reviewer/);
 
     insertProviderState(data.file, {
       eventHash: 'provider-recovered',
@@ -748,6 +846,97 @@ test('Core Home projects preferred, fallback, recovery timing and return policy'
     assert.equal(binding?.activeBindingId, 'security-opus');
     assert.equal(binding?.failureKind, undefined);
     assert.equal(binding?.nextCheckAt, undefined);
+    assert.ok(
+      !home.attention.items.some(
+        (item) => item.kind === 'QUOTA_WAIT' || item.kind === 'PROVIDER_FALLBACK',
+      ),
+    );
+  } finally {
+    await data.cleanup();
+  }
+});
+
+test('Core Home aggregates active structured errors and budget attention without historical noise', async () => {
+  const data = await fixture();
+  try {
+    insertCurrentWorkFixture(data.file, {
+      runId: 'run-runtime',
+      timestamp: '2026-09-19T21:30:00.000Z',
+      eventType: 'node.started',
+      nodeId: 'implementation-agent',
+      nodeType: 'MODEL',
+      workflowId: 'feature-implementation',
+    });
+
+    insertRuntimeErrorEvent(data.file, {
+      eventHash: 'runtime-error-old',
+      timestamp: '2026-09-19T21:30:10.000Z',
+      runId: 'run-runtime',
+      severity: 'CRITICAL',
+      correlationId: 'corr-runtime-1',
+      headline: 'Preferred provider quota exhausted',
+    });
+    insertRuntimeErrorEvent(data.file, {
+      eventHash: 'runtime-error-new',
+      timestamp: '2026-09-19T21:30:20.000Z',
+      runId: 'run-runtime',
+      severity: 'CRITICAL',
+      correlationId: 'corr-runtime-1',
+      headline: 'Preferred provider remains quota exhausted',
+      retryAt: '2026-09-19T21:35:00.000Z',
+    });
+
+    insertRuntimeErrorEvent(data.file, {
+      eventHash: 'historical-completed-error',
+      timestamp: '2026-09-19T21:30:30.000Z',
+      runId: 'run-1',
+      severity: 'ERROR',
+      correlationId: 'corr-completed-run',
+      headline: 'Completed run historical error',
+    });
+
+    insertBudgetEvent(data.file, {
+      eventHash: 'budget-warning',
+      type: 'budget.warning',
+      timestamp: '2026-09-19T21:30:40.000Z',
+      runId: 'run-runtime',
+      scope: 'run-budget',
+      action: 'Review current budget consumption.',
+    });
+    insertBudgetEvent(data.file, {
+      eventHash: 'budget-exhausted',
+      type: 'budget.exhausted',
+      timestamp: '2026-09-19T21:30:50.000Z',
+      runId: 'run-runtime',
+      scope: 'run-budget',
+      action: 'Increase or reallocate the run budget.',
+    });
+
+    const model = new DashboardReadModel(data.file);
+    const home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+
+    assert.equal(home.system.state, 'ATTENTION');
+    assert.equal(home.system.criticalErrorCount, 1);
+    assert.ok(!home.sourceFreshness.staleSources.includes('runtime-attention'));
+
+    const runtimeItems = home.attention.items.filter((item) => item.kind === 'RUNTIME_ERROR');
+    assert.equal(runtimeItems.length, 1);
+    assert.equal(runtimeItems[0]?.correlationId, 'corr-runtime-1');
+    assert.equal(runtimeItems[0]?.headline, 'Preferred provider remains quota exhausted');
+    assert.equal(runtimeItems[0]?.severity, 'CRITICAL');
+    assert.equal(runtimeItems[0]?.runId, 'run-runtime');
+    assert.ok(!home.attention.items.some((item) => item.correlationId === 'corr-completed-run'));
+
+    const budgetItems = home.attention.items.filter((item) => item.kind === 'BUDGET_WARNING');
+    assert.equal(budgetItems.length, 1);
+    assert.equal(budgetItems[0]?.severity, 'ERROR');
+    assert.equal(budgetItems[0]?.headline, 'Budget exhausted');
+    assert.equal(budgetItems[0]?.nextAction, 'Increase or reallocate the run budget.');
+
+    assert.equal(home.attention.critical, 1);
+    assert.equal(home.attention.errors, 1);
+    assert.equal(home.attention.warnings, 0);
+    assert.equal(home.attention.total, 2);
   } finally {
     await data.cleanup();
   }

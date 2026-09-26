@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import {
   createCoreHomeSnapshotV1,
   type CoreHomeAttentionItemV1,
+  type CoreHomeAttentionSeverity,
   type CoreHomeEconomyView,
   type CoreHomeAttentionSummaryView,
   type CoreHomeCurrentWorkView,
@@ -231,8 +232,19 @@ export class DashboardReadModel {
       const sqliteUpdatedAt = queryLatestTelemetryTimestamp(db) ?? generatedAt;
       const currentWork = queryCurrentWork(db);
       const approvalAttention = queryHumanApprovalAttention(db);
+      const runtimeAttention = queryRuntimeAttention(db);
       const providerProjection = queryProviderBindingProjection(db);
-      const staleSources = ['continuity', 'findings', 'runtime-attention'];
+      const providerAttention = queryProviderAttention(providerProjection);
+      const budgetAttention = queryBudgetAttention(db);
+      const blockedWorkAttention = queryBlockedWorkAttention(currentWork);
+      const attention = mergeAttentionSummaries(
+        approvalAttention,
+        runtimeAttention,
+        providerAttention,
+        budgetAttention,
+        blockedWorkAttention,
+      );
+      const staleSources = ['continuity', 'findings'];
       if (providerProjection.updatedAt === null) staleSources.push('provider-state');
 
       return createCoreHomeSnapshotV1({
@@ -255,14 +267,19 @@ export class DashboardReadModel {
           v3Authority: 'SHADOW_ONLY',
         },
         system: {
-          state: providerProjection.state === 'DEGRADED' ? 'DEGRADED' : 'UNKNOWN',
+          state:
+            attention.critical > 0 || attention.errors > 0
+              ? 'ATTENTION'
+              : providerProjection.state === 'DEGRADED'
+                ? 'DEGRADED'
+                : 'UNKNOWN',
           database: 'HEALTHY',
           providers: providerProjection.state,
           continuity: 'UNKNOWN',
-          criticalErrorCount: 0,
+          criticalErrorCount: runtimeAttention.critical,
         },
         currentWork,
-        attention: approvalAttention,
+        attention,
         usage,
         economy,
         roleBindings: providerProjection.roleBindings,
@@ -753,6 +770,165 @@ const CURRENT_WORK_STAGE_TOKENS: ReadonlyArray<{
   },
 ];
 
+function queryRuntimeAttention(db: DatabaseSync): CoreHomeAttentionSummaryView {
+  const rows = db
+    .prepare(
+      `SELECT
+         e.type, e.timestamp, e.run_id, e.task_id, e.node_id, e.node_type,
+         e.status, e.result, e.failure_class, e.event_json
+       FROM events e
+       INNER JOIN runs r ON r.run_id = e.run_id
+       WHERE e.type = 'runtime.error.reported'
+         AND r.last_event_type <> 'run.completed'
+       ORDER BY e.timestamp DESC, e.id DESC
+       LIMIT 5000`,
+    )
+    .all() as SqlRow[];
+
+  const seenCorrelationIds = new Set<string>();
+  const items: CoreHomeAttentionItemV1[] = [];
+
+  for (const row of rows) {
+    const projected = projectDashboardRuntimeErrors([mapEvent(row)])[0];
+    if (!projected || seenCorrelationIds.has(projected.correlationId)) continue;
+
+    const severity = runtimeAttentionSeverity(projected.severity);
+    if (severity === null) continue;
+    seenCorrelationIds.add(projected.correlationId);
+
+    items.push({
+      id: 'runtime-error:' + projected.correlationId,
+      kind: 'RUNTIME_ERROR',
+      severity,
+      headline: projected.headline,
+      source: projected.sourceComponent + '/' + projected.sourceOperation,
+      occurredAt: projected.timestamp,
+      runId: String(row.run_id),
+      ...(toStringOrNull(row.task_id) ? { workItemId: String(row.task_id) } : {}),
+      correlationId: projected.correlationId,
+      nextAction: projected.nextAction,
+      authority: 'NONE',
+    });
+  }
+
+  return summarizeAttention(items);
+}
+
+function queryBudgetAttention(db: DatabaseSync): CoreHomeAttentionSummaryView {
+  const rows = db
+    .prepare(
+      `SELECT
+         e.type, e.timestamp, e.run_id, e.task_id, e.budget_scope, e.budget_action
+       FROM events e
+       INNER JOIN runs r ON r.run_id = e.run_id
+       WHERE e.type IN ('budget.warning', 'budget.exhausted')
+         AND r.last_event_type <> 'run.completed'
+       ORDER BY e.timestamp DESC, e.id DESC
+       LIMIT 5000`,
+    )
+    .all() as SqlRow[];
+
+  const seen = new Set<string>();
+  const items: CoreHomeAttentionItemV1[] = [];
+
+  for (const row of rows) {
+    const runId = String(row.run_id);
+    const scope = toStringOrNull(row.budget_scope) ?? 'unspecified';
+    const key = runId + ':' + scope;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const exhausted = String(row.type) === 'budget.exhausted';
+    const action = safeProjectionText(row.budget_action);
+
+    items.push({
+      id: 'budget:' + key,
+      kind: 'BUDGET_WARNING',
+      severity: exhausted ? 'ERROR' : 'WARNING',
+      headline: exhausted ? 'Budget exhausted' : 'Budget warning',
+      source: 'budget',
+      occurredAt: String(row.timestamp),
+      runId,
+      ...(toStringOrNull(row.task_id) ? { workItemId: String(row.task_id) } : {}),
+      nextAction:
+        action ??
+        (exhausted
+          ? 'Review the exhausted budget before continuing.'
+          : 'Review current budget consumption.'),
+      authority: 'NONE',
+    });
+  }
+
+  return summarizeAttention(items);
+}
+
+function queryBlockedWorkAttention(
+  currentWork: CoreHomeCurrentWorkView | null,
+): CoreHomeAttentionSummaryView {
+  if (!currentWork || currentWork.state !== 'BLOCKED') return summarizeAttention([]);
+
+  return summarizeAttention([
+    {
+      id: 'blocked-work:' + currentWork.runId,
+      kind: 'BLOCKED_WORK',
+      severity: 'WARNING',
+      headline: 'Current work is blocked',
+      source: 'current-work',
+      occurredAt: currentWork.updatedAt,
+      runId: currentWork.runId,
+      ...(currentWork.workItemId ? { workItemId: currentWork.workItemId } : {}),
+      nextAction: 'Inspect the current run to resolve the blocking condition.',
+      authority: 'NONE',
+    },
+  ]);
+}
+
+function mergeAttentionSummaries(
+  ...summaries: readonly CoreHomeAttentionSummaryView[]
+): CoreHomeAttentionSummaryView {
+  const byId = new Map<string, CoreHomeAttentionItemV1>();
+  for (const summary of summaries) {
+    for (const item of summary.items) {
+      const existing = byId.get(item.id);
+      if (!existing || item.occurredAt > existing.occurredAt) byId.set(item.id, item);
+    }
+  }
+  return summarizeAttention([...byId.values()]);
+}
+
+function summarizeAttention(
+  sourceItems: readonly CoreHomeAttentionItemV1[],
+): CoreHomeAttentionSummaryView {
+  const rank: Record<CoreHomeAttentionSeverity, number> = {
+    CRITICAL: 0,
+    ERROR: 1,
+    WARNING: 2,
+    INFO: 3,
+  };
+
+  const items = [...sourceItems].sort(
+    (left, right) =>
+      rank[left.severity] - rank[right.severity] ||
+      right.occurredAt.localeCompare(left.occurredAt) ||
+      left.id.localeCompare(right.id),
+  );
+
+  return {
+    total: items.length,
+    critical: items.filter((item) => item.severity === 'CRITICAL').length,
+    errors: items.filter((item) => item.severity === 'ERROR').length,
+    warnings: items.filter((item) => item.severity === 'WARNING').length,
+    items,
+  };
+}
+
+function runtimeAttentionSeverity(value: string): CoreHomeAttentionSeverity | null {
+  if (value === 'INFO' || value === 'WARNING' || value === 'ERROR' || value === 'CRITICAL') {
+    return value;
+  }
+  return null;
+}
+
 function mapCurrentWorkState(input: CurrentWorkStateInput): CoreHomeWorkState {
   const normalized = (input.status ?? input.result ?? '').trim().toUpperCase();
 
@@ -1004,8 +1180,18 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
       else if (unavailable) state = 'UNAVAILABLE';
       else if (activeObserved) state = 'ACTIVE';
 
+      const observedAt = [
+        publication.timestamp,
+        toStringOrNull(latestCall?.timestamp),
+        relevantFailureState?.timestamp ?? null,
+      ]
+        .filter((value): value is string => value !== null)
+        .sort()
+        .at(-1) ?? null;
+
       return {
         logicalRole: publication.logicalRole,
+        observedAt,
         state,
         preferredBindingId: publication.preferredBindingId,
         preferredModel: publication.preferredModel,
@@ -1027,6 +1213,51 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
     updatedAt: providerUpdatedAt,
     roleBindings,
   };
+}
+
+function queryProviderAttention(
+  projection: ProviderProjection,
+): CoreHomeAttentionSummaryView {
+  const items: CoreHomeAttentionItemV1[] = [];
+
+  for (const binding of projection.roleBindings) {
+    if (
+      binding.observedAt === null ||
+      (binding.state !== 'FALLBACK_ACTIVE' && binding.state !== 'UNAVAILABLE')
+    ) {
+      continue;
+    }
+
+    const failureKind = binding.failureKind?.toLowerCase() ?? null;
+    const quotaWait = failureKind === 'quota' || failureKind === 'rate_limit';
+    const fallback = binding.state === 'FALLBACK_ACTIVE';
+
+    let nextAction = fallback
+      ? 'Continue on the eligible fallback according to the configured return policy.'
+      : 'Wait for provider recovery or use an eligible configured fallback.';
+    if (binding.nextCheckAt) {
+      nextAction = 'Recovery check scheduled for ' + binding.nextCheckAt + '.';
+    } else if (binding.returnPolicy === 'ASK_BEFORE_RETURN' && fallback) {
+      nextAction = 'Continue on fallback; returning to preferred binding requires approval.';
+    } else if (binding.returnPolicy === 'AUTO_RETURN' && fallback) {
+      nextAction = 'Continue on fallback; preferred binding will resume automatically after recovery.';
+    }
+
+    items.push({
+      id: 'provider:' + binding.logicalRole + ':' + binding.state,
+      kind: quotaWait ? 'QUOTA_WAIT' : 'PROVIDER_FALLBACK',
+      severity: 'WARNING',
+      headline: fallback
+        ? 'Fallback active for ' + binding.logicalRole
+        : 'Preferred provider unavailable for ' + binding.logicalRole,
+      source: 'provider-failover',
+      occurredAt: binding.observedAt,
+      nextAction,
+      authority: 'NONE',
+    });
+  }
+
+  return summarizeAttention(items);
 }
 
 function providerSystemState(
