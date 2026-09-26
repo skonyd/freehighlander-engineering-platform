@@ -472,9 +472,7 @@ function parseFhKuikaSolutionPackRoute(pathname: string): {
   readonly packId: string;
   readonly resource: 'detail' | 'plan';
 } | null {
-  const match = /^\/api\/modules\/fh-kuika\/solution-packs\/([^/]+)(?:\/(plan))?$/.exec(
-    pathname,
-  );
+  const match = /^\/api\/modules\/fh-kuika\/solution-packs\/([^/]+)(?:\/(plan))?$/.exec(pathname);
   if (!match?.[1]) return null;
   return {
     packId: decodeURIComponent(match[1]),
