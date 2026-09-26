@@ -39,7 +39,10 @@ export function buildFhKuikaBlueprintCatalogViewV1(
     authority: 'NONE',
     blueprints: [...blueprints]
       .map(toCard)
-      .sort((left, right) => left.id.localeCompare(right.id) || right.version.localeCompare(left.version)),
+      .sort(
+        (left, right) =>
+          left.id.localeCompare(right.id) || right.version.localeCompare(left.version),
+      ),
   };
 }
 
