@@ -1,4 +1,13 @@
 export {
+  blueprintMatcherCanGrantAuthority,
+  blueprintMatcherCanLowerRisk,
+  matchFhKuikaBlueprintsV1,
+  type FhKuikaBlueprintMatchCandidateV1,
+  type FhKuikaBlueprintMatchEvidenceV1,
+  type FhKuikaBlueprintMatchRequestV1,
+} from './kuika-blueprint-matcher.js';
+
+export {
   blueprintPublicationCanGrantAuthority,
   blueprintSuggestionCanModifyPublishedBlueprint,
   publishFhKuikaBlueprintV1,
