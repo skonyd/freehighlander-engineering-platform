@@ -59,9 +59,7 @@ const MODE_VIEWS: Record<FhKuikaWorkbenchMode, FhKuikaWorkbenchModeView> = {
   },
 };
 
-export function getFhKuikaWorkbenchModeView(
-  mode: FhKuikaWorkbenchMode,
-): FhKuikaWorkbenchModeView {
+export function getFhKuikaWorkbenchModeView(mode: FhKuikaWorkbenchMode): FhKuikaWorkbenchModeView {
   return { ...MODE_VIEWS[mode] };
 }
 
