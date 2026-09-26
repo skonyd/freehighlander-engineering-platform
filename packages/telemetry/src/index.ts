@@ -408,10 +408,7 @@ export interface ModelCatalogEventPayload extends Record<string, unknown> {
   readonly currentState?: string;
   readonly itemCount?: number;
   readonly fallbackBindingIds?: readonly string[];
-  readonly returnPolicy?:
-    | 'STAY_ON_FALLBACK'
-    | 'ASK_BEFORE_RETURN'
-    | 'AUTO_RETURN';
+  readonly returnPolicy?: 'STAY_ON_FALLBACK' | 'ASK_BEFORE_RETURN' | 'AUTO_RETURN';
 }
 
 const modelCatalogPayloadKeys = new Set([
@@ -507,9 +504,7 @@ function validateModelCatalogPayload(payload: ModelCatalogEventPayload): void {
         typeof bindingId !== 'string' ||
         !/^[A-Za-z0-9][A-Za-z0-9._:-]{1,127}$/.test(bindingId)
       ) {
-        throw new Error(
-          'model catalog telemetry fallbackBindingIds contain an invalid identifier',
-        );
+        throw new Error('model catalog telemetry fallbackBindingIds contain an invalid identifier');
       }
       if (seen.has(bindingId)) {
         throw new Error('model catalog telemetry fallbackBindingIds must be unique');
