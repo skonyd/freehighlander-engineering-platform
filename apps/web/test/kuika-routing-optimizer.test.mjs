@@ -88,8 +88,10 @@ test('routing optimizer falls back only from deterministic pre-call constraints'
   assert.match(decision.reason, /Preferred binding is ineligible/);
 });
 
-test('routing optimizer explains data, capability, context, independence and cost exclusions', () => {
-  const decision = optimizeFhKuikaRoutingV1({
+test(
+  'routing optimizer explains data, capability, context, independence and cost exclusions',
+  () => {
+    const decision = optimizeFhKuikaRoutingV1({
     schemaVersion: 1,
     logicalRole: 'reviewer',
     preferredBindingId: 'blocked',
@@ -122,8 +124,9 @@ test('routing optimizer explains data, capability, context, independence and cos
   assert.ok(reasons.includes('REQUIRED_CAPABILITY_MISSING'));
   assert.ok(reasons.includes('CONTEXT_TOO_SMALL'));
   assert.ok(reasons.includes('INDEPENDENCE_CONFLICT'));
-  assert.ok(reasons.includes('COST_LIMIT_EXCEEDED'));
-});
+    assert.ok(reasons.includes('COST_LIMIT_EXCEEDED'));
+  },
+);
 
 test('routing request rejects duplicate bindings and invalid authority', () => {
   const base = {
@@ -150,8 +153,10 @@ test('routing request rejects duplicate bindings and invalid authority', () => {
   );
 });
 
-test('routing simulator preserves availability-only fallback and data locality constraints', () => {
-  const available = simulateFhKuikaRoutingScenarioV1();
+test(
+  'routing simulator preserves availability-only fallback and data locality constraints',
+  () => {
+    const available = simulateFhKuikaRoutingScenarioV1();
   assert.equal(available.selectedBindingId, 'preferred-review');
 
   const quota = simulateFhKuikaRoutingScenarioV1({
@@ -172,8 +177,9 @@ test('routing simulator preserves availability-only fallback and data locality c
   });
   assert.equal(secretCritical.selectedBindingId, null);
 
-  assert.equal(routingSimulationCanExecuteCall(), false);
-});
+    assert.equal(routingSimulationCanExecuteCall(), false);
+  },
+);
 
 test('routing UI is a simulator and exposes no binding mutation controls', () => {
   assert.match(FH_KUIKA_ROUTING_HTML, /Deterministic pre-call routing simulation/);
