@@ -173,9 +173,7 @@ async function fixture() {
 function insertCurrentWorkFixture(file, input) {
   const db = new DatabaseSync(file);
   try {
-    db.prepare(
-      `INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ).run(
+    db.prepare(`INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       input.runId,
       input.taskId ?? 'task-work',
       input.timestamp,
