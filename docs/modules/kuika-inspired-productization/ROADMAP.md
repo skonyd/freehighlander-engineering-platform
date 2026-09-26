@@ -267,11 +267,11 @@ Users should be able to inspect why an item was included in the context packet.
 
 ## Proposed PR slices
 
-- **FH-KUIKA-02.1** interaction-mode contract and authority-neutral intent objects.
-- **FH-KUIKA-02.2** Workbench UI with mode selector and context chips.
-- **FH-KUIKA-02.3** PLAN output → structured candidate work items/blueprint parameters.
-- **FH-KUIKA-02.4** REVIEW → exact-revision independent-review entry.
-- **FH-KUIKA-02.5** EXECUTE control-plane intent activation after required authority gates.
+- **FH-KUIKA-02.1** interaction-mode contract and authority-neutral intent objects. — COMPLETE
+- **FH-KUIKA-02.2** Workbench UI with mode selector and deterministic project context. — COMPLETE
+- **FH-KUIKA-02.3** PLAN structured candidate work-item contract/preparation. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-02.4** REVIEW exact-revision + evidence-bound request preparation. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-02.5** EXECUTE control-plane intent activation after required authority gates. — BLOCKED BY FH-20
 
 ## Acceptance criteria
 
