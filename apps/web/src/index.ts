@@ -1,4 +1,10 @@
 export {
+  curatedBlueprintPackCanGrantAuthority,
+  getFhKuikaCuratedBlueprintV1,
+  getFhKuikaCuratedBlueprintsV1,
+} from './kuika-blueprint-catalog.js';
+
+export {
   blueprintMatcherCanGrantAuthority,
   blueprintMatcherCanLowerRisk,
   matchFhKuikaBlueprintsV1,
