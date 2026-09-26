@@ -475,7 +475,7 @@ Show before enablement:
 ## Proposed PR slices
 
 - **FH-KUIKA-05.1** ToolAdapter-aligned connector registry/read model. — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-05.2** MCP discovery/normalization adapter.
+- **FH-KUIKA-05.2** MCP discovery/normalization adapter. — COMPLETE PRE-CUTOVER
 - **FH-KUIKA-05.3** connector install-review contract and permission diff.
 - **FH-KUIKA-05.4** Connector Hub UI.
 - **FH-KUIKA-05.5** credential-reference configuration using SecretHandle only.
