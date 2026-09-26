@@ -167,32 +167,38 @@ export function diffFhKuikaConnectorPermissionsV1(
 
   const beforeMutation = before.capabilities.some((item) => item.mutationCapable);
   const afterMutation = after.capabilities.some((item) => item.mutationCapable);
-
-  const diff = {
-    connectorId: before.id,
-    ...diffList(
-      before.capabilities.map((item) => capabilityKey(item)),
-      after.capabilities.map((item) => capabilityKey(item)),
-      'Capabilities',
-    ),
-    ...diffList(before.filesystemScopes, after.filesystemScopes, 'FilesystemScopes'),
-    ...diffList(before.networkDestinations, after.networkDestinations, 'NetworkDestinations'),
-    ...diffList(before.secretHandleRefs, after.secretHandleRefs, 'SecretHandleRefs'),
-    mutationCapabilityChanged: beforeMutation !== afterMutation,
-  };
-
-  const permissionChanged = Object.entries(diff).some(
-    ([key, value]) => key.startsWith('added') || key.startsWith('removed')
-      ? Array.isArray(value) && value.length > 0
-      : false,
+  const capabilityDiff = listDiff(
+    before.capabilities.map((item) => capabilityKey(item)),
+    after.capabilities.map((item) => capabilityKey(item)),
   );
+  const filesystemDiff = listDiff(before.filesystemScopes, after.filesystemScopes);
+  const networkDiff = listDiff(before.networkDestinations, after.networkDestinations);
+  const secretDiff = listDiff(before.secretHandleRefs, after.secretHandleRefs);
+  const mutationCapabilityChanged = beforeMutation !== afterMutation;
+
+  const permissionChanged =
+    capabilityDiff.added.length > 0 ||
+    capabilityDiff.removed.length > 0 ||
+    filesystemDiff.added.length > 0 ||
+    filesystemDiff.removed.length > 0 ||
+    networkDiff.added.length > 0 ||
+    networkDiff.removed.length > 0 ||
+    secretDiff.added.length > 0 ||
+    secretDiff.removed.length > 0;
 
   return {
-    ...diff,
+    connectorId: before.id,
+    addedCapabilities: capabilityDiff.added,
+    removedCapabilities: capabilityDiff.removed,
+    addedFilesystemScopes: filesystemDiff.added,
+    removedFilesystemScopes: filesystemDiff.removed,
+    addedNetworkDestinations: networkDiff.added,
+    removedNetworkDestinations: networkDiff.removed,
+    addedSecretHandleRefs: secretDiff.added,
+    removedSecretHandleRefs: secretDiff.removed,
+    mutationCapabilityChanged,
     humanReviewRequired:
-      permissionChanged ||
-      diff.mutationCapabilityChanged ||
-      after.trustLevel !== 'BUILT_IN',
+      permissionChanged || mutationCapabilityChanged || after.trustLevel !== 'BUILT_IN',
     authority: 'NONE',
   };
 }
@@ -232,16 +238,15 @@ function capabilityKey(value: FhKuikaConnectorCapabilityV1): string {
   return value.kind + ':' + value.id;
 }
 
-function diffList(
+function listDiff(
   before: readonly string[],
   after: readonly string[],
-  suffix: string,
-): Record<string, readonly string[]> {
+): { readonly added: readonly string[]; readonly removed: readonly string[] } {
   const beforeSet = new Set(before);
   const afterSet = new Set(after);
   return {
-    ['added' + suffix]: after.filter((item) => !beforeSet.has(item)).sort(),
-    ['removed' + suffix]: before.filter((item) => !afterSet.has(item)).sort(),
+    added: after.filter((item) => !beforeSet.has(item)).sort(),
+    removed: before.filter((item) => !afterSet.has(item)).sort(),
   };
 }
 
