@@ -113,7 +113,10 @@ function sameNode(
   );
 }
 
-function sameStrings(left: readonly string[] | undefined, right: readonly string[] | undefined): boolean {
+function sameStrings(
+  left: readonly string[] | undefined,
+  right: readonly string[] | undefined,
+): boolean {
   const normalizedLeft = [...(left ?? [])].sort((a, b) => a.localeCompare(b));
   const normalizedRight = [...(right ?? [])].sort((a, b) => a.localeCompare(b));
   return (
