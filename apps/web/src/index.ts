@@ -1,4 +1,10 @@
 export {
+  buildCoreHomeSnapshot,
+  type CoreHomeReadSource,
+  type CoreHomeSnapshotOptions,
+} from './home-read-model.js';
+
+export {
   coreHomeSnapshotCanGrantAuthority,
   coreHomeSnapshotCanMutateRuntime,
   createCoreHomeSnapshotV1,
@@ -49,6 +55,7 @@ export {
   type DashboardRun,
   type DashboardRunDetail,
   type DashboardSummary,
+  type DashboardUsageAggregate,
 } from './read-model.js';
 
 export {
