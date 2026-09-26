@@ -148,6 +148,7 @@ FH-KUIKA-10 changes the initial local-first single-user product boundary and the
 
 # FH-KUIKA-01 — Studio Shell + Explainable Operations Console
 
+**Status:** COMPLETE  
 **Priority:** P0  
 **Value:** very high  
 **Pre-cutover:** yes, if read-only/control-intent only
@@ -204,7 +205,7 @@ Provider-routing panel should show:
 - **FH-KUIKA-01.2** Operations Console read model for structured runtime errors and routing transitions.
 - **FH-KUIKA-01.3** Run detail redesign with timeline, evidence, model/tool calls and gate decisions.
 - **FH-KUIKA-01.4** Approval Inbox read surface with exact revision/scope/currentness visualization.
-- **FH-KUIKA-01.5** accessibility/responsive/persistent-filter polish and UX contract tests.
+- **FH-KUIKA-01.5** accessibility/responsive/persistent-filter polish and UX contract tests. — COMPLETE
 
 ## Main impact
 

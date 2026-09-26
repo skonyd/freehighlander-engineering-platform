@@ -38,6 +38,18 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
     .card { background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
     .metric strong { display: block; font-size: 20px; margin-top: 4px; }
     .metric span { color: var(--muted); font-size: 12px; }
+    .filters {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin: 14px 0;
+    }
+    .filter { display: grid; gap: 4px; min-width: 170px; }
+    .filter label {
+      color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    }
+    select {
+      background: #171f2a; color: var(--text); border: 1px solid var(--line);
+      border-radius: 7px; padding: 7px 9px;
+    }
+    select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .attention { border-top: 1px solid var(--line); padding: 10px 0; }
     .attention:first-child { border-top: 0; padding-top: 0; }
     .pill { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; font-size: 11px; }
@@ -89,6 +101,28 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
   <main>
     <section id="metrics" class="grid metrics"></section>
 
+    <section class="card filters" aria-label="Operations filters">
+      <div class="filter">
+        <label for="attention-severity">Attention severity</label>
+        <select id="attention-severity">
+          <option value="ALL">All</option>
+          <option value="WARNING_PLUS">Warning+</option>
+          <option value="ERROR_PLUS">Error+</option>
+          <option value="CRITICAL">Critical only</option>
+        </select>
+      </div>
+      <div class="filter">
+        <label for="binding-state">Provider state</label>
+        <select id="binding-state">
+          <option value="ALL">All</option>
+          <option value="FALLBACK_ACTIVE">Fallback active</option>
+          <option value="ACTIVE">Active</option>
+          <option value="UNKNOWN">Unknown</option>
+        </select>
+      </div>
+      <div id="filter-status" class="muted" role="status" aria-live="polite">Filters are local UI state only.</div>
+    </section>
+
     <section class="grid layout">
       <div class="card">
         <h2>Needs attention</h2>
@@ -116,6 +150,10 @@ export const FH_KUIKA_OPERATIONS_HTML = String.raw`<!doctype html>
 
 <script>
 const fmt = new Intl.NumberFormat();
+const FILTER_KEY = 'fh-kuika-operate-filters-v1';
+let homeState = null;
+const defaultFilters = { attentionSeverity: 'ALL', bindingState: 'ALL' };
+
 const esc = value => String(value ?? '—').replace(
   /[&<>"']/g,
   ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])
@@ -135,6 +173,54 @@ function stateClass(value) {
   return 'muted';
 }
 
+function loadFilters() {
+  try {
+    const raw = localStorage.getItem(FILTER_KEY);
+    if (!raw) return { ...defaultFilters };
+    const parsed = JSON.parse(raw);
+    return {
+      attentionSeverity: ['ALL','WARNING_PLUS','ERROR_PLUS','CRITICAL'].includes(parsed.attentionSeverity)
+        ? parsed.attentionSeverity : 'ALL',
+      bindingState: ['ALL','FALLBACK_ACTIVE','ACTIVE','UNKNOWN'].includes(parsed.bindingState)
+        ? parsed.bindingState : 'ALL'
+    };
+  } catch {
+    return { ...defaultFilters };
+  }
+}
+
+function saveFilters(filters) {
+  try { localStorage.setItem(FILTER_KEY, JSON.stringify(filters)); } catch {}
+}
+
+function currentFilters() {
+  return {
+    attentionSeverity: document.querySelector('#attention-severity').value,
+    bindingState: document.querySelector('#binding-state').value
+  };
+}
+
+function attentionVisible(item, filter) {
+  const rank = { INFO:0, WARNING:1, ERROR:2, CRITICAL:3 };
+  const severity = rank[item.severity] ?? 0;
+  if (filter === 'CRITICAL') return severity === 3;
+  if (filter === 'ERROR_PLUS') return severity >= 2;
+  if (filter === 'WARNING_PLUS') return severity >= 1;
+  return true;
+}
+
+function applyFilters() {
+  if (!homeState) return;
+  const filters = currentFilters();
+  saveFilters(filters);
+  renderAttention(homeState.attention?.items || [], filters.attentionSeverity);
+  renderBindings(homeState.roleBindings || [], filters.bindingState);
+  document.querySelector('#filter-status').textContent =
+    filters.attentionSeverity === 'ALL' && filters.bindingState === 'ALL'
+      ? 'Showing all deterministic operations state.'
+      : 'Filtered view · preferences saved locally.';
+}
+
 function renderHome(home) {
   document.querySelector('#status').textContent =
     'Read-only module surface · authority ' + (home.authority?.v3Authority || 'UNKNOWN');
@@ -146,7 +232,12 @@ function renderHome(home) {
       esc(home.system?.providers || 'UNKNOWN') + '</strong></div>' +
     '<div class="card metric"><span>Fallbacks</span><strong>' + fmt.format(fallbackCount) + '</strong></div>';
 
-  const attention = home.attention?.items || [];
+  homeState = home;
+  applyFilters();
+}
+
+function renderAttention(items, filter) {
+  const attention = items.filter(item => attentionVisible(item, filter));
   document.querySelector('#attention').innerHTML = attention.length
     ? attention.map(item =>
         '<div class="attention">' +
@@ -155,9 +246,11 @@ function renderHome(home) {
           (item.nextAction ? '<div class="muted">' + esc(item.nextAction) + '</div>' : '') +
         '</div>'
       ).join('')
-    : '<div class="empty">Nothing currently requires attention.</div>';
+    : '<div class="empty">No attention items match this filter.</div>';
+}
 
-  const bindings = home.roleBindings || [];
+function renderBindings(items, filter) {
+  const bindings = filter === 'ALL' ? items : items.filter(item => item.state === filter);
   document.querySelector('#bindings').innerHTML = bindings.length
     ? bindings.map(item => {
         const preferred = item.preferredModel || item.preferredBindingId || 'Unknown';
@@ -172,7 +265,7 @@ function renderHome(home) {
           recovery +
         '</div>';
       }).join('')
-    : '<div class="empty">No provider binding projection is available.</div>';
+    : '<div class="empty">No provider state matches this filter.</div>';
 }
 
 function renderRuns(runs) {
@@ -189,6 +282,12 @@ function renderRuns(runs) {
     button.addEventListener('click', () => void loadRun(button.dataset.run))
   );
 }
+
+const savedFilters = loadFilters();
+document.querySelector('#attention-severity').value = savedFilters.attentionSeverity;
+document.querySelector('#binding-state').value = savedFilters.bindingState;
+document.querySelector('#attention-severity').addEventListener('change', applyFilters);
+document.querySelector('#binding-state').addEventListener('change', applyFilters);
 
 async function loadRun(runId) {
   const target = document.querySelector('#diagnostics');
