@@ -11,7 +11,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-02 Telemetry event emitter / durable event history — issue #22 / PR #23
 - [x] FH-03 SQLite run/event/artifact metadata store — issue #24 / PR #25
 - [x] FH-04 Read-only metrics dashboard — issue #26 / PR #27
-- [x] FH-04B Zero-Token Core Home Dashboard — core .1–.8 complete; optional .9 external CI/PR enrichment deferred; detailed plan in `docs/planning/FH-04B-ZERO-TOKEN-CORE-HOME.md`
+- [x] FH-04B Zero-Token Core Home Dashboard — .1–.9 complete; optional deterministic GitHub CI/PR enrichment included; detailed plan in `docs/planning/FH-04B-ZERO-TOKEN-CORE-HOME.md`
 
 ## Qwen / model economics
 - [x] FH-05 Qwen specialist shadow roles — issue #29 / PR #30
