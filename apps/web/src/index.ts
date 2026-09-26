@@ -1,4 +1,19 @@
 export {
+  createFhKuikaWorkflowDraftV1,
+  fhKuikaBlueprintWorkflowDraftCanGrantAuthority,
+  fhKuikaBlueprintWorkflowDraftCanInvokeModel,
+  fhKuikaBlueprintWorkflowDraftCanMutateRuntime,
+  simulateFhKuikaBlueprintDraftV1,
+  type CreateFhKuikaWorkflowDraftInputV1,
+  type FhKuikaBlueprintSimulationResultV1,
+  type FhKuikaWorkflowDraftEdgeV1,
+  type FhKuikaWorkflowDraftNodeV1,
+  type FhKuikaWorkflowDraftSpecV1,
+  type FhKuikaWorkflowDraftV1,
+  type FhKuikaWorkflowNodeKind,
+} from './kuika-blueprint-workflow.js';
+
+export {
   fhKuikaBlueprintCatalogUiCanGrantAuthority,
   fhKuikaBlueprintCatalogUiCanInvokeModel,
   fhKuikaBlueprintCatalogUiCanMutateRuntime,
