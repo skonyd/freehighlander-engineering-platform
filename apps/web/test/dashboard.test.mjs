@@ -1182,6 +1182,9 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(kuikaHtml, /\/api\/home/);
     assert.match(kuikaHtml, /Core runtime remains valid and usable/);
     assert.match(kuikaHtml, /href="\/modules\/fh-kuika\/workbench"/);
+    assert.match(kuikaHtml, /href="\/modules\/fh-kuika\/build"/);
+    assert.match(kuikaHtml, /href="\/modules\/fh-kuika\/integrate"/);
+    assert.match(kuikaHtml, /href="\/modules\/fh-kuika\/knowledge"/);
 
     const workbench = await fetch(`${base}/modules/fh-kuika/workbench`);
     assert.equal(workbench.status, 200);
@@ -1194,6 +1197,16 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.equal(workbench.headers.get('x-freehighlander-mode'), 'read-only');
     assert.match(kuikaHtml, /href="\/modules\/fh-kuika\/operate"/);
     assert.equal(kuika.headers.get('x-freehighlander-mode'), 'read-only');
+
+    for (const area of ['build', 'integrate', 'knowledge']) {
+      const areaResponse = await fetch(`${base}/modules/fh-kuika/${area}`);
+      assert.equal(areaResponse.status, 200);
+      assert.equal(areaResponse.headers.get('x-freehighlander-mode'), 'read-only');
+      const areaHtml = await areaResponse.text();
+      assert.match(areaHtml, /FH-KUIKA/);
+      assert.match(areaHtml, /aria-label="FH-KUIKA areas"/);
+      assert.match(areaHtml, /invokes no model/);
+    }
 
     const operate = await fetch(`${base}/modules/fh-kuika/operate`);
     assert.equal(operate.status, 200);

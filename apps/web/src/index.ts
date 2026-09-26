@@ -1,4 +1,22 @@
 export {
+  fhKuikaAreaPageCanGrantAuthority,
+  fhKuikaAreaPageCanInvokeModel,
+  fhKuikaAreaPageCanMutateRuntime,
+  isFhKuikaPreparationArea,
+  renderFhKuikaAreaHtml,
+} from './kuika-area-ui.js';
+
+export {
+  fhKuikaNavigationCanGrantAuthority,
+  fhKuikaNavigationCanInvokeModel,
+  fhKuikaNavigationCanMutateRuntime,
+  getFhKuikaNavigationItem,
+  listFhKuikaNavigation,
+  type FhKuikaArea,
+  type FhKuikaNavigationItem,
+} from './kuika-navigation.js';
+
+export {
   curatedBlueprintPackCanGrantAuthority,
   getFhKuikaCuratedBlueprintV1,
   getFhKuikaCuratedBlueprintsV1,
