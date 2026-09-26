@@ -981,9 +981,7 @@ function safeCircuitState(value: unknown): 'CLOSED' | 'OPEN' | 'HALF_OPEN' | nul
   return null;
 }
 
-function safeReturnPolicy(
-  value: unknown,
-): CoreHomeRoleBindingHealthView['returnPolicy'] | null {
+function safeReturnPolicy(value: unknown): CoreHomeRoleBindingHealthView['returnPolicy'] | null {
   if (
     value === 'STAY_ON_FALLBACK' ||
     value === 'ASK_BEFORE_RETURN' ||
