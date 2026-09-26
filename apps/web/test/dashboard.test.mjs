@@ -502,7 +502,14 @@ function insertCheckpointEvent(file, input) {
       `INSERT INTO events(
         event_hash, schema_version, type, timestamp, run_id, event_json
       ) VALUES (?, ?, ?, ?, ?, ?)`,
-    ).run(input.eventHash, 1, 'checkpoint.created', input.timestamp, 'run-1', JSON.stringify(event));
+    ).run(
+      input.eventHash,
+      1,
+      'checkpoint.created',
+      input.timestamp,
+      'run-1',
+      JSON.stringify(event),
+    );
   } finally {
     db.close();
   }
@@ -1085,9 +1092,7 @@ test('Core Home security findings are current-revision bound and remediation-awa
     assert.equal(home.findings.unresolved, 2);
     assert.equal(home.findings.latestFindingAt, '2026-09-19T21:47:00.000Z');
     assert.ok(!home.sourceFreshness.staleSources.includes('findings'));
-    const securityAttention = home.attention.items.find(
-      (item) => item.kind === 'SECURITY_FINDING',
-    );
+    const securityAttention = home.attention.items.find((item) => item.kind === 'SECURITY_FINDING');
     assert.ok(securityAttention);
     assert.equal(securityAttention.severity, 'CRITICAL');
     assert.equal(home.system.criticalErrorCount, 0);
