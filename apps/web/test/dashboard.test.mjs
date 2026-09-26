@@ -1217,6 +1217,14 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(operateHtml, /structured runtime errors/);
     assert.equal(operate.headers.get('x-freehighlander-mode'), 'read-only');
 
+    const operateSnapshot = await (
+      await fetch(`${base}/api/modules/fh-kuika/operate?limit=20`)
+    ).json();
+    assert.equal(operateSnapshot.schemaVersion, 1);
+    assert.equal(operateSnapshot.projectionAuthority, 'NONE');
+    assert.ok(Array.isArray(operateSnapshot.errors));
+    assert.ok(Array.isArray(operateSnapshot.routing));
+
     const health = await (await fetch(`${base}/api/health`)).json();
     assert.equal(health.mode, 'read-only');
     assert.equal(health.schemaVersion, 1);
@@ -1280,6 +1288,10 @@ test('missing database keeps health available and returns 503 for data endpoints
     const home = await fetch(`${base}/api/home`);
     assert.equal(home.status, 503);
     assert.equal((await home.json()).error, 'database_not_ready');
+
+    const operateSnapshot = await fetch(`${base}/api/modules/fh-kuika/operate`);
+    assert.equal(operateSnapshot.status, 503);
+    assert.equal((await operateSnapshot.json()).error, 'database_not_ready');
 
     const summary = await fetch(`${base}/api/summary`);
     assert.equal(summary.status, 503);
