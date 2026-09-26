@@ -8,6 +8,7 @@ interface FhKuikaAreaCard {
   readonly title: string;
   readonly detail: string;
   readonly status: 'AVAILABLE' | 'PREPARATION';
+  readonly href?: string;
 }
 
 interface FhKuikaAreaDefinition {
@@ -24,7 +25,8 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
       {
         title: 'Blueprints',
         detail: 'Versioned engineering patterns for common delivery intents.',
-        status: 'PREPARATION',
+        status: 'AVAILABLE',
+        href: '/modules/fh-kuika/build/blueprints',
       },
       {
         title: 'Workflow Studio',
@@ -93,9 +95,14 @@ export function renderFhKuikaAreaHtml(area: 'BUILD' | 'INTEGRATE' | 'KNOWLEDGE')
     .join('');
 
   const cards = definition.cards
-    .map(
-      (card) =>
-        '<article class="card">' +
+    .map((card) => {
+      const openingTag = card.href
+        ? '<a class="card linked-card" href="' + card.href + '">'
+        : '<article class="card">';
+      const closingTag = card.href ? '</a>' : '</article>';
+
+      return (
+        openingTag +
         '<div class="card-head"><h2>' +
         card.title +
         '</h2><span class="badge">' +
@@ -103,8 +110,10 @@ export function renderFhKuikaAreaHtml(area: 'BUILD' | 'INTEGRATE' | 'KNOWLEDGE')
         '</span></div>' +
         '<p>' +
         card.detail +
-        '</p></article>',
-    )
+        '</p>' +
+        closingTag
+      );
+    })
     .join('');
 
   return String.raw`<!doctype html>
@@ -149,6 +158,8 @@ export function renderFhKuikaAreaHtml(area: 'BUILD' | 'INTEGRATE' | 'KNOWLEDGE')
       background:color-mix(in srgb,var(--panel) 92%,transparent);
       border:1px solid var(--line); border-radius:12px; padding:16px; min-height:140px;
     }
+    a.card { color:var(--text); display:block; text-decoration:none; }
+    a.card:hover,a.card:focus-visible { border-color:#52677d; text-decoration:none; }
     .card-head { display:flex; justify-content:space-between; gap:10px; align-items:center; }
     .badge {
       border:1px solid var(--line); border-radius:999px; padding:2px 7px;
