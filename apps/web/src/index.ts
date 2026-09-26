@@ -1,4 +1,41 @@
 export {
+  buildFhKuikaConnectorInstallReviewV1,
+  connectorInstallReviewCanGrantAuthority,
+  connectorInstallReviewCanInstallDirectly,
+  connectorInstallReviewCanRevealRawSecrets,
+  type FhKuikaConnectorInstallReviewV1,
+  type FhKuikaConnectorInstallWarning,
+} from './kuika-connector-install-review.js';
+
+export {
+  buildFhKuikaMcpRegistryViewV1,
+  mcpDiscoveryCanEnableConnector,
+  mcpDiscoveryMetadataCanGrantAuthority,
+  mcpSelfReportedReadOnlyHintsAreTrusted,
+  normalizeFhKuikaMcpDiscoveryV1,
+  type FhKuikaMcpNormalizedDiscoveryV1,
+  type FhKuikaMcpResourceDiscoveryV1,
+  type FhKuikaMcpServerDiscoveryV1,
+  type FhKuikaMcpToolDiscoveryV1,
+} from './kuika-mcp-normalization.js';
+
+export {
+  buildFhKuikaConnectorRegistryViewV1,
+  connectorCatalogCacheCanBypassPermissionRevalidation,
+  connectorExternalMetadataCanGrantAuthority,
+  connectorRegistryCanGrantAuthority,
+  createFhKuikaConnectorRegistryEntryV1,
+  diffFhKuikaConnectorPermissionsV1,
+  type FhKuikaConnectorCapabilityV1,
+  type FhKuikaConnectorDataClassification,
+  type FhKuikaConnectorPermissionDiffV1,
+  type FhKuikaConnectorProtocol,
+  type FhKuikaConnectorRegistryEntryV1,
+  type FhKuikaConnectorRegistryViewV1,
+  type FhKuikaConnectorTrustLevel,
+} from './kuika-connector-registry.js';
+
+export {
   createFhKuikaReviewRequestV1,
   fhKuikaReviewRequestCanAuthorizeExecution,
   fhKuikaReviewRequestCanGrantAuthority,
