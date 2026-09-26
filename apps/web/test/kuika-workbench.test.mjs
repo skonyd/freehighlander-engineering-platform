@@ -6,6 +6,7 @@ import {
   listFhKuikaWorkbenchModes,
   workbenchModeSelectionCanGrantAuthority,
   workbenchModeSelectionCanInvokeModel,
+  FH_KUIKA_WORKBENCH_HTML,
 } from '../dist/index.js';
 
 test('FH-KUIKA Workbench mode selection is non-authoritative and zero-call', () => {
@@ -41,4 +42,14 @@ test('only Execute mode is mutation-capable and requires enabled V3 authority', 
     assert.equal(mode.mutationCapable, false);
     assert.equal(mode.requiresEnabledV3Authority, false);
   }
+});
+
+
+test('Workbench UI prepares local intents and keeps Review evidence-bound', () => {
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /id="prepare-intent"/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /id="evidence-ids"/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /Prepared intent preview · no model call/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /REVIEW blocked: at least one evidence ID is required/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /EXECUTE blocked: V3 authority is/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /selectionAuthority:'NONE'/);
 });
