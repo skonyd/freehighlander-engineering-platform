@@ -138,12 +138,44 @@ export function validateFhKuikaWorkflowDraftDefinitionV1(
     ) {
       errors.push(`workflow node ${node.id} has invalid riskTier`);
     }
-    validateOptionalInteger(node.timeoutMs, `workflow node ${node.id} timeoutMs`, 1, 86_400_000, errors);
-    validateOptionalInteger(node.retryLimit, `workflow node ${node.id} retryLimit`, 0, 20, errors);
-    validateOptionalInteger(node.tokenBudget, `workflow node ${node.id} tokenBudget`, 1, 10_000_000, errors);
-    validateOptionalNumber(node.costBudgetUsd, `workflow node ${node.id} costBudgetUsd`, 0, 100_000, errors);
-    validateStringList(node.requiredEvidence, `workflow node ${node.id} requiredEvidence`, errors);
-    validateStringList(node.toolPermissions, `workflow node ${node.id} toolPermissions`, errors);
+    validateOptionalInteger(
+      node.timeoutMs,
+      `workflow node ${node.id} timeoutMs`,
+      1,
+      86_400_000,
+      errors,
+    );
+    validateOptionalInteger(
+      node.retryLimit,
+      `workflow node ${node.id} retryLimit`,
+      0,
+      20,
+      errors,
+    );
+    validateOptionalInteger(
+      node.tokenBudget,
+      `workflow node ${node.id} tokenBudget`,
+      1,
+      10_000_000,
+      errors,
+    );
+    validateOptionalNumber(
+      node.costBudgetUsd,
+      `workflow node ${node.id} costBudgetUsd`,
+      0,
+      100_000,
+      errors,
+    );
+    validateStringList(
+      node.requiredEvidence,
+      `workflow node ${node.id} requiredEvidence`,
+      errors,
+    );
+    validateStringList(
+      node.toolPermissions,
+      `workflow node ${node.id} toolPermissions`,
+      errors,
+    );
     if (
       node.approvalPolicy !== undefined &&
       !['NONE', 'MODEL_QUORUM_REQUIRED', 'HUMAN_REQUIRED'].includes(node.approvalPolicy)
