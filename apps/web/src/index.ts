@@ -1,4 +1,27 @@
 export {
+  buildFhKuikaSolutionPackInstallPlanV1,
+  getFhKuikaMarketplaceRoleV1,
+  getFhKuikaSolutionPackV1,
+  listFhKuikaMarketplaceRolesV1,
+  listFhKuikaSolutionPacksV1,
+  roleMarketplaceCanGrantAuthority,
+  roleMarketplaceCanInstallDirectly,
+  solutionPackPlanCanActivate,
+  type FhKuikaMarketplaceAuthority,
+  type FhKuikaMarketplaceRiskTier,
+  type FhKuikaRolePackageManifestV1,
+  type FhKuikaSolutionPackInstallPlanV1,
+  type FhKuikaSolutionPackV1,
+} from './kuika-role-marketplace.js';
+
+export {
+  FH_KUIKA_ROLE_MARKETPLACE_HTML,
+  roleMarketplacePageCanGrantAuthority,
+  roleMarketplacePageCanInstall,
+  roleMarketplacePageCanInvokeModel,
+} from './kuika-role-marketplace-ui.js';
+
+export {
   buildFhKuikaConnectorInstallReviewV1,
   connectorInstallReviewCanGrantAuthority,
   connectorInstallReviewCanInstallDirectly,
