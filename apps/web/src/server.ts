@@ -26,6 +26,12 @@ import { buildFhKuikaWorkbenchSnapshotV1, type FhKuikaWorkbenchMode } from './ku
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
 import { FH_KUIKA_APPROVALS_HTML } from './kuika-approval-ui.js';
 import { buildFhKuikaApprovalInboxV1 } from './kuika-approval-inbox.js';
+import { FH_KUIKA_CONNECTOR_HUB_HTML } from './kuika-connector-ui.js';
+import {
+  getFhKuikaConnectorCatalogItemV1,
+  listFhKuikaConnectorCatalogV1,
+} from './kuika-connector-catalog.js';
+import { buildFhKuikaConnectorInstallReviewV1 } from './kuika-connector-install-review.js';
 import { DASHBOARD_HTML } from './ui.js';
 import {
   createGithubExternalStatusProviderFromEnv,
@@ -131,6 +137,11 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika/build') {
       html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('BUILD'));
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/integrate/connectors') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_CONNECTOR_HUB_HTML);
       return;
     }
 
@@ -284,6 +295,25 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/api/modules/fh-kuika/connectors') {
+      json(response, 200, { connectors: listFhKuikaConnectorCatalogV1() });
+      return;
+    }
+
+    const connectorRoute = parseFhKuikaConnectorRoute(url.pathname);
+    if (connectorRoute) {
+      const connector = getFhKuikaConnectorCatalogItemV1(connectorRoute.connectorId);
+      if (!connector) {
+        json(response, 404, {
+          error: 'connector_not_found',
+          connectorId: connectorRoute.connectorId,
+        });
+        return;
+      }
+      json(response, 200, { review: buildFhKuikaConnectorInstallReviewV1(connector) });
+      return;
+    }
+
     if (url.pathname === '/api/modules/fh-kuika/approvals') {
       json(response, 200, buildFhKuikaApprovalInboxV1(readModel));
       return;
@@ -367,6 +397,14 @@ function parseFhKuikaBlueprintRoute(pathname: string): {
     blueprintId: decodeURIComponent(match[1]),
     resource: (match[2] ?? 'detail') as 'detail' | 'draft' | 'simulation',
   };
+}
+
+function parseFhKuikaConnectorRoute(pathname: string): {
+  readonly connectorId: string;
+} | null {
+  const match = /^\/api\/modules\/fh-kuika\/connectors\/([^/]+)\/review$/.exec(pathname);
+  if (!match?.[1]) return null;
+  return { connectorId: decodeURIComponent(match[1]) };
 }
 
 function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {
