@@ -9,7 +9,7 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 0 | Creator Marketplace reference acceptance | **COMPLETE** — #207 merged, #209 hardening merged, final accepted SHA recorded |
 | 1 | FreeHighlander automation bootstrap | **COMPLETE** — FH-01A + FH-01B1 + FH-01B2 complete |
 | 2 | V2.5 telemetry foundation | **COMPLETE** |
-| 3 | SQLite + read-only dashboard | **COMPLETE** |
+| 3 | SQLite + read-only dashboard | **COMPLETE; FH-04B Core Home extension PROPOSED** |
 | 4 | Qwen shadow benchmark/offloading | **COMPLETE foundation** |
 | 5 | Token/context/provider optimization | **COMPLETE foundation** |
 | 6 | V3 architecture freeze | **COMPLETE** |
@@ -58,6 +58,26 @@ Delivered append-only engineering events, model/gate/artifact/finding telemetry,
 ## Phase 3 — SQLite + Read-only Dashboard — COMPLETE
 
 Delivered SQLite run/event/artifact read model, deterministic import/indexing, read-only management/dashboard surfaces and verified backup/restore/integrity hardening.
+
+### FH-04B — Zero-Token Core Home extension
+
+FH-04B is the next Core UI extension to FH-04. It keeps the dashboard fully read-only while making it the default operational Home surface.
+
+Key rule:
+
+~~~text
+Home render / refresh
+        ↓
+SQLite + deterministic read models
+        ↓
+NO LLM / NO ProviderAdapter / NO model quota
+~~~
+
+Planned capabilities include current work, attention, approvals, structured errors, provider/quota/failover state, time-window token/cost usage, continuity/checkpoint status and optional deterministic Git/CI status.
+
+Detailed plan: [FH-04B Zero-Token Core Home](planning/FH-04B-ZERO-TOKEN-CORE-HOME.md).
+
+This work is independent of FH-KUIKA and is not blocked by FH-20 while it remains read-only.
 
 ## Phase 4 — Qwen Shadow Benchmark / Offloading — COMPLETE FOUNDATION
 
