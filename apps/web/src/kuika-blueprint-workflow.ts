@@ -127,7 +127,10 @@ export function blueprintWorkflowPreparationCanPublishDirectly(): false {
   return false;
 }
 
-function parseWorkflowTemplateRef(value: string): { readonly id: string; readonly version: string } {
+function parseWorkflowTemplateRef(value: string): {
+  readonly id: string;
+  readonly version: string;
+} {
   const match = /^workflow:([a-z0-9][a-z0-9-]*)@(\d+\.\d+\.\d+)$/.exec(value);
   if (!match?.[1] || !match[2]) {
     throw new Error('workflowTemplateRef must use workflow:<id>@<semver>');
