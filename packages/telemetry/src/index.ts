@@ -1,4 +1,14 @@
 export {
+  buildEconomyRuntimeSummaryTelemetry,
+  economyTelemetryCanGrantAuthority,
+  economyTelemetryCanInvokeModel,
+  type EconomyRoleEligibilityTelemetry,
+  type EconomyRuntimeSummaryTelemetryInput,
+  type EconomyRuntimeSummaryTelemetryPayload,
+  type EconomyTelemetryMode,
+} from './economy-telemetry.js';
+
+export {
   buildRuntimeErrorTelemetryPayload,
   runtimeErrorTelemetryCanExposeRawCause,
   runtimeErrorTelemetryCanGrantAuthority,
@@ -65,7 +75,8 @@ export type EventType =
   | 'full_auto.quorum.completed'
   | 'full_auto.merge.intent'
   | 'full_auto.merge.result'
-  | 'runtime.error.reported';
+  | 'runtime.error.reported'
+  | 'economy.runtime.summary';
 
 export type OrchestrationTraceEventType =
   'orchestration.span.completed' | 'orchestration.run.summary';

@@ -11,6 +11,8 @@ export {
   type CoreHomeBindingState,
   type CoreHomeContinuitySummaryView,
   type CoreHomeCurrentWorkView,
+  type CoreHomeEconomyRoleEligibilityView,
+  type CoreHomeEconomyView,
   type CoreHomeFindingSummaryView,
   type CoreHomeFreshness,
   type CoreHomeProjectContextView,

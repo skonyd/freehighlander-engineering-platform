@@ -66,6 +66,31 @@ function input() {
       retries: 1,
       fallbacks: 1,
     },
+    economy: {
+      mode: 'TOKEN_ECONOMY',
+      optimizerBindingId: 'local-optimizer',
+      optimizerModelId: 'local-model',
+      remoteTokenTarget: 1000,
+      candidateRemoteInputTokens: 2000,
+      finalRemoteInputTokens: 1000,
+      remoteOutputTokens: 100,
+      cachedInputTokens: 200,
+      reductionStages: ['REPOSITORY_JIT', 'DETERMINISTIC_REDUCTION'],
+      protectedContentCount: 4,
+      localOptimizationDurationMs: 400,
+      remoteTokenSavingRatio: 0.5,
+      bypassReason: null,
+      roleEligibility: [
+        {
+          logicalRole: 'context-optimizer',
+          riskTier: 'NORMAL',
+          eligible: true,
+          reason: null,
+        },
+      ],
+      observedAt: generatedAt,
+      authority: 'NONE',
+    },
     roleBindings: [],
     recentRuns: [],
     continuity: {
@@ -91,6 +116,8 @@ test('Core Home snapshot is deterministic, read-only and authority-neutral', () 
   assert.equal(snapshot.schemaVersion, 1);
   assert.equal(snapshot.projectionAuthority, 'NONE');
   assert.equal(snapshot.authority.projectionAuthority, 'NONE');
+  assert.equal(snapshot.economy.mode, 'TOKEN_ECONOMY');
+  assert.equal(snapshot.economy.authority, 'NONE');
   assert.deepEqual(snapshot.sourceFreshness.staleSources, ['continuity', 'provider-state']);
 
   assert.equal(dashboardRefreshCanInvokeModel(), false);
@@ -137,4 +164,37 @@ test('Core Home read path cannot import model-runtime execution surfaces', async
   const packageJson = JSON.parse(await readFile(packagePath, 'utf8'));
   assert.equal(packageJson.dependencies?.['@freehighlander/model-runtime'], undefined);
   assert.equal(packageJson.devDependencies?.['@freehighlander/model-runtime'], undefined);
+});
+
+test('Core Home economy summary validation fails closed on malformed metadata', () => {
+  for (const mutate of [
+    (value) => {
+      value.economy.mode = 'INVALID';
+    },
+    (value) => {
+      value.economy.authority = 'SYSTEM_POLICY';
+    },
+    (value) => {
+      value.economy.remoteTokenSavingRatio = 2;
+    },
+    (value) => {
+      value.economy.candidateRemoteInputTokens = -1;
+    },
+    (value) => {
+      value.economy.observedAt = 'not-a-time';
+    },
+    (value) => {
+      value.economy.reductionStages = ['REPOSITORY_JIT', 'REPOSITORY_JIT'];
+    },
+    (value) => {
+      value.economy.roleEligibility = [
+        { logicalRole: 'reviewer', riskTier: 'HIGH', eligible: true, reason: null },
+        { logicalRole: 'reviewer', riskTier: 'HIGH', eligible: false, reason: 'duplicate' },
+      ];
+    },
+  ]) {
+    const value = input();
+    mutate(value);
+    assert.throws(() => createCoreHomeSnapshotV1(value));
+  }
 });

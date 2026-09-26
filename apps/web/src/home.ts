@@ -31,6 +31,32 @@ export type CoreHomeUsageWindowKind =
 
 export type CoreHomeBindingState = 'ACTIVE' | 'FALLBACK_ACTIVE' | 'UNAVAILABLE' | 'UNKNOWN';
 
+export interface CoreHomeEconomyRoleEligibilityView {
+  readonly logicalRole: string;
+  readonly riskTier: 'NORMAL' | 'HIGH' | 'CRITICAL';
+  readonly eligible: boolean;
+  readonly reason: string | null;
+}
+
+export interface CoreHomeEconomyView {
+  readonly mode: 'STANDARD' | 'TOKEN_ECONOMY' | 'UNKNOWN';
+  readonly optimizerBindingId: string | null;
+  readonly optimizerModelId: string | null;
+  readonly remoteTokenTarget: number | null;
+  readonly candidateRemoteInputTokens: number | null;
+  readonly finalRemoteInputTokens: number | null;
+  readonly remoteOutputTokens: number | null;
+  readonly cachedInputTokens: number | null;
+  readonly reductionStages: readonly string[];
+  readonly protectedContentCount: number | null;
+  readonly localOptimizationDurationMs: number | null;
+  readonly remoteTokenSavingRatio: number | null;
+  readonly bypassReason: string | null;
+  readonly roleEligibility: readonly CoreHomeEconomyRoleEligibilityView[];
+  readonly observedAt: string | null;
+  readonly authority: 'NONE';
+}
+
 export interface CoreHomeFreshness {
   readonly generatedAt: string;
   readonly sqliteUpdatedAt?: string;
@@ -159,6 +185,7 @@ export interface CoreHomeSnapshotV1 {
   readonly currentWork: CoreHomeCurrentWorkView | null;
   readonly attention: CoreHomeAttentionSummaryView;
   readonly usage: CoreHomeUsageWindowView;
+  readonly economy: CoreHomeEconomyView;
   readonly roleBindings: readonly CoreHomeRoleBindingHealthView[];
   readonly recentRuns: readonly CoreHomeRecentRunView[];
   readonly continuity: CoreHomeContinuitySummaryView;
@@ -183,6 +210,7 @@ export function createCoreHomeSnapshotV1(input: CoreHomeSnapshotInput): CoreHome
   assertNonNegativeInteger(input.system.criticalErrorCount, 'system.criticalErrorCount');
   assertAttentionSummary(input.attention);
   assertUsage(input.usage);
+  assertEconomy(input.economy);
   assertFindingSummary(input.findings);
 
   return {
@@ -205,6 +233,12 @@ export function createCoreHomeSnapshotV1(input: CoreHomeSnapshotInput): CoreHome
       items: [...input.attention.items],
     },
     usage: input.usage,
+    economy: {
+      ...input.economy,
+      reductionStages: [...input.economy.reductionStages],
+      roleEligibility: input.economy.roleEligibility.map((entry) => ({ ...entry })),
+      authority: 'NONE',
+    },
     roleBindings: [...input.roleBindings],
     recentRuns: [...input.recentRuns],
     continuity: input.continuity,
@@ -271,6 +305,52 @@ function assertUsage(value: CoreHomeUsageWindowView): void {
     if (!Number.isFinite(amount) || amount < 0) {
       throw new Error(`${name} must be a non-negative finite number`);
     }
+  }
+}
+
+function assertEconomy(value: CoreHomeEconomyView): void {
+  if (!['STANDARD', 'TOKEN_ECONOMY', 'UNKNOWN'].includes(value.mode)) {
+    throw new Error('economy.mode is invalid');
+  }
+  if (value.authority !== 'NONE') throw new Error('economy authority must be NONE');
+
+  for (const [name, count] of [
+    ['economy.remoteTokenTarget', value.remoteTokenTarget],
+    ['economy.candidateRemoteInputTokens', value.candidateRemoteInputTokens],
+    ['economy.finalRemoteInputTokens', value.finalRemoteInputTokens],
+    ['economy.remoteOutputTokens', value.remoteOutputTokens],
+    ['economy.cachedInputTokens', value.cachedInputTokens],
+    ['economy.protectedContentCount', value.protectedContentCount],
+    ['economy.localOptimizationDurationMs', value.localOptimizationDurationMs],
+  ] as const) {
+    if (count !== null) assertNonNegativeInteger(count, name);
+  }
+
+  if (
+    value.remoteTokenSavingRatio !== null &&
+    (!Number.isFinite(value.remoteTokenSavingRatio) ||
+      value.remoteTokenSavingRatio < 0 ||
+      value.remoteTokenSavingRatio > 1)
+  ) {
+    throw new Error('economy.remoteTokenSavingRatio must be between 0 and 1');
+  }
+
+  if (value.observedAt !== null) assertTimestamp(value.observedAt, 'economy.observedAt');
+
+  const stages = uniqueSortedNonEmpty(value.reductionStages, 'economy reduction stage');
+  if (stages.length !== value.reductionStages.length) {
+    throw new Error('economy reduction stages must be unique');
+  }
+
+  const roles = new Set<string>();
+  for (const entry of value.roleEligibility) {
+    if (!entry.logicalRole.trim()) throw new Error('economy role logicalRole is required');
+    if (!['NORMAL', 'HIGH', 'CRITICAL'].includes(entry.riskTier)) {
+      throw new Error('economy role riskTier is invalid');
+    }
+    const key = entry.logicalRole + ':' + entry.riskTier;
+    if (roles.has(key)) throw new Error('economy role eligibility entries must be unique');
+    roles.add(key);
   }
 }
 
