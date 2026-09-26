@@ -1,3 +1,14 @@
+export {
+  blueprintWorkflowPreparationCanExecute,
+  blueprintWorkflowPreparationCanInvokeModel,
+  blueprintWorkflowPreparationCanPublishDirectly,
+  prepareFhKuikaBlueprintSimulationV1,
+  prepareFhKuikaBlueprintWorkflowV1,
+  type FhKuikaBlueprintSimulationPreparationV1,
+  type FhKuikaBlueprintWorkflowPreparationV1,
+  type FhKuikaBlueprintWorkflowTemplateV1,
+} from './kuika-blueprint-workflow.js';
+
 export { FH_KUIKA_BLUEPRINTS_HTML } from './kuika-blueprint-ui.js';
 
 export {
