@@ -48,7 +48,8 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
       {
         title: 'Connector Hub',
         detail: 'ToolAdapter/MCP discovery, trust and permission review.',
-        status: 'PREPARATION',
+        status: 'AVAILABLE',
+        href: '/modules/fh-kuika/integrate/connectors',
       },
       {
         title: 'Models & Routing',
