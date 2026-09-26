@@ -1207,14 +1207,9 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     const blueprintHtml = await blueprintPage.text();
     assert.match(blueprintHtml, /Engineering Blueprints/);
     assert.match(blueprintHtml, /\/api\/modules\/fh-kuika\/blueprints/);
-    assert.equal(
-      blueprintPage.headers.get('x-freehighlander-mode'),
-      'read-only',
-    );
+    assert.equal(blueprintPage.headers.get('x-freehighlander-mode'), 'read-only');
 
-    const blueprintCatalog = await (
-      await fetch(`${base}/api/modules/fh-kuika/blueprints`)
-    ).json();
+    const blueprintCatalog = await (await fetch(`${base}/api/modules/fh-kuika/blueprints`)).json();
     assert.equal(blueprintCatalog.schemaVersion, 1);
     assert.equal(blueprintCatalog.authority, 'NONE');
     assert.equal(blueprintCatalog.blueprints.length, 12);
