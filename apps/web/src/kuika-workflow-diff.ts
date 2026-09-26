@@ -84,7 +84,14 @@ function nodeChange(
 }
 
 function isAuthoritySensitive(node: FhKuikaCanonicalWorkflowNodeV1): boolean {
-  return node.kind === 'GATE' || node.kind === 'HUMAN';
+  return (
+    node.kind === 'GATE' ||
+    node.kind === 'HUMAN' ||
+    node.approvalPolicy === 'HUMAN_REQUIRED' ||
+    node.approvalPolicy === 'MODEL_QUORUM_REQUIRED' ||
+    node.riskTier === 'HIGH' ||
+    node.riskTier === 'CRITICAL'
+  );
 }
 
 function sameNode(
@@ -94,7 +101,27 @@ function sameNode(
   return (
     left.kind === right.kind &&
     left.role === right.role &&
+    left.riskTier === right.riskTier &&
+    left.timeoutMs === right.timeoutMs &&
+    left.retryLimit === right.retryLimit &&
+    left.tokenBudget === right.tokenBudget &&
+    left.costBudgetUsd === right.costBudgetUsd &&
+    sameStrings(left.requiredEvidence, right.requiredEvidence) &&
+    sameStrings(left.toolPermissions, right.toolPermissions) &&
+    left.approvalPolicy === right.approvalPolicy &&
     left.maxIterations === right.maxIterations
+  );
+}
+
+function sameStrings(
+  left: readonly string[] | undefined,
+  right: readonly string[] | undefined,
+): boolean {
+  const normalizedLeft = [...(left ?? [])].sort((a, b) => a.localeCompare(b));
+  const normalizedRight = [...(right ?? [])].sort((a, b) => a.localeCompare(b));
+  return (
+    normalizedLeft.length === normalizedRight.length &&
+    normalizedLeft.every((value, index) => value === normalizedRight[index])
   );
 }
 

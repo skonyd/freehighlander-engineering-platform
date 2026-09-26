@@ -45,6 +45,9 @@ test('FH-KUIKA Workflow Studio route serves authority-neutral local draft UI', a
     assert.match(html, /id="replay-run-id"/);
     assert.match(html, /\/api\/modules\/fh-kuika\/workflows\/replay/);
     assert.match(html, /renderSimulation/);
+    assert.match(html, /Prepare publication/);
+    assert.match(html, /publication-candidate/);
+    assert.match(html, /Actual publish remains owned by Core governance/);
     assert.match(html, /Risk tier/);
     assert.match(html, /Token budget/);
     assert.match(html, /Cost budget USD/);
