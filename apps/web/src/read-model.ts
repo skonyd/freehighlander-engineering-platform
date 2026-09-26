@@ -606,7 +606,7 @@ function queryHumanApprovalAttention(db: DatabaseSync): CoreHomeAttentionSummary
     const type = String(row.type);
     const runId = String(row.run_id);
     const nodeId = toStringOrNull(row.node_id);
-    const event = parseEventRecord(row.event_json);
+    const event = parseEventRecord(row.event_json ?? null);
     const payload = asRecord(event?.payload);
     const decisionId = safeProjectionIdentifier(payload?.decisionId);
     const key = decisionId ? 'decision:' + decisionId : approvalFallbackKey(runId, nodeId);
