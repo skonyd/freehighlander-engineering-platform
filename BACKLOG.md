@@ -82,7 +82,7 @@ Umbrella: #88.
 - [ ] FH-KUIKA-04 Visual Workflow Studio — P0
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
   - [x] FH-KUIKA-05.1 ToolAdapter-aligned connector registry/read model
-  - [ ] FH-KUIKA-05.2 MCP discovery/normalization
+  - [x] FH-KUIKA-05.2 MCP discovery/normalization
   - [ ] FH-KUIKA-05.3 install-review + permission diff UX contract
   - [ ] FH-KUIKA-05.4 Connector Hub UI
   - [ ] FH-KUIKA-05.5 SecretHandle credential configuration
