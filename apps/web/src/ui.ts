@@ -51,6 +51,33 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       white-space: nowrap;
     }
     .grid { display: grid; gap: 14px; }
+    .home-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      align-items: end;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+    }
+    .control-group { display: grid; gap: 4px; min-width: 150px; }
+    .control-group label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    select {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 7px 9px;
+    }
+    select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .refresh-state { margin-left: auto; color: var(--muted); font-size: 12px; align-self: center; }
     .home-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .card {
       background: color-mix(in srgb, var(--panel) 92%, transparent);
@@ -233,6 +260,9 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     }
     @media (max-width: 620px) {
       header, main { padding: 16px; }
+      .home-controls { align-items: stretch; }
+      .control-group { min-width: 0; flex: 1 1 140px; }
+      .refresh-state { width: 100%; margin-left: 0; }
       header { align-items: flex-start; flex-direction: column; }
       .home-metrics { grid-template-columns: 1fr 1fr; }
       .binding-row { grid-template-columns: 1fr auto; }
@@ -257,6 +287,28 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     </div>
   </header>
   <main>
+    <section class="card home-controls" aria-label="Home display preferences">
+      <div class="control-group">
+        <label for="time-window">Time window</label>
+        <select id="time-window">
+          <option value="TODAY">Today</option>
+          <option value="LAST_24H">Last 24 hours</option>
+          <option value="LAST_7D">Last 7 days</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="attention-filter">Attention</label>
+        <select id="attention-filter">
+          <option value="ALL">All</option>
+          <option value="WARNING_PLUS">Warning+</option>
+          <option value="ERROR_PLUS">Error+</option>
+          <option value="CRITICAL">Critical only</option>
+        </select>
+      </div>
+      <button id="refresh-now" type="button" aria-label="Refresh local dashboard state">Refresh</button>
+      <div id="refresh-state" class="refresh-state" role="status" aria-live="polite">Ready</div>
+    </section>
+
     <section id="home-metrics" class="grid home-metrics"></section>
 
     <section class="grid home-layout">
@@ -329,6 +381,70 @@ const esc = value => String(value ?? '—').replace(
   /[&<>"']/g,
   ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])
 );
+
+const PREF_KEY = 'freehighlander.core-home.preferences.v1';
+const defaultPreferences = {
+  schemaVersion: 1,
+  attentionFilter: 'ALL',
+  timeWindow: 'TODAY',
+  advancedOpen: false
+};
+let preferences = loadPreferences();
+let lastHome = null;
+let lastRuns = [];
+let lastModels = [];
+let activeLoad = null;
+
+function loadPreferences() {
+  try {
+    const raw = localStorage.getItem(PREF_KEY);
+    const value = raw ? JSON.parse(raw) : null;
+    if (!value || value.schemaVersion !== 1) return { ...defaultPreferences };
+    return {
+      schemaVersion: 1,
+      attentionFilter: ['ALL', 'WARNING_PLUS', 'ERROR_PLUS', 'CRITICAL'].includes(value.attentionFilter)
+        ? value.attentionFilter
+        : 'ALL',
+      timeWindow: ['TODAY', 'LAST_24H', 'LAST_7D'].includes(value.timeWindow)
+        ? value.timeWindow
+        : 'TODAY',
+      advancedOpen: value.advancedOpen === true
+    };
+  } catch {
+    return { ...defaultPreferences };
+  }
+}
+
+function savePreferences() {
+  try {
+    localStorage.setItem(PREF_KEY, JSON.stringify(preferences));
+  } catch {
+    // Preference persistence is optional; dashboard rendering remains read-only and available.
+  }
+}
+
+function severityVisible(severity) {
+  const rank = { INFO: 0, WARNING: 1, ERROR: 2, CRITICAL: 3 };
+  const threshold = { ALL: 0, WARNING_PLUS: 1, ERROR_PLUS: 2, CRITICAL: 3 };
+  return (rank[severity] ?? -1) >= threshold[preferences.attentionFilter];
+}
+
+function timestampInWindow(timestamp) {
+  const value = Date.parse(timestamp);
+  if (Number.isNaN(value)) return false;
+  const now = Date.now();
+  if (preferences.timeWindow === 'LAST_24H') return value >= now - 86400000;
+  if (preferences.timeWindow === 'LAST_7D') return value >= now - 604800000;
+  const date = new Date(now);
+  const start = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  return value >= start;
+}
+
+function renderCachedState() {
+  if (lastHome) renderHome(lastHome);
+  renderRuns(lastRuns);
+  renderModels(lastModels);
+}
 
 async function api(path) {
   const response = await fetch(path, { cache: 'no-store' });
@@ -419,13 +535,14 @@ function renderHome(home) {
   }
 
   const attentionTarget = document.querySelector('#attention');
-  if (!home.attention.items.length) {
+  const visibleAttention = home.attention.items.filter(item => severityVisible(item.severity));
+  if (!visibleAttention.length) {
     attentionTarget.innerHTML = attentionPartial
       ? '<div class="muted">No known approval items. Other attention sources are pending.</div>'
       : '<div class="muted">Nothing currently needs attention.</div>';
   } else {
     attentionTarget.innerHTML =
-      home.attention.items.map(item =>
+      visibleAttention.map(item =>
         '<div class="attention-item">' +
           '<strong class="' + stateClass(item.severity) + '">' + esc(item.headline) + '</strong>' +
           '<div class="muted">' + esc(item.kind) + ' · ' +
@@ -435,6 +552,11 @@ function renderHome(home) {
       ).join('') +
       (attentionPartial
         ? '<div class="muted">Other attention sources are still pending.</div>'
+        : '') +
+      (visibleAttention.length !== home.attention.items.length
+        ? '<div class="muted">Filtered ' +
+          fmt.format(home.attention.items.length - visibleAttention.length) +
+          ' lower-severity item(s).</div>'
         : '');
   }
 
@@ -604,6 +726,16 @@ function renderRoleBindings(home) {
 }
 
 async function load() {
+  if (activeLoad) return activeLoad;
+  activeLoad = loadInternal().finally(() => {
+    activeLoad = null;
+  });
+  return activeLoad;
+}
+
+async function loadInternal() {
+  const refreshState = document.querySelector('#refresh-state');
+  refreshState.textContent = 'Refreshing local state…';
   try {
     const health = await api('/api/health');
     document.querySelector('#health').textContent = health.databaseExists
@@ -638,22 +770,27 @@ async function load() {
       api('/api/runs?limit=100'),
       api('/api/models?limit=100')
     ]);
-    renderHome(values[0]);
-    renderRuns(values[1].runs);
-    renderModels(values[2].models);
+    lastHome = values[0];
+    lastRuns = values[1].runs;
+    lastModels = values[2].models;
+    renderCachedState();
+    refreshState.textContent = 'Updated ' + new Date().toLocaleTimeString();
   } catch (error) {
     document.querySelector('#health').innerHTML =
       '<span class="error">' + esc(error.message) + '</span>';
+    refreshState.textContent = 'Partial/unavailable · last local snapshot retained';
   }
 }
 
 function renderRuns(runs) {
-  if (!runs.length) {
-    document.querySelector('#runs').innerHTML = '<div class="empty">No runs indexed yet.</div>';
+  const visibleRuns = runs.filter(run => timestampInWindow(run.lastTimestamp));
+  if (!visibleRuns.length) {
+    document.querySelector('#runs').innerHTML =
+      '<div class="empty">No runs in the selected time window.</div>';
     return;
   }
 
-  const rows = runs.map(run =>
+  const rows = visibleRuns.map(run =>
     '<tr tabindex="0" role="button" aria-label="Open run ' + esc(run.runId) + '" data-run="' + esc(run.runId) + '">' +
       '<td><code>' + esc(run.runId.slice(0, 12)) + '</code></td>' +
       '<td><span class="status-' + esc(run.status) + '">' + esc(run.status) + '</span>' +
@@ -769,6 +906,35 @@ async function loadRun(runId) {
     target.innerHTML = '<span class="error">' + esc(error.message) + '</span>';
   }
 }
+
+function initializePreferences() {
+  const timeWindow = document.querySelector('#time-window');
+  const attentionFilter = document.querySelector('#attention-filter');
+  const advanced = document.querySelector('.advanced-details');
+  const refresh = document.querySelector('#refresh-now');
+
+  timeWindow.value = preferences.timeWindow;
+  attentionFilter.value = preferences.attentionFilter;
+  advanced.open = preferences.advancedOpen;
+
+  timeWindow.addEventListener('change', () => {
+    preferences = { ...preferences, timeWindow: timeWindow.value };
+    savePreferences();
+    renderCachedState();
+  });
+  attentionFilter.addEventListener('change', () => {
+    preferences = { ...preferences, attentionFilter: attentionFilter.value };
+    savePreferences();
+    if (lastHome) renderHome(lastHome);
+  });
+  advanced.addEventListener('toggle', () => {
+    preferences = { ...preferences, advancedOpen: advanced.open };
+    savePreferences();
+  });
+  refresh.addEventListener('click', () => void load());
+}
+
+initializePreferences();
 
 let refreshTimer;
 
