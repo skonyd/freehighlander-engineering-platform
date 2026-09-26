@@ -140,6 +140,7 @@ export {
   formatRuntimeErrorForUser,
   runtimeErrorReportCanExposeSecrets,
   runtimeErrorReportCanGrantAuthority,
+  runtimeErrorReportToTelemetryInput,
   type RuntimeErrorCauseCertainty,
   type RuntimeErrorCauseKind,
   type RuntimeErrorDetail,
@@ -148,6 +149,7 @@ export {
   type RuntimeErrorReportInput,
   type RuntimeErrorReportV1,
   type RuntimeErrorSeverity,
+  type RuntimeErrorTelemetryProjectionInput,
 } from './runtime-error-reporting.js';
 
 export {

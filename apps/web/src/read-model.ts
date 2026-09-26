@@ -74,6 +74,26 @@ export interface DashboardModelCall {
   readonly actualCostUsd: number | null;
 }
 
+export interface DashboardRuntimeError {
+  readonly timestamp: string;
+  readonly nodeId: string | null;
+  readonly code: string;
+  readonly severity: string;
+  readonly retryable: boolean;
+  readonly correlationId: string;
+  readonly causeCode: string;
+  readonly causeKind: string;
+  readonly certainty: string;
+  readonly headline: string;
+  readonly sourceComponent: string;
+  readonly sourceOperation: string;
+  readonly failedStep: string;
+  readonly rootCause: string;
+  readonly observedSignal: string;
+  readonly nextAction: string;
+  readonly retryAt: string | null;
+}
+
 export interface DashboardArtifact {
   readonly artifactId: string;
   readonly firstSeenTimestamp: string;
@@ -98,6 +118,7 @@ export interface DashboardModelAggregate {
 export interface DashboardRunDetail {
   readonly run: DashboardRun;
   readonly events: readonly DashboardEvent[];
+  readonly runtimeErrors: readonly DashboardRuntimeError[];
   readonly modelCalls: readonly DashboardModelCall[];
   readonly artifacts: readonly DashboardArtifact[];
 }
@@ -210,9 +231,11 @@ export class DashboardReadModel {
     const run = this.getRun(runId);
     if (!run) return null;
 
+    const events = this.listEvents(runId, limit);
     return {
       run,
-      events: this.listEvents(runId, limit),
+      events,
+      runtimeErrors: projectDashboardRuntimeErrors(events),
       modelCalls: this.listModelCalls(runId, limit),
       artifacts: this.listArtifacts(runId, limit),
     };
@@ -316,6 +339,93 @@ export class DashboardReadModel {
       database.close();
     }
   }
+}
+
+export function projectDashboardRuntimeErrors(
+  events: readonly DashboardEvent[],
+): readonly DashboardRuntimeError[] {
+  const projected: DashboardRuntimeError[] = [];
+
+  for (const event of events) {
+    if (event.type !== 'runtime.error.reported') continue;
+    const payload = asRecord(event.event.payload);
+    if (payload?.safeForUserDisplay !== true) continue;
+
+    const code = safeProjectionText(payload.code);
+    const severity = safeProjectionText(payload.severity);
+    const correlationId = safeProjectionText(payload.correlationId);
+    const causeCode = safeProjectionText(payload.causeCode);
+    const causeKind = safeProjectionText(payload.causeKind);
+    const certainty = safeProjectionText(payload.certainty);
+    const headline = safeProjectionText(payload.headline);
+    const sourceComponent = safeProjectionText(payload.sourceComponent);
+    const sourceOperation = safeProjectionText(payload.sourceOperation);
+    const failedStep = safeProjectionText(payload.failedStep);
+    const rootCause = safeProjectionText(payload.rootCause);
+    const observedSignal = safeProjectionText(payload.observedSignal);
+    const nextAction = safeProjectionText(payload.nextAction);
+
+    if (
+      !code ||
+      !severity ||
+      typeof payload.retryable !== 'boolean' ||
+      !correlationId ||
+      !causeCode ||
+      !causeKind ||
+      !certainty ||
+      !headline ||
+      !sourceComponent ||
+      !sourceOperation ||
+      !failedStep ||
+      !rootCause ||
+      !observedSignal ||
+      !nextAction
+    ) {
+      continue;
+    }
+
+    const retryAt = payload.retryAt === undefined ? null : safeProjectionTimestamp(payload.retryAt);
+    if (payload.retryAt !== undefined && retryAt === null) continue;
+
+    projected.push({
+      timestamp: event.timestamp,
+      nodeId: event.nodeId,
+      code,
+      severity,
+      retryable: payload.retryable,
+      correlationId,
+      causeCode,
+      causeKind,
+      certainty,
+      headline,
+      sourceComponent,
+      sourceOperation,
+      failedStep,
+      rootCause,
+      observedSignal,
+      nextAction,
+      retryAt,
+    });
+  }
+
+  return projected;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function safeProjectionText(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  if (!normalized || normalized.length > 500 || /[\r\n\t]/.test(normalized)) return null;
+  return normalized;
+}
+
+function safeProjectionTimestamp(value: unknown): string | null {
+  if (typeof value !== 'string' || Number.isNaN(Date.parse(value))) return null;
+  return new Date(value).toISOString();
 }
 
 function mapRun(row: SqlRow): DashboardRun {

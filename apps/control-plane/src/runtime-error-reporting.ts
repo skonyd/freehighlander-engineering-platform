@@ -171,6 +171,33 @@ export function formatRuntimeErrorForUser(report: RuntimeErrorReportV1): string 
   return lines.join('\n');
 }
 
+export interface RuntimeErrorTelemetryProjectionInput {
+  readonly code: string;
+  readonly severity: RuntimeErrorSeverity;
+  readonly retryable: boolean;
+  readonly correlationId: string;
+  readonly diagnosis: RuntimeErrorDiagnosisV1;
+}
+
+export function runtimeErrorReportToTelemetryInput(
+  report: RuntimeErrorReportV1,
+): RuntimeErrorTelemetryProjectionInput {
+  if (report.schemaVersion !== 1 || report.authority !== 'NONE') {
+    throw new Error('runtime error telemetry projection requires RuntimeErrorReportV1');
+  }
+  if (report.diagnosis === undefined || report.diagnosis.safeForUserDisplay !== true) {
+    throw new Error('runtime error telemetry projection requires safe diagnosis');
+  }
+
+  return {
+    code: report.code,
+    severity: report.severity,
+    retryable: report.retryable,
+    correlationId: report.correlationId,
+    diagnosis: report.diagnosis,
+  };
+}
+
 export function runtimeErrorReportCanGrantAuthority(): false {
   return false;
 }

@@ -20,7 +20,9 @@ export {
   type DashboardModelAggregate,
   type DashboardModelCall,
   type DashboardRun,
+  projectDashboardRuntimeErrors,
   type DashboardRunDetail,
+  type DashboardRuntimeError,
   type DashboardSummary,
 } from './read-model.js';
 

@@ -1,4 +1,13 @@
 export {
+  buildRuntimeErrorTelemetryPayload,
+  runtimeErrorTelemetryCanExposeRawCause,
+  runtimeErrorTelemetryCanGrantAuthority,
+  type RuntimeErrorTelemetryDiagnosisInput,
+  type RuntimeErrorTelemetryInput,
+  type RuntimeErrorTelemetryPayload,
+} from './runtime-error-telemetry.js';
+
+export {
   JsonlFileEventSink,
   readJsonlEvents,
   type JsonlFileEventSinkOptions,
@@ -55,7 +64,8 @@ export type EventType =
   | 'lineage.validation.failed'
   | 'full_auto.quorum.completed'
   | 'full_auto.merge.intent'
-  | 'full_auto.merge.result';
+  | 'full_auto.merge.result'
+  | 'runtime.error.reported';
 
 export type OrchestrationTraceEventType =
   'orchestration.span.completed' | 'orchestration.run.summary';
