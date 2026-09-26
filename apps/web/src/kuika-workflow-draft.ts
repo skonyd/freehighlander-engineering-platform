@@ -11,8 +11,7 @@ export type FhKuikaWorkflowNodeKind =
   | 'SUBWORKFLOW';
 
 export type FhKuikaWorkflowRiskTier = 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
-export type FhKuikaWorkflowApprovalPolicy =
-  'NONE' | 'MODEL_QUORUM_REQUIRED' | 'HUMAN_REQUIRED';
+export type FhKuikaWorkflowApprovalPolicy = 'NONE' | 'MODEL_QUORUM_REQUIRED' | 'HUMAN_REQUIRED';
 
 export interface FhKuikaCanonicalWorkflowNodeV1 {
   readonly id: string;
