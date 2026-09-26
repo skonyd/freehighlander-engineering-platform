@@ -56,6 +56,19 @@ export {
 } from './home-preferences.js';
 
 export {
+  buildOperationsConsoleSnapshot,
+  operationsConsoleCanExposeRawCause,
+  operationsConsoleCanGrantAuthority,
+  operationsConsoleCanInvokeModel,
+  type OperationsConsoleErrorView,
+  type OperationsConsoleOptions,
+  type OperationsConsoleReadSource,
+  type OperationsConsoleRoleUsageView,
+  type OperationsConsoleRoutingView,
+  type OperationsConsoleSnapshotV1,
+} from './operations-console.js';
+
+export {
   buildManagementSnapshot,
   createManagementIntent,
   parseManagementIntent,
