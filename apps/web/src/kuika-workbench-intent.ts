@@ -1,10 +1,7 @@
 export type FhKuikaWorkbenchIntentMode = 'ASK' | 'PLAN' | 'EXECUTE' | 'REVIEW';
 
 export type FhKuikaWorkbenchIntentDisposition =
-  | 'READ_ONLY_QUERY'
-  | 'CANDIDATE_PLAN'
-  | 'CONTROL_PLANE_REQUEST'
-  | 'INDEPENDENT_REVIEW_REQUEST';
+  'READ_ONLY_QUERY' | 'CANDIDATE_PLAN' | 'CONTROL_PLANE_REQUEST' | 'INDEPENDENT_REVIEW_REQUEST';
 
 export interface FhKuikaWorkbenchIntentContextV1 {
   readonly repository: string;
