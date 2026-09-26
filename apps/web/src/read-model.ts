@@ -81,6 +81,19 @@ export interface DashboardArtifact {
   readonly state: string;
 }
 
+export interface DashboardUsageAggregate {
+  readonly modelCalls: number;
+  readonly inputTokens: number;
+  readonly cachedInputTokens: number;
+  readonly outputTokens: number;
+  readonly reasoningTokens: number;
+  readonly totalTokens: number;
+  readonly estimatedCostUsd: number;
+  readonly actualCostUsd: number;
+  readonly retries: number;
+  readonly fallbacks: number;
+}
+
 export interface DashboardModelAggregate {
   readonly logicalRole: string | null;
   readonly provider: string | null;
@@ -273,6 +286,45 @@ export class DashboardReadModel {
           state: String((row as SqlRow).state),
         })),
     );
+  }
+
+  usageSince(since: string): DashboardUsageAggregate {
+    if (!since.trim() || Number.isNaN(Date.parse(since))) {
+      throw new Error('since must be a valid timestamp');
+    }
+
+    return this.#withDatabase((db) => {
+      const row = db
+        .prepare(
+          `SELECT
+             COUNT(*) AS model_calls,
+             COALESCE(SUM(input_tokens), 0) AS input_tokens,
+             COALESCE(SUM(cached_input_tokens), 0) AS cached_input_tokens,
+             COALESCE(SUM(output_tokens), 0) AS output_tokens,
+             COALESCE(SUM(reasoning_tokens), 0) AS reasoning_tokens,
+             COALESCE(SUM(total_tokens), 0) AS total_tokens,
+             COALESCE(SUM(estimated_cost_usd), 0) AS estimated_cost_usd,
+             COALESCE(SUM(actual_cost_usd), 0) AS actual_cost_usd,
+             COALESCE(SUM(retry_count), 0) AS retries,
+             COALESCE(SUM(fallback_count), 0) AS fallbacks
+           FROM model_calls
+           WHERE timestamp >= ?`,
+        )
+        .get(since) as SqlRow | undefined;
+
+      return {
+        modelCalls: toNumber(row?.model_calls) ?? 0,
+        inputTokens: toNumber(row?.input_tokens) ?? 0,
+        cachedInputTokens: toNumber(row?.cached_input_tokens) ?? 0,
+        outputTokens: toNumber(row?.output_tokens) ?? 0,
+        reasoningTokens: toNumber(row?.reasoning_tokens) ?? 0,
+        totalTokens: toNumber(row?.total_tokens) ?? 0,
+        estimatedCostUsd: toNumber(row?.estimated_cost_usd) ?? 0,
+        actualCostUsd: toNumber(row?.actual_cost_usd) ?? 0,
+        retries: toNumber(row?.retries) ?? 0,
+        fallbacks: toNumber(row?.fallbacks) ?? 0,
+      };
+    });
   }
 
   modelAggregates(limit = 100): readonly DashboardModelAggregate[] {
