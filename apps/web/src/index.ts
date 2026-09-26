@@ -119,6 +119,8 @@ export {
   type FhKuikaWorkflowDraftV1,
   type FhKuikaWorkflowDraftValidationV1,
   type FhKuikaWorkflowNodeKind,
+  type FhKuikaWorkflowRiskTier,
+  type FhKuikaWorkflowApprovalPolicy,
 } from './kuika-workflow-draft.js';
 
 export {
