@@ -18,6 +18,14 @@ import {
 } from './kuika-blueprint-view.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
+import { FH_KUIKA_ROLE_MARKETPLACE_HTML } from './kuika-role-marketplace-ui.js';
+import {
+  buildFhKuikaSolutionPackInstallPlanV1,
+  getFhKuikaMarketplaceRoleV1,
+  getFhKuikaSolutionPackV1,
+  listFhKuikaMarketplaceRolesV1,
+  listFhKuikaSolutionPacksV1,
+} from './kuika-role-marketplace.js';
 import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 import { validateFhKuikaWorkflowDraftDefinitionV1 } from './kuika-workflow-draft.js';
 import { simulateFhKuikaWorkflowDraftV1 } from './kuika-workflow-simulation.js';
@@ -145,6 +153,11 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/modules/fh-kuika/build/roles') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_ROLE_MARKETPLACE_HTML);
+      return;
+    }
+
     if (url.pathname === '/modules/fh-kuika/build/workflows') {
       html(response, method === 'HEAD' ? '' : FH_KUIKA_WORKFLOW_STUDIO_HTML);
       return;
@@ -236,6 +249,50 @@ async function handleRequest(
       }
 
       json(response, 200, buildFhKuikaBlueprintDetailViewV1(blueprint));
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/roles') {
+      json(response, 200, { roles: listFhKuikaMarketplaceRolesV1() });
+      return;
+    }
+
+    const marketplaceRoleRoute = parseFhKuikaMarketplaceRoleRoute(url.pathname);
+    if (marketplaceRoleRoute) {
+      const role = getFhKuikaMarketplaceRoleV1(marketplaceRoleRoute.roleId);
+      if (!role) {
+        json(response, 404, {
+          error: 'role_not_found',
+          roleId: marketplaceRoleRoute.roleId,
+        });
+        return;
+      }
+      json(response, 200, { role });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/solution-packs') {
+      json(response, 200, { packs: listFhKuikaSolutionPacksV1() });
+      return;
+    }
+
+    const solutionPackRoute = parseFhKuikaSolutionPackRoute(url.pathname);
+    if (solutionPackRoute) {
+      const pack = getFhKuikaSolutionPackV1(solutionPackRoute.packId);
+      if (!pack) {
+        json(response, 404, {
+          error: 'solution_pack_not_found',
+          packId: solutionPackRoute.packId,
+        });
+        return;
+      }
+      const availableRoleRefs = listFhKuikaMarketplaceRolesV1().map(
+        (role) => role.id + '@' + role.version,
+      );
+      json(response, 200, {
+        pack,
+        plan: buildFhKuikaSolutionPackInstallPlanV1(pack, availableRoleRefs, []),
+      });
       return;
     }
 
@@ -383,6 +440,24 @@ function readWorkflowDefinition(url: URL) {
   }
 
   return parsed as Parameters<typeof validateFhKuikaWorkflowDraftDefinitionV1>[0];
+}
+
+function parseFhKuikaMarketplaceRoleRoute(pathname: string): {
+  readonly roleId: string;
+} | null {
+  const match = /^\/api\/modules\/fh-kuika\/roles\/([^/]+)$/.exec(pathname);
+  if (!match?.[1]) return null;
+  return { roleId: decodeURIComponent(match[1]) };
+}
+
+function parseFhKuikaSolutionPackRoute(pathname: string): {
+  readonly packId: string;
+} | null {
+  const match = /^\/api\/modules\/fh-kuika\/solution-packs\/([^/]+)(?:\/plan)?$/.exec(
+    pathname,
+  );
+  if (!match?.[1]) return null;
+  return { packId: decodeURIComponent(match[1]) };
 }
 
 function parseFhKuikaBlueprintRoute(pathname: string): {
