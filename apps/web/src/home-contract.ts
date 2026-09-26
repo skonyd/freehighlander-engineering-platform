@@ -1,13 +1,6 @@
-export type CoreHomeAuthorityMode =
-  | 'SHADOW_ONLY'
-  | 'ENABLED'
-  | 'UNKNOWN';
+export type CoreHomeAuthorityMode = 'SHADOW_ONLY' | 'ENABLED' | 'UNKNOWN';
 
-export type CoreHomeSystemHealth =
-  | 'HEALTHY'
-  | 'DEGRADED'
-  | 'ATTENTION'
-  | 'UNKNOWN';
+export type CoreHomeSystemHealth = 'HEALTHY' | 'DEGRADED' | 'ATTENTION' | 'UNKNOWN';
 
 export type CoreHomeWorkState =
   | 'PLANNING'
@@ -33,17 +26,9 @@ export type CoreHomeAttentionKind =
   | 'CONTINUITY_RISK'
   | 'CI_FAILURE';
 
-export type CoreHomeAttentionSeverity =
-  | 'INFO'
-  | 'WARNING'
-  | 'ERROR'
-  | 'CRITICAL';
+export type CoreHomeAttentionSeverity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
 
-export type CoreHomeBindingState =
-  | 'ACTIVE'
-  | 'FALLBACK_ACTIVE'
-  | 'UNAVAILABLE'
-  | 'UNKNOWN';
+export type CoreHomeBindingState = 'ACTIVE' | 'FALLBACK_ACTIVE' | 'UNAVAILABLE' | 'UNKNOWN';
 
 export interface CoreHomeFreshnessV1 {
   readonly generatedAt: string;
