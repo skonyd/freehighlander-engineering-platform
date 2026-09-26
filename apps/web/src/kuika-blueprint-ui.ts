@@ -96,7 +96,8 @@ export function renderFhKuikaBlueprintDetailHtml(id: string): string | null {
     '<div class="card"><h3>Validation rules</h3><ul>' +
     rules +
     '</ul></div></section>' +
-    '<section class="card"><h3>Simulation fixtures</h3><div class="wide"><table><thead><tr><th>Fixture</th><th>Purpose</th><th>Expected</th></tr></thead><tbody>' +
+    '<section class="card"><h3>Simulation fixtures</h3><div class="wide">' +
+    '<table><thead><tr><th>Fixture</th><th>Purpose</th><th>Expected</th></tr></thead><tbody>' +
     fixtures +
     '</tbody></table></div></section>' +
     '<details class="card advanced"><summary>Technical identity</summary>' +
@@ -178,9 +179,12 @@ function page(title: string, subtitle: string, body: string): string {
     }
     header,main { max-width:1180px; margin:auto; padding:24px; }
     header { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; }
-    h1 { margin:0; font-size:25px; } h2 { margin:0; font-size:17px; } h3 { margin:0 0 10px; font-size:14px; }
+    h1 { margin:0; font-size:25px; }
+    h2 { margin:0; font-size:17px; }
+    h3 { margin:0 0 10px; font-size:14px; }
     p { color:var(--muted); margin:8px 0 0; }
-    a { color:var(--accent); text-decoration:none; } a:hover,a:focus-visible { text-decoration:underline; }
+    a { color:var(--accent); text-decoration:none; }
+    a:hover,a:focus-visible { text-decoration:underline; }
     code { color:#c4d7ec; overflow-wrap:anywhere; }
     .eyebrow { color:var(--accent); text-transform:uppercase; font-size:11px; letter-spacing:.14em; font-weight:700; }
     .muted { color:var(--muted); }
@@ -195,19 +199,25 @@ function page(title: string, subtitle: string, body: string): string {
       background:color-mix(in srgb,var(--panel) 92%,transparent);
       border:1px solid var(--line); border-radius:12px; padding:16px;
     }
-    a.card { color:var(--text); display:block; } a.card:hover,a.card:focus-visible { border-color:#52677d; text-decoration:none; }
+    a.card { color:var(--text); display:block; }
+    a.card:hover,a.card:focus-visible { border-color:#52677d; text-decoration:none; }
     .card-head,.detail-head,.row { display:flex; justify-content:space-between; gap:12px; align-items:center; }
     .detail-head { margin-bottom:16px; align-items:flex-start; }
     .meta,.chips { display:flex; gap:7px; flex-wrap:wrap; }
     .badge,.chip { border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; }
-    .badge { color:var(--good); } .chip { color:var(--accent); }
+    .badge { color:var(--good); }
+    .chip { color:var(--accent); }
     .stages { margin-top:14px; font-size:12px; color:var(--accent); }
     .foot { margin-top:10px; color:var(--muted); font-size:11px; }
-    ul { padding-left:19px; margin:0; } li + li { margin-top:5px; }
-    .row { border-top:1px solid var(--line); padding:7px 0; } .row:first-of-type { border-top:0; }
-    table { width:100%; border-collapse:collapse; } th,td { text-align:left; padding:9px 7px; border-bottom:1px solid var(--line); }
+    ul { padding-left:19px; margin:0; }
+    li + li { margin-top:5px; }
+    .row { border-top:1px solid var(--line); padding:7px 0; }
+    .row:first-of-type { border-top:0; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { text-align:left; padding:9px 7px; border-bottom:1px solid var(--line); }
     th { color:var(--muted); font-size:11px; text-transform:uppercase; }
-    .advanced { margin-top:14px; } summary { cursor:pointer; color:var(--accent); }
+    .advanced { margin-top:14px; }
+    summary { cursor:pointer; color:var(--accent); }
     .boundary { margin-top:18px; color:var(--muted); font-size:12px; }
     @media (max-width:850px) {
       .grid,.columns,.columns.two { grid-template-columns:1fr; }
