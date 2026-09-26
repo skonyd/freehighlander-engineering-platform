@@ -345,12 +345,12 @@ Blueprint detail includes a visual lifecycle preview and generated workflow diff
 
 ## Proposed PR slices
 
-- **FH-KUIKA-03.1** blueprint schema/package and versioning.
-- **FH-KUIKA-03.2** deterministic matcher interface and candidate-scoring evidence.
-- **FH-KUIKA-03.3** initial curated blueprint pack.
-- **FH-KUIKA-03.4** catalog UI and blueprint detail.
-- **FH-KUIKA-03.5** blueprint → workflow draft generation and simulation.
-- **FH-KUIKA-03.6** measured blueprint quality/usage telemetry.
+- **FH-KUIKA-03.1** blueprint schema/package and versioning. — COMPLETE
+- **FH-KUIKA-03.2** deterministic matcher interface and candidate-scoring evidence. — COMPLETE
+- **FH-KUIKA-03.3** initial curated blueprint pack. — COMPLETE
+- **FH-KUIKA-03.4** catalog UI and blueprint detail. — COMPLETE
+- **FH-KUIKA-03.5** blueprint → workflow draft generation and simulation. — COMPLETE
+- **FH-KUIKA-03.6** measured blueprint quality/usage telemetry. — COMPLETE
 
 ## Acceptance criteria
 
