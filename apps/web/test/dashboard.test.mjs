@@ -287,6 +287,107 @@ function insertHumanEvent(file, input) {
   }
 }
 
+function insertBindingChange(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    const event = {
+      schemaVersion: 1,
+      type: 'model.binding.changed',
+      timestamp: input.timestamp,
+      runId: 'run-1',
+      payload: {
+        action: 'BINDING_CHANGE',
+        providerId: input.providerId,
+        modelId: input.modelId,
+        bindingId: input.bindingId,
+        logicalRole: input.logicalRole,
+        currentHash: input.currentHash ?? 'a'.repeat(64),
+        fallbackBindingIds: input.fallbackBindingIds ?? [],
+        returnPolicy: input.returnPolicy,
+      },
+    };
+
+    db.prepare(
+      `INSERT INTO events(
+        event_hash, schema_version, type, timestamp, run_id, event_json
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+    ).run(
+      input.eventHash,
+      1,
+      'model.binding.changed',
+      input.timestamp,
+      'run-1',
+      JSON.stringify(event),
+    );
+  } finally {
+    db.close();
+  }
+}
+
+function insertProviderState(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    const provider = {
+      id: input.providerId,
+      ...(input.available === undefined ? {} : { available: input.available }),
+      ...(input.circuitState === undefined ? {} : { circuitState: input.circuitState }),
+      ...(input.failureKind === undefined ? {} : { failureKind: input.failureKind }),
+      ...(input.retryAfterMs === undefined ? {} : { retryAfterMs: input.retryAfterMs }),
+      ...(input.nextProbeAtMs === undefined ? {} : { nextProbeAtMs: input.nextProbeAtMs }),
+    };
+    const event = {
+      schemaVersion: 1,
+      type: input.type,
+      timestamp: input.timestamp,
+      runId: 'run-1',
+      provider,
+      payload: {},
+    };
+
+    db.prepare(
+      `INSERT INTO events(
+        event_hash, schema_version, type, timestamp, run_id, event_json
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+    ).run(input.eventHash, 1, input.type, input.timestamp, 'run-1', JSON.stringify(event));
+  } finally {
+    db.close();
+  }
+}
+
+function insertModelCall(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    db.prepare(
+      `INSERT INTO model_calls VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      input.eventHash,
+      'run-1',
+      input.timestamp,
+      input.logicalRole,
+      input.bindingId,
+      input.providerId,
+      input.modelId,
+      'medium',
+      'PASS',
+      'SUFFICIENT',
+      100,
+      0,
+      input.fallbackCount ?? 0,
+      null,
+      10,
+      0,
+      0,
+      5,
+      0,
+      15,
+      0.001,
+      0.001,
+    );
+  } finally {
+    db.close();
+  }
+}
+
 test('dashboard read model exposes summary, runs, model usage and artifacts', async () => {
   const data = await fixture();
   try {
@@ -542,6 +643,111 @@ test('Core Home current work uses deterministic stage taxonomy and provider wait
     });
     home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
     assert.equal(home.currentWork?.state, 'UNKNOWN');
+  } finally {
+    await data.cleanup();
+  }
+});
+
+test('Core Home projects preferred, fallback, recovery timing and return policy', async () => {
+  const data = await fixture();
+  try {
+    insertBindingChange(data.file, {
+      eventHash: 'binding-security',
+      timestamp: '2026-09-19T21:20:00.000Z',
+      providerId: 'claude-cli',
+      modelId: 'opus-5',
+      bindingId: 'security-opus',
+      logicalRole: 'security-reviewer',
+      fallbackBindingIds: ['security-gpt'],
+      returnPolicy: 'ASK_BEFORE_RETURN',
+    });
+    insertProviderState(data.file, {
+      eventHash: 'provider-healthy',
+      type: 'provider.health.checked',
+      timestamp: '2026-09-19T21:20:10.000Z',
+      providerId: 'claude-cli',
+      available: true,
+      circuitState: 'CLOSED',
+    });
+    insertModelCall(data.file, {
+      eventHash: 'preferred-call',
+      timestamp: '2026-09-19T21:20:20.000Z',
+      logicalRole: 'security-reviewer',
+      bindingId: 'security-opus',
+      providerId: 'claude-cli',
+      modelId: 'opus-5',
+    });
+
+    const model = new DashboardReadModel(data.file);
+    let home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    let binding = home.roleBindings.find((item) => item.logicalRole === 'security-reviewer');
+
+    assert.equal(home.system.providers, 'HEALTHY');
+    assert.equal(binding?.state, 'ACTIVE');
+    assert.equal(binding?.preferredBindingId, 'security-opus');
+    assert.equal(binding?.activeBindingId, 'security-opus');
+    assert.equal(binding?.preferredModel, 'opus-5');
+    assert.equal(binding?.activeModel, 'opus-5');
+    assert.equal(binding?.returnPolicy, 'ASK_BEFORE_RETURN');
+
+    insertProviderState(data.file, {
+      eventHash: 'provider-quota',
+      type: 'quota.exhausted',
+      timestamp: '2026-09-19T21:21:00.000Z',
+      providerId: 'claude-cli',
+      available: false,
+      failureKind: 'quota',
+      retryAfterMs: 60000,
+    });
+    insertModelCall(data.file, {
+      eventHash: 'fallback-call',
+      timestamp: '2026-09-19T21:21:10.000Z',
+      logicalRole: 'security-reviewer',
+      bindingId: 'security-gpt',
+      providerId: 'openai-cli',
+      modelId: 'gpt-6',
+      fallbackCount: 1,
+    });
+
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    binding = home.roleBindings.find((item) => item.logicalRole === 'security-reviewer');
+
+    assert.equal(home.system.providers, 'DEGRADED');
+    assert.equal(home.sourceFreshness.providerStateUpdatedAt, '2026-09-19T21:21:00.000Z');
+    assert.equal(binding?.state, 'FALLBACK_ACTIVE');
+    assert.equal(binding?.preferredBindingId, 'security-opus');
+    assert.equal(binding?.activeBindingId, 'security-gpt');
+    assert.equal(binding?.activeModel, 'gpt-6');
+    assert.equal(binding?.providerId, 'openai-cli');
+    assert.equal(binding?.failureKind, 'quota');
+    assert.equal(binding?.nextCheckAt, '2026-09-19T21:22:00.000Z');
+    assert.equal(binding?.returnPolicy, 'ASK_BEFORE_RETURN');
+
+    insertProviderState(data.file, {
+      eventHash: 'provider-recovered',
+      type: 'provider.health.checked',
+      timestamp: '2026-09-19T21:22:20.000Z',
+      providerId: 'claude-cli',
+      available: true,
+      circuitState: 'CLOSED',
+    });
+    insertModelCall(data.file, {
+      eventHash: 'preferred-return-call',
+      timestamp: '2026-09-19T21:22:30.000Z',
+      logicalRole: 'security-reviewer',
+      bindingId: 'security-opus',
+      providerId: 'claude-cli',
+      modelId: 'opus-5',
+    });
+
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    binding = home.roleBindings.find((item) => item.logicalRole === 'security-reviewer');
+
+    assert.equal(home.system.providers, 'HEALTHY');
+    assert.equal(binding?.state, 'ACTIVE');
+    assert.equal(binding?.activeBindingId, 'security-opus');
+    assert.equal(binding?.failureKind, undefined);
+    assert.equal(binding?.nextCheckAt, undefined);
   } finally {
     await data.cleanup();
   }
