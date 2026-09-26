@@ -86,6 +86,11 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/api/home') {
+      json(response, 200, readModel.homeSnapshot());
+      return;
+    }
+
     if (url.pathname === '/api/summary') {
       json(response, 200, readModel.summary());
       return;

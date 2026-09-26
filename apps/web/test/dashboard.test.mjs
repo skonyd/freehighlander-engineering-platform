@@ -146,6 +146,53 @@ test('dashboard read model exposes summary, runs, model usage and artifacts', as
     assert.equal(model.listRuns()[0]?.runId, 'run-1');
     assert.equal(model.modelAggregates()[0]?.logicalRole, 'test-reviewer');
 
+    const home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.schemaVersion, 1);
+    assert.equal(home.projectionAuthority, 'NONE');
+    assert.equal(home.project.repository, 'skonyd/freehighlander-engineering-platform');
+    assert.equal(home.project.branch, 'feat/test');
+    assert.equal(home.project.headSha, 'head');
+    assert.equal(home.system.database, 'HEALTHY');
+    assert.equal(home.system.providers, 'UNKNOWN');
+    assert.equal(home.usage.window, 'TODAY');
+    assert.equal(home.usage.modelCalls, 1);
+    assert.equal(home.usage.totalTokens, 140);
+    assert.equal(home.usage.actualCostUsd, 0.09);
+    assert.equal(home.recentRuns[0]?.runId, 'run-1');
+    assert.equal(home.findings.state, 'UNKNOWN');
+    assert.ok(home.sourceFreshness.staleSources.includes('provider-state'));
+
+    const last24Hours = model.usageWindow('LAST_24H', {
+      now: '2026-09-19T23:00:00.000Z',
+    });
+    assert.equal(last24Hours.modelCalls, 1);
+
+    const last7Days = model.usageWindow('LAST_7D', {
+      now: '2026-09-19T23:00:00.000Z',
+    });
+    assert.equal(last7Days.totalTokens, 140);
+
+    const runUsage = model.usageWindow('CURRENT_RUN', {
+      runId: 'run-1',
+      now: '2026-09-19T23:00:00.000Z',
+    });
+    assert.equal(runUsage.totalTokens, 140);
+
+    const projectUsage = model.usageWindow('CURRENT_PROJECT', {
+      repository: 'skonyd/freehighlander-engineering-platform',
+      now: '2026-09-19T23:00:00.000Z',
+    });
+    assert.equal(projectUsage.modelCalls, 1);
+
+    assert.throws(
+      () => model.usageWindow('CURRENT_RUN', { now: '2026-09-19T23:00:00.000Z' }),
+      /CURRENT_RUN usage requires runId/,
+    );
+    assert.throws(
+      () => model.usageWindow('CURRENT_PROJECT', { now: '2026-09-19T23:00:00.000Z' }),
+      /CURRENT_PROJECT usage requires repository/,
+    );
+
     const detail = model.runDetail('run-1');
     assert.ok(detail);
     assert.equal(detail.run.status, 'PASSED');
@@ -195,6 +242,11 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.equal(health.mode, 'read-only');
     assert.equal(health.schemaVersion, 1);
 
+    const homeSnapshot = await (await fetch(`${base}/api/home`)).json();
+    assert.equal(homeSnapshot.schemaVersion, 1);
+    assert.equal(homeSnapshot.projectionAuthority, 'NONE');
+    assert.equal(homeSnapshot.project.repository, 'skonyd/freehighlander-engineering-platform');
+
     const summary = await (await fetch(`${base}/api/summary`)).json();
     assert.equal(summary.totalTokens, 140);
 
@@ -232,6 +284,10 @@ test('missing database keeps health available and returns 503 for data endpoints
 
     const health = await (await fetch(`${base}/api/health`)).json();
     assert.equal(health.status, 'waiting_for_database');
+
+    const home = await fetch(`${base}/api/home`);
+    assert.equal(home.status, 503);
+    assert.equal((await home.json()).error, 'database_not_ready');
 
     const summary = await fetch(`${base}/api/summary`);
     assert.equal(summary.status, 503);

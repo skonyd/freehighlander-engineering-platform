@@ -42,6 +42,7 @@ export {
 export {
   DashboardReadModel,
   MissingDashboardDatabaseError,
+  type DashboardHomeOptions,
   type DashboardArtifact,
   type DashboardEvent,
   type DashboardModelAggregate,
@@ -51,6 +52,7 @@ export {
   type DashboardRunDetail,
   type DashboardRuntimeError,
   type DashboardSummary,
+  type DashboardUsageWindowOptions,
 } from './read-model.js';
 
 export {
