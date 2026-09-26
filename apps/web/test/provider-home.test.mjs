@@ -5,7 +5,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 
-import { DashboardReadModel } from '../dist/index.js';
+import { DashboardReadModel, dashboardRefreshCanInvokeModel } from '../dist/index.js';
 
 async function fixture() {
   const root = await mkdtemp(path.join(tmpdir(), 'freehighlander-provider-home-'));
@@ -177,6 +177,7 @@ test('Core Home projects preferred binding, active fallback, quota recovery time
     });
 
     const model = new DashboardReadModel(data.file);
+    assert.equal(dashboardRefreshCanInvokeModel(), false);
     let home = model.homeSnapshot({ now: '2026-09-26T07:00:00.000Z' });
 
     assert.equal(home.system.providers, 'DEGRADED');
