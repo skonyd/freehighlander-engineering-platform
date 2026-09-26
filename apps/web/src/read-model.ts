@@ -804,7 +804,8 @@ function queryContinuitySummary(
   const payload = asRecord(event?.payload);
   const revision = asRecord(event?.revision);
   const sourceRevision =
-    safeProjectionIdentifier(revision?.headSha) ?? safeProjectionIdentifier(payload?.sourceRevision);
+    safeProjectionIdentifier(revision?.headSha) ??
+    safeProjectionIdentifier(payload?.sourceRevision);
   const resumeReady = typeof payload?.resumeReady === 'boolean' ? payload.resumeReady : null;
   const payloadWarning = safeProjectionText(payload?.warning);
   const revisionMismatch =
@@ -927,19 +928,12 @@ function queryContinuityAttention(
 function queryFindingAttention(
   findings: CoreHomeSnapshotV1['findings'],
 ): CoreHomeAttentionSummaryView {
-  if (
-    findings.latestFindingAt === null ||
-    (findings.critical === 0 && findings.high === 0)
-  ) {
+  if (findings.latestFindingAt === null || (findings.critical === 0 && findings.high === 0)) {
     return summarizeAttention([]);
   }
 
   const headline =
-    'Open security findings: ' +
-    findings.critical +
-    ' critical, ' +
-    findings.high +
-    ' high';
+    'Open security findings: ' + findings.critical + ' critical, ' + findings.high + ' high';
 
   return summarizeAttention([
     {
@@ -955,9 +949,7 @@ function queryFindingAttention(
   ]);
 }
 
-function safeFindingSeverity(
-  value: unknown,
-): SecurityFindingProjection['severity'] | null {
+function safeFindingSeverity(value: unknown): SecurityFindingProjection['severity'] | null {
   return value === 'INFO' ||
     value === 'LOW' ||
     value === 'MEDIUM' ||
