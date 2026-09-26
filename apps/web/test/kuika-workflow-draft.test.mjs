@@ -159,3 +159,4 @@ test('Workflow Studio inspector metadata validation fails closed on invalid budg
   assert.ok(result.errors.some((error) => error.includes('toolPermissions')));
   assert.ok(result.errors.some((error) => error.includes('approvalPolicy')));
 });
+
