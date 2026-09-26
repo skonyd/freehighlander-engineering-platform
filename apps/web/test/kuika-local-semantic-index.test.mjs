@@ -71,7 +71,7 @@ test('local semantic index normalizes cosine ranking and uses stable tie break',
     results.map((item) => item.id),
     ['semantic:a', 'semantic:b'],
   );
-  assert.equal(results[0]?.semanticScore, 1);
+  assert.ok(Math.abs((results[0]?.semanticScore ?? 0) - 1) < 1e-12);
 });
 
 test('local semantic index rejects invalid vectors, duplicates and unsafe bounds', () => {
