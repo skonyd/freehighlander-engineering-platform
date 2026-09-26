@@ -433,7 +433,6 @@ test('invalid reset timing and policy fail closed', () => {
   );
 });
 
-
 test('failover telemetry snapshot exposes preferred active recovery state without authority', () => {
   const plan = planWithThreeBindings();
   let state = recordActiveBindingFailure(createRoleBindingFailoverState(plan, askPolicy), plan, {
