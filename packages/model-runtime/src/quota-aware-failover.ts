@@ -385,6 +385,74 @@ export function validateRoleBindingFailoverState(
   validateStateAgainstPlan(state, plan);
 }
 
+export type RoleBindingRecoveryState =
+  | 'PREFERRED_ACTIVE'
+  | 'WAITING_FOR_RECOVERY'
+  | 'APPROVAL_REQUIRED'
+  | 'STAYING_ON_FALLBACK'
+  | 'RECOVERY_READY';
+
+export interface RoleBindingFailoverTelemetrySnapshotV1 {
+  readonly schemaVersion: 1;
+  readonly logicalRole: string;
+  readonly preferredBindingId: string;
+  readonly preferredModel: string;
+  readonly activeBindingId: string;
+  readonly activeModel: string;
+  readonly activeProviderId: string;
+  readonly failureKind?: ProviderFailureKind;
+  readonly nextCheckAt?: string;
+  readonly returnPolicy: BindingReturnPolicy;
+  readonly recoveryState: RoleBindingRecoveryState;
+  readonly stateHash: string;
+  readonly authority: 'NONE';
+}
+
+export function buildRoleBindingFailoverTelemetrySnapshot(
+  state: RoleBindingFailoverStateV1,
+  plan: BindingPlan,
+): RoleBindingFailoverTelemetrySnapshotV1 {
+  validateStateAgainstPlan(state, plan);
+  const preferred = bindingById(plan, state.preferredBindingId);
+  const active = bindingById(plan, state.activeBindingId);
+  const preferredCooldown = state.cooldowns.find((cooldown) =>
+    cooldownAppliesToBinding(cooldown, preferred),
+  );
+  const activeCooldown = state.cooldowns.find((cooldown) =>
+    cooldownAppliesToBinding(cooldown, active),
+  );
+  const failure = preferredCooldown ?? activeCooldown ?? state.cooldowns[0];
+
+  let recoveryState: RoleBindingRecoveryState;
+  if (state.activeBindingId === state.preferredBindingId) {
+    recoveryState = 'PREFERRED_ACTIVE';
+  } else if (preferredCooldown !== undefined) {
+    recoveryState = 'WAITING_FOR_RECOVERY';
+  } else if (state.policy.returnPolicy === 'ASK_BEFORE_RETURN') {
+    recoveryState = 'APPROVAL_REQUIRED';
+  } else if (state.policy.returnPolicy === 'STAY_ON_FALLBACK') {
+    recoveryState = 'STAYING_ON_FALLBACK';
+  } else {
+    recoveryState = 'RECOVERY_READY';
+  }
+
+  return {
+    schemaVersion: 1,
+    logicalRole: state.logicalRole,
+    preferredBindingId: preferred.bindingId,
+    preferredModel: preferred.model,
+    activeBindingId: active.bindingId,
+    activeModel: active.model,
+    activeProviderId: active.providerId,
+    ...(failure === undefined ? {} : { failureKind: failure.failureKind }),
+    ...(state.nextCheckAt === undefined ? {} : { nextCheckAt: state.nextCheckAt }),
+    returnPolicy: state.policy.returnPolicy,
+    recoveryState,
+    stateHash: state.stateHash,
+    authority: 'NONE',
+  };
+}
+
 export function quotaAwareFailoverCanGrantAuthority(): false {
   return false;
 }
