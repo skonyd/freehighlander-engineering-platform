@@ -876,10 +876,14 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
   const bindingRows = db
     .prepare(
       `SELECT timestamp, event_json
-       FROM events
-       WHERE type = 'model.binding.changed'
-       ORDER BY timestamp ASC, id ASC
-       LIMIT 5000`,
+       FROM (
+         SELECT id, timestamp, event_json
+         FROM events
+         WHERE type = 'model.binding.changed'
+         ORDER BY timestamp DESC, id DESC
+         LIMIT 5000
+       )
+       ORDER BY timestamp ASC, id ASC`,
     )
     .all() as SqlRow[];
 
@@ -910,17 +914,21 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
   const providerRows = db
     .prepare(
       `SELECT timestamp, event_json
-       FROM events
-       WHERE type IN (
-         'provider.health.checked',
-         'provider.unavailable',
-         'provider.circuit.opened',
-         'provider.circuit.half_opened',
-         'provider.circuit.closed',
-         'quota.exhausted'
+       FROM (
+         SELECT id, timestamp, event_json
+         FROM events
+         WHERE type IN (
+           'provider.health.checked',
+           'provider.unavailable',
+           'provider.circuit.opened',
+           'provider.circuit.half_opened',
+           'provider.circuit.closed',
+           'quota.exhausted'
+         )
+         ORDER BY timestamp DESC, id DESC
+         LIMIT 5000
        )
-       ORDER BY timestamp ASC, id ASC
-       LIMIT 5000`,
+       ORDER BY timestamp ASC, id ASC`,
     )
     .all() as SqlRow[];
 
@@ -952,10 +960,14 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
   const callRows = db
     .prepare(
       `SELECT timestamp, logical_role, binding_id, provider, model, status, result
-       FROM model_calls
-       WHERE logical_role IS NOT NULL
-       ORDER BY timestamp ASC, event_hash ASC
-       LIMIT 10000`,
+       FROM (
+         SELECT event_hash, timestamp, logical_role, binding_id, provider, model, status, result
+         FROM model_calls
+         WHERE logical_role IS NOT NULL
+         ORDER BY timestamp DESC, event_hash DESC
+         LIMIT 10000
+       )
+       ORDER BY timestamp ASC, event_hash ASC`,
     )
     .all() as SqlRow[];
 
