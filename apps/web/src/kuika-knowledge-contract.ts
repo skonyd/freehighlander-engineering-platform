@@ -1,18 +1,10 @@
 export type FhKuikaKnowledgeQueryMode =
-  | 'EXACT_ENTITY'
-  | 'EXACT_REVISION'
-  | 'LINEAGE_TRAVERSAL'
-  | 'EVIDENCE_LOOKUP'
-  | 'HYBRID';
+  'EXACT_ENTITY' | 'EXACT_REVISION' | 'LINEAGE_TRAVERSAL' | 'EVIDENCE_LOOKUP' | 'HYBRID';
 
 export type FhKuikaKnowledgeResultClass = 'AUTHORITATIVE' | 'DISCOVERY';
 
 export type FhKuikaKnowledgeSourceKind =
-  | 'LINEAGE_ENTITY'
-  | 'LINEAGE_RELATION'
-  | 'EVIDENCE'
-  | 'ARTIFACT'
-  | 'SEMANTIC_DISCOVERY';
+  'LINEAGE_ENTITY' | 'LINEAGE_RELATION' | 'EVIDENCE' | 'ARTIFACT' | 'SEMANTIC_DISCOVERY';
 
 export interface FhKuikaKnowledgeRevisionRefV1 {
   readonly repository: string;
@@ -179,10 +171,7 @@ export function validateFhKuikaKnowledgeResultV1(result: FhKuikaKnowledgeResultV
     throw new Error('knowledge result authority must be NONE');
   }
 
-  if (
-    result.provenance.sourceKind === 'SEMANTIC_DISCOVERY' &&
-    result.resultClass !== 'DISCOVERY'
-  ) {
+  if (result.provenance.sourceKind === 'SEMANTIC_DISCOVERY' && result.resultClass !== 'DISCOVERY') {
     throw new Error('semantic discovery result must remain DISCOVERY');
   }
 
