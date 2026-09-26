@@ -82,9 +82,7 @@ export function parseFhKuikaStudioWorkflowDraftV1(input: unknown): FhKuikaStudio
   return rebuilt;
 }
 
-export function serializeFhKuikaStudioWorkflowDraftV1(
-  draft: FhKuikaStudioWorkflowDraftV1,
-): string {
+export function serializeFhKuikaStudioWorkflowDraftV1(draft: FhKuikaStudioWorkflowDraftV1): string {
   const parsed = parseFhKuikaStudioWorkflowDraftV1(draft);
   return stableJson(parsed);
 }
@@ -92,7 +90,9 @@ export function serializeFhKuikaStudioWorkflowDraftV1(
 export function roundTripFhKuikaStudioWorkflowDraftV1(
   draft: FhKuikaStudioWorkflowDraftV1,
 ): FhKuikaStudioWorkflowDraftV1 {
-  return parseFhKuikaStudioWorkflowDraftV1(JSON.parse(serializeFhKuikaStudioWorkflowDraftV1(draft)));
+  return parseFhKuikaStudioWorkflowDraftV1(
+    JSON.parse(serializeFhKuikaStudioWorkflowDraftV1(draft)),
+  );
 }
 
 export function validateFhKuikaStudioWorkflowDefinitionV1(
@@ -191,11 +191,7 @@ function parseNode(input: unknown): FhKuikaStudioWorkflowNodeV1 {
 }
 
 function parseEdge(input: unknown): FhKuikaStudioWorkflowEdgeV1 {
-  if (
-    !isRecord(input) ||
-    typeof input.from !== 'string' ||
-    typeof input.to !== 'string'
-  ) {
+  if (!isRecord(input) || typeof input.from !== 'string' || typeof input.to !== 'string') {
     throw new Error('workflow Studio edge is malformed');
   }
   return { from: input.from, to: input.to };
