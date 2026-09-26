@@ -1180,14 +1180,15 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
       else if (unavailable) state = 'UNAVAILABLE';
       else if (activeObserved) state = 'ACTIVE';
 
-      const observedAt = [
-        publication.timestamp,
-        toStringOrNull(latestCall?.timestamp),
-        relevantFailureState?.timestamp ?? null,
-      ]
-        .filter((value): value is string => value !== null)
-        .sort()
-        .at(-1) ?? null;
+      const observedAt =
+        [
+          publication.timestamp,
+          toStringOrNull(latestCall?.timestamp),
+          relevantFailureState?.timestamp ?? null,
+        ]
+          .filter((value): value is string => value !== null)
+          .sort()
+          .at(-1) ?? null;
 
       return {
         logicalRole: publication.logicalRole,
@@ -1215,9 +1216,7 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
   };
 }
 
-function queryProviderAttention(
-  projection: ProviderProjection,
-): CoreHomeAttentionSummaryView {
+function queryProviderAttention(projection: ProviderProjection): CoreHomeAttentionSummaryView {
   const items: CoreHomeAttentionItemV1[] = [];
 
   for (const binding of projection.roleBindings) {
@@ -1240,7 +1239,8 @@ function queryProviderAttention(
     } else if (binding.returnPolicy === 'ASK_BEFORE_RETURN' && fallback) {
       nextAction = 'Continue on fallback; returning to preferred binding requires approval.';
     } else if (binding.returnPolicy === 'AUTO_RETURN' && fallback) {
-      nextAction = 'Continue on fallback; preferred binding will resume automatically after recovery.';
+      nextAction =
+        'Continue on fallback; preferred binding will resume automatically after recovery.';
     }
 
     items.push({
