@@ -192,9 +192,7 @@ export function publishFhKuikaBlueprintV1(
     authority: 'NONE' as const,
   };
 
-  const blueprintHash = createHash('sha256')
-    .update(stableJson(normalized))
-    .digest('hex');
+  const blueprintHash = createHash('sha256').update(stableJson(normalized)).digest('hex');
 
   return deepFreeze({
     ...normalized,
@@ -235,11 +233,15 @@ function requireUniqueNonEmpty(values: readonly string[], field: string): void {
   if (!values.length) throw new Error(field + ' list must not be empty');
   const normalized = values.map((value) => value.trim());
   if (normalized.some((value) => !value)) throw new Error(field + ' must not be empty');
-  if (new Set(normalized).size !== normalized.length) throw new Error(field + ' values must be unique');
+  if (new Set(normalized).size !== normalized.length) {
+    throw new Error(field + ' values must be unique');
+  }
 }
 
 function normalizedStrings(values: readonly string[]): readonly string[] {
-  return [...values].map((value) => value.trim()).sort((a, b) => a.localeCompare(b));
+  return [...values]
+    .map((value) => value.trim())
+    .sort((a, b) => a.localeCompare(b));
 }
 
 function sortedUnique<T extends string>(values: readonly T[]): readonly T[] {
