@@ -13,6 +13,7 @@ import {
 } from './external-status.js';
 import { buildManagementSnapshot } from './management.js';
 import { buildOperationsConsoleSnapshot } from './operations-console.js';
+import { buildFhKuikaRunDetailV1 } from './kuika-run-detail.js';
 import { DashboardReadModel, MissingDashboardDatabaseError } from './read-model.js';
 
 export interface DashboardServerOptions {
@@ -175,6 +176,17 @@ async function handleRequest(
       return;
     }
 
+    const kuikaRunRoute = parseFhKuikaRunRoute(url.pathname);
+    if (kuikaRunRoute) {
+      const detail = buildFhKuikaRunDetailV1(readModel, kuikaRunRoute.runId, readLimit(url, 1_000));
+      if (!detail) {
+        json(response, 404, { error: 'run_not_found', runId: kuikaRunRoute.runId });
+        return;
+      }
+      json(response, 200, detail);
+      return;
+    }
+
     if (url.pathname === '/api/management') {
       json(response, 200, buildManagementSnapshot(readModel, readLimit(url, 50)));
       return;
@@ -226,6 +238,12 @@ async function handleRequest(
     const message = error instanceof Error ? error.message : 'unknown error';
     json(response, 500, { error: 'dashboard_error', message });
   }
+}
+
+function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {
+  const match = /^\/api\/modules\/fh-kuika\/runs\/([^/]+)$/.exec(pathname);
+  if (!match?.[1]) return null;
+  return { runId: decodeURIComponent(match[1]) };
 }
 
 function parseRunRoute(pathname: string): {
