@@ -146,6 +146,12 @@ test('dashboard read model exposes summary, runs, model usage and artifacts', as
     assert.equal(model.listRuns()[0]?.runId, 'run-1');
     assert.equal(model.modelAggregates()[0]?.logicalRole, 'test-reviewer');
 
+    const usage = model.usageSince('2026-09-19T19:00:00.000Z');
+    assert.equal(usage.modelCalls, 1);
+    assert.equal(usage.totalTokens, 140);
+    assert.equal(usage.actualCostUsd, 0.09);
+    assert.equal(usage.retries, 1);
+
     const detail = model.runDetail('run-1');
     assert.ok(detail);
     assert.equal(detail.run.status, 'PASSED');
@@ -197,6 +203,12 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
 
     const summary = await (await fetch(`${base}/api/summary`)).json();
     assert.equal(summary.totalTokens, 140);
+
+    const coreHome = await (await fetch(`${base}/api/home`)).json();
+    assert.equal(coreHome.schemaVersion, 1);
+    assert.equal(coreHome.authority.authority, 'NONE');
+    assert.equal(coreHome.project.repository, 'skonyd/freehighlander-engineering-platform');
+    assert.equal(coreHome.usage.window, 'LAST_24_HOURS');
 
     const run = await (await fetch(`${base}/api/runs/run-1`)).json();
     assert.equal(run.run.runId, 'run-1');
