@@ -864,7 +864,7 @@ FH-04B.7 Continuity/findings/local state   COMPLETE
         ↓
 FH-04B.8 UX hardening                      COMPLETE
         ↓
-FH-04B.9 Optional external status          DEFERRED / P1
+FH-04B.9 Optional external status          COMPLETE
 ~~~
 
 FH-04B.1–FH-04B.8 are Core roadmap work.
