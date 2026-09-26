@@ -9,7 +9,7 @@ export {
   type FhKuikaWorkflowNodeInspectorV1,
   type FhKuikaWorkflowSimulationPreviewNodeV1,
   type FhKuikaWorkflowSimulationPreviewV1,
-  type FhKuikaWorkflowValidationIssueV1,
+  type FhKuikaWorkflowValidationIssueV1 as FhKuikaWorkflowValidationViewIssueV1,
   type FhKuikaWorkflowValidationViewV1,
 } from './kuika-workflow-studio-view.js';
 
