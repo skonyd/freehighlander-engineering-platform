@@ -170,6 +170,66 @@ async function fixture() {
   };
 }
 
+function insertCurrentWorkFixture(file, input) {
+  const db = new DatabaseSync(file);
+  try {
+    db.prepare(
+      `INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      input.runId,
+      input.taskId ?? 'task-work',
+      input.timestamp,
+      input.timestamp,
+      input.status ?? 'ACTIVE',
+      'skonyd/freehighlander-engineering-platform',
+      null,
+      input.branch ?? 'feat/current-work',
+      'base-work',
+      input.headSha ?? 'head-work',
+      input.workflowId,
+      '1.0.0',
+      'wf-work',
+      0,
+      1,
+      0,
+      input.eventType,
+    );
+
+    const event = {
+      schemaVersion: 1,
+      type: input.eventType,
+      timestamp: input.timestamp,
+      runId: input.runId,
+      taskId: input.taskId ?? 'task-work',
+      ...(input.nodeId
+        ? { node: { id: input.nodeId, type: input.nodeType ?? 'MODEL' } }
+        : {}),
+      execution: { status: input.status ?? 'ACTIVE' },
+      payload: {},
+    };
+
+    db.prepare(
+      `INSERT INTO events(
+        event_hash, schema_version, type, timestamp, run_id, task_id,
+        node_id, node_type, status, event_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      'event-' + input.runId,
+      1,
+      input.eventType,
+      input.timestamp,
+      input.runId,
+      input.taskId ?? 'task-work',
+      input.nodeId ?? null,
+      input.nodeType ?? null,
+      input.status ?? 'ACTIVE',
+      JSON.stringify(event),
+    );
+  } finally {
+    db.close();
+  }
+}
+
 function insertHumanEvent(file, input) {
   const db = new DatabaseSync(file);
   try {
@@ -398,6 +458,93 @@ test('Core Home projects current work and only unresolved human approvals', asyn
     });
     home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
     assert.equal(home.attention.total, 0);
+  } finally {
+    await data.cleanup();
+  }
+});
+
+test('Core Home current work uses deterministic stage taxonomy and provider wait state', async () => {
+  const data = await fixture();
+  try {
+    insertCurrentWorkFixture(data.file, {
+      runId: 'run-plan',
+      timestamp: '2026-09-19T21:10:00.000Z',
+      eventType: 'node.started',
+      nodeId: 'architecture-plan',
+      nodeType: 'MODEL',
+      workflowId: 'feature-planning',
+    });
+
+    const model = new DashboardReadModel(data.file);
+    let home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.currentWork?.state, 'PLANNING');
+
+    insertCurrentWorkFixture(data.file, {
+      runId: 'run-implement',
+      timestamp: '2026-09-19T21:11:00.000Z',
+      eventType: 'node.started',
+      nodeId: 'implementation-agent',
+      nodeType: 'MODEL',
+      workflowId: 'feature-delivery',
+    });
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.currentWork?.state, 'IMPLEMENTING');
+
+    insertCurrentWorkFixture(data.file, {
+      runId: 'run-test',
+      timestamp: '2026-09-19T21:12:00.000Z',
+      eventType: 'node.started',
+      nodeId: 'acceptance-test',
+      nodeType: 'COMMAND',
+      workflowId: 'feature-delivery',
+    });
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.currentWork?.state, 'TESTING');
+
+    insertCurrentWorkFixture(data.file, {
+      runId: 'run-security',
+      timestamp: '2026-09-19T21:13:00.000Z',
+      eventType: 'node.started',
+      nodeId: 'security-review',
+      nodeType: 'MODEL',
+      workflowId: 'release-review',
+    });
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.currentWork?.state, 'SECURITY_REVIEW');
+
+    insertCurrentWorkFixture(data.file, {
+      runId: 'run-review',
+      timestamp: '2026-09-19T21:14:00.000Z',
+      eventType: 'node.started',
+      nodeId: 'independent-review',
+      nodeType: 'MODEL',
+      workflowId: 'release',
+    });
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.currentWork?.state, 'REVIEW');
+
+    insertCurrentWorkFixture(data.file, {
+      runId: 'run-provider-wait',
+      timestamp: '2026-09-19T21:15:00.000Z',
+      eventType: 'quota.exhausted',
+      nodeId: null,
+      nodeType: null,
+      workflowId: 'release',
+      status: 'RETRYING',
+    });
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.currentWork?.state, 'WAITING_PROVIDER');
+
+    insertCurrentWorkFixture(data.file, {
+      runId: 'run-unknown-stage',
+      timestamp: '2026-09-19T21:16:00.000Z',
+      eventType: 'node.started',
+      nodeId: 'opaque-stage',
+      nodeType: 'MODEL',
+      workflowId: 'custom-flow',
+    });
+    home = model.homeSnapshot({ now: '2026-09-19T23:00:00.000Z' });
+    assert.equal(home.currentWork?.state, 'UNKNOWN');
   } finally {
     await data.cleanup();
   }
