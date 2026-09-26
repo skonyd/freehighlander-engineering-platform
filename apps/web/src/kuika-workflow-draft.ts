@@ -123,13 +123,7 @@ export function validateFhKuikaWorkflowDraftDefinitionV1(
       86_400_000,
       errors,
     );
-    validateOptionalInteger(
-      node.retryLimit,
-      `workflow node ${node.id} retryLimit`,
-      0,
-      20,
-      errors,
-    );
+    validateOptionalInteger(node.retryLimit, `workflow node ${node.id} retryLimit`, 0, 20, errors);
     validateOptionalInteger(
       node.tokenBudget,
       `workflow node ${node.id} tokenBudget`,
@@ -144,16 +138,8 @@ export function validateFhKuikaWorkflowDraftDefinitionV1(
       100_000,
       errors,
     );
-    validateStringList(
-      node.requiredEvidence,
-      `workflow node ${node.id} requiredEvidence`,
-      errors,
-    );
-    validateStringList(
-      node.toolPermissions,
-      `workflow node ${node.id} toolPermissions`,
-      errors,
-    );
+    validateStringList(node.requiredEvidence, `workflow node ${node.id} requiredEvidence`, errors);
+    validateStringList(node.toolPermissions, `workflow node ${node.id} toolPermissions`, errors);
     if (
       node.approvalPolicy !== undefined &&
       !['NONE', 'MODEL_QUORUM_REQUIRED', 'HUMAN_REQUIRED'].includes(node.approvalPolicy)
