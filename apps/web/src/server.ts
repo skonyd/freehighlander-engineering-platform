@@ -325,8 +325,9 @@ function parseFhKuikaBlueprintRoute(pathname: string): {
   readonly blueprintId: string;
   readonly resource: 'detail' | 'draft' | 'simulation';
 } | null {
-  const match =
-    /^\/api\/modules\/fh-kuika\/blueprints\/([^/]+)(?:\/(draft|simulation))?$/.exec(pathname);
+  const match = /^\/api\/modules\/fh-kuika\/blueprints\/([^/]+)(?:\/(draft|simulation))?$/.exec(
+    pathname,
+  );
   if (!match?.[1]) return null;
   return {
     blueprintId: decodeURIComponent(match[1]),
