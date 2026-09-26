@@ -1,4 +1,21 @@
 export {
+  createFhKuikaStudioWorkflowDraftV1,
+  fhKuikaWorkflowStudioDraftCanGrantAuthority,
+  fhKuikaWorkflowStudioDraftCanInvokeModel,
+  fhKuikaWorkflowStudioDraftCanMutateRuntime,
+  fhKuikaWorkflowStudioDraftCanPublish,
+  parseFhKuikaStudioWorkflowDraftV1,
+  roundTripFhKuikaStudioWorkflowDraftV1,
+  serializeFhKuikaStudioWorkflowDraftV1,
+  validateFhKuikaStudioWorkflowDefinitionV1,
+  type FhKuikaStudioWorkflowDefinitionV1,
+  type FhKuikaStudioWorkflowDraftV1,
+  type FhKuikaStudioWorkflowEdgeV1,
+  type FhKuikaStudioWorkflowNodeKind,
+  type FhKuikaStudioWorkflowNodeV1,
+} from './kuika-workflow-studio-draft.js';
+
+export {
   fhKuikaAreaPageCanGrantAuthority,
   fhKuikaAreaPageCanInvokeModel,
   fhKuikaAreaPageCanMutateRuntime,
