@@ -102,7 +102,7 @@ export function buildFhKuikaBlueprintTelemetryV1(
     latestObservedAt:
       values.length === 0
         ? null
-        : values.map((item) => item.observedAt).sort((a, b) => b.localeCompare(a))[0] ?? null,
+        : (values.map((item) => item.observedAt).sort((a, b) => b.localeCompare(a))[0] ?? null),
     dataState: observedRuns === 0 ? 'NO_DATA' : unknownRuns > 0 ? 'PARTIAL' : 'MEASURED',
     authority: 'NONE',
   };
