@@ -38,6 +38,12 @@ test('FH-KUIKA Workflow Studio route serves authority-neutral local draft UI', a
     assert.match(html, /Workflow Studio/);
     assert.match(html, /Local draft canvas/);
     assert.match(html, /Publish and Execute are intentionally unavailable/);
+    assert.match(html, /Risk tier/);
+    assert.match(html, /Token budget/);
+    assert.match(html, /Cost budget USD/);
+    assert.match(html, /Required evidence/);
+    assert.match(html, /Tool permissions/);
+    assert.match(html, /Approval policy/);
 
     const head = await fetch(base + '/modules/fh-kuika/build/workflows', { method: 'HEAD' });
     assert.equal(head.status, 200);
