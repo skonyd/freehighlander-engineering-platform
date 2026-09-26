@@ -3,7 +3,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FreeHighlander · Engineering Telemetry</title>
+  <title>FreeHighlander · Core Home</title>
   <style>
     :root {
       color-scheme: dark;
@@ -27,17 +27,32 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     }
     header, main { max-width: 1440px; margin: auto; padding: 24px; }
     header { display: flex; justify-content: space-between; gap: 16px; align-items: end; }
-    h1 { font-size: 24px; margin: 0; letter-spacing: -0.02em; }
+    h1 { font-size: 26px; margin: 0; letter-spacing: -0.03em; }
     h2 { font-size: 16px; margin: 0 0 14px; }
+    h3 { font-size: 13px; margin: 0; }
     .eyebrow { color: var(--accent); text-transform: uppercase; font-size: 11px; letter-spacing: .14em; font-weight: 700; }
     .muted { color: var(--muted); }
     .readonly { border: 1px solid #225773; background: #102838; color: var(--accent); padding: 7px 10px; border-radius: 999px; font-size: 12px; }
     .grid { display: grid; gap: 14px; }
-    .metrics { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .home-layout { grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr); margin-top: 14px; }
+    .telemetry-layout { grid-template-columns: minmax(0, 1.4fr) minmax(360px, .6fr); margin-top: 14px; }
     .card { background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: 0 8px 32px #0004; }
     .metric strong { display: block; font-size: 22px; margin-top: 6px; font-variant-numeric: tabular-nums; }
     .metric span { color: var(--muted); font-size: 12px; }
-    .layout { grid-template-columns: minmax(0, 1.4fr) minmax(360px, .6fr); margin-top: 14px; }
+    .context { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; align-items: center; }
+    .context code { background: #0b1119; border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+    .current-work { min-height: 142px; }
+    .work-title { font-size: 18px; font-weight: 650; margin-top: 4px; }
+    .work-status { margin-top: 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .attention-list { display: grid; gap: 9px; }
+    .attention-item { border-top: 1px solid var(--line); padding-top: 10px; }
+    .attention-item:first-child { border-top: 0; padding-top: 0; }
+    .usage-line { font-size: 19px; font-weight: 650; margin: 6px 0 14px; }
+    .status-line { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--line); }
+    .status-line:first-of-type { border-top: 0; }
+    .section-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:26px 0 10px; }
+    .section-heading h2 { margin: 0; }
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
     th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
@@ -46,51 +61,91 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
     code { color: #c4d7ec; font-size: 12px; }
     .pill { display: inline-flex; padding: 2px 7px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; }
     .human { color: var(--warn); border-color: #6d5b22; }
-    .status-PASSED, .status-PASS { color: var(--good); }
-    .status-FAILED, .status-FAIL { color: var(--bad); }
+    .good { color: var(--good); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+    .status-PASSED, .status-PASS, .status-HEALTHY { color: var(--good); }
+    .status-FAILED, .status-FAIL, .status-ATTENTION { color: var(--bad); }
+    .status-DEGRADED, .status-UNKNOWN { color: var(--warn); }
     .detail { min-height: 360px; }
     .detail pre { white-space: pre-wrap; word-break: break-word; max-height: 260px; overflow: auto; background: #090d12; border-radius: 8px; padding: 12px; }
     .tabs { display: flex; gap: 7px; margin: 12px 0; flex-wrap: wrap; }
     button { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; cursor: pointer; }
     button:hover { border-color: #52677d; }
-    .empty { padding: 36px; text-align: center; color: var(--muted); }
+    .empty { padding: 26px; text-align: center; color: var(--muted); }
     .error { color: var(--bad); }
+    .telemetry-details { margin-top: 10px; }
+    .telemetry-details > summary { cursor: pointer; color: var(--accent); user-select: none; }
     @media (max-width: 1050px) {
-      .metrics { grid-template-columns: repeat(3, 1fr); }
-      .layout { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .home-layout, .telemetry-layout { grid-template-columns: 1fr; }
     }
     @media (max-width: 620px) {
       header, main { padding: 16px; }
-      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .metrics { grid-template-columns: 1fr 1fr; }
       .wide { overflow-x: auto; }
+      .status-line { display:block; }
     }
   </style>
 </head>
 <body>
   <header>
     <div>
-      <div class="eyebrow">FreeHighlander</div>
-      <h1>Engineering Telemetry</h1>
-      <div id="health" class="muted">Connecting to local read model…</div>
+      <div class="eyebrow">FreeHighlander · Core</div>
+      <h1>Home</h1>
+      <div id="context" class="context muted">Connecting to local read model…</div>
     </div>
-    <div class="readonly">READ ONLY · V2.5</div>
+    <div class="readonly">ZERO-TOKEN · READ ONLY</div>
   </header>
   <main>
-    <section id="metrics" class="grid metrics"></section>
-    <section class="grid layout">
-      <div class="card wide">
-        <h2>Runs</h2>
-        <div id="runs"><div class="empty">Loading runs…</div></div>
+    <section id="home-metrics" class="grid metrics"></section>
+
+    <section class="grid home-layout">
+      <div class="card current-work">
+        <h2>Current Work</h2>
+        <div id="current-work"><div class="empty">Loading current work…</div></div>
       </div>
-      <aside class="card detail">
-        <h2>Run Evidence</h2>
-        <div id="detail" class="muted">Select a run.</div>
+
+      <aside class="card">
+        <h2>Needs Attention</h2>
+        <div id="attention"><div class="empty">Loading attention…</div></div>
       </aside>
     </section>
-    <section class="card wide" style="margin-top:14px">
-      <h2>Model / Role Usage</h2>
-      <div id="models"><div class="empty">Loading model metrics…</div></div>
+
+    <section class="grid home-layout">
+      <div class="card">
+        <h2>AI Usage</h2>
+        <div id="usage"><div class="empty">Loading usage…</div></div>
+      </div>
+      <aside class="card">
+        <h2>Model / Provider State</h2>
+        <div id="bindings"><div class="empty">Loading provider state…</div></div>
+      </aside>
     </section>
+
+    <details class="telemetry-details">
+      <summary>Engineering telemetry</summary>
+
+      <div class="section-heading">
+        <h2>Recent Runs</h2>
+        <span class="muted">Deterministic telemetry detail</span>
+      </div>
+
+      <section class="grid telemetry-layout">
+        <div class="card wide">
+          <div id="runs"><div class="empty">Loading runs…</div></div>
+        </div>
+        <aside class="card detail">
+          <h2>Run Evidence</h2>
+          <div id="detail" class="muted">Select a run.</div>
+        </aside>
+      </section>
+
+      <section class="card wide" style="margin-top:14px">
+        <h2>Model / Role Usage</h2>
+        <div id="models"><div class="empty">Loading model metrics…</div></div>
+      </section>
+    </details>
   </main>
 <script>
 const fmt = new Intl.NumberFormat();
@@ -105,46 +160,130 @@ async function api(path) {
   return body;
 }
 
-function metric(label, value) {
-  return '<div class="card metric"><span>' + esc(label) + '</span><strong>' + esc(value) + '</strong></div>';
+function metric(label, value, className = '') {
+  return '<div class="card metric"><span>' + esc(label) + '</span><strong class="' + esc(className) + '">' + esc(value) + '</strong></div>';
 }
 
 async function load() {
   try {
-    const health = await api('/api/health');
-    document.querySelector('#health').textContent =
-      health.databaseExists ? 'SQLite schema v' + health.schemaVersion + ' · local observer' : 'Waiting for SQLite telemetry database';
+    const home = await api('/api/home');
+    renderHome(home);
 
-    if (!health.databaseExists) {
-      document.querySelector('#metrics').innerHTML = metric('State', 'No database');
+    if (!home.system.databaseReady) {
       document.querySelector('#runs').innerHTML = '<div class="empty">Run telemetry has not been indexed yet.</div>';
       document.querySelector('#models').innerHTML = '<div class="empty">No model telemetry yet.</div>';
       return;
     }
 
     const values = await Promise.all([
-      api('/api/summary'),
       api('/api/runs?limit=100'),
       api('/api/models?limit=100')
     ]);
-    const summary = values[0];
-    const runs = values[1];
-    const models = values[2];
-
-    document.querySelector('#metrics').innerHTML = [
-      metric('Runs', fmt.format(summary.runs)),
-      metric('Human required', fmt.format(summary.humanRequiredRuns)),
-      metric('Model calls', fmt.format(summary.modelCalls)),
-      metric('Total tokens', fmt.format(summary.totalTokens)),
-      metric('Actual cost', money.format(summary.actualCostUsd)),
-      metric('Avg model latency', duration(summary.averageModelLatencyMs))
-    ].join('');
-
-    renderRuns(runs.runs);
-    renderModels(models.models);
+    renderRuns(values[0].runs);
+    renderModels(values[1].models);
   } catch (error) {
-    document.querySelector('#health').innerHTML = '<span class="error">' + esc(error.message) + '</span>';
+    document.querySelector('#context').innerHTML = '<span class="error">' + esc(error.message) + '</span>';
   }
+}
+
+function renderHome(home) {
+  const revision = home.project.exactRevision ? home.project.exactRevision.slice(0, 12) : 'unknown revision';
+  const project = home.project.repository || 'No active project';
+  const branch = home.project.branch || 'unknown branch';
+
+  document.querySelector('#context').innerHTML =
+    '<span>' + esc(project) + '</span>' +
+    '<span>·</span><span>' + esc(branch) + '</span>' +
+    '<code>' + esc(revision) + '</code>' +
+    '<span class="pill">' + esc(home.authority.v3Authority) + '</span>';
+
+  const running = home.recentRuns.filter(run =>
+    ['RUNNING', 'ACTIVE', 'IN_PROGRESS'].includes(String(run.status || '').toUpperCase())
+  ).length;
+
+  document.querySelector('#home-metrics').innerHTML = [
+    metric('Running', fmt.format(running)),
+    metric('Attention', fmt.format(home.attention.total), home.attention.total ? 'warn' : 'good'),
+    metric('Critical errors', fmt.format(home.system.unresolvedCriticalErrors), home.system.unresolvedCriticalErrors ? 'bad' : 'good'),
+    metric('System', home.system.state, 'status-' + home.system.state)
+  ].join('');
+
+  renderCurrentWork(home.currentWork, home.recentRuns);
+  renderAttention(home.attention);
+  renderUsage(home.usage);
+  renderBindings(home.roleBindings);
+}
+
+function renderCurrentWork(currentWork, recentRuns) {
+  const target = document.querySelector('#current-work');
+
+  if (currentWork) {
+    target.innerHTML =
+      '<div class="work-title">' + esc(currentWork.label) + '</div>' +
+      '<div class="work-status"><span class="pill">' + esc(currentWork.state) + '</span>' +
+      '<code>' + esc(currentWork.runId.slice(0, 12)) + '</code></div>' +
+      '<div class="muted" style="margin-top:12px">Updated ' +
+      esc(new Date(currentWork.updatedAt).toLocaleString()) + '</div>';
+    return;
+  }
+
+  const recent = recentRuns[0];
+  if (recent) {
+    target.innerHTML =
+      '<div class="work-title">No deterministic current-work projection yet</div>' +
+      '<div class="muted" style="margin-top:8px">Latest recorded run:</div>' +
+      '<div class="work-status"><span class="pill">' + esc(recent.status) + '</span>' +
+      '<code>' + esc(recent.runId.slice(0, 12)) + '</code></div>';
+    return;
+  }
+
+  target.innerHTML = '<div class="empty">No recorded work yet.</div>';
+}
+
+function renderAttention(attention) {
+  const target = document.querySelector('#attention');
+  if (!attention.items.length) {
+    target.innerHTML = '<div class="good">Nothing currently requires attention.</div>';
+    return;
+  }
+
+  target.innerHTML = '<div class="attention-list">' + attention.items.map(item =>
+    '<div class="attention-item">' +
+      '<div><span class="pill">' + esc(item.severity) + '</span> ' + esc(item.headline) + '</div>' +
+      (item.nextAction ? '<div class="muted" style="margin-top:5px">' + esc(item.nextAction) + '</div>' : '') +
+    '</div>'
+  ).join('') + '</div>';
+}
+
+function renderUsage(usage) {
+  document.querySelector('#usage').innerHTML =
+    '<div class="muted">' + esc(usage.window.replaceAll('_', ' ')) + '</div>' +
+    '<div class="usage-line">' +
+      fmt.format(usage.modelCalls) + ' calls · ' +
+      fmt.format(usage.totalTokens) + ' tokens · ' +
+      money.format(usage.actualCostUsd || usage.estimatedCostUsd) +
+    '</div>' +
+    '<div class="status-line"><span>Cached input</span><strong>' + fmt.format(usage.cachedInputTokens) + '</strong></div>' +
+    '<div class="status-line"><span>Retries</span><strong>' + fmt.format(usage.retries) + '</strong></div>' +
+    '<div class="status-line"><span>Fallbacks</span><strong>' + fmt.format(usage.fallbacks) + '</strong></div>';
+}
+
+function renderBindings(bindings) {
+  const target = document.querySelector('#bindings');
+
+  if (!bindings.length) {
+    target.innerHTML =
+      '<div class="muted">Current binding health projection is not available yet.</div>' +
+      '<div class="muted" style="margin-top:8px">FH-04B.5 will add preferred / active / fallback state without model calls.</div>';
+    return;
+  }
+
+  target.innerHTML = bindings.map(binding =>
+    '<div class="status-line">' +
+      '<span>' + esc(binding.logicalRole) + '</span>' +
+      '<strong>' + esc(binding.activeModel || binding.activeBindingId || binding.state) + '</strong>' +
+    '</div>'
+  ).join('');
 }
 
 function renderRuns(runs) {
