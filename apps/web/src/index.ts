@@ -1,4 +1,34 @@
 export {
+  optimizeFhKuikaRoutingV1,
+  routingOptimizerCanExecuteCall,
+  routingOptimizerCanGrantAuthority,
+  routingOptimizerCanRetrySemanticFailure,
+  routingOptimizerCanUseSemanticOutcome,
+  type FhKuikaRoutingCandidateEvaluationV1,
+  type FhKuikaRoutingCandidateV1,
+  type FhKuikaRoutingDataClass,
+  type FhKuikaRoutingDecisionV1,
+  type FhKuikaRoutingExclusionReason,
+  type FhKuikaRoutingHealth,
+  type FhKuikaRoutingLocality,
+  type FhKuikaRoutingRequestV1,
+  type FhKuikaRoutingRiskTier,
+} from './kuika-routing-optimizer.js';
+
+export {
+  routingSimulationCanExecuteCall,
+  simulateFhKuikaRoutingScenarioV1,
+  type FhKuikaRoutingSimulationInputV1,
+} from './kuika-routing-simulation.js';
+
+export {
+  FH_KUIKA_ROUTING_HTML,
+  routingPageCanGrantAuthority,
+  routingPageCanInvokeModel,
+  routingPageCanMutateBindings,
+} from './kuika-routing-ui.js';
+
+export {
   buildFhKuikaWorkflowSimulationPreviewV1,
   buildFhKuikaWorkflowValidationViewV1,
   createFhKuikaWorkflowNodeInspectorV1,
