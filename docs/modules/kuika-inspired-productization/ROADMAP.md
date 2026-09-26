@@ -439,7 +439,7 @@ Selecting a node exposes:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-04.1** workflow draft/read contract and canonical round-trip.
+- **FH-KUIKA-04.1** workflow draft/read contract and canonical round-trip. **IMPLEMENTED in current stacked PR.**
 - **FH-KUIKA-04.2** graph canvas + node palette.
 - **FH-KUIKA-04.3** node inspector + policy/evidence/budget surfaces.
 - **FH-KUIKA-04.4** deterministic validation visualization.
