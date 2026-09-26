@@ -1,4 +1,33 @@
 export {
+  buildFhKuikaRoutineActivationPlanV1,
+  createFhKuikaRoutineDraftV1,
+  normalizeFhKuikaTriggerEventV1,
+  routineDraftCanActivate,
+  routineDraftCanGrantAuthority,
+  triggerNormalizationCanExecuteWorkflow,
+  triggerNormalizationCanInvokeModel,
+  type FhKuikaNormalizedTriggerEventV1,
+  type FhKuikaRoutineActivationPlanV1,
+  type FhKuikaRoutineDraftV1,
+  type FhKuikaRoutineRetryV1,
+  type FhKuikaRoutineTriggerKind,
+  type FhKuikaRoutineTriggerV1,
+} from './kuika-routines.js';
+
+export {
+  getFhKuikaRoutineTemplateV1,
+  listFhKuikaRoutineTemplatesV1,
+  routineCatalogCanActivate,
+} from './kuika-routine-catalog.js';
+
+export {
+  FH_KUIKA_ROUTINES_HTML,
+  routinesPageCanActivate,
+  routinesPageCanGrantAuthority,
+  routinesPageCanInvokeModel,
+} from './kuika-routine-ui.js';
+
+export {
   buildFhKuikaWorkflowSimulationPreviewV1,
   buildFhKuikaWorkflowValidationViewV1,
   createFhKuikaWorkflowNodeInspectorV1,
