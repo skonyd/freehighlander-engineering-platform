@@ -9,6 +9,8 @@ import { SqliteTelemetryStore } from '@freehighlander/persistence';
 import {
   buildRunInspectorReport,
   loadRunEvents,
+  otelProjectionCanBecomeSourceOfTruth,
+  projectRunInspectorReportToOtel,
   runInspectorCanGrantAuthority,
   runInspectorCanPersistHiddenReasoning,
 } from '../lib/run-inspector.mjs';
@@ -243,4 +245,42 @@ test('run inspector rejects invalid limits and missing databases', () => {
   assert.throws(() => loadRunEvents('/missing/telemetry.sqlite', 'run-001'), /does not exist/);
   assert.throws(() => loadRunEvents('/missing/telemetry.sqlite', 'run-001', 0), /limit/);
   assert.throws(() => buildRunInspectorReport([]), /at least one event/);
+});
+
+test('run inspector projects causal metadata to authority-neutral OTEL spans', () => {
+  const report = buildRunInspectorReport(representativeEvents());
+  const spans = projectRunInspectorReportToOtel(report);
+
+  assert.equal(spans.length, 4);
+  const root = spans.find((span) => span.spanId === 'span-root');
+  const branchA = spans.find((span) => span.spanId === 'span-a');
+
+  assert.equal(root.traceId, 'trace-001');
+  assert.equal(root.parentSpanId, null);
+  assert.equal(root.name, 'node-root');
+  assert.equal(root.attributes['freehighlander.span.kind'], 'MODEL');
+  assert.equal(root.attributes['freehighlander.span.critical_path'], true);
+  assert.equal(root.attributes['freehighlander.provider.id'], 'provider-a');
+  assert.equal(root.attributes['freehighlander.model.id'], 'model-a');
+  assert.equal(root.attributes['freehighlander.binding.id'], 'binding-controller');
+  assert.deepEqual(root.attributes['freehighlander.artifact.ids'], ['artifact-a', 'artifact-b']);
+  assert.equal(branchA.attributes['freehighlander.span.kind'], 'PARALLEL_BRANCH');
+  assert.equal(root.sourceOfTruth, false);
+  assert.equal(root.persistenceAuthority, 'NONE');
+  assert.equal(JSON.stringify(spans).includes('internalDetail'), false);
+  assert.equal(JSON.stringify(spans).includes('not-exposed'), false);
+  assert.equal(otelProjectionCanBecomeSourceOfTruth(), false);
+});
+
+test('OTEL projection fails closed on authority-bearing or hidden-reasoning reports', () => {
+  const report = buildRunInspectorReport(representativeEvents());
+
+  assert.throws(
+    () => projectRunInspectorReportToOtel({ ...report, authority: 'SYSTEM_POLICY' }),
+    /authority-neutral/,
+  );
+  assert.throws(
+    () => projectRunInspectorReportToOtel({ ...report, hiddenReasoningPersisted: true }),
+    /metadata-only/,
+  );
 });
