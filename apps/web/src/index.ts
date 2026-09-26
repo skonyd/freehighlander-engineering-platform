@@ -1,4 +1,16 @@
 export {
+  buildFhKuikaMcpRegistryViewV1,
+  mcpDiscoveryCanEnableConnector,
+  mcpDiscoveryMetadataCanGrantAuthority,
+  mcpSelfReportedReadOnlyHintsAreTrusted,
+  normalizeFhKuikaMcpDiscoveryV1,
+  type FhKuikaMcpNormalizedDiscoveryV1,
+  type FhKuikaMcpResourceDiscoveryV1,
+  type FhKuikaMcpServerDiscoveryV1,
+  type FhKuikaMcpToolDiscoveryV1,
+} from './kuika-mcp-normalization.js';
+
+export {
   buildFhKuikaConnectorRegistryViewV1,
   connectorCatalogCacheCanBypassPermissionRevalidation,
   connectorExternalMetadataCanGrantAuthority,
