@@ -156,3 +156,69 @@ test('web source has no model-runtime or ProviderAdapter dependency path', async
     );
   }
 });
+
+
+test('Core Home snapshot fails closed on invalid authority, costs and finding timestamps', () => {
+  const input = validSnapshotInput();
+
+  assert.throws(
+    () =>
+      createCoreHomeSnapshotV1({
+        ...input,
+        authority: {
+          ...input.authority,
+          authority: 'CONTROL_PLANE_REQUIRED',
+        },
+      }),
+    /authority must be NONE/,
+  );
+
+  assert.throws(
+    () =>
+      createCoreHomeSnapshotV1({
+        ...input,
+        usage: {
+          ...input.usage,
+          actualCostUsd: -0.01,
+        },
+      }),
+    /actualCostUsd must be a non-negative finite number/,
+  );
+
+  assert.throws(
+    () =>
+      createCoreHomeSnapshotV1({
+        ...input,
+        findings: {
+          ...input.findings,
+          latestFindingAt: 'not-a-timestamp',
+        },
+      }),
+    /latestFindingAt must be a valid timestamp/,
+  );
+
+  assert.throws(
+    () =>
+      createCoreHomeSnapshotV1({
+        ...input,
+        attention: {
+          total: 1,
+          critical: 1,
+          error: 0,
+          warning: 0,
+          items: [
+            {
+              id: '',
+              kind: 'RUNTIME_ERROR',
+              severity: 'CRITICAL',
+              headline: 'Runtime error',
+              source: 'runtime',
+              occurredAt: '2026-09-26T06:59:00.000Z',
+              authority: 'NONE',
+            },
+          ],
+        },
+      }),
+    /attention item id is required/,
+  );
+});
