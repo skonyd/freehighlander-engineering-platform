@@ -1178,7 +1178,18 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(kuikaHtml, /Optional productization module/);
     assert.match(kuikaHtml, /\/api\/home/);
     assert.match(kuikaHtml, /Core runtime remains valid and usable/);
+    assert.match(kuikaHtml, /href="\/modules\/fh-kuika\/workbench"/);
     assert.equal(kuika.headers.get('x-freehighlander-mode'), 'read-only');
+
+    const workbench = await fetch(`${base}/modules/fh-kuika/workbench`);
+    assert.equal(workbench.status, 200);
+    const workbenchHtml = await workbench.text();
+    assert.match(workbenchHtml, /AI Workbench/);
+    assert.match(workbenchHtml, /data-mode="ASK"/);
+    assert.match(workbenchHtml, /data-mode="EXECUTE"/);
+    assert.match(workbenchHtml, /NO MODEL CALL ON SELECT/);
+    assert.match(workbenchHtml, /\/api\/home/);
+    assert.equal(workbench.headers.get('x-freehighlander-mode'), 'read-only');
 
     const health = await (await fetch(`${base}/api/health`)).json();
     assert.equal(health.mode, 'read-only');
