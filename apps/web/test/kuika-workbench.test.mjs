@@ -44,7 +44,6 @@ test('only Execute mode is mutation-capable and requires enabled V3 authority', 
   }
 });
 
-
 test('Workbench UI prepares local intents and keeps Review evidence-bound', () => {
   assert.match(FH_KUIKA_WORKBENCH_HTML, /id="prepare-intent"/);
   assert.match(FH_KUIKA_WORKBENCH_HTML, /id="evidence-ids"/);
