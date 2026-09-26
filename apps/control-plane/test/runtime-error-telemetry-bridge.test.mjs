@@ -44,3 +44,42 @@ test('legacy runtime report without diagnosis is not projected as causal telemet
 
   assert.throws(() => runtimeErrorReportToTelemetryInput(report), /requires safe diagnosis/);
 });
+
+
+test('runtime report telemetry bridge rejects malformed report identity and unsafe diagnosis flags', () => {
+  const report = createRuntimeErrorReport({
+    code: 'PROVIDER_QUOTA',
+    userMessage: 'Provider quota is exhausted.',
+    correlationId: 'err-coverage-1234',
+    diagnosis: {
+      causeCode: 'QUOTA_EXHAUSTED',
+      causeKind: 'QUOTA_EXHAUSTED',
+      certainty: 'CONFIRMED_SIGNAL',
+      headline: 'Primary model quota exhausted',
+      sourceComponent: 'model-runtime',
+      sourceOperation: 'provider-invoke',
+      failedStep: 'Invoke selected provider binding',
+      rootCause: 'The provider rejected the request because quota is exhausted.',
+      observedSignal: 'HTTP 429 quota_exhausted',
+      nextAction: 'Use the configured fallback or retry after quota reset.',
+      redactionStatus: 'NOT_REQUIRED',
+    },
+  });
+
+  assert.throws(
+    () => runtimeErrorReportToTelemetryInput({ ...report, schemaVersion: 2 }),
+    /requires RuntimeErrorReportV1/,
+  );
+  assert.throws(
+    () => runtimeErrorReportToTelemetryInput({ ...report, authority: 'SYSTEM_POLICY' }),
+    /requires RuntimeErrorReportV1/,
+  );
+  assert.throws(
+    () =>
+      runtimeErrorReportToTelemetryInput({
+        ...report,
+        diagnosis: { ...report.diagnosis, safeForUserDisplay: false },
+      }),
+    /requires safe diagnosis/,
+  );
+});
