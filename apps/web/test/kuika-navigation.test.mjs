@@ -54,6 +54,11 @@ test('FH-KUIKA preparation areas render without model or authority paths', () =>
     assert.match(html, /Operate/);
     assert.match(html, /invokes no model/);
     assert.match(html, /grants no authority/);
+    if (area === 'BUILD') {
+      assert.match(html, /\/modules\/fh-kuika\/build\/blueprints/);
+      assert.match(html, /Blueprints/);
+      assert.match(html, /AVAILABLE/);
+    }
     assert.equal(isFhKuikaPreparationArea(area), true);
   }
 
