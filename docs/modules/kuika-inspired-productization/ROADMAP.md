@@ -1,6 +1,6 @@
 # FH-KUIKA — Kuika-inspired Productization Module
 
-**Status:** PROPOSED PRODUCTIZATION ROADMAP  
+**Status:** IMPLEMENTATION IN PROGRESS  
 **Module ID:** `FH-KUIKA`  
 **Scope:** Kuika-inspired productization ideas adapted to FreeHighlander engineering-control-plane semantics  
 **Module boundary:** optional productization/UX module; not part of core authority semantics  
@@ -116,6 +116,29 @@ The detailed UX contract is in [FH-KUIKA Product UX](UX.md).
 New FH-KUIKA features should not automatically create a new top-level screen. A new permanent navigation item requires evidence that it cannot fit coherently under one of the existing six module surfaces.
 
 Advanced state such as hashes, policy evaluation, evidence metadata, provider diagnostics and connector permission matrices should use drawers, tabs or expandable detail by default.
+
+## Current implementation status
+
+Implemented before this delivery slice:
+
+- **FH-KUIKA-01.1** shallow module navigation/shell;
+- **FH-KUIKA-01.2** Explainable Operations deterministic read surface;
+- **FH-KUIKA-01.3** run-detail preparation surface;
+- **FH-KUIKA-02.1** ASK / PLAN / EXECUTE / REVIEW mode contract;
+- **FH-KUIKA-02.2** read-only Workbench UI;
+- **FH-KUIKA-03.1** blueprint schema/versioning/publication invariants;
+- **FH-KUIKA-03.2** deterministic blueprint matcher;
+- **FH-KUIKA-03.3** curated blueprint pack.
+
+This delivery completes:
+
+- **FH-KUIKA-03.4** Blueprint Catalog + detail UI;
+- **FH-KUIKA-03.5** blueprint → canonical-shape workflow candidate + deterministic simulation;
+- **FH-KUIKA-03.6** deterministic catalog-quality metrics + metadata-only usage aggregation.
+
+**FH-KUIKA-03 Engineering Blueprint Catalog is complete through .1–.6.**
+
+All implementation listed here remains authority-neutral and does not imply FH-20 cutover.
 
 ## Delivery waves
 
