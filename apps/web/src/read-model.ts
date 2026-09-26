@@ -824,7 +824,7 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
     const event = parseEventRecord(row.event_json ?? null);
     const provider = asRecord(event?.provider);
     const providerId = safeProjectionIdentifier(provider?.id);
-    if (!providerId) continue;
+    if (!provider || !providerId) continue;
 
     const timestamp = String(row.timestamp);
     const available = typeof provider?.available === 'boolean' ? provider.available : null;
