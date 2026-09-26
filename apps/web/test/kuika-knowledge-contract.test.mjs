@@ -120,6 +120,3 @@ test('authoritative lineage relations require evidence provenance', () => {
     authority: 'NONE',
   });
 });
-##[group]Run npm run verify
-npm run verify
-shell: /usr/bin/bash -e {0}
