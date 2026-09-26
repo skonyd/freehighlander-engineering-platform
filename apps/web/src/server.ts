@@ -310,7 +310,9 @@ async function handleRequest(
     if (url.pathname === '/api/modules/fh-kuika/routing/simulate') {
       const risk = (url.searchParams.get('risk') ?? 'HIGH').toUpperCase();
       const data = (url.searchParams.get('data') ?? 'INTERNAL').toUpperCase();
-      const preferredHealth = (url.searchParams.get('preferredHealth') ?? 'AVAILABLE').toUpperCase();
+      const preferredHealth = (
+        url.searchParams.get('preferredHealth') ?? 'AVAILABLE'
+      ).toUpperCase();
       const context = Number(url.searchParams.get('context') ?? '50000');
 
       if (!['NORMAL', 'HIGH', 'CRITICAL'].includes(risk)) {
@@ -331,7 +333,10 @@ async function handleRequest(
           'UNKNOWN',
         ].includes(preferredHealth)
       ) {
-        json(response, 400, { error: 'invalid_routing_health', preferredHealth });
+        json(response, 400, {
+          error: 'invalid_routing_health',
+          preferredHealth,
+        });
         return;
       }
 
