@@ -31,11 +31,14 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
       border-radius:8px; padding:8px 12px; cursor:pointer;
     }
     button[aria-selected="true"] { border-color:var(--accent); color:var(--accent); }
-    button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
-    textarea {
-      width:100%; min-height:180px; resize:vertical; background:#090d12; color:var(--text);
+    button:focus-visible,input:focus-visible,textarea:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    textarea,input {
+      width:100%; background:#090d12; color:var(--text);
       border:1px solid var(--line); border-radius:9px; padding:12px; font:inherit;
     }
+    textarea { min-height:180px; resize:vertical; }
+    .field { display:grid; gap:5px; margin-top:12px; }
+    .field label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
     .mode-note { margin:10px 0 14px; color:var(--muted); min-height:42px; }
     .context-chips { display:flex; flex-wrap:wrap; gap:8px; }
     .context-chip {
@@ -43,7 +46,7 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
       border:1px solid var(--line); background:#0d131b; border-radius:9px; padding:7px 9px;
     }
     .context-chip span { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
-    .context-chip strong, .context-chip code { overflow-wrap:anywhere; }
+    .context-chip strong,.context-chip code { overflow-wrap:anywhere; }
     .context-chip.authoritative { border-color:#315d74; }
     .preflight-row { display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px solid var(--line); }
     .preflight-row:first-child { border-top:0; }
@@ -53,7 +56,11 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
     .warn { color:var(--warn); }
     .action {
       margin-top:12px; display:flex; justify-content:space-between; gap:10px; align-items:center;
-      padding:10px 12px; background:var(--panel2); border-radius:9px;
+      padding:10px 12px; background:var(--panel2); border-radius:9px; flex-wrap:wrap;
+    }
+    .intent-preview {
+      margin-top:14px; background:#090d12; border:1px solid var(--line); border-radius:9px;
+      padding:12px; white-space:pre-wrap; word-break:break-word; min-height:90px;
     }
     @media (max-width:820px) { .layout { grid-template-columns:1fr; } header { flex-direction:column; } }
   </style>
@@ -83,10 +90,19 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
 
         <textarea id="prompt" aria-label="Workbench request" placeholder="Describe the work or question…"></textarea>
 
-        <div class="action">
-          <span id="action-status" class="muted">Mode selection is local UI state only.</span>
-          <span class="pill">NO MODEL CALL ON SELECT</span>
+        <div class="field">
+          <label for="evidence-ids">Evidence IDs · required for Review</label>
+          <input id="evidence-ids" type="text" placeholder="evidence-123, evidence-456" />
         </div>
+
+        <div class="action">
+          <span id="action-status" class="muted">Mode selection performs no model call.</span>
+          <span class="pill">NO MODEL CALL ON SELECT</span>
+          <button id="prepare-intent" type="button">Prepare intent</button>
+        </div>
+
+        <div class="muted" style="margin-top:12px">Prepared intent preview · no model call</div>
+        <pre id="intent-preview" class="intent-preview">Nothing prepared yet.</pre>
       </div>
 
       <aside class="card">
@@ -103,161 +119,141 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
   </main>
 
 <script>
-const modeViews = {
-  ASK: {
-    title:'Ask',
-    purpose:'Read-only project and engineering questions.',
-    mutation:false,
-    requiresEnabled:false
-  },
-  PLAN: {
-    title:'Plan',
-    purpose:'Produce candidate plans and structured engineering work proposals.',
-    mutation:false,
-    requiresEnabled:false
-  },
-  EXECUTE: {
-    title:'Execute',
-    purpose:'Request a bounded writer workflow through normal control-plane policy.',
-    mutation:true,
-    requiresEnabled:true
-  },
-  REVIEW: {
-    title:'Review',
-    purpose:'Request independent review bound to an exact revision and evidence set.',
-    mutation:false,
-    requiresEnabled:false
-  }
+const modeViews={
+  ASK:{title:'Ask',purpose:'Read-only project and engineering questions.'},
+  PLAN:{title:'Plan',purpose:'Produce candidate plans and structured engineering work proposals.'},
+  EXECUTE:{title:'Execute',purpose:'Request a bounded writer workflow through normal control-plane policy.'},
+  REVIEW:{title:'Review',purpose:'Request independent review bound to an exact revision and evidence set.'}
 };
+let activeMode='ASK';
+let snapshotState=null;
 
-let activeMode = 'ASK';
-let snapshotState = null;
-
-const esc = value => String(value ?? '—').replace(
+const esc=value=>String(value??'—').replace(
   /[&<>"']/g,
-  ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])
+  ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])
 );
 
-async function api(path) {
-  const response = await fetch(path, { cache:'no-store' });
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.message || body.error || response.statusText);
+async function api(path){
+  const response=await fetch(path,{cache:'no-store'});
+  const body=await response.json();
+  if(!response.ok) throw new Error(body.message||body.error||response.statusText);
   return body;
 }
 
-async function selectMode(mode) {
-  activeMode = mode;
-  const view = modeViews[mode];
-  document.querySelectorAll('button[data-mode]').forEach(button =>
-    button.setAttribute('aria-selected', String(button.dataset.mode === mode))
+async function selectMode(mode){
+  activeMode=mode;
+  const view=modeViews[mode];
+  document.querySelectorAll('button[data-mode]').forEach(button=>
+    button.setAttribute('aria-selected',String(button.dataset.mode===mode))
   );
-  document.querySelector('#mode-title').textContent = view.title;
-  document.querySelector('#mode-note').textContent = view.purpose;
-  document.querySelector('#action-status').textContent = 'Checking deterministic preflight…';
+  document.querySelector('#mode-title').textContent=view.title;
+  document.querySelector('#mode-note').textContent=view.purpose;
+  document.querySelector('#action-status').textContent='Checking deterministic preflight…';
 
-  try {
-    const snapshot = await api(
-      '/api/modules/fh-kuika/workbench?mode=' + encodeURIComponent(mode)
-    );
-    if (activeMode !== mode) return;
-    snapshotState = snapshot;
+  try{
+    const snapshot=await api('/api/modules/fh-kuika/workbench?mode='+encodeURIComponent(mode));
+    if(activeMode!==mode) return;
+    snapshotState=snapshot;
     renderSnapshot(snapshot);
-  } catch (error) {
-    document.querySelector('#action-status').innerHTML =
-      '<span class="warn">Preflight unavailable: ' + esc(error.message) + '</span>';
+  }catch(error){
+    document.querySelector('#action-status').innerHTML=
+      '<span class="warn">Preflight unavailable: '+esc(error.message)+'</span>';
   }
 }
 
-function renderSnapshot(snapshot) {
-  const context = snapshot.context || [];
-  document.querySelector('#status').textContent =
-    'Preparation surface · authority ' + (snapshot.preflight?.v3Authority || 'UNKNOWN') +
-    ' · source ' + (snapshot.preflight?.sourceState || 'UNKNOWN');
+function renderSnapshot(snapshot){
+  const context=snapshot.context||[];
+  document.querySelector('#status').textContent=
+    'Preparation surface · authority '+(snapshot.preflight?.v3Authority||'UNKNOWN')+
+    ' · source '+(snapshot.preflight?.sourceState||'UNKNOWN');
 
-  document.querySelector('#context').innerHTML = context.length
-    ? context.map(item =>
-        '<div class="context-chip' + (item.authoritative ? ' authoritative' : '') + '">' +
-          '<span>' + esc(item.label) + '</span>' +
-          (item.kind === 'EXACT_REVISION'
-            ? '<code>' + esc(String(item.value).slice(0,12)) + '</code>'
-            : '<strong>' + esc(item.value) + '</strong>') +
+  document.querySelector('#context').innerHTML=context.length
+    ? context.map(item=>
+        '<div class="context-chip'+(item.authoritative?' authoritative':'')+'">'+
+          '<span>'+esc(item.label)+'</span>'+
+          (item.kind==='EXACT_REVISION'
+            ? '<code>'+esc(String(item.value).slice(0,12))+'</code>'
+            : '<strong>'+esc(item.value)+'</strong>')+
         '</div>'
       ).join('')
     : '<div class="muted">No deterministic project context is available.</div>';
 
-  const preflight = snapshot.preflight;
-  document.querySelector('#preflight').innerHTML =
-    '<div class="preflight-row"><span>Selection authority</span><strong>' +
-      esc(preflight.selectionAuthority) + '</strong></div>' +
-    '<div class="preflight-row"><span>Execution owner</span><strong>' +
-      esc(preflight.executionOwner) + '</strong></div>' +
-    '<div class="preflight-row"><span>V3 authority</span><strong>' +
-      esc(preflight.v3Authority) + '</strong></div>' +
-    '<div class="preflight-row"><span>Exact revision</span><strong>' +
-      (preflight.exactRevisionBound ? 'BOUND' : 'MISSING') + '</strong></div>' +
-    '<div class="preflight-row"><span>Source state</span><strong>' +
-      esc(preflight.sourceState) + '</strong></div>' +
-    '<div class="preflight-row"><span>Output contract</span><strong>' +
-      esc(snapshot.mode.outputContract || 'None') + '</strong></div>';
+  const preflight=snapshot.preflight;
+  document.querySelector('#preflight').innerHTML=
+    '<div class="preflight-row"><span>Selection authority</span><strong>'+esc(preflight.selectionAuthority)+'</strong></div>'+
+    '<div class="preflight-row"><span>Execution owner</span><strong>'+esc(preflight.executionOwner)+'</strong></div>'+
+    '<div class="preflight-row"><span>V3 authority</span><strong>'+esc(preflight.v3Authority)+'</strong></div>'+
+    '<div class="preflight-row"><span>Exact revision</span><strong>'+(preflight.exactRevisionBound?'BOUND':'MISSING')+'</strong></div>'+
+    '<div class="preflight-row"><span>Source state</span><strong>'+esc(preflight.sourceState)+'</strong></div>';
 
-  document.querySelector('#action-status').innerHTML = preflight.canStartRequest
-    ? 'Preflight passed. This slice still does not start model or runtime work.'
-    : '<span class="warn">' + esc(preflight.blockedReason || 'Request is blocked.') + '</span>';
+  document.querySelector('#action-status').innerHTML=preflight.canStartRequest
+    ? 'Preflight passed. Preparing an intent still performs no model or runtime call.'
+    : '<span class="warn">'+esc(preflight.blockedReason||'Request is blocked.')+'</span>';
 }
 
-async function load() {
-  await selectMode('ASK');
+function contextValue(kind){
+  return snapshotState?.context?.find(item=>item.kind===kind)?.value||null;
 }
 
-document.querySelectorAll('button[data-mode]').forEach(button =>
-    button.setAttribute('aria-selected', String(button.dataset.mode === mode))
-  );
-  document.querySelector('#mode-title').textContent = view.title;
-  document.querySelector('#mode-note').textContent = view.purpose;
+function prepareIntent(){
+  const preview=document.querySelector('#intent-preview');
+  const request=document.querySelector('#prompt').value.trim();
+  const evidenceIds=document.querySelector('#evidence-ids').value
+    .split(',')
+    .map(value=>value.trim())
+    .filter(Boolean);
+  const preflight=snapshotState?.preflight;
 
-  const authority = homeState?.authority?.v3Authority || 'UNKNOWN';
-  const blocked = view.requiresEnabled && authority !== 'ENABLED';
-  document.querySelector('#action-status').innerHTML = blocked
-    ? '<span class="warn">Execute request unavailable while V3 authority is ' + esc(authority) + '.</span>'
-    : 'Mode selected. Starting work is not wired in this preparation slice.';
-}
-
-function renderContext(home) {
-  const project = home.project || {};
-  const sha = project.headSha ? String(project.headSha).slice(0,12) : 'unknown';
-  document.querySelector('#status').textContent =
-    'Read-only preparation surface · authority ' + (home.authority?.v3Authority || 'UNKNOWN');
-
-  document.querySelector('#context').innerHTML =
-    '<div class="context-row"><span>Repository</span><strong>' + esc(project.repository || 'Unknown') + '</strong></div>' +
-    '<div class="context-row"><span>Branch</span><strong>' + esc(project.branch || 'Unknown') + '</strong></div>' +
-    '<div class="context-row"><span>Exact revision</span><code>' + esc(sha) + '</code></div>' +
-    '<div class="context-row"><span>Attention</span><strong>' + esc(home.attention?.total || 0) + '</strong></div>';
-
-  document.querySelector('#preflight').innerHTML =
-    '<div>Selection authority: <strong>NONE</strong></div>' +
-    '<div>Execution owner: <strong>CONTROL_PLANE</strong></div>' +
-    '<div>V3 authority: <strong>' + esc(home.authority?.v3Authority || 'UNKNOWN') + '</strong></div>';
-}
-
-async function load() {
-  try {
-    const response = await fetch('/api/home', { cache:'no-store' });
-    const home = await response.json();
-    if (!response.ok) throw new Error(home.message || home.error || response.statusText);
-    homeState = home;
-    renderContext(home);
-    selectMode('ASK');
-  } catch (error) {
-    document.querySelector('#status').textContent = 'Project context unavailable: ' + error.message;
+  if(!request){preview.textContent='Request is required.';return;}
+  if(!snapshotState||!preflight){preview.textContent='Deterministic preflight is unavailable.';return;}
+  if(activeMode==='EXECUTE'&&!preflight.canStartRequest){
+    preview.textContent='EXECUTE blocked: '+(preflight.blockedReason||'authority requirement not met.');
+    return;
   }
+  if(activeMode==='REVIEW'&&!preflight.exactRevisionBound){
+    preview.textContent='REVIEW blocked: exact revision is unavailable.';
+    return;
+  }
+  if(activeMode==='REVIEW'&&evidenceIds.length===0){
+    preview.textContent='REVIEW blocked: at least one evidence ID is required.';
+    return;
+  }
+
+  const disposition={
+    ASK:'READ_ONLY_QUERY',
+    PLAN:'CANDIDATE_PLAN',
+    EXECUTE:'CONTROL_PLANE_REQUEST',
+    REVIEW:'INDEPENDENT_REVIEW_REQUEST'
+  }[activeMode];
+
+  preview.textContent=JSON.stringify({
+    schemaVersion:1,
+    mode:activeMode,
+    disposition,
+    request,
+    context:{
+      repository:contextValue('REPOSITORY'),
+      branch:contextValue('BRANCH'),
+      exactRevision:contextValue('EXACT_REVISION'),
+      selectedFiles:[],
+      evidenceIds,
+      blueprintId:null,
+      workflowId:contextValue('WORKFLOW')
+    },
+    selectionAuthority:'NONE',
+    executionOwner:'CONTROL_PLANE',
+    canInvokeModelOnPrepare:false,
+    canGrantAuthority:false,
+    mutationRequested:activeMode==='EXECUTE',
+    requiresEnabledV3Authority:activeMode==='EXECUTE'
+  },null,2);
 }
 
-document.querySelectorAll('button[data-mode]').forEach(button =>
-  button.addEventListener('click', () => selectMode(button.dataset.mode))
+document.querySelectorAll('button[data-mode]').forEach(button=>
+  button.addEventListener('click',()=>void selectMode(button.dataset.mode))
 );
-
-void load();
+document.querySelector('#prepare-intent').addEventListener('click',prepareIntent);
+void selectMode('ASK');
 </script>
 </body>
 </html>`;

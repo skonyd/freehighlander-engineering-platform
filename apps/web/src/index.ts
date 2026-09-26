@@ -121,6 +121,16 @@ export {
 export { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 
 export {
+  createFhKuikaWorkbenchIntentV1,
+  workbenchIntentPreparationCanGrantAuthority,
+  workbenchIntentPreparationCanInvokeModel,
+  type FhKuikaWorkbenchIntentContextV1,
+  type FhKuikaWorkbenchIntentDisposition,
+  type FhKuikaWorkbenchIntentMode,
+  type FhKuikaWorkbenchIntentV1,
+} from './kuika-workbench-intent.js';
+
+export {
   buildFhKuikaRunDetailV1,
   fhKuikaRunDetailCanExposeRawPayload,
   fhKuikaRunDetailCanGrantAuthority,

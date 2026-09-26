@@ -9,6 +9,7 @@ import {
   workbenchModeSelectionCanGrantAuthority,
   workbenchModeSelectionCanInvokeModel,
   workbenchSnapshotCanMutateRuntime,
+  FH_KUIKA_WORKBENCH_HTML,
 } from '../dist/index.js';
 
 const now = '2026-09-26T12:00:00.000Z';
@@ -143,7 +144,6 @@ test('Workbench snapshot exposes deterministic context chips and exact revision 
   assert.equal(snapshot.schemaVersion, 1);
   assert.equal(snapshot.projectionAuthority, 'NONE');
   assert.equal(snapshot.mode.mode, 'REVIEW');
-  assert.equal(snapshot.mode.outputContract, 'FH_KUIKA_REVIEW_REQUEST_V1');
   assert.equal(snapshot.preflight.canStartRequest, true);
   assert.equal(snapshot.preflight.exactRevisionBound, true);
   assert.equal(snapshot.preflight.sourceState, 'CURRENT');
@@ -157,14 +157,10 @@ test('Workbench snapshot exposes deterministic context chips and exact revision 
   assert.equal(revision?.removable, false);
 });
 
-test('Workbench preflight blocks Execute in SHADOW_ONLY and REVIEW without required binding', () => {
+test('Workbench preflight blocks Execute in SHADOW_ONLY and review without exact revision', () => {
   const execute = buildFhKuikaWorkbenchSnapshotV1(home(), 'EXECUTE');
   assert.equal(execute.preflight.canStartRequest, false);
   assert.match(execute.preflight.blockedReason, /SHADOW_ONLY/);
-
-  const noEvidence = buildFhKuikaWorkbenchSnapshotV1(home(), 'REVIEW');
-  assert.equal(noEvidence.preflight.canStartRequest, false);
-  assert.match(noEvidence.preflight.blockedReason, /evidence reference/i);
 
   const withoutRevision = home({
     project: {
@@ -192,4 +188,14 @@ test('Workbench preflight preserves partial source state without inventing conte
   assert.equal(snapshot.preflight.sourceState, 'PARTIAL');
   assert.deepEqual(snapshot.preflight.staleSources, ['provider-state']);
   assert.equal(snapshot.preflight.canStartRequest, true);
+});
+
+test('Workbench UI has one clean snapshot-driven intent preparation flow', () => {
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /id="prepare-intent"/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /id="evidence-ids"/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /\/api\/modules\/fh-kuika\/workbench\?mode=/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /Prepared intent preview · no model call/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /REVIEW blocked: at least one evidence ID is required/);
+  assert.match(FH_KUIKA_WORKBENCH_HTML, /EXECUTE blocked:/);
+  assert.doesNotMatch(FH_KUIKA_WORKBENCH_HTML, /renderContext\(home\)/);
 });
