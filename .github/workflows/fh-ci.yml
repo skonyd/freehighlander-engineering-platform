@@ -32,17 +32,5 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Diagnostic FH-KUIKA knowledge stack formatting
-        run: |
-          npx prettier --write apps/web/src/kuika-knowledge-retriever.ts apps/web/test/kuika-knowledge-retriever.test.mjs apps/web/src/kuika-local-semantic-index.ts apps/web/test/kuika-local-semantic-index.test.mjs
-          echo '--- RETRIEVER ---'
-          cat apps/web/src/kuika-knowledge-retriever.ts
-          echo '--- RETRIEVER TEST ---'
-          cat apps/web/test/kuika-knowledge-retriever.test.mjs
-          echo '--- INDEX ---'
-          cat apps/web/src/kuika-local-semantic-index.ts
-          echo '--- INDEX TEST ---'
-          cat apps/web/test/kuika-local-semantic-index.test.mjs
-
       - name: Verify
         run: npm run verify
