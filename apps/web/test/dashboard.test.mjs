@@ -588,7 +588,7 @@ test('Core Home projects current work and only unresolved human approvals', asyn
       'Approve the exact revision before continuing.',
     );
     assert.ok(!home.sourceFreshness.staleSources.includes('current-work'));
-    assert.ok(home.sourceFreshness.staleSources.includes('runtime-attention'));
+    assert.ok(!home.sourceFreshness.staleSources.includes('runtime-attention'));
 
     insertHumanEvent(data.file, {
       createRun: false,
