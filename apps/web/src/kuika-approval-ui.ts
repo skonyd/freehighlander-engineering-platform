@@ -19,19 +19,23 @@ export const FH_KUIKA_APPROVALS_HTML = String.raw`<!doctype html>
     .pill { display:inline-flex; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; }
     .warn { color:var(--warn); }
     code { word-break:break-all; }
+    a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    .skip-link { position:absolute; left:-9999px; top:8px; z-index:10; background:var(--panel); color:var(--accent); padding:8px 10px; border-radius:8px; }
+    .skip-link:focus { left:8px; }
     @media (max-width:760px){ .grid{grid-template-columns:1fr;} header{flex-direction:column;} }
   </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to approvals</a>
 <header>
   <div>
     <div class="muted">FH-KUIKA · Approval Inbox</div>
     <h1>Human approvals</h1>
-    <div id="status" class="muted" role="status">Loading deterministic approval state…</div>
+    <div id="status" class="muted" role="status" aria-live="polite">Loading deterministic approval state…</div>
   </div>
   <div><a href="/modules/fh-kuika/operate">← Operate</a></div>
 </header>
-<main>
+<main id="main-content" tabindex="-1">
   <section id="counts" class="grid"></section>
   <section class="card" style="margin-top:14px">
     <h2>Pending</h2>

@@ -63,9 +63,12 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
       padding:12px; white-space:pre-wrap; word-break:break-word; min-height:90px;
     }
     @media (max-width:820px) { .layout { grid-template-columns:1fr; } header { flex-direction:column; } }
+    .skip-link { position:absolute; left:-9999px; top:8px; z-index:10; background:var(--panel); color:var(--accent); padding:8px 10px; border-radius:8px; }
+    .skip-link:focus { left:8px; }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to workbench</a>
   <header>
     <div>
       <div class="eyebrow">FH-KUIKA · Workbench</div>
@@ -75,7 +78,7 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
     <a href="/modules/fh-kuika">← FH-KUIKA Overview</a>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <section class="layout">
       <div class="card">
         <div class="modes" role="tablist" aria-label="Workbench mode">
@@ -125,6 +128,7 @@ const modeViews={
   EXECUTE:{title:'Execute',purpose:'Request a bounded writer workflow through normal control-plane policy.'},
   REVIEW:{title:'Review',purpose:'Request independent review bound to an exact revision and evidence set.'}
 };
+const MODE_KEY='fh-kuika-workbench-mode-v1';
 let activeMode='ASK';
 let snapshotState=null;
 
@@ -142,6 +146,7 @@ async function api(path){
 
 async function selectMode(mode){
   activeMode=mode;
+  try { localStorage.setItem(MODE_KEY, mode); } catch {}
   const view=modeViews[mode];
   document.querySelectorAll('button[data-mode]').forEach(button=>
     button.setAttribute('aria-selected',String(button.dataset.mode===mode))
@@ -253,7 +258,12 @@ document.querySelectorAll('button[data-mode]').forEach(button=>
   button.addEventListener('click',()=>void selectMode(button.dataset.mode))
 );
 document.querySelector('#prepare-intent').addEventListener('click',prepareIntent);
-void selectMode('ASK');
+let initialMode='ASK';
+try {
+  const savedMode=localStorage.getItem(MODE_KEY);
+  if(['ASK','PLAN','EXECUTE','REVIEW'].includes(savedMode)) initialMode=savedMode;
+} catch {}
+void selectMode(initialMode);
 </script>
 </body>
 </html>`;

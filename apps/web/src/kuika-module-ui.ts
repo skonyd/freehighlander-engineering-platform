@@ -45,6 +45,9 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
     .good { color: var(--good); }
     .warn { color: var(--warn); }
     .footer-note { margin-top: 22px; color: var(--muted); font-size: 12px; }
+    .skip-link { position:absolute; left:-9999px; top:8px; z-index:10; background:var(--panel); color:var(--accent); padding:8px 10px; border-radius:8px; }
+    .skip-link:focus { left:8px; }
+    a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
     @media (max-width: 850px) {
       .grid { grid-template-columns: 1fr 1fr; }
       .overview { grid-template-columns: 1fr; }
@@ -57,6 +60,7 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to module content</a>
   <header>
     <div>
       <div class="eyebrow">FreeHighlander · Modules</div>
@@ -70,7 +74,7 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
     </div>
   </header>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <section class="overview">
       <div class="card">
         <h2>Overview</h2>
