@@ -500,10 +500,7 @@ function validateModelCatalogPayload(payload: ModelCatalogEventPayload): void {
     }
     const seen = new Set<string>();
     for (const bindingId of payload.fallbackBindingIds) {
-      if (
-        typeof bindingId !== 'string' ||
-        !/^[A-Za-z0-9][A-Za-z0-9._:-]{1,127}$/.test(bindingId)
-      ) {
+      if (typeof bindingId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{1,127}$/.test(bindingId)) {
         throw new Error('model catalog telemetry fallbackBindingIds contain an invalid identifier');
       }
       if (seen.has(bindingId)) {
