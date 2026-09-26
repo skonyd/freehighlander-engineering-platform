@@ -1151,6 +1151,10 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(homeHtml, /Active models/);
     assert.match(homeHtml, /Token Economy/);
     assert.match(homeHtml, /id="economy"/);
+    assert.match(homeHtml, /Continuity/);
+    assert.match(homeHtml, /id="continuity"/);
+    assert.match(homeHtml, /Security/);
+    assert.match(homeHtml, /id="security-findings"/);
     assert.match(homeHtml, /role-bindings/);
     assert.match(homeHtml, /\/api\/home/);
     assert.equal(home.headers.get('x-freehighlander-mode'), 'read-only');
