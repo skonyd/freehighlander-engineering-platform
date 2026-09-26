@@ -1,3 +1,5 @@
+export { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
+
 export {
   createFhKuikaWorkflowDraftV1,
   parseFhKuikaWorkflowDraftV1,
