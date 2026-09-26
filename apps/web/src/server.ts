@@ -3,6 +3,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
+import { FH_KUIKA_BLUEPRINTS_HTML } from './kuika-blueprint-ui.js';
+import {
+  getFhKuikaCuratedBlueprintV1,
+  getFhKuikaCuratedBlueprintsV1,
+} from './kuika-blueprint-catalog.js';
+import {
+  buildFhKuikaBlueprintCatalogViewV1,
+  buildFhKuikaBlueprintDetailViewV1,
+} from './kuika-blueprint-view.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
@@ -123,6 +132,11 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/modules/fh-kuika/build/blueprints') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_BLUEPRINTS_HTML);
+      return;
+    }
+
     if (url.pathname === '/modules/fh-kuika/integrate') {
       html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('INTEGRATE'));
       return;
@@ -176,6 +190,25 @@ async function handleRequest(
 
     if (url.pathname === '/api/models') {
       json(response, 200, { models: readModel.modelAggregates(readLimit(url, 100)) });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/blueprints') {
+      json(response, 200, buildFhKuikaBlueprintCatalogViewV1(getFhKuikaCuratedBlueprintsV1()));
+      return;
+    }
+
+    const blueprintRoute = parseFhKuikaBlueprintRoute(url.pathname);
+    if (blueprintRoute) {
+      const blueprint = getFhKuikaCuratedBlueprintV1(blueprintRoute.blueprintId);
+      if (!blueprint) {
+        json(response, 404, {
+          error: 'blueprint_not_found',
+          blueprintId: blueprintRoute.blueprintId,
+        });
+        return;
+      }
+      json(response, 200, buildFhKuikaBlueprintDetailViewV1(blueprint));
       return;
     }
 
@@ -273,6 +306,12 @@ async function handleRequest(
     const message = error instanceof Error ? error.message : 'unknown error';
     json(response, 500, { error: 'dashboard_error', message });
   }
+}
+
+function parseFhKuikaBlueprintRoute(pathname: string): { readonly blueprintId: string } | null {
+  const match = /^\/api\/modules\/fh-kuika\/blueprints\/([^/]+)$/.exec(pathname);
+  if (!match?.[1]) return null;
+  return { blueprintId: decodeURIComponent(match[1]) };
 }
 
 function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {
