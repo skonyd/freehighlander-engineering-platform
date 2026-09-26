@@ -1,7 +1,4 @@
-import {
-  createFhKuikaRoutineDraftV1,
-  type FhKuikaRoutineDraftV1,
-} from './kuika-routines.js';
+import { createFhKuikaRoutineDraftV1, type FhKuikaRoutineDraftV1 } from './kuika-routines.js';
 
 const ROUTINES = Object.freeze([
   createFhKuikaRoutineDraftV1({
