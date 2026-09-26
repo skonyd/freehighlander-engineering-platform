@@ -41,9 +41,7 @@ export function renderFhKuikaBlueprintDetailHtml(id: string): string | null {
   const gates = blueprint.authoritySensitiveNodes
     .map((item) => '<li><code>' + esc(item) + '</code></li>')
     .join('');
-  const rules = blueprint.validationRules
-    .map((item) => '<li>' + esc(item) + '</li>')
-    .join('');
+  const rules = blueprint.validationRules.map((item) => '<li>' + esc(item) + '</li>').join('');
   const fixtures = blueprint.simulationFixtures
     .map(
       (fixture) =>
