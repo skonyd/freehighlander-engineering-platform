@@ -97,6 +97,7 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
 
         <div class="action">
           <span id="action-status" class="muted">Mode selection performs no model call.</span>
+          <span class="pill">NO MODEL CALL ON SELECT</span>
           <button id="prepare-intent" type="button">Prepare intent</button>
         </div>
 
