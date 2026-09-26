@@ -65,11 +65,18 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
           <div id="draft-status" class="muted">Draft has 0 nodes.</div>
         </div>
         <div class="toolbar">
+          <button type="button" id="validate">Validate</button>
+          <button type="button" id="simulate">Simulate</button>
+          <button type="button" id="review-diff">Review diff</button>
           <button type="button" id="reset">Reset</button>
           <span class="pill">AUTHORITY NONE</span>
         </div>
       </div>
       <div id="nodes" class="node-list"><div class="empty">Choose a node type from the palette.</div></div>
+      <div>
+        <h2>Validation / Simulation</h2>
+        <pre id="validation-output" class="boundary">No validation performed yet.</pre>
+      </div>
     </section>
 
     <aside class="card">
@@ -86,6 +93,40 @@ const kinds=['MODEL','COMMAND','GATE','CONDITION','PARALLEL','AGGREGATE','DEBATE
 let nodes=[];
 let selectedId=null;
 const esc=value=>String(value??'—').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+async function api(path){
+  const response=await fetch(path,{cache:'no-store'});
+  const body=await response.json();
+  if(!response.ok) throw new Error(body.message||body.error||response.statusText);
+  return body;
+}
+
+function buildDefinition(){
+  return {
+    id:'workflow-studio-draft',
+    version:'1.0.0',
+    nodes:nodes.map(node=>({...node})),
+    edges:nodes.slice(1).map((node,index)=>({from:nodes[index].id,to:node.id}))
+  };
+}
+
+async function inspectDraft(mode){
+  const output=document.querySelector('#validation-output');
+  const labels={
+    validate:'Validating canonical draft…',
+    simulate:'Simulating deterministic draft…',
+    diff:'Building non-authoritative version diff…'
+  };
+  output.textContent=labels[mode];
+  try{
+    const definition=encodeURIComponent(JSON.stringify(buildDefinition()));
+    const suffix=mode==='simulate'?'simulate':mode==='diff'?'diff':'validate';
+    const result=await api('/api/modules/fh-kuika/workflows/'+suffix+'?definition='+definition);
+    output.textContent=JSON.stringify(result,null,2);
+  }catch(error){
+    output.textContent='Inspection failed: '+error.message;
+  }
+}
 
 function nextId(kind){
   const prefix=kind.toLowerCase().replaceAll('_','-');
@@ -142,7 +183,15 @@ document.querySelector('#palette').innerHTML=kinds.map(kind=>
 document.querySelectorAll('[data-kind]').forEach(button=>
   button.addEventListener('click',()=>addNode(button.dataset.kind))
 );
-document.querySelector('#reset').addEventListener('click',()=>{nodes=[];selectedId=null;render();});
+document.querySelector('#validate').addEventListener('click',()=>void inspectDraft('validate'));
+document.querySelector('#simulate').addEventListener('click',()=>void inspectDraft('simulate'));
+document.querySelector('#review-diff').addEventListener('click',()=>void inspectDraft('diff'));
+document.querySelector('#reset').addEventListener('click',()=>{
+  nodes=[];
+  selectedId=null;
+  document.querySelector('#validation-output').textContent='No validation performed yet.';
+  render();
+});
 render();
 </script>
 </body>

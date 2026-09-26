@@ -1,4 +1,20 @@
 export {
+  buildFhKuikaWorkflowVersionDiffV1,
+  workflowVersionDiffCanGrantAuthority,
+  workflowVersionDiffCanPublish,
+  type FhKuikaWorkflowNodeChangeV1,
+  type FhKuikaWorkflowVersionDiffV1,
+} from './kuika-workflow-diff.js';
+
+export {
+  simulateFhKuikaWorkflowDraftV1,
+  workflowStudioSimulationCanExecute,
+  workflowStudioSimulationCanGrantAuthority,
+  type FhKuikaWorkflowSimulationStepV1,
+  type FhKuikaWorkflowSimulationV1,
+} from './kuika-workflow-simulation.js';
+
+export {
   buildFhKuikaConnectorInstallReviewV1,
   connectorInstallReviewCanGrantAuthority,
   connectorInstallReviewCanInstallDirectly,
