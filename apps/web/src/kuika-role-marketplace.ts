@@ -29,6 +29,18 @@ export interface FhKuikaRolePackageManifestV1 {
   readonly installAuthority: 'NONE';
 }
 
+export interface FhKuikaRoleVersionDiffV1 {
+  readonly roleId: string;
+  readonly fromVersion: string;
+  readonly toVersion: string;
+  readonly changedFields: readonly string[];
+  readonly breaking: boolean;
+  readonly rollbackRef: string;
+  readonly authority: 'NONE';
+  readonly updateAuthorized: false;
+  readonly rollbackAuthorized: false;
+}
+
 export interface FhKuikaSolutionPackV1 {
   readonly schemaVersion: 1;
   readonly id: string;
@@ -240,6 +252,61 @@ export function buildFhKuikaSolutionPackInstallPlanV1(
     installAuthority: 'NONE',
     activationAuthorized: false,
   };
+}
+
+export function diffFhKuikaMarketplaceRoleVersionsV1(
+  before: FhKuikaRolePackageManifestV1,
+  after: FhKuikaRolePackageManifestV1,
+): FhKuikaRoleVersionDiffV1 {
+  if (before.id !== after.id) throw new Error('role version diff requires the same role id');
+
+  const changedFields: string[] = [];
+  const compare = (field: string, left: unknown, right: unknown) => {
+    if (stableJson(left) !== stableJson(right)) changedFields.push(field);
+  };
+
+  compare('purpose', before.purpose, after.purpose);
+  compare('authority', before.authority, after.authority);
+  compare('allowedRiskTiers', before.allowedRiskTiers, after.allowedRiskTiers);
+  compare('allowedActions', before.allowedActions, after.allowedActions);
+  compare('forbiddenActions', before.forbiddenActions, after.forbiddenActions);
+  compare('evidencePolicy', before.evidencePolicy, after.evidencePolicy);
+  compare('sandboxPolicy', before.sandboxPolicy, after.sandboxPolicy);
+  compare(
+    'independenceGroupRequired',
+    before.independenceGroupRequired,
+    after.independenceGroupRequired,
+  );
+
+  const breakingFields = new Set([
+    'authority',
+    'allowedRiskTiers',
+    'allowedActions',
+    'forbiddenActions',
+    'evidencePolicy',
+    'sandboxPolicy',
+    'independenceGroupRequired',
+  ]);
+
+  return {
+    roleId: before.id,
+    fromVersion: before.version,
+    toVersion: after.version,
+    changedFields: changedFields.sort(),
+    breaking: changedFields.some((field) => breakingFields.has(field)),
+    rollbackRef: before.id + '@' + before.version,
+    authority: 'NONE',
+    updateAuthorized: false,
+    rollbackAuthorized: false,
+  };
+}
+
+export function roleVersionDiffCanUpdate(): false {
+  return false;
+}
+
+export function roleVersionDiffCanRollback(): false {
+  return false;
 }
 
 export function roleMarketplaceCanInstallDirectly(): false {
