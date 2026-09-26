@@ -55,6 +55,8 @@ FreeHighlander
 
 The `FH-KUIKA` section is a distinct collapsible top-level module group, not a set of mixed core menu entries.
 
+The primary/default UX remains the existing AI work flow. Optional modules must use progressive disclosure and must not make the normal project → work → run path visually dependent on module-specific concepts.
+
 ## Optional productization module
 
 Kuika-inspired Studio/productization UX is intentionally isolated from this core control-plane contract.
