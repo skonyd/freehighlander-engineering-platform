@@ -121,3 +121,43 @@ test('connector registry rejects duplicate connector ids', () => {
     /connector ids must be unique/,
   );
 });
+
+
+test('untrusted connectors cannot request unrestricted filesystem or network access', () => {
+  assert.throws(
+    () =>
+      connector({
+        id: 'external-filesystem',
+        trustLevel: 'EXTERNAL_UNTRUSTED',
+        protocol: 'MCP_2026_07_28',
+        enabled: false,
+        filesystemScopes: ['*'],
+        networkDestinations: [],
+      }),
+    /cannot request secrets or unrestricted filesystem\/network/,
+  );
+
+  assert.throws(
+    () =>
+      connector({
+        id: 'external-network',
+        trustLevel: 'EXTERNAL_UNTRUSTED',
+        protocol: 'MCP_2026_07_28',
+        enabled: false,
+        filesystemScopes: [],
+        networkDestinations: ['*'],
+      }),
+    /cannot request secrets or unrestricted filesystem\/network/,
+  );
+});
+
+test('reviewed connectors require human install and version pinning', () => {
+  const reviewed = connector({
+    id: 'reviewed',
+    trustLevel: 'REVIEWED_PINNED',
+    enabled: false,
+  });
+
+  assert.equal(reviewed.humanInstallRequired, true);
+  assert.equal(reviewed.versionPinRequired, true);
+});
