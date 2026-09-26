@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { DASHBOARD_HTML } from './ui.js';
+import { buildCoreHomeSnapshot } from './home-read-model.js';
 import { buildManagementSnapshot } from './management.js';
 import { DashboardReadModel, MissingDashboardDatabaseError } from './read-model.js';
 
@@ -83,6 +84,11 @@ async function handleRequest(
         databasePath,
         ...health,
       });
+      return;
+    }
+
+    if (url.pathname === '/api/home') {
+      json(response, 200, buildCoreHomeSnapshot(readModel));
       return;
     }
 
