@@ -1161,6 +1161,12 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(homeHtml, /Security/);
     assert.match(homeHtml, /id="security-findings"/);
     assert.match(homeHtml, /role-bindings/);
+    assert.match(homeHtml, /<details class="advanced-details">/);
+    assert.match(homeHtml, /<summary>Engineering details<\/summary>/);
+    assert.match(homeHtml, /aria-live="polite"/);
+    assert.match(homeHtml, /tabindex="0"/);
+    assert.match(homeHtml, /visibilitychange/);
+    assert.match(homeHtml, /document\.hidden \? 60000 : 15000/);
     assert.match(homeHtml, /\/api\/home/);
     assert.equal(home.headers.get('x-freehighlander-mode'), 'read-only');
 
