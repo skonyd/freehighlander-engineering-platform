@@ -79,12 +79,18 @@ export {
 } from './kuika-blueprint.js';
 
 export {
+  buildFhKuikaWorkbenchSnapshotV1,
   getFhKuikaWorkbenchModeView,
   listFhKuikaWorkbenchModes,
   workbenchModeSelectionCanGrantAuthority,
   workbenchModeSelectionCanInvokeModel,
+  workbenchSnapshotCanMutateRuntime,
+  type FhKuikaWorkbenchContextChipV1,
+  type FhKuikaWorkbenchContextKind,
   type FhKuikaWorkbenchMode,
   type FhKuikaWorkbenchModeView,
+  type FhKuikaWorkbenchPreflightV1,
+  type FhKuikaWorkbenchSnapshotV1,
 } from './kuika-workbench.js';
 
 export { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';

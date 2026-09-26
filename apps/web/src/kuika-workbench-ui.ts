@@ -37,10 +37,17 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
       border:1px solid var(--line); border-radius:9px; padding:12px; font:inherit;
     }
     .mode-note { margin:10px 0 14px; color:var(--muted); min-height:42px; }
-    .context-row { border-top:1px solid var(--line); padding:9px 0; }
-    .context-row:first-child { border-top:0; padding-top:0; }
-    .context-row span { display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
-    .context-row strong, .context-row code { display:block; margin-top:3px; overflow-wrap:anywhere; }
+    .context-chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .context-chip {
+      display:inline-flex; flex-direction:column; gap:2px; max-width:100%;
+      border:1px solid var(--line); background:#0d131b; border-radius:9px; padding:7px 9px;
+    }
+    .context-chip span { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+    .context-chip strong, .context-chip code { overflow-wrap:anywhere; }
+    .context-chip.authoritative { border-color:#315d74; }
+    .preflight-row { display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-top:1px solid var(--line); }
+    .preflight-row:first-child { border-top:0; }
+    .preflight-row span { color:var(--muted); }
     .preflight { margin-top:14px; border-top:1px solid var(--line); padding-top:12px; }
     .pill { display:inline-flex; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; }
     .warn { color:var(--warn); }
@@ -84,8 +91,8 @@ export const FH_KUIKA_WORKBENCH_HTML = String.raw`<!doctype html>
 
       <aside class="card">
         <h2>Context</h2>
-        <div id="context">
-          <div class="context-row"><span>Repository</span><strong>Loading…</strong></div>
+        <div id="context" class="context-chips">
+          <div class="context-chip"><span>Context</span><strong>Loading…</strong></div>
         </div>
         <div class="preflight">
           <h2>Preflight</h2>
@@ -123,16 +130,84 @@ const modeViews = {
   }
 };
 
-let homeState = null;
+let activeMode = 'ASK';
+let snapshotState = null;
 
 const esc = value => String(value ?? '—').replace(
   /[&<>"']/g,
   ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])
 );
 
-function selectMode(mode) {
+async function api(path) {
+  const response = await fetch(path, { cache:'no-store' });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.message || body.error || response.statusText);
+  return body;
+}
+
+async function selectMode(mode) {
+  activeMode = mode;
   const view = modeViews[mode];
   document.querySelectorAll('button[data-mode]').forEach(button =>
+    button.setAttribute('aria-selected', String(button.dataset.mode === mode))
+  );
+  document.querySelector('#mode-title').textContent = view.title;
+  document.querySelector('#mode-note').textContent = view.purpose;
+  document.querySelector('#action-status').textContent = 'Checking deterministic preflight…';
+
+  try {
+    const snapshot = await api(
+      '/api/modules/fh-kuika/workbench?mode=' + encodeURIComponent(mode)
+    );
+    if (activeMode !== mode) return;
+    snapshotState = snapshot;
+    renderSnapshot(snapshot);
+  } catch (error) {
+    document.querySelector('#action-status').innerHTML =
+      '<span class="warn">Preflight unavailable: ' + esc(error.message) + '</span>';
+  }
+}
+
+function renderSnapshot(snapshot) {
+  const context = snapshot.context || [];
+  document.querySelector('#status').textContent =
+    'Preparation surface · authority ' + (snapshot.preflight?.v3Authority || 'UNKNOWN') +
+    ' · source ' + (snapshot.preflight?.sourceState || 'UNKNOWN');
+
+  document.querySelector('#context').innerHTML = context.length
+    ? context.map(item =>
+        '<div class="context-chip' + (item.authoritative ? ' authoritative' : '') + '">' +
+          '<span>' + esc(item.label) + '</span>' +
+          (item.kind === 'EXACT_REVISION'
+            ? '<code>' + esc(String(item.value).slice(0,12)) + '</code>'
+            : '<strong>' + esc(item.value) + '</strong>') +
+        '</div>'
+      ).join('')
+    : '<div class="muted">No deterministic project context is available.</div>';
+
+  const preflight = snapshot.preflight;
+  document.querySelector('#preflight').innerHTML =
+    '<div class="preflight-row"><span>Selection authority</span><strong>' +
+      esc(preflight.selectionAuthority) + '</strong></div>' +
+    '<div class="preflight-row"><span>Execution owner</span><strong>' +
+      esc(preflight.executionOwner) + '</strong></div>' +
+    '<div class="preflight-row"><span>V3 authority</span><strong>' +
+      esc(preflight.v3Authority) + '</strong></div>' +
+    '<div class="preflight-row"><span>Exact revision</span><strong>' +
+      (preflight.exactRevisionBound ? 'BOUND' : 'MISSING') + '</strong></div>' +
+    '<div class="preflight-row"><span>Source state</span><strong>' +
+      esc(preflight.sourceState) + '</strong></div>';
+
+  document.querySelector('#action-status').innerHTML = preflight.canStartRequest
+    ? 'Preflight passed. This slice still does not start model or runtime work.'
+    : '<span class="warn">' + esc(preflight.blockedReason || 'Request is blocked.') + '</span>';
+}
+
+async function load() {
+  await selectMode('ASK');
+}
+
+document.querySelectorAll('button[data-mode]').forEach(button =>
     button.setAttribute('aria-selected', String(button.dataset.mode === mode))
   );
   document.querySelector('#mode-title').textContent = view.title;
