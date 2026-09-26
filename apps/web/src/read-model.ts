@@ -742,7 +742,6 @@ function safeProjectionIdentifier(value: unknown): string | null {
   return normalized;
 }
 
-
 interface ProviderProjection {
   readonly state: CoreHomeSystemState;
   readonly updatedAt: string | null;
@@ -870,8 +869,7 @@ function queryProviderBindingProjection(db: DatabaseSync): ProviderProjection {
       const activeBindingId = toStringOrNull(latestCall?.binding_id);
       const activeModel = toStringOrNull(latestCall?.model);
       const activeProviderId = toStringOrNull(latestCall?.provider);
-      const preferredProviderState =
-        providers.get(publication.preferredProviderId ?? '') ?? null;
+      const preferredProviderState = providers.get(publication.preferredProviderId ?? '') ?? null;
       const activeProviderState = providers.get(activeProviderId ?? '') ?? null;
       const activeObserved = latestCall !== undefined;
       const fallbackActive =
@@ -978,9 +976,7 @@ function safeNonNegativeNumber(value: unknown): number | null {
   return value;
 }
 
-function safeCircuitState(
-  value: unknown,
-): 'CLOSED' | 'OPEN' | 'HALF_OPEN' | null {
+function safeCircuitState(value: unknown): 'CLOSED' | 'OPEN' | 'HALF_OPEN' | null {
   if (value === 'CLOSED' || value === 'OPEN' || value === 'HALF_OPEN') return value;
   return null;
 }
