@@ -122,10 +122,7 @@ test('blueprint validation rejects authority/policy bypass parameters and invali
 });
 
 test('blueprint validation requires semantic versioning, unique bounded fields and typed defaults', () => {
-  assert.throws(
-    () => validateFhKuikaBlueprintDraftV1(draft({ version: '1.0' })),
-    /semantic/,
-  );
+  assert.throws(() => validateFhKuikaBlueprintDraftV1(draft({ version: '1.0' })), /semantic/);
 
   assert.throws(
     () =>
