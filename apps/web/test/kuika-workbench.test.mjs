@@ -137,7 +137,9 @@ test('only Execute mode is mutation-capable and requires enabled V3 authority', 
 });
 
 test('Workbench snapshot exposes deterministic context chips and exact revision binding', () => {
-  const snapshot = buildFhKuikaWorkbenchSnapshotV1(home(), 'REVIEW');
+  const snapshot = buildFhKuikaWorkbenchSnapshotV1(home(), 'REVIEW', {
+    evidenceIds: ['evidence-1'],
+  });
 
   assert.equal(snapshot.schemaVersion, 1);
   assert.equal(snapshot.projectionAuthority, 'NONE');
@@ -148,7 +150,7 @@ test('Workbench snapshot exposes deterministic context chips and exact revision 
 
   assert.deepEqual(
     snapshot.context.map((item) => item.kind),
-    ['REPOSITORY', 'BRANCH', 'EXACT_REVISION', 'WORKFLOW', 'RUN'],
+    ['REPOSITORY', 'BRANCH', 'EXACT_REVISION', 'WORKFLOW', 'RUN', 'EVIDENCE'],
   );
   const revision = snapshot.context.find((item) => item.kind === 'EXACT_REVISION');
   assert.equal(revision?.authoritative, true);
