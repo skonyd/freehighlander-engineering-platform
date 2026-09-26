@@ -232,10 +232,10 @@ export function getFhKuikaSolutionPackV1(
   id: string,
   version = '1.0.0',
 ): FhKuikaSolutionPackV1 | null {
-  const found = listFhKuikaSolutionPacksV1().find(
-    (item) => item.id === id && item.version === version,
-  );
-  return found ?? null;
+  for (const item of listFhKuikaSolutionPacksV1()) {
+    if (item.id === id && item.version === version) return item;
+  }
+  return null;
 }
 
 export function buildFhKuikaSolutionPackInstallPlanV1(
@@ -348,7 +348,7 @@ function role(
     allowedActions,
     forbiddenActions,
     evidencePolicy: 'exact-revision-evidence-v1',
-    sandboxPolicy: authority.includes('WRITER') ? 'writer-bounded-v1' : 'reviewer-readonly-v1',
+    sandboxPolicy: sandboxPolicyForAuthority(authority),
     independenceGroupRequired,
   } as const;
 }
@@ -404,17 +404,20 @@ function pack(
   });
 }
 
+function sandboxPolicyForAuthority(
+  authority: readonly FhKuikaMarketplaceAuthority[],
+): string {
+  return authority.includes('WRITER') ? 'writer-bounded-v1' : 'reviewer-readonly-v1';
+}
+
 function stableJson(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(stableJson).join(',') + ']';
   if (value && typeof value === 'object') {
-    return (
-      '{' +
-      Object.entries(value as Record<string, unknown>)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([key, child]) => JSON.stringify(key) + ':' + stableJson(child))
-        .join(',') +
-      '}'
-    );
+    const entries = Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, child]) => JSON.stringify(key) + ':' + stableJson(child))
+      .join(',');
+    return '{' + entries + '}';
   }
   return JSON.stringify(value);
 }
