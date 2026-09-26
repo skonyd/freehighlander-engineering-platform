@@ -23,6 +23,6 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Emit canonical Prettier diff
         run: |
-          npx prettier --write apps/web/src/kuika-workflow-draft.ts
-          git diff -- apps/web/src/kuika-workflow-draft.ts
+          npx prettier --write apps/web/src/kuika-workflow-draft.ts apps/web/test/kuika-workflow-draft.test.mjs
+          git diff -- apps/web/src/kuika-workflow-draft.ts apps/web/test/kuika-workflow-draft.test.mjs
           exit 1
