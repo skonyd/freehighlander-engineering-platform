@@ -417,9 +417,13 @@ async function handleRequest(
     if (url.pathname === '/api/modules/fh-kuika/knowledge/query') {
       const mode = (url.searchParams.get('mode') ?? 'HYBRID').toUpperCase();
       if (
-        !['EXACT_ENTITY', 'EXACT_REVISION', 'LINEAGE_TRAVERSAL', 'EVIDENCE_LOOKUP', 'HYBRID'].includes(
-          mode,
-        )
+        ![
+          'EXACT_ENTITY',
+          'EXACT_REVISION',
+          'LINEAGE_TRAVERSAL',
+          'EVIDENCE_LOOKUP',
+          'HYBRID',
+        ].includes(mode)
       ) {
         json(response, 400, { error: 'invalid_knowledge_query_mode', mode });
         return;
@@ -693,9 +697,7 @@ function readBoundedInteger(
   if (!raw) return defaultValue;
   const value = Number(raw);
   if (!Number.isInteger(value) || value < minimum || value > maximum) {
-    throw new Error(
-      parameter + ' must be an integer between ' + minimum + ' and ' + maximum,
-    );
+    throw new Error(parameter + ' must be an integer between ' + minimum + ' and ' + maximum);
   }
   return value;
 }
