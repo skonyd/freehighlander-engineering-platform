@@ -3,10 +3,15 @@ import test from 'node:test';
 
 import {
   FH_KUIKA_WORKFLOW_STUDIO_HTML,
+  buildFhKuikaWorkflowPublicationCandidateV1,
   buildFhKuikaWorkflowVersionDiffV1,
   createDashboardServer,
   simulateFhKuikaWorkflowDraftV1,
   workflowStudioSimulationCanExecute,
+  workflowPublicationCandidateCanExecute,
+  workflowPublicationCandidateCanGrantAuthority,
+  workflowPublicationCandidateCanPersist,
+  workflowPublicationCandidateCanPublishDirectly,
   workflowStudioSimulationCanGrantAuthority,
   workflowVersionDiffCanGrantAuthority,
   workflowVersionDiffCanPublish,
@@ -61,12 +66,13 @@ test('Workflow Studio simulation blocks invalid drafts instead of guessing execu
   assert.ok(result.validation.errors.some((error) => error.includes('maxIterations')));
 });
 
-test('Workflow Studio UI exposes validate/simulate but no publish or execute action', () => {
+test('Workflow Studio UI exposes publication preview but no authoritative publish or execute action', () => {
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="validate"/);
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="simulate"/);
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="review-diff"/);
+  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="publish-preview"/);
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /AUTHORITY NONE/);
-  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /no publish · no execution/i);
+  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /publication preview only/i);
   assert.doesNotMatch(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="publish"/);
   assert.doesNotMatch(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="execute"/);
 });
@@ -110,6 +116,16 @@ test('Workflow Studio HTTP route and canonical validation endpoints remain read-
     assert.equal(diff.authority, 'NONE');
     assert.equal(diff.publishAuthorized, false);
 
+    const publication = await (
+      await fetch(base + '/api/modules/fh-kuika/workflows/publish-preview?definition=' + encoded)
+    ).json();
+    assert.equal(publication.status, 'PUBLICATION_CANDIDATE');
+    assert.match(publication.workflowHash, /^[a-f0-9]{64}$/);
+    assert.equal(publication.authority, 'NONE');
+    assert.equal(publication.publishAuthorized, false);
+    assert.equal(publication.persistencePerformed, false);
+    assert.equal(publication.executionAuthorized, false);
+
     const denied = await fetch(base + '/api/modules/fh-kuika/workflows/validate', {
       method: 'POST',
     });
@@ -132,4 +148,52 @@ test('Workflow Studio version diff highlights authority-sensitive changes withou
   assert.ok(diff.nodeChanges.some((item) => item.nodeId === 'review' && item.authoritySensitive));
   assert.equal(workflowVersionDiffCanPublish(), false);
   assert.equal(workflowVersionDiffCanGrantAuthority(), false);
+});
+
+
+test('Workflow publication candidate is immutable and cannot grant publish or execution authority', () => {
+  const first = buildFhKuikaWorkflowPublicationCandidateV1(null, definition());
+  const second = buildFhKuikaWorkflowPublicationCandidateV1(null, definition());
+
+  assert.deepEqual(first, second);
+  assert.equal(first.status, 'PUBLICATION_CANDIDATE');
+  assert.match(first.workflowHash, /^[a-f0-9]{64}$/);
+  assert.equal(Object.isFrozen(first), true);
+  assert.equal(Object.isFrozen(first.canonicalDefinition), true);
+  assert.equal(first.versionDiff.authoritySensitiveChange, true);
+  assert.equal(workflowPublicationCandidateCanGrantAuthority(), false);
+  assert.equal(workflowPublicationCandidateCanPublishDirectly(), false);
+  assert.equal(workflowPublicationCandidateCanExecute(), false);
+  assert.equal(workflowPublicationCandidateCanPersist(), false);
+});
+
+test('Workflow publication candidate enforces identity and monotonic semantic versioning', () => {
+  const previous = definition();
+
+  assert.throws(
+    () =>
+      buildFhKuikaWorkflowPublicationCandidateV1(previous, {
+        ...definition(),
+        version: '1.0.0',
+      }),
+    /strictly newer semantic version/,
+  );
+
+  assert.throws(
+    () =>
+      buildFhKuikaWorkflowPublicationCandidateV1(previous, {
+        ...definition(),
+        id: 'different-workflow',
+        version: '1.0.1',
+      }),
+    /cannot change workflow id/,
+  );
+
+  const next = buildFhKuikaWorkflowPublicationCandidateV1(previous, {
+    ...definition(),
+    version: '1.1.0',
+  });
+  assert.equal(next.version, '1.1.0');
+  assert.equal(next.versionDiff.previousVersion, '1.0.0');
+  assert.equal(next.versionDiff.nextVersion, '1.1.0');
 });
