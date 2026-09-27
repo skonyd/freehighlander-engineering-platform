@@ -1,4 +1,15 @@
 export {
+  connectorCredentialConfigCanAcceptRawSecrets,
+  connectorCredentialConfigCanActivate,
+  connectorCredentialConfigCanGrantAuthority,
+  connectorCredentialConfigCanPersist,
+  connectorCredentialConfigCanResolveSecrets,
+  createFhKuikaConnectorCredentialConfigDraftV1,
+  type FhKuikaConnectorCredentialBindingV1,
+  type FhKuikaConnectorCredentialConfigDraftV1,
+} from './kuika-connector-credential-config.js';
+
+export {
   buildFhKuikaSolutionPackInstallPlanV1,
   diffFhKuikaMarketplaceRoleVersionsV1,
   getFhKuikaMarketplaceRoleV1,
