@@ -30,6 +30,7 @@ import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 import { validateFhKuikaWorkflowDraftDefinitionV1 } from './kuika-workflow-draft.js';
 import { simulateFhKuikaWorkflowDraftV1 } from './kuika-workflow-simulation.js';
 import { buildFhKuikaWorkflowVersionDiffV1 } from './kuika-workflow-diff.js';
+import { buildFhKuikaWorkflowPublicationCandidateV1 } from './kuika-workflow-publication.js';
 import { buildFhKuikaWorkflowReplayPreviewV1 } from './kuika-workflow-replay.js';
 import { buildFhKuikaWorkbenchSnapshotV1, type FhKuikaWorkbenchMode } from './kuika-workbench.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
@@ -406,6 +407,12 @@ async function handleRequest(
     if (url.pathname === '/api/modules/fh-kuika/workflows/diff') {
       const definition = readWorkflowDefinition(url);
       json(response, 200, buildFhKuikaWorkflowVersionDiffV1(null, definition));
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/workflows/publish-preview') {
+      const definition = readWorkflowDefinition(url);
+      json(response, 200, buildFhKuikaWorkflowPublicationCandidateV1(null, definition));
       return;
     }
 
