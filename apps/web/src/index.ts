@@ -1,4 +1,11 @@
 export {
+  createFhKuikaDashboardKnowledgeSourceV1,
+  dashboardKnowledgeSourceCanGrantAuthority,
+  dashboardKnowledgeSourceCanInventLineage,
+  dashboardKnowledgeSourceCanInvokeModel,
+} from './kuika-knowledge-dashboard-source.js';
+
+export {
   FH_KUIKA_KNOWLEDGE_EXPLORER_HTML,
   knowledgeExplorerPageCanGrantAuthority,
   knowledgeExplorerPageCanInvokeModel,
