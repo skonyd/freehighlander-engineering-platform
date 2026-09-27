@@ -68,6 +68,10 @@ packages/routines
 Any new package not already allowed by the frozen architecture requires normal architecture-contract evolution before introduction. Avoid a generic `packages/productization` dumping ground.
 
 
+## Pre-cutover completion boundary
+
+Authority-neutral FH-KUIKA productization work is considered pre-cutover complete through FH-KUIKA-09 when this roadmap marks its preparation slices complete. The remaining executable activation points stay owned by Core governance and must not be inferred from module readiness. FH-KUIKA-10 remains outside this boundary and requires an explicit architecture decision.
+
 ## Product principles
 
 1. **Authority is always visible.** Every screen that can lead to mutation shows the current authority, risk tier, policy and approval state.
@@ -479,7 +483,7 @@ Show before enablement:
 - **FH-KUIKA-05.3** connector install-review contract and permission diff. — COMPLETE
 - **FH-KUIKA-05.4** Connector Hub UI. — COMPLETE
 - **FH-KUIKA-05.5** credential-reference configuration using SecretHandle only. — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-05.6** activation/runtime invocation after authority prerequisites.
+- **FH-KUIKA-05.6** activation/runtime invocation after authority prerequisites. — BLOCKED BY FH-20
 
 ## Acceptance criteria
 
@@ -538,11 +542,11 @@ Role card:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-06.1** package manifest/bundle format.
-- **FH-KUIKA-06.2** signed/pinned catalog metadata and provenance.
-- **FH-KUIKA-06.3** Role Marketplace UI.
-- **FH-KUIKA-06.4** Solution Pack bundle/install planner.
-- **FH-KUIKA-06.5** update compatibility/diff and rollback-to-version planning.
+- **FH-KUIKA-06.1** package manifest/bundle format. — COMPLETE
+- **FH-KUIKA-06.2** pinned catalog metadata, SHA-256 digest and provenance. — COMPLETE
+- **FH-KUIKA-06.3** Role Marketplace UI. — COMPLETE
+- **FH-KUIKA-06.4** Solution Pack bundle/install planner. — COMPLETE
+- **FH-KUIKA-06.5** update compatibility/diff and rollback-to-version planning. — COMPLETE
 
 ---
 
@@ -586,12 +590,12 @@ Knowledge Explorer:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-07.1** query/retrieval contracts.
-- **FH-KUIKA-07.2** lineage-first hybrid retriever.
-- **FH-KUIKA-07.3** bounded local index/vector adapter.
-- **FH-KUIKA-07.4** Knowledge Explorer UI.
-- **FH-KUIKA-07.5** provenance-bearing answer package.
-- **FH-KUIKA-07.6** retrieval eval suite.
+- **FH-KUIKA-07.1** query/retrieval contracts. — COMPLETE
+- **FH-KUIKA-07.2** lineage-first hybrid retriever. — COMPLETE
+- **FH-KUIKA-07.3** bounded local index/vector adapter. — COMPLETE
+- **FH-KUIKA-07.4** Knowledge Explorer UI. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-07.5** provenance-bearing answer package. — COMPLETE
+- **FH-KUIKA-07.6** retrieval eval suite. — COMPLETE
 
 ## Acceptance criteria
 
@@ -697,11 +701,11 @@ Reason: preferred binding unavailable; next eligible binding satisfies policy.
 
 ## Proposed PR slices
 
-- **FH-KUIKA-09.1** deterministic constraint model. — COMPLETE
-- **FH-KUIKA-09.2** routing decision evidence contract. — COMPLETE
-- **FH-KUIKA-09.3** telemetry-derived cost/latency/availability features. — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-09.4** simulation and what-if UI. — COMPLETE
-- **FH-KUIKA-09.5** router integration with existing availability-only failover. — PRE-CUTOVER BRIDGE COMPLETE; runtime apply remains unauthorized
+- **FH-KUIKA-09.1** deterministic constraint model. — COMPLETE — COMPLETE
+- **FH-KUIKA-09.2** routing decision evidence contract. — COMPLETE — COMPLETE
+- **FH-KUIKA-09.3** telemetry-derived cost/latency/availability features. — COMPLETE PRE-CUTOVER — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-09.4** simulation and what-if UI. — COMPLETE — COMPLETE
+- **FH-KUIKA-09.5** availability-only failover integration contract/plan. — COMPLETE PRE-CUTOVER; runtime application remains Core-governed — PRE-CUTOVER BRIDGE COMPLETE; runtime apply remains unauthorized
 
 ---
 

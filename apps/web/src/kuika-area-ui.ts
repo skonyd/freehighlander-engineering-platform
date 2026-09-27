@@ -71,19 +71,17 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
     subtitle: 'Evidence, lineage and deterministic engineering discovery.',
     cards: [
       {
-        title: 'Engineering Graph',
-        detail: 'Trace requirements, changes, tests, releases and incidents.',
-        status: 'PREPARATION',
+        title: 'Knowledge Explorer',
+        detail:
+          'Lineage-first search, engineering graph relations and provenance in one compact surface.',
+        status: 'AVAILABLE',
+        href: '/modules/fh-kuika/knowledge/explorer',
       },
       {
         title: 'Evidence',
-        detail: 'Inspect exact-revision evidence already owned by FreeHighlander Core.',
+        detail:
+          'Exact-revision evidence remains owned by FreeHighlander Core and is linked by provenance.',
         status: 'AVAILABLE',
-      },
-      {
-        title: 'Search',
-        detail: 'Lineage-first retrieval with semantic discovery kept non-authoritative.',
-        status: 'PREPARATION',
       },
     ],
   },
