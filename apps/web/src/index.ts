@@ -1,4 +1,16 @@
 export {
+  blueprintTelemetryCanGrantAuthority,
+  blueprintTelemetryCanInvokeModel,
+  blueprintTelemetryCanModifyBlueprint,
+  buildFhKuikaBlueprintTelemetryV1,
+  collectFhKuikaBlueprintUsageObservationsV1,
+  type FhKuikaBlueprintOutcome,
+  type FhKuikaBlueprintTelemetryReadSource,
+  type FhKuikaBlueprintTelemetryV1,
+  type FhKuikaBlueprintUsageObservationV1,
+} from './kuika-blueprint-telemetry.js';
+
+export {
   buildFhKuikaSolutionPackInstallPlanV1,
   diffFhKuikaMarketplaceRoleVersionsV1,
   getFhKuikaMarketplaceRoleV1,

@@ -85,6 +85,12 @@ function renderCatalog(snapshot){
     '<button class="blueprint" data-id="'+esc(item.id)+'">'+
       '<div class="row"><strong>'+esc(item.id)+'</strong><span class="pill">'+esc(item.defaultRiskTier)+'</span></div>'+
       '<div class="meta">v'+esc(item.version)+' · '+esc(item.purpose)+'</div>'+
+      '<div class="meta">'+
+        (item.telemetry?.observedRuns
+          ? esc(item.telemetry.observedRuns)+' observed runs · '+
+            (item.telemetry.passRate===null?'no resolved outcome':Math.round(item.telemetry.passRate*100)+'% pass')
+          : 'No measured usage yet')+
+      '</div>'+
       '<div class="stages">'+item.lifecycleStages.map(stage=>'<span class="pill">'+esc(stage)+'</span>').join('')+'</div>'+
     '</button>'
   ).join('');
@@ -107,6 +113,13 @@ async function loadDetail(id){
         '<span>Evidence</span><span>'+esc(item.requiredEvidenceKinds.join(', '))+'</span>'+
         '<span>Independent review</span><strong>'+(item.independentReviewRequired?'Required':'No')+'</strong>'+
         '<span>Hash</span><code>'+esc(item.blueprintHash)+'</code>'+
+        '<span>Observed runs</span><strong>'+esc(item.telemetry?.observedRuns??0)+'</strong>'+
+        '<span>Measured state</span><strong>'+esc(item.telemetry?.dataState||'NO_DATA')+'</strong>'+
+        '<span>Pass rate</span><strong>'+
+          (item.telemetry?.passRate===null||item.telemetry?.passRate===undefined
+            ? 'Insufficient measured data'
+            : Math.round(item.telemetry.passRate*100)+'%')+
+        '</strong>'+
       '</div>'+
       '<div class="section"><strong>Lifecycle</strong><div class="stages">'+
         item.lifecycleStages.map(stage=>'<span class="pill">'+esc(stage)+'</span>').join('')+'</div></div>'+

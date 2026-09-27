@@ -16,6 +16,7 @@ import {
   buildFhKuikaBlueprintCatalogViewV1,
   buildFhKuikaBlueprintDetailViewV1,
 } from './kuika-blueprint-view.js';
+import { collectFhKuikaBlueprintUsageObservationsV1 } from './kuika-blueprint-telemetry.js';
 import { FH_KUIKA_MODULE_HTML } from './kuika-module-ui.js';
 import { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 import { FH_KUIKA_ROLE_MARKETPLACE_HTML } from './kuika-role-marketplace-ui.js';
@@ -244,7 +245,14 @@ async function handleRequest(
     }
 
     if (url.pathname === '/api/modules/fh-kuika/blueprints') {
-      json(response, 200, buildFhKuikaBlueprintCatalogViewV1(getFhKuikaCuratedBlueprintsV1()));
+      const observations = readModel.health().databaseExists
+        ? collectFhKuikaBlueprintUsageObservationsV1(readModel)
+        : [];
+      json(
+        response,
+        200,
+        buildFhKuikaBlueprintCatalogViewV1(getFhKuikaCuratedBlueprintsV1(), observations),
+      );
       return;
     }
 
@@ -267,7 +275,10 @@ async function handleRequest(
         return;
       }
 
-      json(response, 200, buildFhKuikaBlueprintDetailViewV1(blueprint));
+      const observations = readModel.health().databaseExists
+        ? collectFhKuikaBlueprintUsageObservationsV1(readModel)
+        : [];
+      json(response, 200, buildFhKuikaBlueprintDetailViewV1(blueprint, observations));
       return;
     }
 
