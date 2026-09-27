@@ -1,4 +1,12 @@
-import type { FhKuikaRoutineDispatchCandidateV1 } from './kuika-routine-dispatch.js';
+import {
+  adaptFhKuikaExternalRoutineEventV1,
+  prepareFhKuikaRoutineDispatchV1,
+  type FhKuikaRoutineDispatchCandidateV1,
+} from './kuika-routine-dispatch.js';
+import type {
+  FhKuikaRoutineDraftV1,
+  FhKuikaRoutineTriggerKind,
+} from './kuika-routines.js';
 
 export type FhKuikaRoutineTelemetryState =
   | 'READY_FOR_CONTROL_PLANE_REVIEW'
@@ -130,6 +138,51 @@ export function summarizeFhKuikaRoutineTelemetryV1(
   };
 }
 
+export interface FhKuikaRoutineTelemetryPreviewV1 {
+  readonly observation: FhKuikaRoutineTelemetryObservationV1;
+  readonly summary: FhKuikaRoutineTelemetrySummaryV1;
+}
+
+export function buildFhKuikaRoutineTelemetryPreviewV1(
+  routine: FhKuikaRoutineDraftV1,
+  input: {
+    readonly kind: string;
+    readonly source: string;
+    readonly event: string;
+    readonly occurredAt: string;
+    readonly payload: string;
+    readonly connectorRefs: readonly string[];
+    readonly retryAttempt?: number;
+    readonly failureCode?: string;
+    readonly nextRetryAt?: string;
+  },
+): FhKuikaRoutineTelemetryPreviewV1 {
+  const kind = normalizeExternalTriggerKind(input.kind);
+  const triggerEvent = adaptFhKuikaExternalRoutineEventV1(kind, {
+    source: input.source,
+    event: input.event,
+    occurredAt: input.occurredAt,
+    payload: input.payload,
+  });
+  const candidate = prepareFhKuikaRoutineDispatchV1(
+    routine,
+    triggerEvent,
+    input.connectorRefs,
+  );
+  const observation = createFhKuikaRoutineTelemetryObservationV1({
+    candidate,
+    observedAt: triggerEvent.occurredAt,
+    ...(input.retryAttempt === undefined ? {} : { retryAttempt: input.retryAttempt }),
+    ...(input.failureCode === undefined ? {} : { failureCode: input.failureCode }),
+    ...(input.nextRetryAt === undefined ? {} : { nextRetryAt: input.nextRetryAt }),
+  });
+
+  return {
+    observation,
+    summary: summarizeFhKuikaRoutineTelemetryV1(routine.id, [observation]),
+  };
+}
+
 export function routineTelemetryCanInvokeModel(): false {
   return false;
 }
@@ -181,4 +234,21 @@ function requireTimestamp(value: string, field: string): void {
 function normalizeTimestamp(value: string, field: string): string {
   requireTimestamp(value, field);
   return new Date(value).toISOString();
+}
+
+function normalizeExternalTriggerKind(
+  value: string,
+): Exclude<FhKuikaRoutineTriggerKind, 'MANUAL' | 'CRON'> {
+  const normalized = value.toUpperCase();
+  switch (normalized) {
+    case 'WEBHOOK':
+    case 'GIT_EVENT':
+    case 'CI_EVENT':
+    case 'RELEASE_EVENT':
+    case 'INCIDENT_EVENT':
+    case 'SECURITY_EVENT':
+      return normalized;
+    default:
+      throw new Error('invalid routine event kind: ' + normalized);
+  }
 }
