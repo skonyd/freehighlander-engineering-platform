@@ -345,11 +345,11 @@ Blueprint detail includes a visual lifecycle preview and generated workflow diff
 
 ## Proposed PR slices
 
-- **FH-KUIKA-03.1** blueprint schema/package and versioning.
-- **FH-KUIKA-03.2** deterministic matcher interface and candidate-scoring evidence.
-- **FH-KUIKA-03.3** initial curated blueprint pack.
-- **FH-KUIKA-03.4** catalog UI and blueprint detail.
-- **FH-KUIKA-03.5** blueprint → workflow draft generation and simulation.
+- **FH-KUIKA-03.1** blueprint schema/package and versioning. — COMPLETE
+- **FH-KUIKA-03.2** deterministic matcher interface and candidate-scoring evidence. — COMPLETE
+- **FH-KUIKA-03.3** initial curated blueprint pack. — COMPLETE
+- **FH-KUIKA-03.4** catalog UI and blueprint detail. — COMPLETE
+- **FH-KUIKA-03.5** blueprint → workflow draft generation and simulation. — COMPLETE
 - **FH-KUIKA-03.6** measured blueprint quality/usage telemetry.
 
 ## Acceptance criteria
@@ -421,7 +421,7 @@ Selecting a node exposes:
 - **FH-KUIKA-04.3** node inspector + policy/evidence/budget surfaces. — COMPLETE
 - **FH-KUIKA-04.4** deterministic validation visualization. — COMPLETE
 - **FH-KUIKA-04.5** simulation/replay preview. — COMPLETE
-- **FH-KUIKA-04.6** publish/version-diff lifecycle.
+- **FH-KUIKA-04.6** publish/version-diff lifecycle. — COMPLETE PRE-CUTOVER (immutable publication preview; canonical publish activation remains Core-governed)
 
 ## Acceptance criteria
 
