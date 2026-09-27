@@ -16,7 +16,9 @@ export interface FhKuikaKnowledgeAnswerPackageV1 {
   readonly schemaVersion: 1;
   readonly queryText: string;
   readonly authoritative: readonly FhKuikaKnowledgeAnswerItemV1[];
-  readonly discovery: readonly (FhKuikaKnowledgeAnswerItemV1 & { readonly semanticScore?: number })[];
+  readonly discovery: readonly (FhKuikaKnowledgeAnswerItemV1 & {
+    readonly semanticScore?: number;
+  })[];
   readonly authoritativeCount: number;
   readonly discoveryCount: number;
   readonly provenanceComplete: boolean;
@@ -37,7 +39,9 @@ export function buildFhKuikaKnowledgeAnswerPackageV1(
   }
 
   const authoritative: FhKuikaKnowledgeAnswerItemV1[] = [];
-  const discovery: (FhKuikaKnowledgeAnswerItemV1 & { readonly semanticScore?: number })[] = [];
+  const discovery: (FhKuikaKnowledgeAnswerItemV1 & {
+    readonly semanticScore?: number;
+  })[] = [];
 
   for (const result of retrieval.results) {
     validateFhKuikaKnowledgeResultV1(result);
