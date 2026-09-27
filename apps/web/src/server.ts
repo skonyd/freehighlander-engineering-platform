@@ -49,7 +49,9 @@ import {
   listFhKuikaConnectorCatalogV1,
 } from './kuika-connector-catalog.js';
 import { buildFhKuikaConnectorInstallReviewV1 } from './kuika-connector-install-review.js';
-import { createFhKuikaConnectorCredentialConfigDraftV1 } from './kuika-connector-credential-config.js';
+import {
+  createFhKuikaConnectorCredentialConfigDraftV1,
+} from './kuika-connector-credential-config.js';
 import { DASHBOARD_HTML } from './ui.js';
 import {
   createGithubExternalStatusProviderFromEnv,
