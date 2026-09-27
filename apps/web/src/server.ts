@@ -22,6 +22,7 @@ import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 import { validateFhKuikaWorkflowDraftDefinitionV1 } from './kuika-workflow-draft.js';
 import { simulateFhKuikaWorkflowDraftV1 } from './kuika-workflow-simulation.js';
 import { buildFhKuikaWorkflowVersionDiffV1 } from './kuika-workflow-diff.js';
+import { createFhKuikaWorkflowPublishCandidateV1 } from './kuika-workflow-publish.js';
 import { buildFhKuikaWorkflowReplayPreviewV1 } from './kuika-workflow-replay.js';
 import { buildFhKuikaWorkbenchSnapshotV1, type FhKuikaWorkbenchMode } from './kuika-workbench.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
@@ -258,6 +259,13 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/api/modules/fh-kuika/workflows/publish-candidate') {
+      const definition = readWorkflowDefinition(url);
+      const previous = readOptionalWorkflowDefinition(url, 'previous');
+      json(response, 200, createFhKuikaWorkflowPublishCandidateV1(previous, definition));
+      return;
+    }
+
     if (url.pathname === '/api/modules/fh-kuika/workflows/replay') {
       const runId = url.searchParams.get('runId') ?? '';
       const preview = buildFhKuikaWorkflowReplayPreviewV1(readModel, runId, readLimit(url, 5_000));
@@ -395,6 +403,22 @@ function readWorkflowDefinition(url: URL) {
   }
 
   return parsed as Parameters<typeof validateFhKuikaWorkflowDraftDefinitionV1>[0];
+}
+
+function readOptionalWorkflowDefinition(
+  url: URL,
+  parameter: string,
+): Parameters<typeof createFhKuikaWorkflowPublishCandidateV1>[0] {
+  const raw = url.searchParams.get(parameter);
+  if (!raw) return null;
+  if (raw.length > 100_000) throw new Error(parameter + ' query parameter is too large');
+
+  const parsed = JSON.parse(raw) as unknown;
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(parameter + ' workflow definition must be an object');
+  }
+
+  return parsed as Parameters<typeof createFhKuikaWorkflowPublishCandidateV1>[0];
 }
 
 function parseFhKuikaBlueprintRoute(pathname: string): {
