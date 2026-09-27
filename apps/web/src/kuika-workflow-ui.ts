@@ -77,6 +77,7 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
           <button type="button" id="validate">Validate</button>
           <button type="button" id="simulate">Simulate</button>
           <button type="button" id="review-diff">Review diff</button>
+          <button type="button" id="prepare-publish">Prepare publish</button>
           <button type="button" id="reset">Reset</button>
           <span class="pill">AUTHORITY NONE</span>
         </div>
@@ -100,7 +101,7 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
       <h2>Inspector</h2>
       <div id="inspector" class="muted">Select a node.</div>
       <div class="boundary">
-        Publish and Execute are intentionally unavailable. Canonical validation remains owned by Core.
+        Direct Publish and Execute remain unavailable. Prepare publish creates an immutable non-authoritative candidate for canonical review.
       </div>
     </aside>
   </section>
@@ -132,12 +133,17 @@ async function inspectDraft(mode){
   const labels={
     validate:'Validating canonical draft…',
     simulate:'Simulating deterministic draft…',
-    diff:'Building non-authoritative version diff…'
+    diff:'Building non-authoritative version diff…',
+    publish:'Preparing immutable publish candidate…'
   };
   output.textContent=labels[mode];
   try{
     const definition=encodeURIComponent(JSON.stringify(buildDefinition()));
-    const suffix=mode==='simulate'?'simulate':mode==='diff'?'diff':'validate';
+    const suffix=
+      mode==='simulate'?'simulate':
+      mode==='diff'?'diff':
+      mode==='publish'?'publish-candidate':
+      'validate';
     const result=await api('/api/modules/fh-kuika/workflows/'+suffix+'?definition='+definition);
     if(mode==='validate'){
       renderValidation(result);
@@ -147,10 +153,29 @@ async function inspectDraft(mode){
       renderSimulation(result);
       return;
     }
+    if(mode==='publish'){
+      renderPublishCandidate(result);
+      return;
+    }
     output.textContent=JSON.stringify(result,null,2);
   }catch(error){
     output.textContent='Inspection failed: '+error.message;
   }
+}
+
+function renderPublishCandidate(result){
+  const output=document.querySelector('#validation-output');
+  const sensitive=result.diff?.authoritySensitiveChange===true;
+  output.innerHTML=
+    '<strong>Publish candidate · '+esc(result.state)+'</strong>'+ 
+    '<div class="issue-meta">Version '+esc(result.candidateVersion)+
+      ' · hash <code>'+esc(String(result.definitionHash||'').slice(0,16))+'</code></div>'+ 
+    '<div class="issue-meta">Publish authorized: '+esc(result.publishAuthorized)+
+      ' · execution authorized: '+esc(result.executionAuthorized)+
+      ' · persisted: '+esc(result.persistencePerformed)+
+      ' · authority: '+esc(result.authority)+'</div>'+ 
+    '<div class="issue-meta">Authority-sensitive change: '+esc(sensitive)+'</div>'+ 
+    '<div class="issue-meta">Canonical review remains required.</div>';
 }
 
 function renderSimulation(result){
@@ -292,6 +317,7 @@ document.querySelectorAll('[data-kind]').forEach(button=>
 document.querySelector('#validate').addEventListener('click',()=>void inspectDraft('validate'));
 document.querySelector('#simulate').addEventListener('click',()=>void inspectDraft('simulate'));
 document.querySelector('#review-diff').addEventListener('click',()=>void inspectDraft('diff'));
+document.querySelector('#prepare-publish').addEventListener('click',()=>void inspectDraft('publish'));
 document.querySelector('#replay-run').addEventListener('click',()=>void loadReplayPreview());
 document.querySelector('#reset').addEventListener('click',()=>{
   nodes=[];
