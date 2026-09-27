@@ -51,7 +51,11 @@ export function createFhKuikaRoutineTelemetryObservationV1(input: {
   requireTimestamp(input.observedAt, 'routine telemetry observedAt');
 
   const retryAttempt = input.retryAttempt ?? 0;
-  if (!Number.isInteger(retryAttempt) || retryAttempt < 0 || retryAttempt > input.candidate.retry.maxAttempts) {
+  if (
+    !Number.isInteger(retryAttempt) ||
+    retryAttempt < 0 ||
+    retryAttempt > input.candidate.retry.maxAttempts
+  ) {
     throw new Error('routine telemetry retryAttempt exceeds declared retry policy');
   }
 
