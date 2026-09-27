@@ -350,7 +350,7 @@ function finalizeRole(input: ReturnType<typeof role>): FhKuikaRolePackageManifes
       pinned: true as const,
     },
     installAuthority: 'NONE' as const,
-  };
+  } as const;
   const digest = createHash('sha256').update(stableJson(identity)).digest('hex');
 
   return Object.freeze({
