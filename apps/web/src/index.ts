@@ -1,4 +1,25 @@
 export {
+  buildFhKuikaKnowledgeAnswerPackageV1,
+  knowledgeAnswerPackageCanGrantAuthority,
+  knowledgeAnswerPackageCanInvokeModel,
+  type FhKuikaKnowledgeAnswerPackageV1,
+} from './kuika-knowledge-answer.js';
+
+export {
+  createFhKuikaDashboardKnowledgeSourceV1,
+  dashboardKnowledgeSourceCanGrantAuthority,
+  dashboardKnowledgeSourceCanInventLineage,
+  dashboardKnowledgeSourceCanInvokeModel,
+} from './kuika-knowledge-dashboard-source.js';
+
+export {
+  FH_KUIKA_KNOWLEDGE_HTML,
+  knowledgePageCanGrantAuthority,
+  knowledgePageCanInvokeModel,
+  knowledgePageCanMutateDomain,
+} from './kuika-knowledge-ui.js';
+
+export {
   buildFhKuikaWorkflowPublicationCandidateV1,
   workflowPublicationCandidateCanExecute,
   workflowPublicationCandidateCanGrantAuthority,
