@@ -69,13 +69,13 @@ test('Workflow Studio simulation blocks invalid drafts instead of guessing execu
 test(
   'Workflow Studio UI exposes publication preview but no authoritative publish or execute action',
   () => {
-  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="validate"/);
-  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="simulate"/);
-  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="review-diff"/);
-  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="publish-preview"/);
-  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /AUTHORITY NONE/);
-  assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /publication preview only/i);
-  assert.doesNotMatch(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="publish"/);
+    assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="validate"/);
+    assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="simulate"/);
+    assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="review-diff"/);
+    assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="publish-preview"/);
+    assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /AUTHORITY NONE/);
+    assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /publication preview only/i);
+    assert.doesNotMatch(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="publish"/);
     assert.doesNotMatch(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="execute"/);
   },
 );
