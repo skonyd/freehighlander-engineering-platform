@@ -421,7 +421,7 @@ Selecting a node exposes:
 - **FH-KUIKA-04.3** node inspector + policy/evidence/budget surfaces. — COMPLETE
 - **FH-KUIKA-04.4** deterministic validation visualization. — COMPLETE
 - **FH-KUIKA-04.5** simulation/replay preview. — COMPLETE
-- **FH-KUIKA-04.6** publish/version-diff lifecycle.
+- **FH-KUIKA-04.6** publish/version-diff lifecycle. — COMPLETE PRE-CUTOVER (immutable publish candidate + canonical review boundary; direct publish remains unavailable)
 
 ## Acceptance criteria
 
