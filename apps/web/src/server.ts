@@ -425,12 +425,11 @@ async function handleRequest(
         return;
       }
 
+      const entityId = url.searchParams.get('entityId');
       const query = createFhKuikaKnowledgeQueryV1({
         text: url.searchParams.get('text') ?? '',
         mode: mode as Parameters<typeof createFhKuikaKnowledgeQueryV1>[0]['mode'],
-        ...(url.searchParams.get('entityId')
-          ? { entityId: url.searchParams.get('entityId') ?? undefined }
-          : {}),
+        ...(entityId === null ? {} : { entityId }),
         includeSemanticDiscovery: url.searchParams.get('semantic') === 'true',
         maxDepth: readBoundedInteger(url, 'maxDepth', 4, 0, 10),
         resultLimit: readBoundedInteger(url, 'resultLimit', 25, 1, 100),
