@@ -49,6 +49,7 @@ import {
   listFhKuikaConnectorCatalogV1,
 } from './kuika-connector-catalog.js';
 import { buildFhKuikaConnectorInstallReviewV1 } from './kuika-connector-install-review.js';
+import { createFhKuikaConnectorCredentialConfigDraftV1 } from './kuika-connector-credential-config.js';
 import { DASHBOARD_HTML } from './ui.js';
 import {
   createGithubExternalStatusProviderFromEnv,
@@ -473,6 +474,12 @@ async function handleRequest(
         });
         return;
       }
+      if (connectorRoute.resource === 'credential-config') {
+        json(response, 200, {
+          credentialConfig: createFhKuikaConnectorCredentialConfigDraftV1(connector),
+        });
+        return;
+      }
       json(response, 200, { review: buildFhKuikaConnectorInstallReviewV1(connector) });
       return;
     }
@@ -593,10 +600,15 @@ function parseFhKuikaBlueprintRoute(pathname: string): {
 
 function parseFhKuikaConnectorRoute(pathname: string): {
   readonly connectorId: string;
+  readonly resource: 'review' | 'credential-config';
 } | null {
-  const match = /^\/api\/modules\/fh-kuika\/connectors\/([^/]+)\/review$/.exec(pathname);
-  if (!match?.[1]) return null;
-  return { connectorId: decodeURIComponent(match[1]) };
+  const match =
+    /^\/api\/modules\/fh-kuika\/connectors\/([^/]+)\/(review|credential-config)$/.exec(pathname);
+  if (!match?.[1] || !match[2]) return null;
+  return {
+    connectorId: decodeURIComponent(match[1]),
+    resource: match[2] as 'review' | 'credential-config',
+  };
 }
 
 function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {
