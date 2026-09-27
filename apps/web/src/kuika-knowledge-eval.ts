@@ -45,7 +45,7 @@ export function evaluateFhKuikaKnowledgeRetrievalV1(
       item.provenance.sourceKind !== 'SEMANTIC_DISCOVERY' || item.resultClass === 'DISCOVERY',
   );
 
-  const executedStages = new Set(
+  const executedStages = new Set<string>(
     retrieval.trace.filter((item) => item.executed).map((item) => item.stage),
   );
   const missingStages = (expectation.requiredStages ?? [])
