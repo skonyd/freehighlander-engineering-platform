@@ -35,7 +35,9 @@ export function buildFhKuikaKnowledgeAnswerPackageV1(
   const authoritativeResults = retrieval.results.filter(
     (result) => result.resultClass === 'AUTHORITATIVE',
   );
-  const discoveryResults = retrieval.results.filter((result) => result.resultClass === 'DISCOVERY');
+  const discoveryResults = retrieval.results.filter(
+    (result) => result.resultClass === 'DISCOVERY',
+  );
 
   const incompleteProvenanceResultIds = retrieval.results
     .filter((result) => !provenanceIsComplete(result))
