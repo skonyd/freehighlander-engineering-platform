@@ -79,7 +79,8 @@ const DEFINITIONS: Record<'BUILD' | 'INTEGRATE' | 'KNOWLEDGE', FhKuikaAreaDefini
       },
       {
         title: 'Evidence',
-        detail: 'Exact-revision evidence remains owned by FreeHighlander Core and is linked by provenance.',
+        detail:
+          'Exact-revision evidence remains owned by FreeHighlander Core and is linked by provenance.',
         status: 'AVAILABLE',
       },
     ],
