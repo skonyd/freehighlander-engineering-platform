@@ -1,4 +1,21 @@
 export {
+  buildFhKuikaRoutingCandidateFromTelemetryV1,
+  routingTelemetryCanGrantAuthority,
+  routingTelemetryCanUseSemanticOutcome,
+  type FhKuikaRoutingTelemetryCandidateInputV1,
+  type FhKuikaRoutingTelemetryEvidenceV1,
+} from './kuika-routing-telemetry.js';
+
+export {
+  buildFhKuikaRoutingFailoverPlanV1,
+  routingFailoverPlanCanApplyRuntime,
+  routingFailoverPlanCanGrantAuthority,
+  routingFailoverPlanCanRetrySemanticFailure,
+  type FhKuikaAvailabilityFailureKind,
+  type FhKuikaRoutingFailoverPlanV1,
+} from './kuika-routing-failover-plan.js';
+
+export {
   buildFhKuikaWorkflowPublicationCandidateV1,
   workflowPublicationCandidateCanExecute,
   workflowPublicationCandidateCanGrantAuthority,
