@@ -84,7 +84,7 @@ Umbrella: #88.
 - [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
 - [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1
 - [ ] FH-KUIKA-08 Routines / Trigger Engine — P1 — .1/.4 complete; .2/.3 pre-cutover dispatch/event preparation complete; .5 activation blocked by FH-20
-- [ ] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1
+- [ ] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1 — .1–.4 complete; .5 non-authoritative failover bridge complete, runtime apply not enabled
 - [ ] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 / ADR-required
 
 Detailed decomposition and authority boundary: [FH-KUIKA module roadmap](docs/modules/kuika-inspired-productization/ROADMAP.md).

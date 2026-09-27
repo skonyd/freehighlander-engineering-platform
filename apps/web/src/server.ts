@@ -49,7 +49,12 @@ import {
 } from './kuika-routine-dispatch.js';
 import { buildFhKuikaRoutineActivationPlanV1 } from './kuika-routines.js';
 import { FH_KUIKA_ROUTING_HTML } from './kuika-routing-ui.js';
-import { simulateFhKuikaRoutingScenarioV1 } from './kuika-routing-simulation.js';
+import {
+  createFhKuikaRoutingSimulationRequestV1,
+  simulateFhKuikaRoutingScenarioV1,
+  type FhKuikaRoutingSimulationInputV1,
+} from './kuika-routing-simulation.js';
+import { evaluateFhKuikaRoutingWithTelemetryV1 } from './kuika-routing-telemetry.js';
 import {
   getFhKuikaConnectorCatalogItemV1,
   listFhKuikaConnectorCatalogV1,
@@ -408,51 +413,23 @@ async function handleRequest(
     }
 
     if (url.pathname === '/api/modules/fh-kuika/routing/simulate') {
-      const risk = (url.searchParams.get('risk') ?? 'HIGH').toUpperCase();
-      const data = (url.searchParams.get('data') ?? 'INTERNAL').toUpperCase();
-      const preferredHealth = (
-        url.searchParams.get('preferredHealth') ?? 'AVAILABLE'
-      ).toUpperCase();
-      const context = Number(url.searchParams.get('context') ?? '50000');
+      const input = readFhKuikaRoutingSimulationInputOrRespond(url, response);
+      if (!input) return;
+      json(response, 200, { decision: simulateFhKuikaRoutingScenarioV1(input) });
+      return;
+    }
 
-      if (!['NORMAL', 'HIGH', 'CRITICAL'].includes(risk)) {
-        json(response, 400, { error: 'invalid_routing_risk', risk });
-        return;
-      }
-      if (!['PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'SECRET'].includes(data)) {
-        json(response, 400, { error: 'invalid_routing_data_class', data });
-        return;
-      }
-      if (
-        ![
-          'AVAILABLE',
-          'RATE_LIMITED',
-          'QUOTA_EXHAUSTED',
-          'PROVIDER_UNAVAILABLE',
-          'AUTH_FAILED',
-          'UNKNOWN',
-        ].includes(preferredHealth)
-      ) {
-        json(response, 400, {
-          error: 'invalid_routing_health',
-          preferredHealth,
-        });
-        return;
-      }
-
-      const decision = simulateFhKuikaRoutingScenarioV1({
-        riskTier: risk as 'NORMAL' | 'HIGH' | 'CRITICAL',
-        dataClassification: data as 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'SECRET',
-        requiredContextTokens: context,
-        preferredHealth: preferredHealth as
-          | 'AVAILABLE'
-          | 'RATE_LIMITED'
-          | 'QUOTA_EXHAUSTED'
-          | 'PROVIDER_UNAVAILABLE'
-          | 'AUTH_FAILED'
-          | 'UNKNOWN',
-      });
-      json(response, 200, { decision });
+    if (url.pathname === '/api/modules/fh-kuika/routing/telemetry-preview') {
+      const input = readFhKuikaRoutingSimulationInputOrRespond(url, response);
+      if (!input) return;
+      const request = createFhKuikaRoutingSimulationRequestV1(input);
+      const home = readModel.homeSnapshot();
+      const result = evaluateFhKuikaRoutingWithTelemetryV1(
+        request,
+        readModel.modelAggregates(500),
+        home.roleBindings,
+      );
+      json(response, 200, { result });
       return;
     }
 
@@ -610,6 +587,57 @@ async function handleRequest(
     const message = error instanceof Error ? error.message : 'unknown error';
     json(response, 500, { error: 'dashboard_error', message });
   }
+}
+
+function readFhKuikaRoutingSimulationInputOrRespond(
+  url: URL,
+  response: ServerResponse,
+): FhKuikaRoutingSimulationInputV1 | null {
+  try {
+    return readFhKuikaRoutingSimulationInput(url);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'invalid routing simulation input';
+    json(response, 400, { error: 'invalid_routing_simulation_input', message });
+    return null;
+  }
+}
+
+function readFhKuikaRoutingSimulationInput(url: URL): FhKuikaRoutingSimulationInputV1 {
+  const risk = (url.searchParams.get('risk') ?? 'HIGH').toUpperCase();
+  const data = (url.searchParams.get('data') ?? 'INTERNAL').toUpperCase();
+  const preferredHealth = (url.searchParams.get('preferredHealth') ?? 'AVAILABLE').toUpperCase();
+  const context = Number(url.searchParams.get('context') ?? '50000');
+
+  if (!['NORMAL', 'HIGH', 'CRITICAL'].includes(risk)) {
+    throw new Error('invalid routing risk: ' + risk);
+  }
+  if (!['PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'SECRET'].includes(data)) {
+    throw new Error('invalid routing data class: ' + data);
+  }
+  if (
+    ![
+      'AVAILABLE',
+      'RATE_LIMITED',
+      'QUOTA_EXHAUSTED',
+      'PROVIDER_UNAVAILABLE',
+      'AUTH_FAILED',
+      'UNKNOWN',
+    ].includes(preferredHealth)
+  ) {
+    throw new Error('invalid routing health: ' + preferredHealth);
+  }
+  if (!Number.isInteger(context) || context < 1 || context > 10_000_000) {
+    throw new Error('routing context must be an integer between 1 and 10000000');
+  }
+
+  return {
+    riskTier: risk as NonNullable<FhKuikaRoutingSimulationInputV1['riskTier']>,
+    dataClassification: data as NonNullable<FhKuikaRoutingSimulationInputV1['dataClassification']>,
+    requiredContextTokens: context,
+    preferredHealth: preferredHealth as NonNullable<
+      FhKuikaRoutingSimulationInputV1['preferredHealth']
+    >,
+  };
 }
 
 function readWorkflowDefinition(url: URL) {
