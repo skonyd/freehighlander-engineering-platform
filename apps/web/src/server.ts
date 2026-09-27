@@ -48,6 +48,7 @@ import {
   prepareFhKuikaRoutineDispatchV1,
 } from './kuika-routine-dispatch.js';
 import { buildFhKuikaRoutineActivationPlanV1 } from './kuika-routines.js';
+import { buildFhKuikaRoutineTelemetryPreviewV1 } from './kuika-routine-telemetry.js';
 import { FH_KUIKA_ROUTING_HTML } from './kuika-routing-ui.js';
 import {
   buildFhKuikaKnowledgeRetrievalPlanV1,
@@ -361,6 +362,39 @@ async function handleRequest(
 
     if (url.pathname === '/api/modules/fh-kuika/routines') {
       json(response, 200, { routines: listFhKuikaRoutineTemplatesV1() });
+      return;
+    }
+
+    const routineTelemetryRoute = parseFhKuikaRoutineTelemetryPreviewRoute(url.pathname);
+    if (routineTelemetryRoute) {
+      const routine = getFhKuikaRoutineTemplateV1(routineTelemetryRoute.routineId);
+      if (!routine) {
+        json(response, 404, {
+          error: 'routine_not_found',
+          routineId: routineTelemetryRoute.routineId,
+        });
+        return;
+      }
+
+      json(
+        response,
+        200,
+        buildFhKuikaRoutineTelemetryPreviewV1(routine, {
+          kind: url.searchParams.get('kind') ?? '',
+          source: url.searchParams.get('source') ?? '',
+          event: url.searchParams.get('event') ?? '',
+          occurredAt: url.searchParams.get('occurredAt') ?? '',
+          payload: url.searchParams.get('payload') ?? '',
+          connectorRefs: url.searchParams.getAll('connector'),
+          retryAttempt: Number(url.searchParams.get('retryAttempt') ?? '0'),
+          ...(url.searchParams.get('failureCode') === null
+            ? {}
+            : { failureCode: url.searchParams.get('failureCode') as string }),
+          ...(url.searchParams.get('nextRetryAt') === null
+            ? {}
+            : { nextRetryAt: url.searchParams.get('nextRetryAt') as string }),
+        }),
+      );
       return;
     }
 
@@ -742,6 +776,24 @@ function parseFhKuikaSolutionPackRoute(pathname: string): {
   const match = pattern.exec(pathname);
   if (!match?.[1]) return null;
   return { packId: decodeURIComponent(match[1]) };
+}
+
+function parseFhKuikaRoutineTelemetryPreviewRoute(
+  pathname: string,
+): { readonly routineId: string } | null {
+  const parts = pathname.split('/');
+  if (
+    parts.length !== 7 ||
+    parts[1] !== 'api' ||
+    parts[2] !== 'modules' ||
+    parts[3] !== 'fh-kuika' ||
+    parts[4] !== 'routines' ||
+    parts[6] !== 'telemetry-preview' ||
+    !parts[5]
+  ) {
+    return null;
+  }
+  return { routineId: decodeURIComponent(parts[5]) };
 }
 
 function parseFhKuikaRoutineRoute(pathname: string): {
