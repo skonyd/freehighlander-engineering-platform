@@ -66,7 +66,9 @@ test('Workflow Studio simulation blocks invalid drafts instead of guessing execu
   assert.ok(result.validation.errors.some((error) => error.includes('maxIterations')));
 });
 
-test('Workflow Studio UI exposes publication preview but no authoritative publish or execute action', () => {
+test(
+  'Workflow Studio UI exposes publication preview but no authoritative publish or execute action',
+  () => {
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="validate"/);
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="simulate"/);
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="review-diff"/);
@@ -74,8 +76,9 @@ test('Workflow Studio UI exposes publication preview but no authoritative publis
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /AUTHORITY NONE/);
   assert.match(FH_KUIKA_WORKFLOW_STUDIO_HTML, /publication preview only/i);
   assert.doesNotMatch(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="publish"/);
-  assert.doesNotMatch(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="execute"/);
-});
+    assert.doesNotMatch(FH_KUIKA_WORKFLOW_STUDIO_HTML, /id="execute"/);
+  },
+);
 
 test('Workflow Studio HTTP route and canonical validation endpoints remain read-only', async () => {
   const server = createDashboardServer({ databasePath: '/tmp/fh-kuika-workflow-no-db.sqlite' });
@@ -149,7 +152,6 @@ test('Workflow Studio version diff highlights authority-sensitive changes withou
   assert.equal(workflowVersionDiffCanPublish(), false);
   assert.equal(workflowVersionDiffCanGrantAuthority(), false);
 });
-
 
 test('Workflow publication candidate is immutable and cannot grant publish or execution authority', () => {
   const first = buildFhKuikaWorkflowPublicationCandidateV1(null, definition());
