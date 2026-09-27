@@ -1,4 +1,17 @@
 export {
+  matchFhKuikaRoutineEventV1,
+  normalizeFhKuikaWebhookEnvelopeV1,
+  prepareFhKuikaRoutineScheduleV1,
+  routineEventAdapterCanExecute,
+  routineEventAdapterCanInvokeModel,
+  routineSchedulerPreparationCanExecute,
+  routineSchedulerPreparationCanSchedule,
+  type FhKuikaRoutineEventMatchV1,
+  type FhKuikaRoutineSchedulePlanV1,
+  type FhKuikaWebhookEnvelopeV1,
+} from './kuika-routine-preparation.js';
+
+export {
   blueprintTelemetryCanGrantAuthority,
   blueprintTelemetryCanInvokeModel,
   blueprintTelemetryCanModifyBlueprint,
