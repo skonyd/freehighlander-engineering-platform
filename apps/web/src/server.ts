@@ -53,6 +53,7 @@ import {
   buildFhKuikaKnowledgeRetrievalPlanV1,
   createFhKuikaKnowledgeQueryV1,
 } from './kuika-knowledge-contract.js';
+import { createFhKuikaDashboardKnowledgeSourceV1 } from './kuika-knowledge-dashboard-source.js';
 import {
   retrieveFhKuikaKnowledgeV1,
   type FhKuikaKnowledgeLineageSourceV1,
@@ -499,8 +500,13 @@ async function handleRequest(
         resultLimit: readBoundedInteger(url, 'resultLimit', 25, 1, 100),
       });
       const plan = buildFhKuikaKnowledgeRetrievalPlanV1(query);
+      const effectiveKnowledgeSource =
+        knowledgeSource ??
+        (readModel.health().databaseExists
+          ? createFhKuikaDashboardKnowledgeSourceV1(readModel)
+          : undefined);
 
-      if (!knowledgeSource) {
+      if (!effectiveKnowledgeSource) {
         json(response, 200, {
           sourceAvailable: false,
           plan,
@@ -513,7 +519,7 @@ async function handleRequest(
       json(response, 200, {
         sourceAvailable: true,
         plan,
-        retrieval: retrieveFhKuikaKnowledgeV1(knowledgeSource, query),
+        retrieval: retrieveFhKuikaKnowledgeV1(effectiveKnowledgeSource, query),
         authority: 'NONE',
       });
       return;
