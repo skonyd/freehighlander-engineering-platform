@@ -783,7 +783,7 @@ function parseFhKuikaRoutineTelemetryPreviewRoute(
 ): { readonly routineId: string } | null {
   const parts = pathname.split('/');
   if (
-    parts.length !== 8 ||
+    parts.length !== 7 ||
     parts[1] !== 'api' ||
     parts[2] !== 'modules' ||
     parts[3] !== 'fh-kuika' ||
