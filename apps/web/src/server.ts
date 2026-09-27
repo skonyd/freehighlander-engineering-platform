@@ -3,11 +3,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
-import { FH_KUIKA_KNOWLEDGE_HTML } from './kuika-knowledge-ui.js';
-import { createFhKuikaDashboardKnowledgeSourceV1 } from './kuika-knowledge-dashboard-source.js';
-import { createFhKuikaKnowledgeQueryV1 } from './kuika-knowledge-contract.js';
-import { retrieveFhKuikaKnowledgeV1 } from './kuika-knowledge-retriever.js';
 import { buildFhKuikaKnowledgeAnswerPackageV1 } from './kuika-knowledge-answer.js';
+import { createFhKuikaKnowledgeQueryV1 } from './kuika-knowledge-contract.js';
+import { createFhKuikaDashboardKnowledgeSourceV1 } from './kuika-knowledge-dashboard-source.js';
+import { retrieveFhKuikaKnowledgeV1 } from './kuika-knowledge-retriever.js';
+import { FH_KUIKA_KNOWLEDGE_HTML } from './kuika-knowledge-ui.js';
 import { FH_KUIKA_BLUEPRINTS_HTML } from './kuika-blueprint-ui.js';
 import {
   getFhKuikaCuratedBlueprintV1,
@@ -441,7 +441,15 @@ async function handleRequest(
     if (url.pathname === '/api/modules/fh-kuika/knowledge/query') {
       const text = url.searchParams.get('text') ?? '';
       const mode = (url.searchParams.get('mode') ?? 'HYBRID').toUpperCase();
-      if (!['HYBRID', 'EXACT_ENTITY', 'EXACT_REVISION', 'LINEAGE_TRAVERSAL', 'EVIDENCE_LOOKUP'].includes(mode)) {
+      if (
+        ![
+          'HYBRID',
+          'EXACT_ENTITY',
+          'EXACT_REVISION',
+          'LINEAGE_TRAVERSAL',
+          'EVIDENCE_LOOKUP',
+        ].includes(mode)
+      ) {
         json(response, 400, { error: 'invalid_knowledge_query_mode', mode });
         return;
       }
