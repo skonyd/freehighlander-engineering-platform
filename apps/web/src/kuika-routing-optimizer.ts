@@ -123,9 +123,7 @@ function evaluateCandidate(
     reasons.push('DATA_CLASS_UNSUPPORTED');
   }
   if (
-    request.requiredCapabilities.some(
-      (capability) => !candidate.capabilities.includes(capability),
-    )
+    request.requiredCapabilities.some((capability) => !candidate.capabilities.includes(capability))
   ) {
     reasons.push('REQUIRED_CAPABILITY_MISSING');
   }
