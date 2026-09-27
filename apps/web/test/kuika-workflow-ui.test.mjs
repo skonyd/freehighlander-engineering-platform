@@ -37,7 +37,9 @@ test('FH-KUIKA Workflow Studio route serves authority-neutral local draft UI', a
     const html = await response.text();
     assert.match(html, /Workflow Studio/);
     assert.match(html, /Local draft canvas/);
-    assert.match(html, /Publish and Execute are intentionally unavailable/);
+    assert.match(html, /Publish preview is inspection only/);
+    assert.match(html, /Canonical publish and Execute remain unavailable/);
+    assert.match(html, /id="publish-preview"/);
     assert.match(html, /validation-issue/);
     assert.match(html, /data-node-ref/);
     assert.match(html, /renderValidation/);

@@ -1,4 +1,24 @@
 export {
+  buildFhKuikaWorkflowPublicationCandidateV1,
+  workflowPublicationCandidateCanExecute,
+  workflowPublicationCandidateCanGrantAuthority,
+  workflowPublicationCandidateCanPersist,
+  workflowPublicationCandidateCanPublishDirectly,
+  type FhKuikaWorkflowPublicationCandidateV1,
+} from './kuika-workflow-publication.js';
+
+export {
+  connectorCredentialConfigCanAcceptRawSecrets,
+  connectorCredentialConfigCanActivate,
+  connectorCredentialConfigCanGrantAuthority,
+  connectorCredentialConfigCanPersist,
+  connectorCredentialConfigCanResolveSecrets,
+  createFhKuikaConnectorCredentialConfigDraftV1,
+  type FhKuikaConnectorCredentialBindingV1,
+  type FhKuikaConnectorCredentialConfigDraftV1,
+} from './kuika-connector-credential-config.js';
+
+export {
   blueprintTelemetryCanGrantAuthority,
   blueprintTelemetryCanInvokeModel,
   blueprintTelemetryCanModifyBlueprint,
