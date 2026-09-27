@@ -67,7 +67,9 @@ test('Knowledge Explorer exposes retrieval plan without inventing a missing line
   }
 });
 
-test('Knowledge Explorer renders exact authoritative results only from an injected read source', async () => {
+test(
+  'Knowledge Explorer renders exact authoritative results only from an injected read source',
+  async () => {
   const source = {
     exactEntity: (entityId) => [
       {
@@ -109,4 +111,5 @@ test('Knowledge Explorer renders exact authoritative results only from an inject
   } finally {
     await close(server);
   }
-});
+  },
+);
