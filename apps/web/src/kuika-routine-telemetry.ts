@@ -3,10 +3,7 @@ import {
   prepareFhKuikaRoutineDispatchV1,
   type FhKuikaRoutineDispatchCandidateV1,
 } from './kuika-routine-dispatch.js';
-import type {
-  FhKuikaRoutineDraftV1,
-  FhKuikaRoutineTriggerKind,
-} from './kuika-routines.js';
+import type { FhKuikaRoutineDraftV1, FhKuikaRoutineTriggerKind } from './kuika-routines.js';
 
 export type FhKuikaRoutineTelemetryState =
   | 'READY_FOR_CONTROL_PLANE_REVIEW'
@@ -164,11 +161,7 @@ export function buildFhKuikaRoutineTelemetryPreviewV1(
     occurredAt: input.occurredAt,
     payload: input.payload,
   });
-  const candidate = prepareFhKuikaRoutineDispatchV1(
-    routine,
-    triggerEvent,
-    input.connectorRefs,
-  );
+  const candidate = prepareFhKuikaRoutineDispatchV1(routine, triggerEvent, input.connectorRefs);
   const observation = createFhKuikaRoutineTelemetryObservationV1({
     candidate,
     observedAt: triggerEvent.occurredAt,
