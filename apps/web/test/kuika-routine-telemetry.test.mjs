@@ -76,7 +76,9 @@ test('routine telemetry models retry and terminal failure within declared policy
 });
 
 test('routine telemetry preview endpoint is GET-only and never persists or activates', async () => {
-  const server = createDashboardServer({ databasePath: '/tmp/fh-kuika-routine-telemetry-no-db.sqlite' });
+  const server = createDashboardServer({
+    databasePath: '/tmp/fh-kuika-routine-telemetry-no-db.sqlite',
+  });
   await new Promise((resolve, reject) => {
     server.once('error', reject);
     server.listen(0, '127.0.0.1', () => {
