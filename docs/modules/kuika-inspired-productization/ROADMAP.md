@@ -474,12 +474,12 @@ Show before enablement:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-05.1** ToolAdapter registry persistence/read model. — COMPLETE
-- **FH-KUIKA-05.2** MCP discovery/normalization adapter. — COMPLETE
-- **FH-KUIKA-05.3** connector install-review contract and permission diff. — COMPLETE
-- **FH-KUIKA-05.4** Connector Hub UI. — COMPLETE
-- **FH-KUIKA-05.5** credential-reference configuration using SecretHandle only. — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-05.6** activation/runtime invocation after authority prerequisites. — BLOCKED BY FH-20
+- **FH-KUIKA-05.1** ToolAdapter registry persistence/read model. — COMPLETE — COMPLETE
+- **FH-KUIKA-05.2** MCP discovery/normalization adapter. — COMPLETE — COMPLETE
+- **FH-KUIKA-05.3** connector install-review contract and permission diff. — COMPLETE — COMPLETE
+- **FH-KUIKA-05.4** Connector Hub UI. — COMPLETE — COMPLETE
+- **FH-KUIKA-05.5** credential-reference configuration using SecretHandle only. — COMPLETE PRE-CUTOVER — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-05.6** activation/runtime invocation after authority prerequisites. — BLOCKED BY FH-20 — BLOCKED BY FH-20
 
 ## Acceptance criteria
 
