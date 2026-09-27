@@ -1,7 +1,5 @@
 import type { DashboardReadModel } from './read-model.js';
-import type {
-  FhKuikaKnowledgeLineageSourceV1,
-} from './kuika-knowledge-retriever.js';
+import type { FhKuikaKnowledgeLineageSourceV1 } from './kuika-knowledge-retriever.js';
 import type { FhKuikaKnowledgeResultV1 } from './kuika-knowledge-contract.js';
 
 export function createFhKuikaDashboardKnowledgeSourceV1(
@@ -20,7 +18,9 @@ export function createFhKuikaDashboardKnowledgeSourceV1(
             provenance: {
               sourceKind: 'ARTIFACT',
               sourceId: artifact.artifactId,
-              ...(run.repository && run.headSha && /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(run.headSha)
+              ...(run.repository &&
+              run.headSha &&
+              /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(run.headSha)
                 ? { revision: { repository: run.repository, sha: run.headSha } }
                 : {}),
               evidenceIds: [artifact.artifactId],
