@@ -70,46 +70,46 @@ test('Knowledge Explorer exposes retrieval plan without inventing a missing line
 test(
   'Knowledge Explorer renders exact authoritative results only from an injected read source',
   async () => {
-  const source = {
-    exactEntity: (entityId) => [
-      {
-        id: 'entity:' + entityId,
-        label: 'Requirement ' + entityId,
-        resultClass: 'AUTHORITATIVE',
-        provenance: {
-          sourceKind: 'LINEAGE_ENTITY',
-          sourceId: entityId,
-          sourceDigest: 'a'.repeat(64),
-          evidenceIds: [],
+    const source = {
+      exactEntity: (entityId) => [
+        {
+          id: 'entity:' + entityId,
+          label: 'Requirement ' + entityId,
+          resultClass: 'AUTHORITATIVE',
+          provenance: {
+            sourceKind: 'LINEAGE_ENTITY',
+            sourceId: entityId,
+            sourceDigest: 'a'.repeat(64),
+            evidenceIds: [],
+          },
+          authority: 'NONE',
         },
-        authority: 'NONE',
-      },
-    ],
-    exactRevision: () => [],
-    traverseAuthoritative: () => [],
-    evidenceForResults: () => [],
-  };
+      ],
+      exactRevision: () => [],
+      traverseAuthoritative: () => [],
+      evidenceForResults: () => [],
+    };
 
-  const server = createDashboardServer({
-    databasePath: '/tmp/fh-kuika-knowledge-no-db.sqlite',
-    knowledgeSource: source,
-  });
-  const base = await listen(server);
+    const server = createDashboardServer({
+      databasePath: '/tmp/fh-kuika-knowledge-no-db.sqlite',
+      knowledgeSource: source,
+    });
+    const base = await listen(server);
 
-  try {
-    const response = await fetch(
-      base +
-        '/api/modules/fh-kuika/knowledge/query?text=req-1&mode=EXACT_ENTITY&entityId=req-1',
-    );
-    assert.equal(response.status, 200);
-    const payload = await response.json();
-    assert.equal(payload.sourceAvailable, true);
-    assert.equal(payload.retrieval.projectionAuthority, 'NONE');
-    assert.equal(payload.retrieval.results.length, 1);
-    assert.equal(payload.retrieval.results[0].resultClass, 'AUTHORITATIVE');
-    assert.equal(payload.retrieval.results[0].provenance.sourceId, 'req-1');
-  } finally {
-    await close(server);
-  }
+    try {
+      const response = await fetch(
+        base +
+          '/api/modules/fh-kuika/knowledge/query?text=req-1&mode=EXACT_ENTITY&entityId=req-1',
+      );
+      assert.equal(response.status, 200);
+      const payload = await response.json();
+      assert.equal(payload.sourceAvailable, true);
+      assert.equal(payload.retrieval.projectionAuthority, 'NONE');
+      assert.equal(payload.retrieval.results.length, 1);
+      assert.equal(payload.retrieval.results[0].resultClass, 'AUTHORITATIVE');
+      assert.equal(payload.retrieval.results[0].provenance.sourceId, 'req-1');
+    } finally {
+      await close(server);
+    }
   },
 );
