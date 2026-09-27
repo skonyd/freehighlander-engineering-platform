@@ -98,6 +98,18 @@ export {
 } from './kuika-knowledge-contract.js';
 
 export {
+  adaptFhKuikaExternalRoutineEventV1,
+  externalRoutineEventAdapterCanInvokeModel,
+  prepareFhKuikaRoutineDispatchV1,
+  routineDispatchCandidateCanExecuteWorkflow,
+  routineDispatchCandidateCanGrantAuthority,
+  routineDispatchCandidateCanSubmitToScheduler,
+  type FhKuikaExternalRoutineEventInputV1,
+  type FhKuikaRoutineDispatchCandidateV1,
+  type FhKuikaRoutineDispatchState,
+} from './kuika-routine-dispatch.js';
+
+export {
   buildFhKuikaRoutineActivationPlanV1,
   createFhKuikaRoutineDraftV1,
   normalizeFhKuikaTriggerEventV1,

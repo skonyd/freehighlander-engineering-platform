@@ -43,6 +43,10 @@ import {
   getFhKuikaRoutineTemplateV1,
   listFhKuikaRoutineTemplatesV1,
 } from './kuika-routine-catalog.js';
+import {
+  adaptFhKuikaExternalRoutineEventV1,
+  prepareFhKuikaRoutineDispatchV1,
+} from './kuika-routine-dispatch.js';
 import { buildFhKuikaRoutineActivationPlanV1 } from './kuika-routines.js';
 import { FH_KUIKA_ROUTING_HTML } from './kuika-routing-ui.js';
 import { simulateFhKuikaRoutingScenarioV1 } from './kuika-routing-simulation.js';
@@ -351,6 +355,54 @@ async function handleRequest(
         return;
       }
 
+      if (routineRoute.resource === 'dispatch-preview') {
+        const kind = (url.searchParams.get('kind') ?? '').toUpperCase();
+        if (
+          ![
+            'WEBHOOK',
+            'GIT_EVENT',
+            'CI_EVENT',
+            'RELEASE_EVENT',
+            'INCIDENT_EVENT',
+            'SECURITY_EVENT',
+          ].includes(kind)
+        ) {
+          json(response, 400, { error: 'invalid_routine_event_kind', kind });
+          return;
+        }
+
+        const triggerEvent = adaptFhKuikaExternalRoutineEventV1(
+          kind as
+            | 'WEBHOOK'
+            | 'GIT_EVENT'
+            | 'CI_EVENT'
+            | 'RELEASE_EVENT'
+            | 'INCIDENT_EVENT'
+            | 'SECURITY_EVENT',
+          {
+            source: url.searchParams.get('source') ?? '',
+            event: url.searchParams.get('event') ?? '',
+            occurredAt: url.searchParams.get('occurredAt') ?? '',
+            payload: url.searchParams.get('payload') ?? '',
+            ...(url.searchParams.get('repository')
+              ? { repository: url.searchParams.get('repository') as string }
+              : {}),
+            ...(url.searchParams.get('exactRevision')
+              ? { exactRevision: url.searchParams.get('exactRevision') as string }
+              : {}),
+          },
+        );
+
+        json(response, 200, {
+          candidate: prepareFhKuikaRoutineDispatchV1(
+            routine,
+            triggerEvent,
+            url.searchParams.getAll('connector'),
+          ),
+        });
+        return;
+      }
+
       json(response, 200, { routine });
       return;
     }
@@ -592,13 +644,15 @@ function parseFhKuikaSolutionPackRoute(pathname: string): {
 
 function parseFhKuikaRoutineRoute(pathname: string): {
   readonly routineId: string;
-  readonly resource: 'detail' | 'plan';
+  readonly resource: 'detail' | 'plan' | 'dispatch-preview';
 } | null {
-  const match = /^\/api\/modules\/fh-kuika\/routines\/([^/]+)(?:\/(plan))?$/.exec(pathname);
+  const match = /^\/api\/modules\/fh-kuika\/routines\/([^/]+)(?:\/(plan|dispatch-preview))?$/.exec(
+    pathname,
+  );
   if (!match?.[1]) return null;
   return {
     routineId: decodeURIComponent(match[1]),
-    resource: (match[2] ?? 'detail') as 'detail' | 'plan',
+    resource: (match[2] ?? 'detail') as 'detail' | 'plan' | 'dispatch-preview',
   };
 }
 
