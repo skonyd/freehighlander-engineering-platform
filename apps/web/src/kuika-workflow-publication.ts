@@ -83,8 +83,8 @@ function isStrictlyNewerSemver(next: string, previous: string): boolean {
   const nextParts = next.split('.').map(Number);
   const previousParts = previous.split('.').map(Number);
   for (let index = 0; index < 3; index += 1) {
-    if (nextParts[index] > previousParts[index]) return true;
-    if (nextParts[index] < previousParts[index]) return false;
+    if (nextParts[index]! > previousParts[index]!) return true;
+    if (nextParts[index]! < previousParts[index]!) return false;
   }
   return false;
 }
