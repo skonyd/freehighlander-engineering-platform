@@ -3,6 +3,7 @@ import {
   type FhKuikaRoutingDataClass,
   type FhKuikaRoutingDecisionV1,
   type FhKuikaRoutingHealth,
+  type FhKuikaRoutingRequestV1,
   type FhKuikaRoutingRiskTier,
 } from './kuika-routing-optimizer.js';
 
@@ -13,15 +14,15 @@ export interface FhKuikaRoutingSimulationInputV1 {
   readonly preferredHealth?: FhKuikaRoutingHealth;
 }
 
-export function simulateFhKuikaRoutingScenarioV1(
+export function createFhKuikaRoutingSimulationRequestV1(
   input: FhKuikaRoutingSimulationInputV1 = {},
-): FhKuikaRoutingDecisionV1 {
+): FhKuikaRoutingRequestV1 {
   const riskTier = input.riskTier ?? 'HIGH';
   const dataClassification = input.dataClassification ?? 'INTERNAL';
   const requiredContextTokens = input.requiredContextTokens ?? 50_000;
   const preferredHealth = input.preferredHealth ?? 'AVAILABLE';
 
-  return optimizeFhKuikaRoutingV1({
+  return {
     schemaVersion: 1,
     logicalRole: 'security-reviewer',
     preferredBindingId: 'preferred-review',
@@ -79,7 +80,13 @@ export function simulateFhKuikaRoutingScenarioV1(
         observedLatencyMs: 7_000,
       },
     ],
-  });
+  };
+}
+
+export function simulateFhKuikaRoutingScenarioV1(
+  input: FhKuikaRoutingSimulationInputV1 = {},
+): FhKuikaRoutingDecisionV1 {
+  return optimizeFhKuikaRoutingV1(createFhKuikaRoutingSimulationRequestV1(input));
 }
 
 export function routingSimulationCanExecuteCall(): false {

@@ -139,6 +139,19 @@ export {
 } from './kuika-routine-ui.js';
 
 export {
+  buildFhKuikaRoutingFailoverBridgeV1,
+  evaluateFhKuikaRoutingWithTelemetryV1,
+  projectFhKuikaRoutingTelemetryV1,
+  routingFailoverBridgeCanApply,
+  routingFailoverBridgeCanUseSemanticFailure,
+  routingTelemetryProjectionCanInferAvailabilityFromHistory,
+  routingTelemetryProjectionCanInvokeModel,
+  type FhKuikaRoutingFailoverBridgeV1,
+  type FhKuikaRoutingTelemetryDecisionV1,
+  type FhKuikaRoutingTelemetryProjectionV1,
+} from './kuika-routing-telemetry.js';
+
+export {
   optimizeFhKuikaRoutingV1,
   routingOptimizerCanExecuteCall,
   routingOptimizerCanGrantAuthority,
@@ -156,6 +169,7 @@ export {
 } from './kuika-routing-optimizer.js';
 
 export {
+  createFhKuikaRoutingSimulationRequestV1,
   routingSimulationCanExecuteCall,
   simulateFhKuikaRoutingScenarioV1,
   type FhKuikaRoutingSimulationInputV1,

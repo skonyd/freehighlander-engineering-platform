@@ -697,11 +697,11 @@ Reason: preferred binding unavailable; next eligible binding satisfies policy.
 
 ## Proposed PR slices
 
-- **FH-KUIKA-09.1** deterministic constraint model.
-- **FH-KUIKA-09.2** routing decision evidence contract.
-- **FH-KUIKA-09.3** telemetry-derived cost/latency/availability features.
-- **FH-KUIKA-09.4** simulation and what-if UI.
-- **FH-KUIKA-09.5** router integration with existing availability-only failover.
+- **FH-KUIKA-09.1** deterministic constraint model. — COMPLETE
+- **FH-KUIKA-09.2** routing decision evidence contract. — COMPLETE
+- **FH-KUIKA-09.3** telemetry-derived cost/latency/availability features. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-09.4** simulation and what-if UI. — COMPLETE
+- **FH-KUIKA-09.5** router integration with existing availability-only failover. — PRE-CUTOVER BRIDGE COMPLETE; runtime apply remains unauthorized
 
 ---
 
