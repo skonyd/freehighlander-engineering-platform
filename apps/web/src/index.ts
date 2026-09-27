@@ -1,4 +1,45 @@
 export {
+  FH_KUIKA_KNOWLEDGE_EXPLORER_HTML,
+  knowledgeExplorerPageCanGrantAuthority,
+  knowledgeExplorerPageCanInvokeModel,
+  knowledgeExplorerPageCanMutateRuntime,
+} from './kuika-knowledge-ui.js';
+
+export {
+  buildFhKuikaKnowledgeAnswerPackageV1,
+  knowledgeAnswerPackageCanGrantAuthority,
+  knowledgeAnswerPackageCanPromoteDiscovery,
+  knowledgeAnswerPackageRequiresModelCall,
+  type FhKuikaKnowledgeAnswerItemV1,
+  type FhKuikaKnowledgeAnswerPackageV1,
+} from './kuika-knowledge-answer.js';
+
+export {
+  evaluateFhKuikaKnowledgeRetrievalV1,
+  knowledgeEvalCanGrantAuthority,
+  knowledgeEvalRequiresModelCall,
+  type FhKuikaKnowledgeEvalExpectationV1,
+  type FhKuikaKnowledgeEvalReportV1,
+} from './kuika-knowledge-eval.js';
+
+export {
+  buildFhKuikaRoutingCandidateFromTelemetryV1,
+  routingTelemetryCanGrantAuthority,
+  routingTelemetryCanUseSemanticOutcome,
+  type FhKuikaRoutingTelemetryCandidateInputV1,
+  type FhKuikaRoutingTelemetryEvidenceV1,
+} from './kuika-routing-telemetry.js';
+
+export {
+  buildFhKuikaRoutingFailoverPlanV1,
+  routingFailoverPlanCanApplyRuntime,
+  routingFailoverPlanCanGrantAuthority,
+  routingFailoverPlanCanRetrySemanticFailure,
+  type FhKuikaAvailabilityFailureKind,
+  type FhKuikaRoutingFailoverPlanV1,
+} from './kuika-routing-failover-plan.js';
+
+export {
   buildFhKuikaWorkflowPublicationCandidateV1,
   workflowPublicationCandidateCanExecute,
   workflowPublicationCandidateCanGrantAuthority,
