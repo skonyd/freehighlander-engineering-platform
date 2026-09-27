@@ -4,6 +4,12 @@ import test from 'node:test';
 import {
   FH_KUIKA_CONNECTOR_HUB_HTML,
   connectorCatalogCanActivate,
+  connectorCredentialConfigCanAcceptRawSecrets,
+  connectorCredentialConfigCanActivate,
+  connectorCredentialConfigCanGrantAuthority,
+  connectorCredentialConfigCanPersist,
+  connectorCredentialConfigCanResolveSecrets,
+  createFhKuikaConnectorCredentialConfigDraftV1,
   connectorHubPageCanActivate,
   connectorHubPageCanGrantAuthority,
   connectorHubPageCanInvokeModel,
@@ -83,6 +89,15 @@ test('Connector Hub HTTP routes expose catalog/review and remain GET-only', asyn
     assert.equal(review.review.humanReviewRequired, true);
     assert.ok(review.review.warnings.includes('MUTATION_CAPABLE'));
 
+    const credentials = await (
+      await fetch(base + '/api/modules/fh-kuika/connectors/kubernetes-mcp/credential-config')
+    ).json();
+    assert.equal(credentials.credentialConfig.authority, 'NONE');
+    assert.equal(credentials.credentialConfig.rawSecretValuesAccepted, false);
+    assert.equal(credentials.credentialConfig.secretResolutionPerformed, false);
+    assert.equal(credentials.credentialConfig.persistencePerformed, false);
+    assert.equal(credentials.credentialConfig.activationAuthorized, false);
+
     const missing = await fetch(base + '/api/modules/fh-kuika/connectors/missing/review');
     assert.equal(missing.status, 404);
 
@@ -93,4 +108,38 @@ test('Connector Hub HTTP routes expose catalog/review and remain GET-only', asyn
       server.close((error) => (error ? reject(error) : resolve())),
     );
   }
+});
+
+
+test('Connector credential configuration accepts only opaque SecretHandle references', () => {
+  const connector = getFhKuikaConnectorCatalogItemV1('kubernetes-mcp');
+  assert.ok(connector);
+
+  const draft = createFhKuikaConnectorCredentialConfigDraftV1(connector);
+  assert.equal(draft.connectorId, 'kubernetes-mcp');
+  assert.equal(Object.isFrozen(draft), true);
+  assert.equal(Object.isFrozen(draft.bindings), true);
+  assert.ok(draft.bindings.every((item) => item.secretHandleRef.startsWith('secret:')));
+  assert.equal(draft.rawSecretValuesAccepted, false);
+  assert.equal(draft.secretResolutionPerformed, false);
+  assert.equal(draft.persistencePerformed, false);
+  assert.equal(draft.activationAuthorized, false);
+  assert.equal(draft.authority, 'NONE');
+
+  assert.equal(connectorCredentialConfigCanAcceptRawSecrets(), false);
+  assert.equal(connectorCredentialConfigCanResolveSecrets(), false);
+  assert.equal(connectorCredentialConfigCanPersist(), false);
+  assert.equal(connectorCredentialConfigCanActivate(), false);
+  assert.equal(connectorCredentialConfigCanGrantAuthority(), false);
+
+  assert.throws(
+    () =>
+      createFhKuikaConnectorCredentialConfigDraftV1(connector, [
+        {
+          requirementRef: 'secret:kubernetes/kubeconfig',
+          secretHandleRef: 'plain-text-kubeconfig',
+        },
+      ]),
+    /opaque secret:<reference> handle/,
+  );
 });
