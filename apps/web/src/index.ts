@@ -1,4 +1,12 @@
 export {
+  evaluateFhKuikaKnowledgeRetrievalV1,
+  knowledgeEvalCanGrantAuthority,
+  knowledgeEvalRequiresModelCall,
+  type FhKuikaKnowledgeEvalExpectationV1,
+  type FhKuikaKnowledgeEvalReportV1,
+} from './kuika-knowledge-eval.js';
+
+export {
   buildFhKuikaKnowledgeAnswerPackageV1,
   knowledgeAnswerPackageCanGrantAuthority,
   knowledgeAnswerPackageCanPromoteDiscovery,
