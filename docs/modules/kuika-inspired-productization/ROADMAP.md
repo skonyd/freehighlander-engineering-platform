@@ -538,11 +538,11 @@ Role card:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-06.1** package manifest/bundle format.
-- **FH-KUIKA-06.2** signed/pinned catalog metadata and provenance.
-- **FH-KUIKA-06.3** Role Marketplace UI.
-- **FH-KUIKA-06.4** Solution Pack bundle/install planner.
-- **FH-KUIKA-06.5** update compatibility/diff and rollback-to-version planning.
+- **FH-KUIKA-06.1** package manifest/bundle format. — COMPLETE
+- **FH-KUIKA-06.2** source-pinned catalog metadata + SHA-256 provenance digest. — COMPLETE (external cryptographic signing deferred until external distribution)
+- **FH-KUIKA-06.3** Role Marketplace UI. — COMPLETE
+- **FH-KUIKA-06.4** Solution Pack bundle/install planner. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-06.5** update compatibility/diff and rollback-to-version planning. — COMPLETE PRE-CUTOVER
 
 ---
 
@@ -586,12 +586,12 @@ Knowledge Explorer:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-07.1** query/retrieval contracts.
-- **FH-KUIKA-07.2** lineage-first hybrid retriever.
-- **FH-KUIKA-07.3** bounded local index/vector adapter.
-- **FH-KUIKA-07.4** Knowledge Explorer UI.
-- **FH-KUIKA-07.5** provenance-bearing answer package.
-- **FH-KUIKA-07.6** retrieval eval suite.
+- **FH-KUIKA-07.1** query/retrieval contracts. — COMPLETE
+- **FH-KUIKA-07.2** lineage-first hybrid retriever. — COMPLETE
+- **FH-KUIKA-07.3** bounded local index/vector adapter. — COMPLETE
+- **FH-KUIKA-07.4** Knowledge Explorer UI. — COMPLETE
+- **FH-KUIKA-07.5** provenance-bearing answer package. — COMPLETE
+- **FH-KUIKA-07.6** retrieval eval suite. — COMPLETE
 
 ## Acceptance criteria
 
