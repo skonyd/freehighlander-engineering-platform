@@ -153,7 +153,6 @@ test('knowledge eval keeps semantic discovery below authoritative retrieval', ()
   assert.equal(retrieval.results.at(-1)?.resultClass, 'DISCOVERY');
 });
 
-
 test('Knowledge Explorer HTTP query returns provenance-bearing exact artifact results', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'fh-kuika-knowledge-'));
   const file = path.join(root, 'telemetry.sqlite');
@@ -189,14 +188,34 @@ test('Knowledge Explorer HTTP query returns provenance-bearing exact artifact re
       last_seen_timestamp TEXT NOT NULL, state TEXT NOT NULL, last_event_hash TEXT NOT NULL
     ) STRICT;
   `);
-  db.prepare(`INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    'run-knowledge', 'task-knowledge', '2026-09-28T00:00:00.000Z', '2026-09-28T00:01:00.000Z',
-    'PASSED', 'skonyd/freehighlander-engineering-platform', null, 'main', 'b'.repeat(40),
-    revision, 'review', '1.0.0', 'workflow-hash', 0, 1, 0, 'run.completed'
+  db.prepare(
+    `INSERT INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    'run-knowledge',
+    'task-knowledge',
+    '2026-09-28T00:00:00.000Z',
+    '2026-09-28T00:01:00.000Z',
+    'PASSED',
+    'skonyd/freehighlander-engineering-platform',
+    null,
+    'main',
+    'b'.repeat(40),
+    revision,
+    'review',
+    '1.0.0',
+    'workflow-hash',
+    0,
+    1,
+    0,
+    'run.completed',
   );
   db.prepare(`INSERT INTO artifacts VALUES (?, ?, ?, ?, ?, ?)`).run(
-    'artifact-1', 'run-knowledge', '2026-09-28T00:00:10.000Z',
-    '2026-09-28T00:00:20.000Z', 'current', 'event-artifact'
+    'artifact-1',
+    'run-knowledge',
+    '2026-09-28T00:00:10.000Z',
+    '2026-09-28T00:00:20.000Z',
+    'current',
+    'event-artifact',
   );
   db.close();
 
