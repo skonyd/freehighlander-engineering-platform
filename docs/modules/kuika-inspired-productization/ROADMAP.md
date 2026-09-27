@@ -586,12 +586,12 @@ Knowledge Explorer:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-07.1** query/retrieval contracts.
-- **FH-KUIKA-07.2** lineage-first hybrid retriever.
-- **FH-KUIKA-07.3** bounded local index/vector adapter.
-- **FH-KUIKA-07.4** Knowledge Explorer UI.
-- **FH-KUIKA-07.5** provenance-bearing answer package.
-- **FH-KUIKA-07.6** retrieval eval suite.
+- **FH-KUIKA-07.1** query/retrieval contracts. — COMPLETE
+- **FH-KUIKA-07.2** lineage-first hybrid retriever. — COMPLETE
+- **FH-KUIKA-07.3** bounded local index/vector adapter. — COMPLETE
+- **FH-KUIKA-07.4** Knowledge Explorer UI. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-07.5** provenance-bearing answer package. — OPEN
+- **FH-KUIKA-07.6** retrieval eval suite. — OPEN
 
 ## Acceptance criteria
 
