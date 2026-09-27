@@ -1,4 +1,19 @@
 export {
+  createFhKuikaRolePackManifestV1,
+  createFhKuikaSolutionPackManifestV1,
+  rolePackManifestCanGrantAuthority,
+  rolePackManifestCanInstall,
+  solutionPackManifestCanActivate,
+  solutionPackManifestCanGrantAuthority,
+  type FhKuikaRolePackageReferenceV1,
+  type FhKuikaRolePackManifestV1,
+  type FhKuikaSolutionPackBlueprintReferenceV1,
+  type FhKuikaSolutionPackConnectorRequirementV1,
+  type FhKuikaSolutionPackManifestV1,
+  type FhKuikaSolutionPackWorkflowReferenceV1,
+} from './kuika-role-solution-pack.js';
+
+export {
   buildFhKuikaSolutionPackInstallPlanV1,
   diffFhKuikaMarketplaceRoleVersionsV1,
   getFhKuikaMarketplaceRoleV1,
