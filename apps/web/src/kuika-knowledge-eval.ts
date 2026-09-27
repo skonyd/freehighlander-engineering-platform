@@ -32,7 +32,10 @@ export function evaluateFhKuikaKnowledgeRetrievalV1(
 
   const provenanceComplete = retrieval.results.every((item) => {
     if (!item.provenance.sourceId.trim()) return false;
-    if (item.resultClass === 'AUTHORITATIVE' && item.provenance.sourceKind === 'LINEAGE_RELATION') {
+    if (
+      item.resultClass === 'AUTHORITATIVE' &&
+      item.provenance.sourceKind === 'LINEAGE_RELATION'
+    ) {
       return item.provenance.evidenceIds.length > 0;
     }
     return true;
