@@ -213,9 +213,7 @@ test('routing HTTP simulation is GET-only and validates scenario inputs', async 
     assert.equal(result.decision.selectedBindingId, 'fallback-review');
     assert.equal(result.decision.semanticOutcomeConsidered, false);
 
-    const invalid = await fetch(
-      base + '/api/modules/fh-kuika/routing/simulate?risk=IMPOSSIBLE',
-    );
+    const invalid = await fetch(base + '/api/modules/fh-kuika/routing/simulate?risk=IMPOSSIBLE');
     assert.equal(invalid.status, 400);
 
     const denied = await fetch(base + '/api/modules/fh-kuika/routing/simulate', {
