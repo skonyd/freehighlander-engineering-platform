@@ -175,6 +175,14 @@ export {
 } from './kuika-connector-catalog.js';
 
 export {
+  createFhKuikaWorkflowPublishCandidateV1,
+  workflowPublishCandidateCanExecute,
+  workflowPublishCandidateCanGrantAuthority,
+  workflowPublishCandidateCanPublish,
+  type FhKuikaWorkflowPublishCandidateV1,
+} from './kuika-workflow-publish.js';
+
+export {
   buildFhKuikaWorkflowVersionDiffV1,
   workflowVersionDiffCanGrantAuthority,
   workflowVersionDiffCanPublish,
