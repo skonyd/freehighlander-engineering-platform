@@ -1,0 +1,27 @@
+name: One-time KUIKA 07.4 sync main
+
+on:
+  push:
+    branches:
+      - feat/fh-kuika-07-4-knowledge-explorer
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: feat/fh-kuika-07-4-knowledge-explorer
+          fetch-depth: 0
+      - name: Merge current main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git merge --no-edit origin/main
+          git rm .github/workflows/one-time-kuika-07-4-sync-main.yml
+          git commit -m "ci: remove one-time KUIKA 07.4 main sync"
+          git push origin HEAD:feat/fh-kuika-07-4-knowledge-explorer
