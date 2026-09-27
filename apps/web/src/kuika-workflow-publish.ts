@@ -36,7 +36,12 @@ export function createFhKuikaWorkflowPublishCandidateV1(
     errors.push('previous and candidate workflow ids must match');
   }
 
-  if (previous && compareSemver(next.version, previous.version) <= 0) {
+  if (
+    previous &&
+    isSemver(next.version) &&
+    isSemver(previous.version) &&
+    compareSemver(next.version, previous.version) <= 0
+  ) {
     errors.push('candidate workflow version must be greater than previous version');
   }
 
@@ -100,6 +105,10 @@ function compareSemver(left: string, right: string): number {
     if (a[index] !== b[index]) return a[index] - b[index];
   }
   return 0;
+}
+
+function isSemver(value: string): boolean {
+  return /^\d+\.\d+\.\d+$/.test(value);
 }
 
 function parseSemver(value: string): readonly [number, number, number] {
