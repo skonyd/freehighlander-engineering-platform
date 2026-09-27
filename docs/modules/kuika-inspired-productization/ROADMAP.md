@@ -538,7 +538,7 @@ Role card:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-06.1** package manifest/bundle format.
+- **FH-KUIKA-06.1** package manifest/bundle format. — COMPLETE
 - **FH-KUIKA-06.2** signed/pinned catalog metadata and provenance.
 - **FH-KUIKA-06.3** Role Marketplace UI.
 - **FH-KUIKA-06.4** Solution Pack bundle/install planner.
