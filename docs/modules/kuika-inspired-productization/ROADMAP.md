@@ -590,8 +590,8 @@ Knowledge Explorer:
 - **FH-KUIKA-07.2** lineage-first hybrid retriever. — COMPLETE
 - **FH-KUIKA-07.3** bounded local index/vector adapter. — COMPLETE
 - **FH-KUIKA-07.4** Knowledge Explorer UI. — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-07.5** provenance-bearing answer package. — OPEN
-- **FH-KUIKA-07.6** retrieval eval suite. — OPEN
+- **FH-KUIKA-07.5** provenance-bearing answer package. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-07.6** retrieval eval suite. — COMPLETE
 
 ## Acceptance criteria
 
