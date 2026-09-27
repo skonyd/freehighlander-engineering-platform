@@ -1,7 +1,4 @@
-import {
-  validateFhKuikaKnowledgeResultV1,
-  type FhKuikaKnowledgeResultV1,
-} from './kuika-knowledge-contract.js';
+import { validateFhKuikaKnowledgeResultV1 } from './kuika-knowledge-contract.js';
 import type { FhKuikaKnowledgeRetrievalResultV1 } from './kuika-knowledge-retriever.js';
 
 export interface FhKuikaKnowledgeEvalCaseV1 {
