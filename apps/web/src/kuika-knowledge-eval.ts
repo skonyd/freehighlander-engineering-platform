@@ -28,14 +28,13 @@ export function evaluateFhKuikaKnowledgeRetrievalV1(
   );
   const missingAuthoritativeIds = required.filter((id) => !authoritativeIds.has(id));
   const authoritativeRecall =
-    required.length === 0 ? 1 : (required.length - missingAuthoritativeIds.length) / required.length;
+    required.length === 0
+      ? 1
+      : (required.length - missingAuthoritativeIds.length) / required.length;
 
   const provenanceComplete = retrieval.results.every((item) => {
     if (!item.provenance.sourceId.trim()) return false;
-    if (
-      item.resultClass === 'AUTHORITATIVE' &&
-      item.provenance.sourceKind === 'LINEAGE_RELATION'
-    ) {
+    if (item.resultClass === 'AUTHORITATIVE' && item.provenance.sourceKind === 'LINEAGE_RELATION') {
       return item.provenance.evidenceIds.length > 0;
     }
     return true;
