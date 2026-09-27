@@ -805,17 +805,15 @@ function parseFhKuikaRoutineRoute(pathname: string): {
   readonly routineId: string;
   readonly resource: 'detail' | 'plan' | 'dispatch-preview' | 'telemetry-preview';
 } | null {
-  const match = /^\/api\/modules\/fh-kuika\/routines\/([^/]+)(?:\/(plan|dispatch-preview|telemetry-preview))?$/.exec(
-    pathname,
-  );
+  const match =
+    /^\/api\/modules\/fh-kuika\/routines\/([^/]+)(?:\/(plan|dispatch-preview|telemetry-preview))?$/.exec(
+      pathname,
+    );
   if (!match?.[1]) return null;
   return {
     routineId: decodeURIComponent(match[1]),
     resource: (match[2] ?? 'detail') as
-      | 'detail'
-      | 'plan'
-      | 'dispatch-preview'
-      | 'telemetry-preview',
+      'detail' | 'plan' | 'dispatch-preview' | 'telemetry-preview',
   };
 }
 
