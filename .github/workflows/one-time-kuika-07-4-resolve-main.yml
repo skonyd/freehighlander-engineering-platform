@@ -1,0 +1,190 @@
+name: One-time KUIKA 07.4 resolve main
+
+on:
+  push:
+    branches:
+      - feat/fh-kuika-07-4-knowledge-explorer
+
+permissions:
+  contents: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: feat/fh-kuika-07-4-knowledge-explorer
+          fetch-depth: 0
+      - name: Merge main and apply additive Knowledge Explorer delta
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git merge --no-commit origin/main || true
+          CONFLICTS="$(git diff --name-only --diff-filter=U | sort)"
+          EXPECTED="$(printf '%s\n' BACKLOG.md apps/web/src/index.ts apps/web/src/server.ts | sort)"
+          test "$CONFLICTS" = "$EXPECTED"
+          git checkout --theirs BACKLOG.md apps/web/src/index.ts apps/web/src/server.ts
+          python - <<'PY'
+          from pathlib import Path
+
+          backlog = Path('BACKLOG.md').read_text()
+          old = "- [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1"
+          new = "- [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1 — .1–.4 complete pre-cutover; .5–.6 open"
+          if old not in backlog and new not in backlog:
+              raise SystemExit('FH-KUIKA-07 backlog marker missing')
+          backlog = backlog.replace(old, new, 1)
+          Path('BACKLOG.md').write_text(backlog)
+
+          index = Path('apps/web/src/index.ts').read_text()
+          block = """export {
+  FH_KUIKA_KNOWLEDGE_EXPLORER_HTML,
+  knowledgeExplorerPageCanGrantAuthority,
+  knowledgeExplorerPageCanInvokeModel,
+  knowledgeExplorerPageCanMutateRuntime,
+} from './kuika-knowledge-ui.js';
+
+"""
+          if "from './kuika-knowledge-ui.js';" not in index:
+              index = block + index
+          Path('apps/web/src/index.ts').write_text(index)
+
+          server = Path('apps/web/src/server.ts').read_text()
+          imports = """import {
+  createFhKuikaKnowledgeQueryV1,
+  buildFhKuikaKnowledgeRetrievalPlanV1,
+} from './kuika-knowledge-contract.js';
+import {
+  retrieveFhKuikaKnowledgeV1,
+  type FhKuikaKnowledgeLineageSourceV1,
+} from './kuika-knowledge-retriever.js';
+import { FH_KUIKA_KNOWLEDGE_EXPLORER_HTML } from './kuika-knowledge-ui.js';
+"""
+          marker = "import { FH_KUIKA_ROUTING_HTML } from './kuika-routing-ui.js';\n"
+          if "FH_KUIKA_KNOWLEDGE_EXPLORER_HTML" not in server:
+              if marker not in server:
+                  raise SystemExit('routing import marker missing')
+              server = server.replace(marker, imports + marker, 1)
+
+          if "readonly knowledgeSource?: FhKuikaKnowledgeLineageSourceV1;" not in server:
+              server = server.replace(
+                  "  readonly externalStatusProvider?: ExternalStatusProvider;\n",
+                  "  readonly externalStatusProvider?: ExternalStatusProvider;\n  readonly knowledgeSource?: FhKuikaKnowledgeLineageSourceV1;\n",
+                  1,
+              )
+
+          old_call = "    void handleRequest(request, response, readModel, databasePath, externalStatusProvider);"
+          new_call = """    void handleRequest(
+      request,
+      response,
+      readModel,
+      databasePath,
+      externalStatusProvider,
+      options.knowledgeSource,
+    );"""
+          if old_call in server:
+              server = server.replace(old_call, new_call, 1)
+
+          old_sig = "  externalStatusProvider: ExternalStatusProvider,\n): Promise<void> {"
+          new_sig = "  externalStatusProvider: ExternalStatusProvider,\n  knowledgeSource: FhKuikaKnowledgeLineageSourceV1 | undefined,\n): Promise<void> {"
+          if "knowledgeSource: FhKuikaKnowledgeLineageSourceV1 | undefined" not in server:
+              if old_sig not in server:
+                  raise SystemExit('handleRequest signature marker missing')
+              server = server.replace(old_sig, new_sig, 1)
+
+          page_marker = """    if (url.pathname === '/api/health') {"""
+          page_block = """    if (url.pathname === '/modules/fh-kuika/knowledge/explorer') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_KNOWLEDGE_EXPLORER_HTML);
+      return;
+    }
+
+"""
+          if "/modules/fh-kuika/knowledge/explorer" not in server:
+              server = server.replace(page_marker, page_block + page_marker, 1)
+
+          api_marker = """    if (url.pathname === '/api/modules/fh-kuika/workflows/validate') {"""
+          api_block = """    if (url.pathname === '/api/modules/fh-kuika/knowledge/query') {
+      const mode = (url.searchParams.get('mode') ?? 'HYBRID').toUpperCase();
+      if (
+        ![
+          'EXACT_ENTITY',
+          'EXACT_REVISION',
+          'LINEAGE_TRAVERSAL',
+          'EVIDENCE_LOOKUP',
+          'HYBRID',
+        ].includes(mode)
+      ) {
+        json(response, 400, { error: 'invalid_knowledge_query_mode', mode });
+        return;
+      }
+
+      const entityId = url.searchParams.get('entityId');
+      const query = createFhKuikaKnowledgeQueryV1({
+        text: url.searchParams.get('text') ?? '',
+        mode: mode as Parameters<typeof createFhKuikaKnowledgeQueryV1>[0]['mode'],
+        ...(entityId === null ? {} : { entityId }),
+        includeSemanticDiscovery: url.searchParams.get('semantic') === 'true',
+        maxDepth: readBoundedInteger(url, 'maxDepth', 4, 0, 10),
+        resultLimit: readBoundedInteger(url, 'resultLimit', 25, 1, 100),
+      });
+      const plan = buildFhKuikaKnowledgeRetrievalPlanV1(query);
+
+      if (!knowledgeSource) {
+        json(response, 200, {
+          sourceAvailable: false,
+          plan,
+          retrieval: null,
+          authority: 'NONE',
+        });
+        return;
+      }
+
+      json(response, 200, {
+        sourceAvailable: true,
+        plan,
+        retrieval: retrieveFhKuikaKnowledgeV1(knowledgeSource, query),
+        authority: 'NONE',
+      });
+      return;
+    }
+
+"""
+          if "/api/modules/fh-kuika/knowledge/query" not in server:
+              if api_marker not in server:
+                  raise SystemExit('workflow validation marker missing')
+              server = server.replace(api_marker, api_block + api_marker, 1)
+
+          helper_marker = "function readLimit(url: URL, defaultValue: number): number {"
+          helper = """function readBoundedInteger(
+  url: URL,
+  parameter: string,
+  defaultValue: number,
+  minimum: number,
+  maximum: number,
+): number {
+  const raw = url.searchParams.get(parameter);
+  if (!raw) return defaultValue;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < minimum || value > maximum) {
+    throw new Error(parameter + ' must be an integer between ' + minimum + ' and ' + maximum);
+  }
+  return value;
+}
+
+"""
+          if "function readBoundedInteger(" not in server:
+              if helper_marker not in server:
+                  raise SystemExit('readLimit marker missing')
+              server = server.replace(helper_marker, helper + helper_marker, 1)
+
+          Path('apps/web/src/server.ts').write_text(server)
+          PY
+          git add BACKLOG.md apps/web/src/index.ts apps/web/src/server.ts
+          git rm -f .github/workflows/one-time-kuika-07-4-sync-main.yml 2>/dev/null || true
+          git rm .github/workflows/one-time-kuika-07-4-resolve-main.yml
+          npx prettier --write apps/web/src/index.ts apps/web/src/server.ts
+          git add apps/web/src/index.ts apps/web/src/server.ts
+          git commit -m "feat(web): sync FH-KUIKA-07.4 Knowledge Explorer with current main"
+          git push origin HEAD:feat/fh-kuika-07-4-knowledge-explorer
