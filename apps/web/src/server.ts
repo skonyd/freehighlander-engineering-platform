@@ -3,6 +3,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { renderFhKuikaAreaHtml } from './kuika-area-ui.js';
+import { FH_KUIKA_KNOWLEDGE_HTML } from './kuika-knowledge-ui.js';
+import { createFhKuikaDashboardKnowledgeSourceV1 } from './kuika-knowledge-dashboard-source.js';
+import { createFhKuikaKnowledgeQueryV1 } from './kuika-knowledge-contract.js';
+import { retrieveFhKuikaKnowledgeV1 } from './kuika-knowledge-retriever.js';
+import { buildFhKuikaKnowledgeAnswerPackageV1 } from './kuika-knowledge-answer.js';
 import { FH_KUIKA_BLUEPRINTS_HTML } from './kuika-blueprint-ui.js';
 import {
   getFhKuikaCuratedBlueprintV1,
@@ -205,7 +210,7 @@ async function handleRequest(
     }
 
     if (url.pathname === '/modules/fh-kuika/knowledge') {
-      html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('KNOWLEDGE'));
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_KNOWLEDGE_HTML);
       return;
     }
 
@@ -430,6 +435,37 @@ async function handleRequest(
         home.roleBindings,
       );
       json(response, 200, { result });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/knowledge/query') {
+      const text = url.searchParams.get('text') ?? '';
+      const mode = (url.searchParams.get('mode') ?? 'HYBRID').toUpperCase();
+      if (!['HYBRID', 'EXACT_ENTITY', 'EXACT_REVISION', 'LINEAGE_TRAVERSAL', 'EVIDENCE_LOOKUP'].includes(mode)) {
+        json(response, 400, { error: 'invalid_knowledge_query_mode', mode });
+        return;
+      }
+
+      const entityId =
+        url.searchParams.get('entityId') ??
+        (mode === 'HYBRID' && text.trim() ? text.trim() : undefined);
+      const repository = url.searchParams.get('repository');
+      const sha = url.searchParams.get('sha');
+      const query = createFhKuikaKnowledgeQueryV1({
+        text,
+        mode: mode as Parameters<typeof createFhKuikaKnowledgeQueryV1>[0]['mode'],
+        ...(entityId ? { entityId } : {}),
+        ...(repository && sha ? { revision: { repository, sha } } : {}),
+        maxDepth: Number(url.searchParams.get('maxDepth') ?? '4'),
+        includeSemanticDiscovery: false,
+        resultLimit: Number(url.searchParams.get('limit') ?? '25'),
+      });
+
+      const retrieval = retrieveFhKuikaKnowledgeV1(
+        createFhKuikaDashboardKnowledgeSourceV1(readModel),
+        query,
+      );
+      json(response, 200, buildFhKuikaKnowledgeAnswerPackageV1(retrieval));
       return;
     }
 
