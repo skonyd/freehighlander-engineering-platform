@@ -43,6 +43,15 @@ import {
 } from './kuika-routine-catalog.js';
 import { buildFhKuikaRoutineActivationPlanV1 } from './kuika-routines.js';
 import { FH_KUIKA_ROUTING_HTML } from './kuika-routing-ui.js';
+import {
+  createFhKuikaKnowledgeQueryV1,
+  buildFhKuikaKnowledgeRetrievalPlanV1,
+} from './kuika-knowledge-contract.js';
+import {
+  retrieveFhKuikaKnowledgeV1,
+  type FhKuikaKnowledgeLineageSourceV1,
+} from './kuika-knowledge-retriever.js';
+import { FH_KUIKA_KNOWLEDGE_EXPLORER_HTML } from './kuika-knowledge-ui.js';
 import { simulateFhKuikaRoutingScenarioV1 } from './kuika-routing-simulation.js';
 import {
   getFhKuikaConnectorCatalogItemV1,
@@ -62,6 +71,7 @@ import { DashboardReadModel, MissingDashboardDatabaseError } from './read-model.
 export interface DashboardServerOptions {
   readonly databasePath?: string;
   readonly externalStatusProvider?: ExternalStatusProvider;
+  readonly knowledgeSource?: FhKuikaKnowledgeLineageSourceV1;
 }
 
 export interface StartedDashboardServer {
@@ -79,7 +89,14 @@ export function createDashboardServer(options: DashboardServerOptions = {}) {
     options.externalStatusProvider ?? createGithubExternalStatusProviderFromEnv();
 
   return createServer((request, response) => {
-    void handleRequest(request, response, readModel, databasePath, externalStatusProvider);
+    void handleRequest(
+      request,
+      response,
+      readModel,
+      databasePath,
+      externalStatusProvider,
+      options.knowledgeSource,
+    );
   });
 }
 
@@ -117,6 +134,7 @@ async function handleRequest(
   readModel: DashboardReadModel,
   databasePath: string,
   externalStatusProvider: ExternalStatusProvider,
+  knowledgeSource: FhKuikaKnowledgeLineageSourceV1 | undefined,
 ): Promise<void> {
   try {
     const method = request.method ?? 'GET';
@@ -194,6 +212,11 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika/knowledge') {
       html(response, method === 'HEAD' ? '' : renderFhKuikaAreaHtml('KNOWLEDGE'));
+      return;
+    }
+
+    if (url.pathname === '/modules/fh-kuika/knowledge/explorer') {
+      html(response, method === 'HEAD' ? '' : FH_KUIKA_KNOWLEDGE_EXPLORER_HTML);
       return;
     }
 
@@ -388,6 +411,48 @@ async function handleRequest(
           | 'UNKNOWN',
       });
       json(response, 200, { decision });
+      return;
+    }
+
+    if (url.pathname === '/api/modules/fh-kuika/knowledge/query') {
+      const mode = (url.searchParams.get('mode') ?? 'HYBRID').toUpperCase();
+      if (
+        !['EXACT_ENTITY', 'EXACT_REVISION', 'LINEAGE_TRAVERSAL', 'EVIDENCE_LOOKUP', 'HYBRID'].includes(
+          mode,
+        )
+      ) {
+        json(response, 400, { error: 'invalid_knowledge_query_mode', mode });
+        return;
+      }
+
+      const query = createFhKuikaKnowledgeQueryV1({
+        text: url.searchParams.get('text') ?? '',
+        mode: mode as Parameters<typeof createFhKuikaKnowledgeQueryV1>[0]['mode'],
+        ...(url.searchParams.get('entityId')
+          ? { entityId: url.searchParams.get('entityId') ?? undefined }
+          : {}),
+        includeSemanticDiscovery: url.searchParams.get('semantic') === 'true',
+        maxDepth: readBoundedInteger(url, 'maxDepth', 4, 0, 10),
+        resultLimit: readBoundedInteger(url, 'resultLimit', 25, 1, 100),
+      });
+      const plan = buildFhKuikaKnowledgeRetrievalPlanV1(query);
+
+      if (!knowledgeSource) {
+        json(response, 200, {
+          sourceAvailable: false,
+          plan,
+          retrieval: null,
+          authority: 'NONE',
+        });
+        return;
+      }
+
+      json(response, 200, {
+        sourceAvailable: true,
+        plan,
+        retrieval: retrieveFhKuikaKnowledgeV1(knowledgeSource, query),
+        authority: 'NONE',
+      });
       return;
     }
 
@@ -616,6 +681,24 @@ function parseRunRoute(pathname: string): {
     runId: decodeURIComponent(match[1]),
     resource: (match[2] ?? 'detail') as 'detail' | 'events' | 'model-calls' | 'artifacts',
   };
+}
+
+function readBoundedInteger(
+  url: URL,
+  parameter: string,
+  defaultValue: number,
+  minimum: number,
+  maximum: number,
+): number {
+  const raw = url.searchParams.get(parameter);
+  if (!raw) return defaultValue;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < minimum || value > maximum) {
+    throw new Error(
+      parameter + ' must be an integer between ' + minimum + ' and ' + maximum,
+    );
+  }
+  return value;
 }
 
 function readLimit(url: URL, defaultValue: number): number {
