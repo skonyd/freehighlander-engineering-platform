@@ -1,4 +1,13 @@
 export {
+  buildFhKuikaKnowledgeAnswerPackageV1,
+  knowledgeAnswerPackageCanGrantAuthority,
+  knowledgeAnswerPackageCanPromoteDiscovery,
+  knowledgeAnswerPackageRequiresModelCall,
+  type FhKuikaKnowledgeAnswerItemV1,
+  type FhKuikaKnowledgeAnswerPackageV1,
+} from './kuika-knowledge-answer.js';
+
+export {
   FH_KUIKA_KNOWLEDGE_EXPLORER_HTML,
   knowledgeExplorerPageCanGrantAuthority,
   knowledgeExplorerPageCanInvokeModel,
