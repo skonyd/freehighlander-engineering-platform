@@ -83,7 +83,7 @@ Umbrella: #88.
 - [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0
 - [ ] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1
 - [ ] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1
-- [ ] FH-KUIKA-08 Routines / Trigger Engine — P1
+- [ ] FH-KUIKA-08 Routines / Trigger Engine — P1 — .1–.4 complete/prepared; .5 activation/telemetry blocked by FH-20
 - [ ] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1
 - [ ] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 / ADR-required
 
