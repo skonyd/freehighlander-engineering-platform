@@ -1,4 +1,13 @@
 export {
+  buildFhKuikaWorkflowPublicationCandidateV1,
+  workflowPublicationCandidateCanExecute,
+  workflowPublicationCandidateCanGrantAuthority,
+  workflowPublicationCandidateCanPersist,
+  workflowPublicationCandidateCanPublishDirectly,
+  type FhKuikaWorkflowPublicationCandidateV1,
+} from './kuika-workflow-publication.js';
+
+export {
   buildFhKuikaWorkflowReplayPreviewV1,
   workflowReplayPreviewCanExecute,
   workflowReplayPreviewCanGrantAuthority,
