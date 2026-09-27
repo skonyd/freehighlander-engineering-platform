@@ -701,11 +701,11 @@ Reason: preferred binding unavailable; next eligible binding satisfies policy.
 
 ## Proposed PR slices
 
-- **FH-KUIKA-09.1** deterministic constraint model. — COMPLETE — COMPLETE
-- **FH-KUIKA-09.2** routing decision evidence contract. — COMPLETE — COMPLETE
-- **FH-KUIKA-09.3** telemetry-derived cost/latency/availability features. — COMPLETE PRE-CUTOVER — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-09.4** simulation and what-if UI. — COMPLETE — COMPLETE
-- **FH-KUIKA-09.5** availability-only failover integration contract/plan. — COMPLETE PRE-CUTOVER; runtime application remains Core-governed — PRE-CUTOVER BRIDGE COMPLETE; runtime apply remains unauthorized
+- **FH-KUIKA-09.1** deterministic constraint model. — COMPLETE
+- **FH-KUIKA-09.2** routing decision evidence contract. — COMPLETE
+- **FH-KUIKA-09.3** telemetry-derived cost/latency/availability features. — COMPLETE PRE-CUTOVER
+- **FH-KUIKA-09.4** simulation and what-if UI. — COMPLETE
+- **FH-KUIKA-09.5** availability-only failover integration contract/plan. — COMPLETE PRE-CUTOVER; runtime application remains Core-governed and unauthorized until the relevant authority gate
 
 ---
 
@@ -853,15 +853,15 @@ FH-KUIKA-10 Enterprise identity is independent strategic work and requires a new
 ## Recommended implementation order
 
 1. FH-KUIKA-01
-2. FH-KUIKA-02.1–41.4
+2. FH-KUIKA-02.1–02.4
 3. FH-KUIKA-03
 4. FH-KUIKA-04
-5. FH-KUIKA-05.1–44.5
+5. FH-KUIKA-05.1–05.5
 6. FH-KUIKA-06
 7. FH-KUIKA-07
 8. FH-KUIKA-09
 9. FH-KUIKA-08 definition/UI preparation
-10. post-FH-20 activation slices: FH-KUIKA-02.5, FH-KUIKA-05.6, FH-KUIKA-08.5 and other authority-bearing mutations
+10. post-FH-20 activation slices: FH-KUIKA-02.5, FH-KUIKA-05.6, FH-KUIKA-08 authority-bearing activation and other authority-bearing mutations
 11. FH-KUIKA-10 only after explicit product-boundary decision
 
 This ordering maximizes visible product value while preserving the current authority boundary.
