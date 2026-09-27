@@ -68,6 +68,10 @@ packages/routines
 Any new package not already allowed by the frozen architecture requires normal architecture-contract evolution before introduction. Avoid a generic `packages/productization` dumping ground.
 
 
+## Pre-cutover completion boundary
+
+Authority-neutral FH-KUIKA productization work is considered pre-cutover complete through FH-KUIKA-09 when this roadmap marks its preparation slices complete. The remaining executable activation points stay owned by Core governance and must not be inferred from module readiness. FH-KUIKA-10 remains outside this boundary and requires an explicit architecture decision.
+
 ## Product principles
 
 1. **Authority is always visible.** Every screen that can lead to mutation shows the current authority, risk tier, policy and approval state.
