@@ -110,7 +110,6 @@ test('Connector Hub HTTP routes expose catalog/review and remain GET-only', asyn
   }
 });
 
-
 test('Connector credential configuration accepts only opaque SecretHandle references', () => {
   const connector = getFhKuikaConnectorCatalogItemV1('kubernetes-mcp');
   assert.ok(connector);
