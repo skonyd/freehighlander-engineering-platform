@@ -1,4 +1,22 @@
 export {
+  buildFhKuikaKnowledgeAnswerPackageV1,
+  knowledgeAnswerPackageCanGenerateUngroundedClaims,
+  knowledgeAnswerPackageCanGrantAuthority,
+  knowledgeAnswerPackageCanInvokeModel,
+  type FhKuikaKnowledgeAnswerPackageV1,
+} from './kuika-knowledge-answer.js';
+
+export {
+  evaluateFhKuikaKnowledgeRetrievalV1,
+  knowledgeEvalSuiteCanGrantAuthority,
+  knowledgeEvalSuiteCanInvokeModel,
+  knowledgeEvalSuiteCanPromoteSemanticResults,
+  type FhKuikaKnowledgeEvalCaseResultV1,
+  type FhKuikaKnowledgeEvalCaseV1,
+  type FhKuikaKnowledgeEvalSuiteResultV1,
+} from './kuika-knowledge-eval.js';
+
+export {
   FH_KUIKA_KNOWLEDGE_EXPLORER_HTML,
   knowledgeExplorerPageCanGrantAuthority,
   knowledgeExplorerPageCanInvokeModel,
