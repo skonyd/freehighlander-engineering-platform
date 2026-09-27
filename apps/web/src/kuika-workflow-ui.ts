@@ -55,7 +55,7 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
   <div>
     <div class="eyebrow">FH-KUIKA · Build</div>
     <h1>Workflow Studio</h1>
-    <div class="muted">Local draft canvas · no publish · no execution</div>
+    <div class="muted">Local draft canvas · publication preview only · no execution</div>
   </div>
   <div><a href="/modules/fh-kuika/build">← Build</a> · <a href="/modules/fh-kuika">Overview</a></div>
 </header>
@@ -77,6 +77,7 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
           <button type="button" id="validate">Validate</button>
           <button type="button" id="simulate">Simulate</button>
           <button type="button" id="review-diff">Review diff</button>
+          <button type="button" id="publish-preview">Publish preview</button>
           <button type="button" id="reset">Reset</button>
           <span class="pill">AUTHORITY NONE</span>
         </div>
@@ -100,7 +101,7 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
       <h2>Inspector</h2>
       <div id="inspector" class="muted">Select a node.</div>
       <div class="boundary">
-        Publish and Execute are intentionally unavailable. Canonical validation remains owned by Core.
+        Publish preview is inspection only. Canonical publish and Execute remain unavailable; Core governance owns activation.
       </div>
     </aside>
   </section>
@@ -132,12 +133,17 @@ async function inspectDraft(mode){
   const labels={
     validate:'Validating canonical draft…',
     simulate:'Simulating deterministic draft…',
-    diff:'Building non-authoritative version diff…'
+    diff:'Building non-authoritative version diff…',
+    publish:'Building immutable publication candidate…'
   };
   output.textContent=labels[mode];
   try{
     const definition=encodeURIComponent(JSON.stringify(buildDefinition()));
-    const suffix=mode==='simulate'?'simulate':mode==='diff'?'diff':'validate';
+    const suffix=
+      mode==='simulate'?'simulate':
+      mode==='diff'?'diff':
+      mode==='publish'?'publish-preview':
+      'validate';
     const result=await api('/api/modules/fh-kuika/workflows/'+suffix+'?definition='+definition);
     if(mode==='validate'){
       renderValidation(result);
@@ -147,10 +153,25 @@ async function inspectDraft(mode){
       renderSimulation(result);
       return;
     }
+    if(mode==='publish'){
+      renderPublicationPreview(result);
+      return;
+    }
     output.textContent=JSON.stringify(result,null,2);
   }catch(error){
     output.textContent='Inspection failed: '+error.message;
   }
+}
+
+function renderPublicationPreview(result){
+  const output=document.querySelector('#validation-output');
+  output.innerHTML=
+    '<strong>Publication candidate · '+esc(result.version)+'</strong>'+
+    '<div class="issue-meta">workflow hash '+esc(result.workflowHash)+'</div>'+
+    '<div class="issue-meta">publish authorized '+esc(result.publishAuthorized)+
+      ' · persistence performed '+esc(result.persistencePerformed)+
+      ' · execution authorized '+esc(result.executionAuthorized)+'</div>'+
+    '<pre>'+esc(JSON.stringify(result.versionDiff,null,2))+'</pre>';
 }
 
 function renderSimulation(result){
@@ -292,6 +313,7 @@ document.querySelectorAll('[data-kind]').forEach(button=>
 document.querySelector('#validate').addEventListener('click',()=>void inspectDraft('validate'));
 document.querySelector('#simulate').addEventListener('click',()=>void inspectDraft('simulate'));
 document.querySelector('#review-diff').addEventListener('click',()=>void inspectDraft('diff'));
+document.querySelector('#publish-preview').addEventListener('click',()=>void inspectDraft('publish'));
 document.querySelector('#replay-run').addEventListener('click',()=>void loadReplayPreview());
 document.querySelector('#reset').addEventListener('click',()=>{
   nodes=[];

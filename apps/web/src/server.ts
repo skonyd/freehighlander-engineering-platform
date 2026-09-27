@@ -31,6 +31,7 @@ import { FH_KUIKA_WORKFLOW_STUDIO_HTML } from './kuika-workflow-ui.js';
 import { validateFhKuikaWorkflowDraftDefinitionV1 } from './kuika-workflow-draft.js';
 import { simulateFhKuikaWorkflowDraftV1 } from './kuika-workflow-simulation.js';
 import { buildFhKuikaWorkflowVersionDiffV1 } from './kuika-workflow-diff.js';
+import { buildFhKuikaWorkflowPublicationCandidateV1 } from './kuika-workflow-publication.js';
 import { buildFhKuikaWorkflowReplayPreviewV1 } from './kuika-workflow-replay.js';
 import { buildFhKuikaWorkbenchSnapshotV1, type FhKuikaWorkbenchMode } from './kuika-workbench.js';
 import { FH_KUIKA_OPERATIONS_HTML } from './kuika-operations-ui.js';
@@ -50,6 +51,7 @@ import {
   listFhKuikaConnectorCatalogV1,
 } from './kuika-connector-catalog.js';
 import { buildFhKuikaConnectorInstallReviewV1 } from './kuika-connector-install-review.js';
+import { createFhKuikaConnectorCredentialConfigDraftV1 } from './kuika-connector-credential-config.js';
 import { DASHBOARD_HTML } from './ui.js';
 import {
   createGithubExternalStatusProviderFromEnv,
@@ -420,6 +422,12 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/api/modules/fh-kuika/workflows/publish-preview') {
+      const definition = readWorkflowDefinition(url);
+      json(response, 200, buildFhKuikaWorkflowPublicationCandidateV1(null, definition));
+      return;
+    }
+
     if (url.pathname === '/api/modules/fh-kuika/workflows/replay') {
       const runId = url.searchParams.get('runId') ?? '';
       const preview = buildFhKuikaWorkflowReplayPreviewV1(readModel, runId, readLimit(url, 5_000));
@@ -481,6 +489,12 @@ async function handleRequest(
         json(response, 404, {
           error: 'connector_not_found',
           connectorId: connectorRoute.connectorId,
+        });
+        return;
+      }
+      if (connectorRoute.resource === 'credential-config') {
+        json(response, 200, {
+          credentialConfig: createFhKuikaConnectorCredentialConfigDraftV1(connector),
         });
         return;
       }
@@ -604,10 +618,16 @@ function parseFhKuikaBlueprintRoute(pathname: string): {
 
 function parseFhKuikaConnectorRoute(pathname: string): {
   readonly connectorId: string;
+  readonly resource: 'review' | 'credential-config';
 } | null {
-  const match = /^\/api\/modules\/fh-kuika\/connectors\/([^/]+)\/review$/.exec(pathname);
-  if (!match?.[1]) return null;
-  return { connectorId: decodeURIComponent(match[1]) };
+  const match = /^\/api\/modules\/fh-kuika\/connectors\/([^/]+)\/(review|credential-config)$/.exec(
+    pathname,
+  );
+  if (!match?.[1] || !match[2]) return null;
+  return {
+    connectorId: decodeURIComponent(match[1]),
+    resource: match[2] as 'review' | 'credential-config',
+  };
 }
 
 function parseFhKuikaRunRoute(pathname: string): { readonly runId: string } | null {

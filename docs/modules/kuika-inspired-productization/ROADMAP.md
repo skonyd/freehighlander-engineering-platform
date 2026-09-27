@@ -421,7 +421,7 @@ Selecting a node exposes:
 - **FH-KUIKA-04.3** node inspector + policy/evidence/budget surfaces. — COMPLETE
 - **FH-KUIKA-04.4** deterministic validation visualization. — COMPLETE
 - **FH-KUIKA-04.5** simulation/replay preview. — COMPLETE
-- **FH-KUIKA-04.6** publish/version-diff lifecycle.
+- **FH-KUIKA-04.6** publish/version-diff lifecycle. — COMPLETE PRE-CUTOVER (immutable publication preview; canonical publish activation remains Core-governed)
 
 ## Acceptance criteria
 
@@ -474,11 +474,11 @@ Show before enablement:
 
 ## Proposed PR slices
 
-- **FH-KUIKA-05.1** ToolAdapter registry persistence/read model.
-- **FH-KUIKA-05.2** MCP discovery/normalization adapter.
-- **FH-KUIKA-05.3** connector install-review contract and permission diff.
-- **FH-KUIKA-05.4** Connector Hub UI.
-- **FH-KUIKA-05.5** credential-reference configuration using SecretHandle only.
+- **FH-KUIKA-05.1** ToolAdapter registry persistence/read model. — COMPLETE
+- **FH-KUIKA-05.2** MCP discovery/normalization adapter. — COMPLETE
+- **FH-KUIKA-05.3** connector install-review contract and permission diff. — COMPLETE
+- **FH-KUIKA-05.4** Connector Hub UI. — COMPLETE
+- **FH-KUIKA-05.5** credential-reference configuration using SecretHandle only. — COMPLETE PRE-CUTOVER
 - **FH-KUIKA-05.6** activation/runtime invocation after authority prerequisites.
 
 ## Acceptance criteria
