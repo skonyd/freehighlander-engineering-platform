@@ -492,7 +492,7 @@ async function handleRequest(
       const entityId = url.searchParams.get('entityId');
       const query = createFhKuikaKnowledgeQueryV1({
         text: url.searchParams.get('text') ?? '',
-        mode: mode as Parameters<typeof createFhKuikaKnowledgeQueryV1>[0]['mode'],
+        mode: mode as NonNullable<Parameters<typeof createFhKuikaKnowledgeQueryV1>[0]['mode']>,
         ...(entityId === null ? {} : { entityId }),
         includeSemanticDiscovery: url.searchParams.get('semantic') === 'true',
         maxDepth: readBoundedInteger(url, 'maxDepth', 4, 0, 10),
@@ -797,6 +797,23 @@ function parseRunRoute(pathname: string): {
     runId: decodeURIComponent(match[1]),
     resource: (match[2] ?? 'detail') as 'detail' | 'events' | 'model-calls' | 'artifacts',
   };
+}
+
+function readBoundedInteger(
+  url: URL,
+  name: string,
+  defaultValue: number,
+  minimum: number,
+  maximum: number,
+): number {
+  const raw = url.searchParams.get(name);
+  if (raw === null) return defaultValue;
+
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < minimum || value > maximum) {
+    throw new Error(`${name} must be an integer between ${minimum} and ${maximum}`);
+  }
+  return value;
 }
 
 function readLimit(url: URL, defaultValue: number): number {
