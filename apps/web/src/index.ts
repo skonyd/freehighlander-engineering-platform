@@ -1,4 +1,16 @@
 export {
+  createFhKuikaRoutineTelemetryObservationV1,
+  routineTelemetryCanActivateRoutine,
+  routineTelemetryCanInvokeModel,
+  routineTelemetryCanPersistFromPreview,
+  routineTelemetryCanSubmitToScheduler,
+  summarizeFhKuikaRoutineTelemetryV1,
+  type FhKuikaRoutineTelemetryObservationV1,
+  type FhKuikaRoutineTelemetryState,
+  type FhKuikaRoutineTelemetrySummaryV1,
+} from './kuika-routine-telemetry.js';
+
+export {
   createFhKuikaDashboardKnowledgeSourceV1,
   dashboardKnowledgeSourceCanGrantAuthority,
   dashboardKnowledgeSourceCanInventLineage,

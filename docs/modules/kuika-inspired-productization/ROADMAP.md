@@ -653,7 +653,7 @@ Routines page shows:
 - **FH-KUIKA-08.2** routine definitions and deterministic scheduler integration. — PRE-CUTOVER DISPATCH PREPARATION COMPLETE; scheduler submission remains unauthorized
 - **FH-KUIKA-08.3** webhook/event adapters. — METADATA ADAPTERS COMPLETE PRE-CUTOVER; live listeners remain disabled
 - **FH-KUIKA-08.4** Routines UI. — COMPLETE
-- **FH-KUIKA-08.5** authority-aware activation and failure/retry telemetry. — BLOCKED BY FH-20 for activation; telemetry remains open
+- **FH-KUIKA-08.5** authority-aware activation and failure/retry telemetry. — FAILURE/RETRY TELEMETRY PREPARATION COMPLETE; activation remains BLOCKED BY FH-20
 
 ---
 
