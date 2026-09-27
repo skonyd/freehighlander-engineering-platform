@@ -1,4 +1,12 @@
 export {
+  prepareFhKuikaWorkflowPublishCandidateV1,
+  workflowPublishCandidateCanExecute,
+  workflowPublishCandidateCanGrantAuthority,
+  workflowPublishCandidateCanPublish,
+  type FhKuikaWorkflowPublishCandidateV1,
+} from './kuika-workflow-publish.js';
+
+export {
   blueprintTelemetryCanGrantAuthority,
   blueprintTelemetryCanInvokeModel,
   blueprintTelemetryCanModifyBlueprint,
