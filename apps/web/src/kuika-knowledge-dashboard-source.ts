@@ -20,7 +20,7 @@ export function createFhKuikaDashboardKnowledgeSourceV1(
             provenance: {
               sourceKind: 'ARTIFACT',
               sourceId: artifact.artifactId,
-              ...(run.repository && run.headSha
+              ...(run.repository && run.headSha && /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(run.headSha)
                 ? { revision: { repository: run.repository, sha: run.headSha } }
                 : {}),
               evidenceIds: [artifact.artifactId],
