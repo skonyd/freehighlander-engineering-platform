@@ -413,13 +413,15 @@ async function handleRequest(
     }
 
     if (url.pathname === '/api/modules/fh-kuika/routing/simulate') {
-      const input = readFhKuikaRoutingSimulationInput(url);
+      const input = readFhKuikaRoutingSimulationInputOrRespond(url, response);
+      if (!input) return;
       json(response, 200, { decision: simulateFhKuikaRoutingScenarioV1(input) });
       return;
     }
 
     if (url.pathname === '/api/modules/fh-kuika/routing/telemetry-preview') {
-      const input = readFhKuikaRoutingSimulationInput(url);
+      const input = readFhKuikaRoutingSimulationInputOrRespond(url, response);
+      if (!input) return;
       const request = createFhKuikaRoutingSimulationRequestV1(input);
       const home = readModel.homeSnapshot();
       const result = evaluateFhKuikaRoutingWithTelemetryV1(
@@ -584,6 +586,19 @@ async function handleRequest(
 
     const message = error instanceof Error ? error.message : 'unknown error';
     json(response, 500, { error: 'dashboard_error', message });
+  }
+}
+
+function readFhKuikaRoutingSimulationInputOrRespond(
+  url: URL,
+  response: ServerResponse,
+): FhKuikaRoutingSimulationInputV1 | null {
+  try {
+    return readFhKuikaRoutingSimulationInput(url);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'invalid routing simulation input';
+    json(response, 400, { error: 'invalid_routing_simulation_input', message });
+    return null;
   }
 }
 
