@@ -1,4 +1,13 @@
 export {
+  connectorCredentialConfigCanAcceptRawSecret,
+  connectorCredentialConfigCanActivate,
+  connectorCredentialConfigCanGrantAuthority,
+  createFhKuikaConnectorCredentialConfigV1,
+  type FhKuikaConnectorCredentialBindingV1,
+  type FhKuikaConnectorCredentialConfigV1,
+} from './kuika-connector-credentials.js';
+
+export {
   connectorCredentialConfigCanAcceptRawSecrets,
   connectorCredentialConfigCanActivate,
   connectorCredentialConfigCanGrantAuthority,
