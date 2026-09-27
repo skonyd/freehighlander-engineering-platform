@@ -41,14 +41,14 @@ export function buildFhKuikaWorkflowPublicationCandidateV1(
       throw new Error('workflow publication candidate cannot change workflow id');
     }
     if (!isStrictlyNewerSemver(next.version, previous.version)) {
-      throw new Error('workflow publication candidate requires a strictly newer semantic version');
+      throw new Error(
+        'workflow publication candidate requires a strictly newer semantic version',
+      );
     }
   }
 
   const canonicalDefinition = deepFreeze(cloneDefinition(next));
-  const workflowHash = createHash('sha256')
-    .update(stableJson(canonicalDefinition))
-    .digest('hex');
+  const workflowHash = createHash('sha256').update(stableJson(canonicalDefinition)).digest('hex');
 
   return deepFreeze({
     schemaVersion: 1,
