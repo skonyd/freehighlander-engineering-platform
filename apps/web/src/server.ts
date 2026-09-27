@@ -731,9 +731,9 @@ function parseFhKuikaRoutineRoute(pathname: string): {
   readonly routineId: string;
   readonly resource: 'detail' | 'plan' | 'dispatch-preview' | 'telemetry-preview';
 } | null {
-  const match = /^\/api\/modules\/fh-kuika\/routines\/([^/]+)(?:\/(plan|dispatch-preview|telemetry-preview))?$/.exec(
-    pathname,
-  );
+  const pattern =
+    /^\/api\/modules\/fh-kuika\/routines\/([^/]+)(?:\/(plan|dispatch-preview|telemetry-preview))?$/;
+  const match = pattern.exec(pathname);
   if (!match?.[1]) return null;
   return {
     routineId: decodeURIComponent(match[1]),
