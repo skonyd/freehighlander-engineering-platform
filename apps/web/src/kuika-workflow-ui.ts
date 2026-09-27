@@ -76,7 +76,7 @@ export const FH_KUIKA_WORKFLOW_STUDIO_HTML = String.raw`<!doctype html>
         <div class="toolbar">
           <button type="button" id="validate">Validate</button>
           <button type="button" id="simulate">Simulate</button>
-          <button type="button" id="review-diff">Review diff</button>
+          <button type="button" id="review-diff">Review diff</button>\n          <button type="button" id="prepare-publish">Prepare publish</button>
           <button type="button" id="reset">Reset</button>
           <span class="pill">AUTHORITY NONE</span>
         </div>
@@ -132,12 +132,12 @@ async function inspectDraft(mode){
   const labels={
     validate:'Validating canonical draft…',
     simulate:'Simulating deterministic draft…',
-    diff:'Building non-authoritative version diff…'
+    diff:'Building non-authoritative version diff…',\n    publish:'Preparing immutable publish candidate…'
   };
   output.textContent=labels[mode];
   try{
     const definition=encodeURIComponent(JSON.stringify(buildDefinition()));
-    const suffix=mode==='simulate'?'simulate':mode==='diff'?'diff':'validate';
+    const suffix=mode==='simulate'?'simulate':mode==='diff'?'diff':mode==='publish'?'publish-candidate':'validate';
     const result=await api('/api/modules/fh-kuika/workflows/'+suffix+'?definition='+definition);
     if(mode==='validate'){
       renderValidation(result);
@@ -291,7 +291,7 @@ document.querySelectorAll('[data-kind]').forEach(button=>
 );
 document.querySelector('#validate').addEventListener('click',()=>void inspectDraft('validate'));
 document.querySelector('#simulate').addEventListener('click',()=>void inspectDraft('simulate'));
-document.querySelector('#review-diff').addEventListener('click',()=>void inspectDraft('diff'));
+document.querySelector('#review-diff').addEventListener('click',()=>void inspectDraft('diff'));\ndocument.querySelector('#prepare-publish').addEventListener('click',()=>void inspectDraft('publish'));
 document.querySelector('#replay-run').addEventListener('click',()=>void loadReplayPreview());
 document.querySelector('#reset').addEventListener('click',()=>{
   nodes=[];
