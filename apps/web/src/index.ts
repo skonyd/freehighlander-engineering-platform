@@ -1,4 +1,11 @@
 export {
+  FH_KUIKA_KNOWLEDGE_EXPLORER_HTML,
+  knowledgeExplorerPageCanGrantAuthority,
+  knowledgeExplorerPageCanInvokeModel,
+  knowledgeExplorerPageCanMutateRuntime,
+} from './kuika-knowledge-ui.js';
+
+export {
   buildFhKuikaSolutionPackInstallPlanV1,
   diffFhKuikaMarketplaceRoleVersionsV1,
   getFhKuikaMarketplaceRoleV1,
