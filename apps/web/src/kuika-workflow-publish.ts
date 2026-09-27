@@ -45,23 +45,19 @@ export function createFhKuikaWorkflowPublishCandidateV1(
     errors.push('candidate workflow version must be greater than previous version');
   }
 
+  const addedIssues = errors.slice(validation.errors.length).map((message) => ({
+    category: 'SCHEMA' as const,
+    message,
+    nodeId: null,
+    edgeRef: null,
+  }));
   const effectiveValidation: FhKuikaWorkflowDraftValidationV1 =
     errors.length === validation.errors.length
       ? validation
       : {
           valid: false,
           errors,
-          issues: [
-            ...validation.issues,
-            ...errors
-              .slice(validation.errors.length)
-              .map((message) => ({
-                category: 'SCHEMA' as const,
-                message,
-                nodeId: null,
-                edgeRef: null,
-              })),
-          ],
+          issues: [...validation.issues, ...addedIssues],
           requiresCanonicalPublishValidation: true,
         };
 
