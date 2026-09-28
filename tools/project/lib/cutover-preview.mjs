@@ -94,10 +94,7 @@ export function executeCutoverPreviewDocument(command, document) {
     const root = requireObject(document, 'preview input');
     const packet = requireObject(root.packet, 'packet');
     const observed = requireObject(root.observed, 'observed');
-    const systemPolicyDecision = requireObject(
-      root.systemPolicyDecision,
-      'systemPolicyDecision',
-    );
+    const systemPolicyDecision = requireObject(root.systemPolicyDecision, 'systemPolicyDecision');
 
     if (!Object.prototype.hasOwnProperty.call(root, 'humanDecision')) {
       throw new Error('preview input must explicitly include humanDecision (object or null)');
@@ -156,10 +153,7 @@ export function cutoverPreviewHelp() {
     schemaVersion: 1,
     status: 'OK',
     mode: 'HELP',
-    commands: [
-      'packet --input FILE',
-      'preview --input FILE',
-    ],
+    commands: ['packet --input FILE', 'preview --input FILE'],
     packetInput:
       'FILE contains V3CutoverApprovalPacketInput. Output includes the exact humanApprovalRequest.',
     previewInput:
