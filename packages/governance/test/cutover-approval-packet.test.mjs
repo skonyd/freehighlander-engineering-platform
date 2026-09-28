@@ -232,6 +232,43 @@ test('model quorum policy cannot authorize V3 cutover', () => {
   );
 });
 
+test('malformed runtime policy or human decision evidence fails closed', () => {
+  const packet = buildV3CutoverApprovalPacket(packetInput());
+
+  assert.throws(
+    () =>
+      evaluateV3CutoverApprovalPreview(
+        previewInput(packet, {
+          systemPolicyDecision: {
+            effect: 'UNSUPPORTED',
+            matchedRuleIds: ['bad-effect'],
+            policyHash: packet.humanGatePolicyHash,
+            reason: 'invalid effect',
+          },
+        }),
+      ),
+    /systemPolicyDecision\.effect is invalid/,
+  );
+
+  assert.throws(
+    () =>
+      evaluateV3CutoverApprovalPreview(
+        previewInput(packet, {
+          humanDecision: {
+            ...recordV3CutoverHumanDecision(packet, 'human-owner', 'APPROVE'),
+            decision: 'MAYBE',
+          },
+        }),
+      ),
+    /humanDecision\.decision is invalid/,
+  );
+
+  assert.throws(
+    () => recordV3CutoverHumanDecision(packet, 'human-owner', 'MAYBE'),
+    /must be APPROVE or DENY/,
+  );
+});
+
 test('tampered embedded request or packet hash fails closed', () => {
   const packet = buildV3CutoverApprovalPacket(packetInput());
 
