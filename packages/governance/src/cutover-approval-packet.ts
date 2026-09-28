@@ -9,10 +9,7 @@ import {
   type PolicyDecision,
   type PolicyEffect,
 } from './policy-engine.js';
-import {
-  evaluateV3CutoverReadiness,
-  type CutoverReadinessResult,
-} from './cutover-readiness.js';
+import { evaluateV3CutoverReadiness, type CutoverReadinessResult } from './cutover-readiness.js';
 
 const GIT_SHA_PATTERN = /^[a-f0-9]{40}$/;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
@@ -245,7 +242,8 @@ export function evaluateV3CutoverApprovalPreview(
   }
   if (input.humanDecision === null) reasons.push('human approval decision is missing');
   else if (!humanDecisionBound) reasons.push('human approval decision binding is invalid');
-  else if (input.humanDecision.decision !== 'APPROVE') reasons.push('human approval decision is DENY');
+  else if (input.humanDecision.decision !== 'APPROVE')
+    reasons.push('human approval decision is DENY');
   for (const reason of readiness.reasons) {
     if (!reasons.includes(reason)) reasons.push(reason);
   }
