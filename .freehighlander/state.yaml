@@ -233,6 +233,9 @@ fh20:
   cutover_allowed: false
   cutover_applied: false
   v3_authority: SHADOW_ONLY
+  approval_packet_preview: prepared_read_only
+  approval_packet_issue: 414
+  approval_packet_authority: none
   remaining_gate: exact-human-approval-plus-system-policy-allow-and-explicit-v3-promotion-review
 
 module_preparation_lane:
