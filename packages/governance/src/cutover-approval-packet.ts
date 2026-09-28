@@ -303,6 +303,46 @@ function validatePacket(packet: V3CutoverApprovalPacketV1): void {
   if (packet.authority !== 'NONE' || packet.authorityEnabled || packet.cutoverApplied) {
     throw new Error('cutover approval packet cannot carry authority');
   }
+  if (packet.finalAcceptedReferenceSha !== packet.parityReferenceSha) {
+    throw new Error('cutover approval packet parity reference is stale');
+  }
+
+  const request = packet.humanApprovalRequest;
+  if (
+    request.policyDecision.effect !== 'HUMAN_REQUIRED' ||
+    request.policyDecision.policyHash !== packet.humanGatePolicyHash ||
+    request.runSnapshotHash !== packet.runSnapshotHash ||
+    request.repository !== packet.repository ||
+    request.revision !== packet.targetRevision ||
+    request.action !== 'promote-v3-authority' ||
+    request.riskTier !== 'CRITICAL' ||
+    request.evidenceHash !== packet.evidenceHash
+  ) {
+    throw new Error('cutover approval packet human request binding mismatch');
+  }
+
+  const rebuiltRequest = createHumanApprovalRequest(request);
+  if (rebuiltRequest.requestHash !== request.requestHash) {
+    throw new Error('cutover approval packet human request hash mismatch');
+  }
+
+  const identity = {
+    schemaVersion: 1,
+    action: 'PROMOTE_V3_AUTHORITY',
+    repository: packet.repository,
+    targetRevision: packet.targetRevision,
+    provisionalReferenceSha: packet.provisionalReferenceSha,
+    finalAcceptedReferenceSha: packet.finalAcceptedReferenceSha,
+    parityReferenceSha: packet.parityReferenceSha,
+    runSnapshotHash: packet.runSnapshotHash,
+    evidenceHash: packet.evidenceHash,
+    promotionReviewHash: packet.promotionReviewHash,
+    humanGatePolicyHash: packet.humanGatePolicyHash,
+    humanApprovalRequestHash: packet.humanApprovalRequest.requestHash,
+  } as const;
+  if (sha256(canonicalJson(identity)) !== packet.packetHash) {
+    throw new Error('cutover approval packet hash mismatch');
+  }
 }
 
 function compare(reasons: string[], observed: string, expected: string, reason: string): void {
