@@ -1,3 +1,38 @@
+export {
+  approvalDelegationDraftCanActAsApproval,
+  approvalDelegationDraftV1Schema,
+  enterpriseAccessRoleV1Schema,
+  enterpriseActorKindV1Schema,
+  enterpriseActorStatusV1Schema,
+  enterpriseActorV1Schema,
+  enterpriseCapabilityV1Schema,
+  enterpriseIdentityCanGrantAuthority,
+  enterpriseIdentitySupportsMultiTenantPersistence,
+  enterpriseMembershipCanSatisfyHumanApproval,
+  enterpriseOrganizationV1Schema,
+  enterpriseProjectMembershipV1Schema,
+  enterpriseRbacCanSatisfySystemPolicy,
+  enterpriseTeamMembershipV1Schema,
+  enterpriseTeamV1Schema,
+  enterpriseTenantModeV1Schema,
+  evaluateEnterpriseAccessPreview,
+  oidcSubjectBindingV1Schema,
+  type ApprovalDelegationDraftV1,
+  type EnterpriseAccessPreviewInput,
+  type EnterpriseAccessPreviewV1,
+  type EnterpriseAccessRoleV1,
+  type EnterpriseActorKindV1,
+  type EnterpriseActorStatusV1,
+  type EnterpriseActorV1,
+  type EnterpriseCapabilityV1,
+  type EnterpriseOrganizationV1,
+  type EnterpriseProjectMembershipV1,
+  type EnterpriseTeamMembershipV1,
+  type EnterpriseTeamV1,
+  type EnterpriseTenantModeV1,
+  type OidcSubjectBindingV1,
+} from './enterprise-identity.js';
+
 import { z } from 'zod';
 
 export const riskTierSchema = z.enum(['NORMAL', 'HIGH', 'CRITICAL']);
