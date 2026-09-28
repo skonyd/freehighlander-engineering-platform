@@ -122,16 +122,14 @@ Authority-bearing module activation remains post-FH-20 only.
 
 ## Current independent work
 
-The remaining open product hardening items are independent of Creator Marketplace #207:
-
-- #147 Full Auto Mode
-- #149 Token Economy Mode
+#147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA authority-neutral preparation is complete through FH-KUIKA-09. No authority-bearing activation is permitted before FH-20.
 
 ## Next action
 
 - keep the accepted V2 reference pinned to `1a8e215b78a3a5008aae6aae36488b3273733b19`;
 - keep V3 authority `SHADOW_ONLY` until the explicit FH-20 cutover gate is satisfied;
-- continue #147/#149 without reintroducing a #207 blocker;
+- continue only authority-neutral hardening/productization;
+- keep FH-KUIKA activation slices and FH-30B..FH-37B blocked until FH-20;
 - use `npm run verify` for repository integrity.
 
 ## Canonical sources
