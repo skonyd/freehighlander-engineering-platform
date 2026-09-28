@@ -96,9 +96,7 @@ export const enterpriseProjectMembershipV1Schema = z
       });
     }
   });
-export type EnterpriseProjectMembershipV1 = z.infer<
-  typeof enterpriseProjectMembershipV1Schema
->;
+export type EnterpriseProjectMembershipV1 = z.infer<typeof enterpriseProjectMembershipV1Schema>;
 
 export const enterpriseTeamMembershipV1Schema = z
   .object({
@@ -181,9 +179,7 @@ export function evaluateEnterpriseAccessPreview(
   const actor = enterpriseActorV1Schema.parse(input.actor);
   const capability = enterpriseCapabilityV1Schema.parse(input.requestedCapability);
   const membership =
-    input.membership === null
-      ? null
-      : enterpriseProjectMembershipV1Schema.parse(input.membership);
+    input.membership === null ? null : enterpriseProjectMembershipV1Schema.parse(input.membership);
 
   const reasons: string[] = [];
 
