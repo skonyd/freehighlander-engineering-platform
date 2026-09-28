@@ -147,6 +147,22 @@ export {
 } from './data-policy.js';
 
 export {
+  buildV3CutoverApprovalPacket,
+  cutoverApprovalPacketCanApplyCutover,
+  cutoverApprovalPacketCanUseModelAsHuman,
+  cutoverApprovalPreviewCanEnableAuthority,
+  evaluateV3CutoverApprovalPreview,
+  evaluateV3CutoverPacketCurrentness,
+  recordV3CutoverHumanDecision,
+  type V3CutoverApprovalPacketInput,
+  type V3CutoverApprovalPacketV1,
+  type V3CutoverApprovalPreviewInput,
+  type V3CutoverApprovalPreviewV1,
+  type V3CutoverObservedState,
+  type V3CutoverPacketCurrentness,
+} from './cutover-approval-packet.js';
+
+export {
   cutoverCanBypassFinalReferenceAcceptance,
   cutoverReadinessCanEnableAuthority,
   evaluateV3CutoverReadiness,
