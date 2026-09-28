@@ -102,6 +102,25 @@ test('organization boundary mismatch is denied even for owner membership', () =>
   assert.deepEqual(preview.reasons, ['organization boundary mismatch']);
 });
 
+test('membership belonging to a different actor is denied', () => {
+  const preview = evaluateEnterpriseAccessPreview({
+    organization,
+    actor: activeActor,
+    membership: {
+      schemaVersion: 1,
+      organizationId: 'local-default',
+      projectId: 'project-main',
+      actorId: 'user-other',
+      accessRoles: ['OWNER'],
+      authority: 'NONE',
+    },
+    requestedCapability: 'MANAGE_MEMBERSHIP',
+  });
+
+  assert.equal(preview.decision, 'DENY');
+  assert.deepEqual(preview.reasons, ['actor membership mismatch']);
+});
+
 test('access-role eligibility is capability-specific', () => {
   const preview = evaluateEnterpriseAccessPreview({
     organization,
