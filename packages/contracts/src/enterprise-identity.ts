@@ -183,9 +183,6 @@ export function evaluateEnterpriseAccessPreview(
 
   const reasons: string[] = [];
 
-  if (organization.tenantMode !== 'SINGLE_TENANT') {
-    reasons.push('unsupported tenant mode');
-  }
   if (actor.status !== 'ACTIVE') {
     reasons.push('actor is disabled');
   }
