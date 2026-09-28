@@ -204,6 +204,8 @@ export function evaluateV3CutoverApprovalPreview(
   input: V3CutoverApprovalPreviewInput,
 ): V3CutoverApprovalPreviewV1 {
   validatePacket(input.packet);
+  validatePolicyDecision(input.systemPolicyDecision, 'systemPolicyDecision');
+  if (input.humanDecision !== null) validateHumanDecision(input.humanDecision);
   const currentness = evaluateV3CutoverPacketCurrentness(input.packet, input.observed);
   const systemPolicyCurrent =
     input.systemPolicyDecision.policyHash === input.packet.humanGatePolicyHash;
@@ -272,6 +274,9 @@ export function recordV3CutoverHumanDecision(
   decision: 'APPROVE' | 'DENY',
 ): HumanDecision {
   validatePacket(packet);
+  if (decision !== 'APPROVE' && decision !== 'DENY') {
+    throw new Error('cutover human decision must be APPROVE or DENY');
+  }
   return recordHumanDecision(packet.humanApprovalRequest, 'HUMAN', approverId, decision);
 }
 
@@ -343,6 +348,32 @@ function validatePacket(packet: V3CutoverApprovalPacketV1): void {
   if (sha256(canonicalJson(identity)) !== packet.packetHash) {
     throw new Error('cutover approval packet hash mismatch');
   }
+}
+
+function validatePolicyDecision(decision: PolicyDecision, field: string): void {
+  if (
+    decision.effect !== 'ALLOW' &&
+    decision.effect !== 'MODEL_QUORUM_REQUIRED' &&
+    decision.effect !== 'HUMAN_REQUIRED' &&
+    decision.effect !== 'DENY'
+  ) {
+    throw new Error(`${field}.effect is invalid`);
+  }
+  requireSha256(decision.policyHash, `${field}.policyHash`);
+  if (!Array.isArray(decision.matchedRuleIds)) {
+    throw new Error(`${field}.matchedRuleIds must be an array`);
+  }
+  for (const ruleId of decision.matchedRuleIds) requireText(ruleId, `${field}.matchedRuleId`);
+  requireText(decision.reason, `${field}.reason`);
+}
+
+function validateHumanDecision(decision: HumanDecision): void {
+  if (decision.decision !== 'APPROVE' && decision.decision !== 'DENY') {
+    throw new Error('humanDecision.decision is invalid');
+  }
+  requireSha256(decision.requestHash, 'humanDecision.requestHash');
+  requireSha256(decision.decisionHash, 'humanDecision.decisionHash');
+  requireText(decision.approverId, 'humanDecision.approverId');
 }
 
 function compare(reasons: string[], observed: string, expected: string, reason: string): void {
