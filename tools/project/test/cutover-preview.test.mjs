@@ -97,7 +97,10 @@ test('packet mode builds exact request but cannot approve or apply cutover', () 
   assert.equal(result.packet.action, 'PROMOTE_V3_AUTHORITY');
   assert.equal(result.packet.humanApprovalRequest.action, 'promote-v3-authority');
   assert.equal(result.packet.humanApprovalRequest.riskTier, 'CRITICAL');
-  assert.equal(result.humanApprovalRequest.requestHash, result.packet.humanApprovalRequest.requestHash);
+  assert.equal(
+    result.humanApprovalRequest.requestHash,
+    result.packet.humanApprovalRequest.requestHash,
+  );
   assert.equal(result.cutoverApplied, false);
   assert.equal(result.authorityEnabled, false);
   assert.equal(result.authority, 'NONE');
