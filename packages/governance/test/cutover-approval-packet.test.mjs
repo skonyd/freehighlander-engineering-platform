@@ -226,10 +226,7 @@ test('model quorum policy cannot authorize V3 cutover', () => {
 
   assert.equal(preview.status, 'BLOCKED');
   assert.equal(preview.systemPolicyEffect, 'MODEL_QUORUM_REQUIRED');
-  assert.equal(
-    preview.reasons.includes('MODEL_QUORUM_REQUIRED cannot authorize V3 cutover'),
-    true,
-  );
+  assert.equal(preview.reasons.includes('MODEL_QUORUM_REQUIRED cannot authorize V3 cutover'), true);
 });
 
 test('malformed runtime policy or human decision evidence fails closed', () => {
