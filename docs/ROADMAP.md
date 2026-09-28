@@ -18,7 +18,7 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane BLOCKED** |
 | 10 | Authority-bearing full lifecycle | **BLOCKED until explicit FH-20 cutover** |
 | 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PRE-CUTOVER COMPLETE THROUGH FH-KUIKA-09; activation slices remain Core/FH-20 gated** |
-| 12 | FH-KUIKA-10 enterprise collaboration submodule | **DEFERRED; ADR required** |
+| 12 | FH-KUIKA-10 enterprise collaboration submodule | **PRE-CUTOVER BOUNDARY COMPLETE — ADR-0023 / contract 1.11.0; live identity enforcement deferred** |
 
 Current authority state remains:
 
@@ -89,7 +89,7 @@ Delivered context packets, token-budget preflight, safe cache/reuse identity and
 
 ## Phase 6 — V3 Architecture Freeze — COMPLETE
 
-The frozen architecture contract is currently version **1.10.0**, including accepted V2 reconciliation (1.9.0) and Full Auto delegable quorum semantics (1.10.0).
+The frozen architecture contract is currently version **1.11.0**, including accepted V2 reconciliation (1.9.0), Full Auto delegable quorum semantics (1.10.0), and the authority-neutral single-tenant enterprise identity boundary (1.11.0).
 
 ## Phase 7 — V3 Control Plane — COMPLETE THROUGH FH-19
 
@@ -214,4 +214,4 @@ Authority-neutral schema, read-model, draft, validation, simulation and inspecti
 
 FH-KUIKA-10 covers possible OIDC, teams, RBAC, organization policy and multi-user collaboration.
 
-It is intentionally deferred because the frozen architecture currently defines the initial product as local-first single-user. FH-KUIKA-10 requires a dedicated ADR, architecture-contract version bump and threat-model/data-model work before implementation.
+Its pre-cutover architecture boundary is complete under ADR-0023 and contract 1.11.0. The accepted direction preserves a single-tenant persistence boundary, separates product RBAC from workflow/system authority, defines migration and threat-model constraints, and keeps delegation metadata non-authoritative. Live OIDC/session enforcement, active delegation and any future multi-tenant persistence remain deferred to later reviewed activation work.
