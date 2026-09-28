@@ -199,6 +199,9 @@ export function evaluateEnterpriseAccessPreview(
     if (membership.organizationId !== organization.organizationId) {
       reasons.push('organization boundary mismatch');
     }
+    if (membership.actorId !== actor.actorId) {
+      reasons.push('actor membership mismatch');
+    }
     const allowedRoles = CAPABILITY_ROLES[capability];
     if (!membership.accessRoles.some((role) => allowedRoles.includes(role))) {
       reasons.push('membership role is not eligible for requested capability');
