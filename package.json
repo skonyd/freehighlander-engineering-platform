@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@types/node": "24.13.5",
-    "prettier": "3.9.8",
+    "prettier": "3.9.9",
     "typescript": "7.0.2"
   },
   "bin": {
