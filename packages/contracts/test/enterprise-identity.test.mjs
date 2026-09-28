@@ -9,8 +9,11 @@ import {
   enterpriseMembershipCanSatisfyHumanApproval,
   enterpriseOrganizationV1Schema,
   enterpriseProjectMembershipV1Schema,
+  enterpriseTeamMembershipV1Schema,
+  enterpriseTeamV1Schema,
   enterpriseRbacCanSatisfySystemPolicy,
   evaluateEnterpriseAccessPreview,
+  oidcSubjectBindingV1Schema,
 } from '../dist/index.js';
 
 const organization = enterpriseOrganizationV1Schema.parse({
@@ -29,6 +32,51 @@ const activeActor = {
   status: 'ACTIVE',
   authority: 'NONE',
 };
+
+test('enterprise identity schemas validate OIDC team and team membership metadata', () => {
+  const oidc = oidcSubjectBindingV1Schema.parse({
+    schemaVersion: 1,
+    actorId: 'user-oidc',
+    issuer: 'https://identity.example.test',
+    subject: 'subject-123',
+    audience: 'freehighlander',
+    authority: 'NONE',
+  });
+  assert.equal(oidc.actorId, 'user-oidc');
+
+  const team = enterpriseTeamV1Schema.parse({
+    schemaVersion: 1,
+    organizationId: 'local-default',
+    teamId: 'team-platform',
+    displayName: 'Platform Team',
+    authority: 'NONE',
+  });
+  assert.equal(team.teamId, 'team-platform');
+
+  const membership = enterpriseTeamMembershipV1Schema.parse({
+    schemaVersion: 1,
+    organizationId: 'local-default',
+    teamId: 'team-platform',
+    actorId: 'user-oidc',
+    authority: 'NONE',
+  });
+  assert.equal(membership.actorId, 'user-oidc');
+});
+
+test('project membership rejects duplicate access roles', () => {
+  assert.throws(
+    () =>
+      enterpriseProjectMembershipV1Schema.parse({
+        schemaVersion: 1,
+        organizationId: 'local-default',
+        projectId: 'project-main',
+        actorId: 'user-local',
+        accessRoles: ['ENGINEER', 'ENGINEER'],
+        authority: 'NONE',
+      }),
+    /accessRoles must be unique/,
+  );
+});
 
 test('enterprise RBAC only previews product eligibility and never grants runtime authority', () => {
   const membership = enterpriseProjectMembershipV1Schema.parse({
