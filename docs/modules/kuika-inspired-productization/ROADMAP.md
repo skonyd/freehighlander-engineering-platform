@@ -70,7 +70,7 @@ Any new package not already allowed by the frozen architecture requires normal a
 
 ## Pre-cutover completion boundary
 
-Authority-neutral FH-KUIKA productization work is considered pre-cutover complete through FH-KUIKA-09 when this roadmap marks its preparation slices complete. The remaining executable activation points stay owned by Core governance and must not be inferred from module readiness. FH-KUIKA-10 remains outside this boundary and requires an explicit architecture decision.
+Authority-neutral FH-KUIKA productization work is considered pre-cutover complete through FH-KUIKA-10. The remaining executable activation points stay owned by Core governance and must not be inferred from module readiness. FH-KUIKA-10's architecture decision is ADR-0023: single-tenant enterprise identity preparation only; live OIDC/session enforcement, active delegation and multi-tenant persistence remain deferred.
 
 ## Product principles
 
@@ -725,16 +725,20 @@ Possible scope:
 - auditable actor identity
 - multi-project/multi-tenant separation
 
-This work is intentionally deferred because it changes the accepted local-first-single-user boundary.
+Pre-cutover boundary preparation is complete under ADR-0023 and architecture contract 1.11.0.
 
-Required before implementation:
+Completed preparation:
 
-1. dedicated ADR;
-2. architecture-contract version bump;
+1. dedicated ADR — ADR-0023;
+2. architecture-contract version bump — 1.11.0;
 3. updated threat model;
-4. identity/authorization data model;
-5. migration design;
-6. explicit decision on single-tenant vs multi-tenant persistence.
+4. authority-neutral identity/authorization data model and contracts;
+5. additive migration design;
+6. explicit persistence decision — SINGLE_TENANT.
+
+Detailed boundary: [Enterprise Identity Boundary](ENTERPRISE-IDENTITY-BOUNDARY.md).
+
+Live OIDC/session enforcement, active approval delegation and multi-tenant persistence remain deferred and require later reviewed activation work.
 
 ---
 
@@ -862,6 +866,6 @@ FH-KUIKA-10 Enterprise identity is independent strategic work and requires a new
 8. FH-KUIKA-09
 9. FH-KUIKA-08 definition/UI preparation
 10. post-FH-20 activation slices: FH-KUIKA-02.5, FH-KUIKA-05.6, FH-KUIKA-08 authority-bearing activation and other authority-bearing mutations
-11. FH-KUIKA-10 only after explicit product-boundary decision
+11. FH-KUIKA-10 pre-cutover boundary complete under ADR-0023; live identity/RBAC activation remains deferred
 
 This ordering maximizes visible product value while preserving the current authority boundary.

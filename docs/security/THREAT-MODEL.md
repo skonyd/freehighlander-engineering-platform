@@ -23,6 +23,8 @@
 5. control plane ↔ local model endpoints
 6. future UI ↔ API
 7. future plugin/tool adapters ↔ external systems
+8. future enterprise identity provider ↔ FreeHighlander identity adapter
+9. organization/team/project membership ↔ product access control
 
 ## Primary threats
 
@@ -88,6 +90,52 @@ Mitigation:
 - version pinning
 - review/signing policy later
 
+### Enterprise identity assertion confusion
+A forged, mis-scoped or misconfigured OIDC assertion could be mapped to the wrong actor.
+
+Mitigation:
+- exact configured issuer and audience validation
+- stable subject binding
+- bounded provider configuration
+- token time-bound validation
+- no raw ID/access/refresh token persistence in telemetry, artifacts or diagnostics
+- disabled actors fail closed
+
+### Horizontal project-access escalation
+A user/team may attempt to access another project through stale or mismatched membership metadata.
+
+Mitigation:
+- organization/project membership checked explicitly
+- organization boundary mismatch denies access
+- current membership/revocation required at use time
+- product RBAC remains separate from workflow authority
+
+### Product-role to authority confusion
+OWNER/ADMIN/ENGINEER/REVIEWER membership could be incorrectly treated as logical-role, SYSTEM_POLICY or HUMAN_APPROVER authority.
+
+Mitigation:
+- separate schemas and bounded contexts
+- RBAC preview never grants execution authority
+- membership cannot satisfy exact human approval
+- SYSTEM_POLICY remains authoritative for policy decisions
+
+### Approval-delegation abuse
+A delegation record could be used to broaden scope, extend validity or impersonate a human approver.
+
+Mitigation:
+- delegation is human-to-human only
+- explicit project/action/time bounds and revocation
+- revalidation at use time
+- underlying exact revision/scope/evidence/policy binding remains mandatory
+- pre-cutover delegation records remain DRAFT and cannot act as approvals
+
+### Future tenant-boundary bypass
+If multi-tenant persistence is introduced later, a query/key/policy bug could expose another tenant's data.
+
+Mitigation:
+- ADR-0023 explicitly forbids multi-tenant persistence in the initial enterprise preparation
+- multi-tenant support requires a future ADR, isolation design, migration plan and threat-model review
+
 ### Privacy over-export / over-delete
 A privacy request or lifecycle tool may export/delete records outside the intended owner scope, bypass retention, or remove AUDIT evidence.
 
@@ -105,5 +153,7 @@ Threat model must be revisited before:
 - remote write tools
 - browser automation
 - production deployment
-- multi-user auth
+- live multi-user auth/session enforcement
+- approval delegation activation
+- multi-tenant persistence
 - external plugin marketplace

@@ -2,7 +2,7 @@
 
 **State status:** PRE-CUTOVER / CREATOR MARKETPLACE #207 DEPENDENCY SATISFIED  
 **Canonical pointer:** `.freehighlander/state.yaml`  
-**Architecture contract:** 1.10.0
+**Architecture contract:** 1.11.0
 
 ## Authority snapshot
 
@@ -122,7 +122,7 @@ Authority-bearing module activation remains post-FH-20 only.
 
 ## Current independent work
 
-#147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA authority-neutral preparation is complete through FH-KUIKA-09. No authority-bearing activation is permitted before FH-20.
+#147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA authority-neutral preparation is complete through FH-KUIKA-10, including the single-tenant enterprise identity boundary from ADR-0023. Live OIDC/session enforcement, active approval delegation, multi-tenant persistence and all authority-bearing activation remain deferred. No authority-bearing activation is permitted before FH-20.
 
 ## Next action
 

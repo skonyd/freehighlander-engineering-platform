@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-09-28T07:38:00+03:00"
+updated_at: "2026-09-28T12:10:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -443,8 +443,18 @@ promotion_confirmation:
   authority_promotion_reviewed: true
   v3_authority_remains_shadow_only: true
 
+fh_kuika_10:
+  status: pre_cutover_boundary_complete
+  adr: ADR-0023
+  architecture_contract: 1.11.0
+  tenant_mode: SINGLE_TENANT
+  identity_runtime_enforcement: disabled
+  approval_delegation_activation: disabled
+  multi_tenant_persistence: forbidden_pending_future_adr
+  authority_effect: none
+
 accepted_direction:
-  architecture_contract: 1.10.0
+  architecture_contract: 1.11.0
   product_mode: local-first-single-user
   implementation_language: TypeScript
   repository_shape: bounded-context-monorepo

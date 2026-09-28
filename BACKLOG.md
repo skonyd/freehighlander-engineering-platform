@@ -85,7 +85,7 @@ Umbrella: #88.
 - [x] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1 — .1–.6 complete pre-cutover
 - [ ] FH-KUIKA-08 Routines / Trigger Engine — P1 — .1–.4 and .5 failure/retry telemetry preparation complete; only authority-bearing activation remains blocked by FH-20
 - [x] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1 — .1–.5 complete pre-cutover; runtime application remains Core-governed
-- [ ] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 / ADR-required
+- [x] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 — ADR-0023 + contract 1.11.0 + threat/data/migration boundary complete pre-cutover; live OIDC/session/RBAC enforcement and multi-tenant persistence deferred
 
 Detailed decomposition and authority boundary: [FH-KUIKA module roadmap](docs/modules/kuika-inspired-productization/ROADMAP.md).
 
