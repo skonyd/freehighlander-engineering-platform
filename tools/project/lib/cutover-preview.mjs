@@ -174,11 +174,11 @@ export function cutoverPreviewHelp() {
   };
 }
 
-export function cutoverPreviewCliCanCreateHumanApproval(): false {
+export function cutoverPreviewCliCanCreateHumanApproval() {
   return false;
 }
 
-export function cutoverPreviewCliCanApplyCutover(): false {
+export function cutoverPreviewCliCanApplyCutover() {
   return false;
 }
 
