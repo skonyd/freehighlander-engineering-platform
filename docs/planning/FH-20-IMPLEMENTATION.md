@@ -1,7 +1,7 @@
 # FH-20 — V3 authority cutover readiness
 
 **Issue:** #64  
-**Status:** READINESS COMPLETE / CUTOVER BLOCKED  
+**Status:** READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED  
 **Authority effect:** NONE
 
 ## Objective
@@ -32,7 +32,17 @@ reference/parity SHA mismatch => BLOCKED
 missing prerequisite => BLOCKED
 ```
 
-The readiness gate was implemented through PR #65 and merged as `1193d572ff2c0323a79ea2b44eac3df2ccfaebaf`. Creator Marketplace #207 remains provisional/open, therefore actual cutover remains blocked and V3 remains `SHADOW_ONLY`.
+The readiness gate was implemented through PR #65 and merged as `1193d572ff2c0323a79ea2b44eac3df2ccfaebaf`.
+
+Creator Marketplace #207 is no longer the blocker. Its accepted V2 reference was reconciled and promoted through the completed FH-01B path, with final accepted reference SHA `1a8e215b78a3a5008aae6aae36488b3273733b19`.
+
+Actual V3 authority cutover is still **not applied**. The remaining cutover gate is explicit and fail-closed:
+
+1. exact human approval for V3 authority promotion;
+2. system policy decision = `ALLOW`;
+3. explicit V3 promotion review bound to the accepted reference/current evidence.
+
+Until those conditions are satisfied and recorded, V3 remains `SHADOW_ONLY` and FH-30B..FH-37B activation remains blocked.
 
 ## Verification
 

@@ -1,6 +1,6 @@
 # FH-00 Comprehensive Final Audit
 
-**Status:** READY FOR HUMAN REVIEW
+**Status:** HISTORICAL AUDIT / IMPLEMENTATION SUPERSEDED BY CURRENT CANONICAL STATE
 
 ## Scope reviewed
 
@@ -22,16 +22,22 @@ The audit re-evaluated:
 - V3 architecture contracts
 - FH-01 implementation scope
 
-## External dependency revalidated
+## Current canonical status
 
-Creator Marketplace PR #207 remains:
-- OPEN
-- non-draft
-- mergeable
-- exact HEAD `0e70f4a9680fcc5c287b7926f2aa20170c79f47d`
-- exact-head GitHub checks green
+This audit records the original pre-implementation readiness review. Its external-dependency status and next-step sequence are historical and must not be used as current authority state.
 
-Cached FreeHighlander state still correctly records pending Sonnet candidate adjudication → Astra → human → merge → smoke.
+Current canonical state is `.freehighlander/state.yaml`:
+
+- Creator Marketplace #207 dependency: **SATISFIED**
+- accepted V2 reference SHA: `1a8e215b78a3a5008aae6aae36488b3273733b19`
+- FH-01A/FH-01B and V2 compatibility reconciliation: **COMPLETE**
+- FH-20 readiness gate: **COMPLETE**
+- FH-30A..FH-37A preparation lane: **COMPLETE**
+- V3 authority: **SHADOW_ONLY**
+- FH-20 cutover: **NOT APPLIED**
+- remaining authority gate: exact human approval + system-policy `ALLOW` + explicit V3 promotion review
+
+When this historical audit conflicts with `.freehighlander/state.yaml`, the canonical state file wins.
 
 ## Blocking inconsistencies found and fixed
 
@@ -82,20 +88,11 @@ Not required before FH-01:
 
 These are implementation/evidence-driven decisions rather than missing architecture.
 
-## FH-01 readiness
+## FH-01 readiness — historical result
 
-### GO
-Planning contracts are sufficient to begin implementation once the external V2 reference dependency is closed.
+The original audit concluded that FH-01 could begin only after the V2 reference dependency closed. That dependency has since been satisfied and FH-01 implementation/reconciliation is complete.
 
-### NO-GO condition
-Do **not** start FH-01 V2 adaptation from a partially accepted Creator Marketplace #207.
-
-Required dependency:
-1. candidate adjudication
-2. Astra final review
-3. human decision
-4. merge
-5. post-merge smoke
+This section is retained for audit history; it is not a current execution gate.
 
 ## PR #1 merge readiness
 
@@ -103,18 +100,22 @@ Architecture/planning content: **READY FOR HUMAN REVIEW**.
 
 This PR is planning/governance content only. Product/automation implementation belongs to FH-01 and later PRs.
 
-## Next exact sequence
+## Current next sequence
 
 ~~~text
-Human review PR #1
+accepted V2 reference + FH-01 reconciliation COMPLETE
    ↓
-merge PR #1 when satisfied
+FH-20 readiness COMPLETE
    ↓
-finish Creator Marketplace #207
+authority-neutral pre-cutover hardening / FH-30A..FH-37A COMPLETE
    ↓
-post-merge smoke
+exact human V3 promotion approval
+   + system policy ALLOW
+   + explicit promotion review
    ↓
-create FH-01 implementation branch/issue
+FH-20 authority cutover
    ↓
-bootstrap TypeScript + V2 adapter
+FH-30B..FH-37B activation / legacy V2 retirement as separately authorized
 ~~~
+
+No step in this document itself grants authority or authorizes the cutover.
