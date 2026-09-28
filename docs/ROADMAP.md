@@ -102,6 +102,7 @@ Authority remains `SHADOW_ONLY`.
 Completed:
 - FH-19 parity framework
 - FH-20 deterministic cutover-readiness evaluator
+- FH-20 exact-bound cutover approval packet + read-only preview preparation (#414); no authority effect
 
 Completed:
 - final accepted V2 reference from Creator Marketplace #207/#209
@@ -113,7 +114,7 @@ Remaining:
 - SYSTEM_POLICY = ALLOW
 - explicit V3 authority-promotion review
 
-The readiness evaluator cannot enable authority by itself.
+The readiness evaluator and exact-bound approval preview cannot enable authority or apply the cutover by themselves.
 
 ## Phase 9 — SDLC Modules
 

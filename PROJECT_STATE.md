@@ -110,6 +110,8 @@ The Creator Marketplace dependency is satisfied. Applying the cutover still requ
 - explicit V3 authority-promotion review;
 - all exact revision/evidence bindings current.
 
+The remaining gate now has an authority-neutral exact-bound approval packet/read-only preview contract. It prevents stale/replayed approval evidence from appearing current, but it does not create an approval or apply the cutover.
+
 Until those are satisfied and the cutover is explicitly applied:
 
 ```text
@@ -128,6 +130,7 @@ Authority-bearing module activation remains post-FH-20 only.
 
 - keep the accepted V2 reference pinned to `1a8e215b78a3a5008aae6aae36488b3273733b19`;
 - keep V3 authority `SHADOW_ONLY` until the explicit FH-20 cutover gate is satisfied;
+- use the exact-bound FH-20 packet/preview for any future cutover review; the preview itself must remain non-authoritative;
 - continue only authority-neutral hardening/productization;
 - keep FH-KUIKA activation slices and FH-30B..FH-37B blocked until FH-20;
 - use `npm run verify` for repository integrity.

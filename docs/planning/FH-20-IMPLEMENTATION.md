@@ -44,6 +44,23 @@ Actual V3 authority cutover is still **not applied**. The remaining cutover gate
 
 Until those conditions are satisfied and recorded, V3 remains `SHADOW_ONLY` and FH-30B..FH-37B activation remains blocked.
 
+## Exact-bound approval packet / preview
+
+The remaining gate can now be prepared and inspected through an authority-neutral exact packet rather than loose boolean assertions.
+
+The packet binds the proposed promotion to the target V3 revision, accepted/parity V2 reference, run snapshot, evidence bundle, promotion review and human-gate policy, then embeds the canonical `HUMAN_REQUIRED` approval request. Packet/request hashes are recomputed before preview.
+
+The read-only CLI supports only:
+
+```bash
+npm run cutover:preview -- packet --input FILE
+npm run cutover:preview -- preview --input FILE
+```
+
+It does not create human decisions and has no cutover-apply operation. A `READY` preview still reports `authorityEnabled: false` and `cutoverApplied: false`.
+
+Detailed contract: [FH-20 Exact Cutover Approval Packet](FH-20-CUTOVER-APPROVAL-PACKET.md).
+
 ## Verification
 
 ```bash

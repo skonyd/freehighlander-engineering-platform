@@ -30,7 +30,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-17 Replay/simulation + crash recovery — issue #54 / PR #55
 - [x] FH-18 UI control plane — issue #56 / PR #57
 - [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
-- [ ] FH-20 V3 authority cutover — readiness gate issue #64 / PR #65 complete; external #207 blocker cleared, explicit human/policy cutover still pending
+- [ ] FH-20 V3 authority cutover — readiness gate issue #64 / PR #65 complete; exact-bound read-only approval packet/preview prepared in #414; external #207 blocker cleared; explicit human approval + current SYSTEM_POLICY ALLOW + actual cutover application still pending
 
 ## Modules — pre-cutover preparation lane
 - [x] FH-30A Planning — issue #69 / PR #70
