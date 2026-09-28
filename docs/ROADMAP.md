@@ -17,7 +17,7 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 8 | V2/V3 parity + authority cutover | **READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED** |
 | 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane BLOCKED** |
 | 10 | Authority-bearing full lifecycle | **BLOCKED until explicit FH-20 cutover** |
-| 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PROPOSED; authority-neutral preparation can proceed** |
+| 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PRE-CUTOVER COMPLETE THROUGH FH-KUIKA-09; activation slices remain Core/FH-20 gated** |
 | 12 | FH-KUIKA-10 enterprise collaboration submodule | **DEFERRED; ADR required** |
 
 Current authority state remains:
@@ -196,7 +196,7 @@ The read-only/evidence contracts for this thread exist today; production mutatio
 
 Detailed plan: [FH-KUIKA module roadmap](modules/kuika-inspired-productization/ROADMAP.md).
 
-FH-KUIKA is an optional module that exposes existing control-plane capabilities through a coherent Studio UX. Core runtime correctness must not depend on the presence of this module:
+FH-KUIKA is an optional module that exposes existing control-plane capabilities through a coherent Studio UX. Authority-neutral preparation is complete through FH-KUIKA-09; only authority-bearing activation slices remain gated by FH-20. Core runtime correctness must not depend on the presence of this module:
 
 - FH-KUIKA-01 Studio shell + Explainable Operations Console
 - FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench
