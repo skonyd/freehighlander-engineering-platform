@@ -1,6 +1,7 @@
 # V3 Architecture Contract
 
-**Status:** ACCEPTED DIRECTION — implementation contract evolves by ADR
+**Status:** ACCEPTED DIRECTION — implementation contract evolves by ADR  
+**Contract version:** 1.11.0
 
 ## Goal
 
@@ -154,6 +155,24 @@ Target capabilities:
 - historical regression
 - crash-safe continuation
 - consistent DB/artifact backup and validated restore
+
+## Enterprise identity / collaboration boundary
+
+ADR-0023 permits authority-neutral preparation for enterprise identity while preserving the local-first architecture.
+
+Initial enterprise identity mode is single-tenant:
+
+- one organization persistence boundary;
+- stable LOCAL_USER/OIDC_USER actor identities;
+- users/teams/project membership and product-level access roles;
+- OIDC subject bindings as identity metadata;
+- approval delegation as DRAFT metadata only before later activation;
+- no multi-tenant persistence;
+- no identity/session metadata may elevate logical-role authority.
+
+Product RBAC eligibility is separate from workflow/model authority, exact human approval and SYSTEM_POLICY. An authenticated or RBAC-eligible actor is not automatically authorized to execute a workflow or satisfy an approval.
+
+Live OIDC/session enforcement, active delegation and multi-tenant persistence require later reviewed activation work.
 
 ## UI / CLI
 
