@@ -137,9 +137,7 @@ test('access-role eligibility is capability-specific', () => {
   });
 
   assert.equal(preview.decision, 'DENY');
-  assert.deepEqual(preview.reasons, [
-    'membership role is not eligible for requested capability',
-  ]);
+  assert.deepEqual(preview.reasons, ['membership role is not eligible for requested capability']);
 });
 
 test('delegation remains a draft and cannot self-delegate or invert its time window', () => {
