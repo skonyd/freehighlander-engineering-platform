@@ -225,7 +225,7 @@ evidence_policy:
 fh20:
   issue: 64
   pull_request: 65
-  status: readiness_complete_external_blocker_cleared
+  status: complete_cutover_applied
   merge_sha: 1193d572ff2c0323a79ea2b44eac3df2ccfaebaf
   readiness_gate: complete
   external_dependency_satisfied: true
@@ -246,6 +246,8 @@ fh20:
   promotion_review: APPROVED
   cutover_record: docs/state/FH-20-CUTOVER-RECORD.md
   cutover_adr: ADR-0024
+  cutover_application_pull_request: 421
+  cutover_application_merge_sha: efb4f701b1bc3ad7ab3d4c40070a84a8d43d04d0
   remaining_gate: none
 
 module_preparation_lane:
