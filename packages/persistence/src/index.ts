@@ -25,6 +25,19 @@ export {
 } from './atomic-json-config-store.js';
 
 export {
+  AUTHORITY_CAPABILITIES,
+  AuthorityCapabilityStateStore,
+  authorityCapabilityStateDefaultsDeny,
+  authorityCapabilityStateStoreCanGrantAuthority,
+  createDefaultAuthorityCapabilityStateV1,
+  validateAuthorityCapabilityStateV1,
+  type AuthorityCapability,
+  type AuthorityCapabilityStateSnapshotV1,
+  type AuthorityCapabilityStateV1,
+  type AuthorityCapabilityStateWriteResultV1,
+} from './authority-capability-state-store.js';
+
+export {
   createResumeManifestV1,
   evaluateResumeManifestCas,
   localResumeCacheRequiredForCorrectness,
