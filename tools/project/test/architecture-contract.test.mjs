@@ -52,7 +52,10 @@ test('post-cutover architecture rejects authority regression or target drift', a
 
   const selectedByDefault = structuredClone(await loadArchitectureContract(root));
   selectedByDefault.migration.critical_capabilities_selected = ['GIT_WRITE'];
-  assert.throws(() => assertArchitectureContract(selectedByDefault), /selected critical capabilities/);
+  assert.throws(
+    () => assertArchitectureContract(selectedByDefault),
+    /selected critical capabilities/,
+  );
 });
 
 test('architecture freeze rejects semantic fallback/model-shopping drift', async () => {
