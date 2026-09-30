@@ -1,6 +1,6 @@
 # FreeHighlander — Current Project State
 
-**State status:** PRE-CUTOVER / CREATOR MARKETPLACE #207 DEPENDENCY SATISFIED  
+**State status:** POST-CUTOVER / V3 AUTHORITY ENABLED / CRITICAL PERMISSIONS DEFAULT DENY  
 **Canonical pointer:** `.freehighlander/state.yaml`  
 **Architecture contract:** 1.11.0
 
@@ -9,10 +9,11 @@
 ```text
 V2 reference = ACCEPTED
 V2 compatibility authority = ENABLED
-V3 authority = SHADOW_ONLY
-FH-20 external blocker = CLEARED
-FH-20 cutover = NOT YET APPLIED
-FH-30B..FH-37B activation = BLOCKED BY FH-20
+V3 authority = ENABLED
+FH-20 cutover = APPLIED
+approved V3 target = 57761b7b0257c234ad41314343a22dfd53668364
+critical capabilities = DEFAULT DENY / NONE SELECTED
+FH-30B..FH-37B activation = ELIGIBLE / NOT AUTO-ACTIVATED
 ```
 
 Creator Marketplace #207 is no longer an external blocker.
@@ -52,7 +53,7 @@ FH-01B2, FH-01B and FH-01 are complete.
 - FH-19 V2/V3 shadow parity
 - FH-20 deterministic cutover-readiness evaluator
 
-FH-20 readiness evaluation does not itself grant authority.
+FH-20 readiness evaluation did not itself grant authority; the explicit exact human approval, canonical SYSTEM_POLICY and ADR-0024 state transition applied the cutover.
 
 ## Completed authority-neutral SDLC A-lane
 
@@ -98,41 +99,39 @@ All A-lane outputs remain evidence/readiness/domain state only. They do not auth
 - #144 completed — parallel orchestration/provenance hardening
 - #145 completed — dynamic model catalog/binding management
 
-## Remaining authority boundary
+## FH-20 cutover — complete
 
-### FH-20 final V3 cutover
+FH-20 is applied for exact approved V3 target
+`57761b7b0257c234ad41314343a22dfd53668364`.
 
-The Creator Marketplace dependency is satisfied. Applying the cutover still requires the existing fail-closed prerequisites:
+Evidence and authority boundary:
 
-- final-reference-bound parity PASS;
-- exact human approval verification;
-- SYSTEM_POLICY decision = ALLOW;
-- explicit V3 authority-promotion review;
-- all exact revision/evidence bindings current.
-
-The remaining gate now has an authority-neutral exact-bound approval packet/read-only preview contract. It prevents stale/replayed approval evidence from appearing current, but it does not create an approval or apply the cutover.
-
-Until those are satisfied and the cutover is explicitly applied:
-
-```text
-V3 authority = SHADOW_ONLY
-```
+- exact human approval: issue #420;
+- canonical SYSTEM_POLICY: MODEL=DENY, HUMAN=HUMAN_REQUIRED, SYSTEM=ALLOW;
+- policy implementation/verification: PR #419 / workflow #36778525956;
+- accepted V2 reference remains `1a8e215b78a3a5008aae6aae36488b3273733b19`;
+- V2 reconciliation/full verify: PR #237 / workflow #36159166117;
+- ADR-0024 and `docs/state/FH-20-CUTOVER-RECORD.md` record the transition;
+- V3 core authority is `ENABLED`;
+- Code/Git, Release/Deploy, Infrastructure Mutation and Automatic Remediation remain default `DENY` with no selections active.
 
 ### FH-30B..FH-37B
 
-Authority-bearing module activation remains post-FH-20 only.
+Authority-bearing module activation is now eligible because FH-20 is complete, but nothing is
+auto-activated. Each B-lane capability must still pass its own operator selection, SYSTEM_POLICY,
+exact-currentness/evidence, sandbox/data/secret and human gates.
 
 ## Current independent work
 
-#147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA authority-neutral preparation is complete through FH-KUIKA-10, including the single-tenant enterprise identity boundary from ADR-0023. Live OIDC/session enforcement, active approval delegation, multi-tenant persistence and all authority-bearing activation remain deferred. No authority-bearing activation is permitted before FH-20. The operator authority selector is also prepared as an authority-neutral UI: Code/Git, Release/Deploy, Infrastructure and Automatic Remediation are independently selectable, default DENY, and remain inactive until V3 authority + exact human approval + SYSTEM_POLICY ALLOW.
+#147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA preparation is complete through FH-KUIKA-10, including the single-tenant enterprise identity boundary from ADR-0023. FH-20 is now applied, but live OIDC/session enforcement, active approval delegation and multi-tenant persistence remain separately deferred. The operator authority selector exposes Code/Git, Release/Deploy, Infrastructure and Automatic Remediation independently; all remain default DENY and currently unselected. Full Auto remains independently OFF/SHADOW by default.
 
 ## Next action
 
-- keep the accepted V2 reference pinned to `1a8e215b78a3a5008aae6aae36488b3273733b19`;
-- keep V3 authority `SHADOW_ONLY` until the explicit FH-20 cutover gate is satisfied;
-- use the exact-bound FH-20 packet/preview for any future cutover review; the preview itself must remain non-authoritative;
-- continue only authority-neutral hardening/productization;
-- keep FH-KUIKA activation slices and FH-30B..FH-37B blocked until FH-20;
+- preserve the accepted V2 reference at `1a8e215b78a3a5008aae6aae36488b3273733b19`;
+- operate V3 authority against the approved target `57761b7b0257c234ad41314343a22dfd53668364`;
+- keep all critical capability selections empty/default DENY until the operator explicitly enables them;
+- begin FH-30B..FH-37B and FH-KUIKA authority-bearing activation only as separately reviewed, policy-gated work;
+- keep Full Auto OFF/SHADOW unless separately activated;
 - use `npm run verify` for repository integrity.
 
 ## Canonical sources
