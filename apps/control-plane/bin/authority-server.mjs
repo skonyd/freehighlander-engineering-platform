@@ -97,7 +97,10 @@ async function handleAuthorityRequest(context) {
         generation: snapshot.generation,
         state: snapshot.state,
         approvals: Object.fromEntries(
-          AUTHORITY_CAPABILITIES.map((capability) => [capability, coordinator.approval(capability)]),
+          AUTHORITY_CAPABILITIES.map((capability) => [
+            capability,
+            coordinator.approval(capability),
+          ]),
         ),
         authority: 'CONTROL_PLANE_POLICY_GATED',
       },
@@ -127,12 +130,7 @@ async function handleAuthorityRequest(context) {
   }
   if (!corsAllowed) return sendJson(response, 403, { error: 'origin_not_allowed' });
   if (request.headers['x-freehighlander-csrf'] !== csrfToken) {
-    return sendJson(
-      response,
-      403,
-      { error: 'csrf_validation_failed' },
-      allowedOrigin,
-    );
+    return sendJson(response, 403, { error: 'csrf_validation_failed' }, allowedOrigin);
   }
 
   let body;
@@ -239,10 +237,8 @@ function requireHttpOrigin(value) {
 
 async function runCli() {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-  const revision =
-    process.env.FREEHIGHLANDER_AUTHORITY_REVISION ?? resolveGitRevision(root);
-  const repository =
-    process.env.FREEHIGHLANDER_REPOSITORY ?? resolveGitRepository(root);
+  const revision = process.env.FREEHIGHLANDER_AUTHORITY_REVISION ?? resolveGitRevision(root);
+  const repository = process.env.FREEHIGHLANDER_REPOSITORY ?? resolveGitRepository(root);
 
   const started = await startAuthorityCapabilityHttpServer({
     statePath:
