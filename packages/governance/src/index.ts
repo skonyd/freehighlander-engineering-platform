@@ -147,6 +147,16 @@ export {
 } from './data-policy.js';
 
 export {
+  AUTHORITY_CAPABILITY_ACTIONS,
+  authorityCapabilityPolicyCanSelfApprove,
+  evaluateAuthorityCapabilityPolicyV1,
+  publishAuthorityCapabilityPolicyV1,
+  type AuthorityCapabilityPolicyAction,
+  type AuthorityCapabilityPolicyCapability,
+  type AuthorityCapabilityPolicyEvaluationV1,
+} from './authority-capability-policy.js';
+
+export {
   evaluateV3CutoverPolicyV1,
   publishV3CutoverPolicyV1,
   V3_CUTOVER_ACTION,
