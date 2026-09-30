@@ -1,5 +1,5 @@
 schema_version: 1
-contract_version: "1.10.0"
+contract_version: "1.12.0"
 status: FROZEN_BASELINE
 phase: FH-10
 
@@ -31,6 +31,8 @@ accepted_adrs:
   - ADR-0020
   - ADR-0021
   - ADR-0022
+  - ADR-0023
+  - ADR-0024
 
 product:
   mode: local-first-single-user
@@ -201,8 +203,13 @@ migration:
   v2_reference_merge_sha: "e4707a3c4267db9d2aadd452782b91045b96724d"
   v2_reference_post_merge_hardening_pr: 209
   v2_compatibility_authority: ENABLED
-  v3_authority: SHADOW_ONLY
+  v3_authority: ENABLED
   v3_authority_cutover_phase: FH-20
+  v3_authority_cutover_status: APPLIED
+  v3_authority_target_revision: "57761b7b0257c234ad41314343a22dfd53668364"
+  v3_authority_human_approval_issue: 420
+  critical_capabilities_default: DENY
+  critical_capabilities_selected: []
   fh01b2_dependency: creator-marketplace#207
   fh01b2_dependency_status: SATISFIED
 
