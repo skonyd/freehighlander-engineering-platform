@@ -18,7 +18,7 @@ test('repository V3 architecture contract validates and hashes deterministically
 
   assert.match(first, /^[a-f0-9]{64}$/);
   assert.equal(first, second);
-  assert.equal(contract.contract_version, '1.10.0');
+  assert.equal(contract.contract_version, '1.12.0');
   assert.equal(contract.status, 'FROZEN_BASELINE');
   assert.equal(contract.bounded_contexts.packages.includes('planning'), true);
   assert.equal(contract.bounded_contexts.packages.includes('development'), true);
@@ -29,6 +29,8 @@ test('repository V3 architecture contract validates and hashes deterministically
   assert.equal(contract.bounded_contexts.packages.includes('incident'), true);
   assert.equal(contract.bounded_contexts.packages.includes('lineage'), true);
   assert.equal(contract.accepted_adrs.includes('ADR-0022'), true);
+  assert.equal(contract.accepted_adrs.includes('ADR-0023'), true);
+  assert.equal(contract.accepted_adrs.includes('ADR-0024'), true);
   assert.equal(contract.authority.delegable_model_quorum_gate, 'MODEL_QUORUM_REQUIRED');
   assert.equal(contract.full_auto.default_profile, 'OFF');
   assert.equal(contract.full_auto.merge_execution_authority, 'SHADOW_ONLY');
@@ -36,14 +38,21 @@ test('repository V3 architecture contract validates and hashes deterministically
   assert.equal(contract.migration.v2_reference_status, 'ACCEPTED');
   assert.equal(contract.migration.v2_reference_sha, '1a8e215b78a3a5008aae6aae36488b3273733b19');
   assert.equal(contract.migration.v2_compatibility_authority, 'ENABLED');
-  assert.equal(contract.migration.v3_authority, 'SHADOW_ONLY');
+  assert.equal(contract.migration.v3_authority, 'ENABLED');
 });
 
-test('architecture freeze rejects authority cutover before FH-20', async () => {
-  const contract = structuredClone(await loadArchitectureContract(root));
-  contract.migration.v3_authority = 'ENABLED';
+test('post-cutover architecture rejects authority regression or target drift', async () => {
+  const shadowRegression = structuredClone(await loadArchitectureContract(root));
+  shadowRegression.migration.v3_authority = 'SHADOW_ONLY';
+  assert.throws(() => assertArchitectureContract(shadowRegression), /V3 authority/);
 
-  assert.throws(() => assertArchitectureContract(contract), /V3 authority must be SHADOW_ONLY/);
+  const targetDrift = structuredClone(await loadArchitectureContract(root));
+  targetDrift.migration.v3_authority_target_revision = '0'.repeat(40);
+  assert.throws(() => assertArchitectureContract(targetDrift), /V3 authority target revision/);
+
+  const selectedByDefault = structuredClone(await loadArchitectureContract(root));
+  selectedByDefault.migration.critical_capabilities_selected = ['GIT_WRITE'];
+  assert.throws(() => assertArchitectureContract(selectedByDefault), /selected critical capabilities/);
 });
 
 test('architecture freeze rejects semantic fallback/model-shopping drift', async () => {
