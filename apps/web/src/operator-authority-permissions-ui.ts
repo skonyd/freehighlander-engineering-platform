@@ -16,15 +16,19 @@ export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
     .muted { color:var(--muted); }
     .notice { border:1px solid #5b4a22; background:#1d190f; border-radius:12px; padding:14px; margin-bottom:14px; }
     .grid { display:grid; gap:12px; }
-    .permission { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:16px; cursor:pointer; }
+    .permission { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:16px; }
     .permission input { width:20px; height:20px; margin-top:2px; }
     .benefit { color:var(--good); }
     .risk { color:var(--warn); }
+    .cap-status { display:inline-block; margin-top:8px; padding:2px 8px; border:1px solid var(--line); border-radius:999px; font-size:12px; }
+    .cap-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
     .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-    button { background:#162433; color:var(--text); border:1px solid #31506b; border-radius:9px; padding:9px 12px; cursor:pointer; }
+    button { background:#162433; color:var(--text); border:1px solid #31506b; border-radius:9px; padding:8px 11px; cursor:pointer; }
     button:hover,button:focus-visible { border-color:var(--accent); outline:none; }
+    button:disabled { opacity:.45; cursor:not-allowed; }
     pre { overflow:auto; background:#080b0f; border:1px solid var(--line); border-radius:10px; padding:12px; min-height:110px; }
-    .status { margin-top:10px; color:var(--muted); }
+    .status { margin:12px 0; color:var(--muted); }
+    .error { color:var(--bad); }
   </style>
 </head>
 <body>
@@ -32,85 +36,246 @@ export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
   <div>
     <div class="muted">FreeHighlander · Security / Authority</div>
     <h1>Operator authority permissions</h1>
-    <div class="muted">Choose only the powers you want the control-plane to be allowed to activate.</div>
+    <div class="muted">Persistent capability state is owned by the local control-plane.</div>
   </div>
-  <a href="/modules/fh-kuika">← Back</a>
+  <a href="/">← Dashboard</a>
 </header>
 <main>
   <div class="notice">
-    <strong>Safe default:</strong> all permissions are DENY unless selected. A checkbox is a human selection only;
-    it does not bypass V3 cutover, exact approval, or SYSTEM_POLICY.
+    <strong>Safe default:</strong> all critical permissions are DENY. Selecting a capability records operator intent only.
+    Activation still requires an explicit human approval and the current SYSTEM_POLICY gate.
   </div>
 
   <section class="grid" aria-label="Authority permissions">
-    <label class="permission">
-      <input id="gitWrite" type="checkbox" />
-      <span><h2>Code / Git</h2><div class="benefit">Benefit: automatic branch, commit, PR and policy-permitted merge workflows.</div><div class="risk">Risk: repository state can change without a separate manual Git action.</div></span>
-    </label>
-    <label class="permission">
-      <input id="releaseDeploy" type="checkbox" />
-      <span><h2>Release / Deploy</h2><div class="benefit">Benefit: release and deployment can proceed after required tests and gates pass.</div><div class="risk">Risk: a bad release can affect a live environment; policy gates still apply.</div></span>
-    </label>
-    <label class="permission">
-      <input id="infrastructureMutation" type="checkbox" />
-      <span><h2>Infrastructure</h2><div class="benefit">Benefit: Kubernetes/cloud/infrastructure changes can be automated.</div><div class="risk">Risk: highest operational blast radius; should be enabled only when needed.</div></span>
-    </label>
-    <label class="permission">
-      <input id="automaticRemediation" type="checkbox" />
-      <span><h2>Automatic remediation</h2><div class="benefit">Benefit: eligible failures can be repaired without waiting for a human.</div><div class="risk">Risk: an incorrect diagnosis can trigger an unwanted corrective action; safety policy remains mandatory.</div></span>
-    </label>
+    <article class="permission" data-capability="GIT_WRITE">
+      <input id="gitWrite" type="checkbox" aria-label="Request Code / Git" />
+      <div>
+        <h2>Code / Git</h2>
+        <div class="benefit">Automatic branch, commit, PR and policy-permitted merge workflows.</div>
+        <div class="risk">Can mutate repository state.</div>
+        <span class="cap-status" data-status>Loading…</span>
+        <div class="cap-actions">
+          <button type="button" data-activate>Approve &amp; activate</button>
+          <button type="button" data-disable>Disable</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="permission" data-capability="RELEASE_DEPLOY">
+      <input id="releaseDeploy" type="checkbox" aria-label="Request Release / Deploy" />
+      <div>
+        <h2>Release / Deploy</h2>
+        <div class="benefit">Release and deployment can proceed after required gates pass.</div>
+        <div class="risk">Can affect a live environment.</div>
+        <span class="cap-status" data-status>Loading…</span>
+        <div class="cap-actions">
+          <button type="button" data-activate>Approve &amp; activate</button>
+          <button type="button" data-disable>Disable</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="permission" data-capability="INFRASTRUCTURE_MUTATION">
+      <input id="infrastructureMutation" type="checkbox" aria-label="Request Infrastructure" />
+      <div>
+        <h2>Infrastructure</h2>
+        <div class="benefit">Kubernetes, cloud and infrastructure changes can be automated.</div>
+        <div class="risk">Highest operational blast radius.</div>
+        <span class="cap-status" data-status>Loading…</span>
+        <div class="cap-actions">
+          <button type="button" data-activate>Approve &amp; activate</button>
+          <button type="button" data-disable>Disable</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="permission" data-capability="AUTOMATIC_REMEDIATION">
+      <input id="automaticRemediation" type="checkbox" aria-label="Request Automatic remediation" />
+      <div>
+        <h2>Automatic remediation</h2>
+        <div class="benefit">Eligible failures can be repaired without waiting for another operator action.</div>
+        <div class="risk">Incorrect diagnosis can trigger an unwanted corrective action.</div>
+        <span class="cap-status" data-status>Loading…</span>
+        <div class="cap-actions">
+          <button type="button" data-activate>Approve &amp; activate</button>
+          <button type="button" data-disable>Disable</button>
+        </div>
+      </div>
+    </article>
   </section>
 
   <div class="actions">
-    <button id="review" type="button">Review selection</button>
-    <button id="save" type="button">Save browser preference</button>
-    <button id="clear" type="button">Reset to DENY</button>
+    <button id="refresh" type="button">Refresh state</button>
+    <button id="denyAll" type="button">Reset all to DENY</button>
   </div>
-  <div id="status" class="status" role="status" aria-live="polite"></div>
-  <pre id="preview">No permission selected.</pre>
+  <div id="status" class="status" role="status" aria-live="polite">Connecting to control-plane…</div>
+  <pre id="preview">No control-plane state loaded.</pre>
 </main>
 <script>
-const KEY='freehighlander-authority-selection-v1';
-const ids=['gitWrite','releaseDeploy','infrastructureMutation','automaticRemediation'];
-const query=()=>ids.map(id=>id+'='+String(document.getElementById(id).checked)).join('&');
+const cards=[...document.querySelectorAll('[data-capability]')];
+const params=new URLSearchParams(location.search);
+const apiBase=params.get('authorityApi')||
+  location.protocol+'//'+(location.hostname||'127.0.0.1')+':4311';
+let csrfToken=null;
+let generation=0;
+let authorityState={requestedCapabilities:[],activeCapabilities:[]};
+let approvals={};
 
-function restore(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
-    for(const id of ids) document.getElementById(id).checked=saved[id]===true;
-  }catch{}
+function status(message,isError=false){
+  const node=document.getElementById('status');
+  node.textContent=message;
+  node.classList.toggle('error',isError);
 }
-function snapshot(){
-  return Object.fromEntries(ids.map(id=>[id,document.getElementById(id).checked]));
+
+async function readJson(response){
+  const body=await response.json();
+  if(!response.ok){
+    const result=body.result;
+    const reasons=result&&Array.isArray(result.reasons)?result.reasons.join('; '):'';
+    throw new Error(reasons||body.message||body.error||response.statusText);
+  }
+  return body;
 }
-async function review(){
-  const status=document.getElementById('status');
+
+async function ensureSession(){
+  if(csrfToken) return;
+  const response=await fetch(apiBase+'/v1/authority/session',{cache:'no-store'});
+  const body=await readJson(response);
+  csrfToken=body.csrfToken;
+}
+
+async function loadState(){
   try{
-    const response=await fetch('/api/authority-permissions/preview?'+query(),{cache:'no-store'});
-    const body=await response.json();
-    if(!response.ok) throw new Error(body.message||body.error||response.statusText);
-    document.getElementById('preview').textContent=JSON.stringify(body,null,2);
-    status.textContent=body.profile.requestedCapabilities.length
-      ? 'Selection prepared. It is still policy-gated and not active.'
-      : 'No permissions requested; default DENY remains in force.';
+    await ensureSession();
+    const body=await readJson(await fetch(apiBase+'/v1/authority',{cache:'no-store'}));
+    generation=body.generation;
+    authorityState=body.state;
+    approvals=body.approvals||{};
+    render();
+    status('Control-plane state loaded. Generation '+generation+'.');
   }catch(error){
-    status.textContent='Unable to preview selection: '+error.message;
+    status('Authority control-plane unavailable: '+error.message,true);
   }
 }
-document.getElementById('review').addEventListener('click',()=>void review());
-document.getElementById('save').addEventListener('click',()=>{
-  localStorage.setItem(KEY,JSON.stringify(snapshot()));
-  document.getElementById('status').textContent='Browser preference saved. This does not enable authority.';
-  void review();
+
+function render(){
+  const requested=new Set(authorityState.requestedCapabilities||[]);
+  const active=new Set(authorityState.activeCapabilities||[]);
+  for(const card of cards){
+    const capability=card.dataset.capability;
+    const checkbox=card.querySelector('input[type=checkbox]');
+    const activate=card.querySelector('[data-activate]');
+    const disable=card.querySelector('[data-disable]');
+    const badge=card.querySelector('[data-status]');
+    checkbox.checked=requested.has(capability);
+    const isActive=active.has(capability);
+    const isRequested=requested.has(capability);
+    badge.textContent=isActive?'ACTIVE':isRequested?'REQUESTED · inactive':'DENY';
+    activate.disabled=!isRequested||isActive;
+    disable.disabled=!isActive;
+  }
+  document.getElementById('preview').textContent=JSON.stringify({
+    generation,
+    state:authorityState,
+    approvals
+  },null,2);
+}
+
+async function mutate(path,payload){
+  await ensureSession();
+  const response=await fetch(apiBase+path,{
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'x-freehighlander-csrf':csrfToken
+    },
+    body:JSON.stringify(payload)
+  });
+  return readJson(response);
+}
+
+async function setRequested(capability,requested){
+  const body=await mutate('/v1/authority/request',{
+    capability,
+    requested,
+    expectedGeneration:generation
+  });
+  generation=body.result.generation;
+  authorityState=body.result.state;
+  render();
+}
+
+async function approveAndActivate(capability){
+  if(!confirm('Approve and activate '+capability+' for the current exact revision?')) return;
+  status('Creating exact human approval for '+capability+'…');
+  await mutate('/v1/authority/approve',{capability,expectedGeneration:generation});
+  const body=await mutate('/v1/authority/activate',{capability,expectedGeneration:generation});
+  generation=body.result.generation;
+  authorityState=body.result.state;
+  await loadState();
+}
+
+async function disableCapability(capability){
+  if(!confirm('Disable '+capability+' immediately?')) return;
+  const body=await mutate('/v1/authority/deactivate',{capability,expectedGeneration:generation});
+  generation=body.result.generation;
+  authorityState=body.result.state;
+  await loadState();
+}
+
+for(const card of cards){
+  const capability=card.dataset.capability;
+  const checkbox=card.querySelector('input[type=checkbox]');
+  checkbox.addEventListener('change',async()=>{
+    const requested=checkbox.checked;
+    if(!requested&&authorityState.activeCapabilities.includes(capability)){
+      if(!confirm('This will also deactivate '+capability+'. Continue?')){
+        checkbox.checked=true;
+        return;
+      }
+    }
+    try{
+      await setRequested(capability,requested);
+      status(requested?capability+' requested. Activation is still gated.':capability+' reset to DENY.');
+    }catch(error){
+      status('Unable to update '+capability+': '+error.message,true);
+      await loadState();
+    }
+  });
+  card.querySelector('[data-activate]').addEventListener('click',async()=>{
+    try{
+      await approveAndActivate(capability);
+    }catch(error){
+      status('Activation blocked for '+capability+': '+error.message,true);
+      await loadState();
+    }
+  });
+  card.querySelector('[data-disable]').addEventListener('click',async()=>{
+    try{
+      await disableCapability(capability);
+    }catch(error){
+      status('Unable to disable '+capability+': '+error.message,true);
+      await loadState();
+    }
+  });
+}
+
+document.getElementById('refresh').addEventListener('click',()=>void loadState());
+document.getElementById('denyAll').addEventListener('click',async()=>{
+  if(!confirm('Reset every requested capability to DENY?')) return;
+  try{
+    for(const capability of [...authorityState.requestedCapabilities]){
+      await setRequested(capability,false);
+    }
+    status('All critical capabilities are DENY.');
+    await loadState();
+  }catch(error){
+    status('Reset to DENY was interrupted: '+error.message,true);
+    await loadState();
+  }
 });
-document.getElementById('clear').addEventListener('click',()=>{
-  for(const id of ids) document.getElementById(id).checked=false;
-  localStorage.removeItem(KEY);
-  document.getElementById('status').textContent='Reset to default DENY.';
-  void review();
-});
-restore();
-void review();
+
+void loadState();
 </script>
 </body>
 </html>`;
