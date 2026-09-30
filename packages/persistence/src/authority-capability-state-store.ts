@@ -1,4 +1,8 @@
-import { AtomicJsonConfigStore, type AtomicConfigWriteStatus, type JsonValue } from './atomic-json-config-store.js';
+import {
+  AtomicJsonConfigStore,
+  type AtomicConfigWriteStatus,
+  type JsonValue,
+} from './atomic-json-config-store.js';
 
 export const AUTHORITY_CAPABILITIES = [
   'GIT_WRITE',
