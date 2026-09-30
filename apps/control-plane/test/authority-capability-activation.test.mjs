@@ -189,123 +189,138 @@ test('activation and deactivation reject stale generations without state mutatio
   assert.equal(repeated.generation, deactivated.generation);
 });
 
-test('activation evidence validation fails closed on malformed capability revision and hashes', () => {
-  const service = createService();
+test(
+  'activation evidence validation fails closed on malformed capability revision and hashes',
+  () => {
+    const service = createService();
 
-  assert.throws(
-    () => service.setRequested('UNKNOWN_CAPABILITY', true, 0),
-    /unknown authority capability/,
-  );
-  assert.throws(
-    () =>
-      service.activate(
-        'GIT_WRITE',
-        0,
-        allowedEvidence({ humanApprovalCapability: 'UNKNOWN_CAPABILITY' }),
-      ),
-    /unknown authority capability/,
-  );
-  assert.throws(
-    () => service.activate('GIT_WRITE', 0, allowedEvidence({ humanApprovalRevision: 'bad' })),
-    /humanApprovalRevision must be a 40-character git SHA/,
-  );
-  assert.throws(
-    () => service.activate('GIT_WRITE', 0, allowedEvidence({ observedRevision: 'bad' })),
-    /observedRevision must be a 40-character git SHA/,
-  );
-  assert.throws(
-    () => service.activate('GIT_WRITE', 0, allowedEvidence({ humanApprovalRequestHash: 'bad' })),
-    /humanApprovalRequestHash must be lowercase sha256/,
-  );
-  assert.throws(
-    () => service.activate('GIT_WRITE', 0, allowedEvidence({ humanDecisionHash: 'bad' })),
-    /humanDecisionHash must be lowercase sha256/,
-  );
-  assert.throws(
-    () => service.activate('GIT_WRITE', 0, allowedEvidence({ systemPolicyHash: 'bad' })),
-    /systemPolicyHash must be lowercase sha256/,
-  );
-  assert.throws(
-    () => service.activate('GIT_WRITE', 0, allowedEvidence({ observedPolicyHash: 'bad' })),
-    /observedPolicyHash must be lowercase sha256/,
-  );
-});
+    assert.throws(
+      () => service.setRequested('UNKNOWN_CAPABILITY', true, 0),
+      /unknown authority capability/,
+    );
+    assert.throws(
+      () =>
+        service.activate(
+          'GIT_WRITE',
+          0,
+          allowedEvidence({ humanApprovalCapability: 'UNKNOWN_CAPABILITY' }),
+        ),
+      /unknown authority capability/,
+    );
+    assert.throws(
+      () =>
+        service.activate(
+          'GIT_WRITE',
+          0,
+          allowedEvidence({ humanApprovalRevision: 'bad' }),
+        ),
+      /humanApprovalRevision must be a 40-character git SHA/,
+    );
+    assert.throws(
+      () => service.activate('GIT_WRITE', 0, allowedEvidence({ observedRevision: 'bad' })),
+      /observedRevision must be a 40-character git SHA/,
+    );
+    assert.throws(
+      () =>
+        service.activate(
+          'GIT_WRITE',
+          0,
+          allowedEvidence({ humanApprovalRequestHash: 'bad' }),
+        ),
+      /humanApprovalRequestHash must be lowercase sha256/,
+    );
+    assert.throws(
+      () => service.activate('GIT_WRITE', 0, allowedEvidence({ humanDecisionHash: 'bad' })),
+      /humanDecisionHash must be lowercase sha256/,
+    );
+    assert.throws(
+      () => service.activate('GIT_WRITE', 0, allowedEvidence({ systemPolicyHash: 'bad' })),
+      /systemPolicyHash must be lowercase sha256/,
+    );
+    assert.throws(
+      () => service.activate('GIT_WRITE', 0, allowedEvidence({ observedPolicyHash: 'bad' })),
+      /observedPolicyHash must be lowercase sha256/,
+    );
+  },
+);
 
-test('concurrent write failures remain fail-closed even when the store returns partial conflict state', () => {
-  const baseState = {
-    schemaVersion: 1,
-    requestedCapabilities: ['GIT_WRITE'],
-    activeCapabilities: [],
-  };
+test(
+  'concurrent write failures remain fail-closed even when the store returns partial conflict state',
+  () => {
+    const baseState = {
+      schemaVersion: 1,
+      requestedCapabilities: ['GIT_WRITE'],
+      activeCapabilities: [],
+    };
 
-  const writerConflictStore = {
-    read() {
-      return { generation: 0, state: baseState, snapshotHash: null };
-    },
-    write(expectedGeneration) {
-      return {
-        status: 'WRITER_CONFLICT',
-        expectedGeneration,
-        actualGeneration: null,
-        snapshot: null,
-        authority: 'NONE',
-      };
-    },
-  };
-  const writerConflictService = new AuthorityCapabilityActivationService(writerConflictStore);
-  const writerConflict = writerConflictService.activate('GIT_WRITE', 0, allowedEvidence());
-  assert.equal(writerConflict.status, 'CONFLICT');
-  assert.equal(writerConflict.generation, 0);
-  assert.deepEqual(writerConflict.state, baseState);
+    const writerConflictStore = {
+      read() {
+        return { generation: 0, state: baseState, snapshotHash: null };
+      },
+      write(expectedGeneration) {
+        return {
+          status: 'WRITER_CONFLICT',
+          expectedGeneration,
+          actualGeneration: null,
+          snapshot: null,
+          authority: 'NONE',
+        };
+      },
+    };
+    const writerConflictService = new AuthorityCapabilityActivationService(writerConflictStore);
+    const writerConflict = writerConflictService.activate('GIT_WRITE', 0, allowedEvidence());
+    assert.equal(writerConflict.status, 'CONFLICT');
+    assert.equal(writerConflict.generation, 0);
+    assert.deepEqual(writerConflict.state, baseState);
 
-  const newerState = {
-    schemaVersion: 1,
-    requestedCapabilities: ['GIT_WRITE'],
-    activeCapabilities: [],
-  };
-  const generationConflictStore = {
-    read() {
-      return { generation: 0, state: baseState, snapshotHash: null };
-    },
-    write(expectedGeneration) {
-      return {
-        status: 'GENERATION_CONFLICT',
-        expectedGeneration,
-        actualGeneration: 1,
-        snapshot: { generation: 1, state: newerState, snapshotHash: 'a'.repeat(64) },
-        authority: 'NONE',
-      };
-    },
-  };
-  const generationConflictService = new AuthorityCapabilityActivationService(
-    generationConflictStore,
-  );
-  const generationConflict = generationConflictService.activate(
-    'GIT_WRITE',
-    0,
-    allowedEvidence(),
-  );
-  assert.equal(generationConflict.status, 'CONFLICT');
-  assert.equal(generationConflict.generation, 1);
-  assert.deepEqual(generationConflict.state, newerState);
+    const newerState = {
+      schemaVersion: 1,
+      requestedCapabilities: ['GIT_WRITE'],
+      activeCapabilities: [],
+    };
+    const generationConflictStore = {
+      read() {
+        return { generation: 0, state: baseState, snapshotHash: null };
+      },
+      write(expectedGeneration) {
+        return {
+          status: 'GENERATION_CONFLICT',
+          expectedGeneration,
+          actualGeneration: 1,
+          snapshot: { generation: 1, state: newerState, snapshotHash: 'a'.repeat(64) },
+          authority: 'NONE',
+        };
+      },
+    };
+    const generationConflictService = new AuthorityCapabilityActivationService(
+      generationConflictStore,
+    );
+    const generationConflict = generationConflictService.activate(
+      'GIT_WRITE',
+      0,
+      allowedEvidence(),
+    );
+    assert.equal(generationConflict.status, 'CONFLICT');
+    assert.equal(generationConflict.generation, 1);
+    assert.deepEqual(generationConflict.state, newerState);
 
-  const invalidWrittenStore = {
-    read() {
-      return { generation: 0, state: baseState, snapshotHash: null };
-    },
-    write(expectedGeneration) {
-      return {
-        status: 'WRITTEN',
-        expectedGeneration,
-        actualGeneration: 1,
-        snapshot: null,
-        authority: 'NONE',
-      };
-    },
-  };
-  const invalidWrittenService = new AuthorityCapabilityActivationService(invalidWrittenStore);
-  const invalidWritten = invalidWrittenService.activate('GIT_WRITE', 0, allowedEvidence());
-  assert.equal(invalidWritten.status, 'CONFLICT');
-  assert.equal(invalidWritten.generation, 1);
-});
-
+    const invalidWrittenStore = {
+      read() {
+        return { generation: 0, state: baseState, snapshotHash: null };
+      },
+      write(expectedGeneration) {
+        return {
+          status: 'WRITTEN',
+          expectedGeneration,
+          actualGeneration: 1,
+          snapshot: null,
+          authority: 'NONE',
+        };
+      },
+    };
+    const invalidWrittenService = new AuthorityCapabilityActivationService(invalidWrittenStore);
+    const invalidWritten = invalidWrittenService.activate('GIT_WRITE', 0, allowedEvidence());
+    assert.equal(invalidWritten.status, 'CONFLICT');
+    assert.equal(invalidWritten.generation, 1);
+  },
+);
