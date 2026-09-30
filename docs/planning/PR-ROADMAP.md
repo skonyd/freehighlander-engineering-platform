@@ -1,6 +1,6 @@
 # PR Roadmap
 
-**Status:** ACCEPTED DIRECTION / IMPLEMENTATION ADVANCED THROUGH PRE-CUTOVER A-LANE
+**Status:** ACCEPTED DIRECTION / FH-20 CUTOVER APPLIED / POST-CUTOVER ACTIVATION ELIGIBLE
 
 FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 
@@ -10,16 +10,17 @@ FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 - FH-01B1 provisional compatibility complete.
 - FH-01B2 final reconciliation complete via PR #237.
 - FH-02..FH-19 complete.
-- FH-20 readiness gate complete; Creator Marketplace external blocker cleared; explicit cutover still pending.
+- FH-20 complete; exact target `57761b7b0257c234ad41314343a22dfd53668364` promoted by issue #420 + canonical SYSTEM_POLICY + ADR-0024.
 - FH-30A..FH-37A complete and authority-neutral.
-- FH-30B..FH-37B remain post-cutover.
-- FH-KUIKA authority-neutral preparation is complete through FH-KUIKA-09; remaining executable activation points stay Core-governed and FH-20-gated.
+- FH-30B..FH-37B are post-cutover eligible but remain separately capability/policy gated.
+- FH-KUIKA preparation is complete through FH-KUIKA-09; executable activation points stay Core-governed and capability/policy gated.
 - Pre-cutover hardening through reproducible CI, repository hygiene, tracked-secret enforcement, 19/19 measured native coverage, opaque SecretHandle/EPHEMERAL injection, lockfile provenance, safe vulnerability reporting, deterministic build-output integrity accidental-publish safety, internal workspace dependency-confusion prevention and workspace package entrypoint integrity enforcement, source-to-dist build completeness enforcement, privacy export/delete manifest planning and fail-closed provider-egress preparation are complete.
 
 ```text
 V2 reference = ACCEPTED
 V2 compatibility authority = ENABLED
-V3 authority = SHADOW_ONLY
+V3 authority = ENABLED
+critical capabilities = DEFAULT DENY / NONE SELECTED
 ```
 
 ## Foundation / automation
@@ -71,14 +72,14 @@ Invariant: Home refresh cannot invoke ProviderAdapter/model inference and remain
 - **FH-17** Replay/simulation + crash recovery — complete
 - **FH-18** Management UI — complete
 - **FH-19** V2/V3 shadow parity — complete
-- **FH-20** V3 authority cutover — readiness complete, external blocker cleared, explicit human/policy cutover pending
+- **FH-20** V3 authority cutover — COMPLETE / applied to exact approved target `57761b7b0257c234ad41314343a22dfd53668364`
 
 ## Modules
 
 Each module has an authority-neutral **A** preparation lane and authority-bearing **B** activation lane.
 
 - **FH-30A..FH-37A** — complete
-- **FH-30B..FH-37B** — blocked until final FH-20 authority cutover
+- **FH-30B..FH-37B** — eligible post-cutover; no automatic activation; normal capability/policy gates apply
 
 Canonical split and authority boundaries: [FH-30-37-PRECUTOVER.md](FH-30-37-PRECUTOVER.md).
 
@@ -106,12 +107,14 @@ Creator Marketplace #207/#209 COMPLETE
         ↓
 FH-01B2 final reconciliation COMPLETE
         ↓
-FH-20 explicit human/policy authority cutover
+FH-20 exact human/policy authority cutover COMPLETE
         ↓
-FH-30B..FH-37B activation
+FH-30B..FH-37B eligible activation
+        ↓
+operator capability selection + normal SYSTEM_POLICY/human gates
 ```
 
-This ordering preserves the distinction between preparation/readiness evidence and authority-bearing activation.
+This ordering preserves the distinction between completed core V3 authority cutover and separately permissioned authority-bearing module activation.
 
 
 ## Optional productization module — FH-KUIKA
@@ -186,7 +189,7 @@ FH-KUIKA-06 / FH-KUIKA-07 / FH-KUIKA-09
   ↓
 FH-KUIKA-08 routine definitions/UI
   ↓
-FH-20 + relevant authority gates
+explicit operator capability selection + relevant authority gates
   ↓
 FH-KUIKA-02.5 / FH-KUIKA-05.6 / FH-KUIKA-08.5 authority-bearing activation
 ~~~
