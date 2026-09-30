@@ -69,10 +69,7 @@ export class AuthorityCapabilityApprovalCoordinator {
     return this.#approvals.get(capability)?.summary ?? null;
   }
 
-  approve(
-    capability: AuthorityCapability,
-    expectedGeneration: number,
-  ): CapabilityApprovalResultV1 {
+  approve(capability: AuthorityCapability, expectedGeneration: number): CapabilityApprovalResultV1 {
     const snapshot = this.activationService.snapshot();
     if (snapshot.generation !== expectedGeneration) {
       return approvalResult(
