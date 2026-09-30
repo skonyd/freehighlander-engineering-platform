@@ -79,6 +79,16 @@ The preview becomes BLOCKED if any of these drift:
 
 A stale/mismatched human decision, HUMAN DENY, missing decision, changed policy hash, SYSTEM_POLICY DENY/HUMAN_REQUIRED, or MODEL_QUORUM_REQUIRED also blocks.
 
+## Canonical SYSTEM_POLICY
+
+The repository defines one deterministic V3 cutover policy snapshot for the action `promote-v3-authority`:
+
+- MODEL principal => `DENY`;
+- HUMAN principal => `HUMAN_REQUIRED`;
+- SYSTEM principal => `ALLOW`.
+
+The HUMAN and SYSTEM decisions are evaluated from the same published policy hash. SYSTEM `ALLOW` does not bypass human approval and does not itself apply the cutover; all exact-currentness, reference, parity, smoke and promotion-review gates remain mandatory.
+
 ## Security / authority rules
 
 - only an exact canonical human decision can satisfy the human gate;

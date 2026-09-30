@@ -236,6 +236,10 @@ fh20:
   approval_packet_preview: prepared_read_only
   approval_packet_issue: 414
   approval_packet_authority: none
+  system_policy_contract: canonical_v3_cutover_policy_v1
+  system_policy_model_principal: DENY
+  system_policy_human_principal: HUMAN_REQUIRED
+  system_policy_system_principal: ALLOW
   remaining_gate: exact-human-approval-plus-system-policy-allow-and-explicit-v3-promotion-review
 
 module_preparation_lane:
