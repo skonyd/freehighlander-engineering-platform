@@ -92,21 +92,16 @@ export class AuthorityCapabilityApprovalCoordinator {
 
     const policy = evaluateAuthorityCapabilityPolicyV1(capability);
     const runSnapshotHash = sha256(
-      canonicalJson({
-        repository: this.options.repository,
-        revision: this.options.revision,
+      JSON.stringify([
+        this.options.repository,
+        this.options.revision,
         capability,
-        generation: snapshot.generation,
-        stateSnapshotHash: snapshot.snapshotHash,
-      }),
+        snapshot.generation,
+        snapshot.snapshotHash,
+      ]),
     );
     const evidenceHash = sha256(
-      canonicalJson({
-        capability,
-        requested: true,
-        generation: snapshot.generation,
-        policyHash: policy.policy.policyHash,
-      }),
+      JSON.stringify([capability, true, snapshot.generation, policy.policy.policyHash]),
     );
     const request = Object.freeze(
       createHumanApprovalRequest({
@@ -211,20 +206,6 @@ function requireRevision(value: string): void {
   if (!/^[a-f0-9]{40}$/.test(value)) {
     throw new Error('revision must be a 40-character git SHA');
   }
-}
-
-function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
-  const record = value as Record<string, unknown>;
-  return (
-    '{' +
-    Object.keys(record)
-      .sort()
-      .map((key) => JSON.stringify(key) + ':' + canonicalJson(record[key]))
-      .join(',') +
-    '}'
-  );
 }
 
 function sha256(value: string): string {
