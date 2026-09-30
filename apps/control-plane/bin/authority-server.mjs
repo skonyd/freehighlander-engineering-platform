@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 import path from 'node:path';
@@ -238,23 +239,45 @@ function requireHttpOrigin(value) {
 
 async function runCli() {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-  const revision = process.env.FREEHIGHLANDER_AUTHORITY_REVISION;
-  if (!revision) {
-    throw new Error('FREEHIGHLANDER_AUTHORITY_REVISION is required');
-  }
+  const revision =
+    process.env.FREEHIGHLANDER_AUTHORITY_REVISION ?? resolveGitRevision(root);
+  const repository =
+    process.env.FREEHIGHLANDER_REPOSITORY ?? resolveGitRepository(root);
 
   const started = await startAuthorityCapabilityHttpServer({
     statePath:
       process.env.FREEHIGHLANDER_AUTHORITY_STATE ??
       path.join(root, '.freehighlander', 'runtime', 'authority-capabilities.json'),
-    repository:
-      process.env.FREEHIGHLANDER_REPOSITORY ?? 'skonyd/freehighlander-engineering-platform',
+    repository,
     revision,
     approverId: process.env.FREEHIGHLANDER_APPROVER_ID ?? 'local-operator',
     allowedOrigin: process.env.FREEHIGHLANDER_AUTHORITY_UI_ORIGIN ?? 'http://127.0.0.1:4310',
     port: Number(process.env.FREEHIGHLANDER_AUTHORITY_PORT ?? 4311),
   });
   console.log(`FreeHighlander authority control-plane: ${started.url}`);
+}
+
+function resolveGitRevision(root) {
+  const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: root,
+    encoding: 'utf8',
+  }).trim();
+  if (!/^[a-f0-9]{40}$/.test(revision)) {
+    throw new Error('unable to resolve an exact git revision');
+  }
+  return revision;
+}
+
+function resolveGitRepository(root) {
+  const remote = execFileSync('git', ['remote', 'get-url', 'origin'], {
+    cwd: root,
+    encoding: 'utf8',
+  }).trim();
+  const match =
+    /^https:\/\/github\.com\/([^/]+\/[^/]+?)(?:\.git)?$/.exec(remote) ??
+    /^git@github\.com:([^/]+\/[^/]+?)(?:\.git)?$/.exec(remote);
+  if (!match?.[1]) throw new Error('unable to resolve GitHub repository from origin');
+  return match[1];
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
