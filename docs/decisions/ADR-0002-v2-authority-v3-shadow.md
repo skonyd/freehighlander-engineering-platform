@@ -1,6 +1,6 @@
 # ADR-0002 — V3 hazır olana kadar V2 authority, V3 shadow
 
-**Status:** Proposed / direction approved
+**Status:** SUPERSEDED BY ADR-0024 AFTER SUCCESSFUL FH-20 CUTOVER
 
 ## Decision
 
@@ -21,6 +21,8 @@ Promotion için:
 - crash/recovery behavior
 
 kanıtlanmalıdır.
+
+ADR-0024 records that the required parity/policy/human gates were later satisfied for the exact approved V3 target.
 
 Parity sonrası:
 
