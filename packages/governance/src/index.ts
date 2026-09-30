@@ -147,6 +147,15 @@ export {
 } from './data-policy.js';
 
 export {
+  evaluateV3CutoverPolicyV1,
+  publishV3CutoverPolicyV1,
+  V3_CUTOVER_ACTION,
+  v3CutoverPolicyCanBypassHumanApproval,
+  v3CutoverPolicyCanGrantModelAuthority,
+  type V3CutoverPolicyEvaluationV1,
+} from './cutover-policy.js';
+
+export {
   buildV3CutoverApprovalPacket,
   cutoverApprovalPacketCanApplyCutover,
   cutoverApprovalPacketCanUseModelAsHuman,
