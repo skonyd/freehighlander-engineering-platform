@@ -89,7 +89,9 @@ export function createDefaultAuthorityCapabilityStateV1(): AuthorityCapabilitySt
 
 export function validateAuthorityCapabilityStateV1(value: unknown): JsonValue {
   if (!isRecord(value)) throw new Error('authority capability state must be an object');
-  if (value.schemaVersion !== 1) throw new Error('authority capability state schemaVersion must be 1');
+  if (value.schemaVersion !== 1) {
+    throw new Error('authority capability state schemaVersion must be 1');
+  }
 
   const requestedCapabilities = normalizeCapabilities(
     value.requestedCapabilities,
