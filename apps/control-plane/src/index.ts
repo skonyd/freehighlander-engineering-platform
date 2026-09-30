@@ -185,6 +185,15 @@ export {
 } from './execution-runtime.js';
 
 export {
+  AuthorityCapabilityApprovalCoordinator,
+  capabilityApprovalCoordinatorAcceptsClientVerifiedFlag,
+  type AuthorityCapabilityApprovalCoordinatorOptions,
+  type CapabilityApprovalResultV1,
+  type CapabilityApprovalStatus,
+  type CapabilityApprovalSummaryV1,
+} from './authority-capability-approval.js';
+
+export {
   AuthorityCapabilityActivationService,
   capabilityActivationServiceCanBypassPolicy,
   capabilityActivationServiceCanImplicitlyActivate,
