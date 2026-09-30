@@ -60,3 +60,15 @@ role_package:
   schema_version: v1
   version_pinned_per_run: true
   immutable_during_active_run: true
+
+v3_cutover:
+  action: promote-v3-authority
+  risk_tier: CRITICAL
+  data_classification: INTERNAL
+  model_principal: DENY
+  human_principal: HUMAN_REQUIRED
+  system_principal: ALLOW
+  exact_revision_required: true
+  exact_policy_snapshot_required: true
+  readiness_gate_required: true
+  human_approval_bypass: DENY
