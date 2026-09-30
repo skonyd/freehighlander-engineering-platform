@@ -2,12 +2,12 @@
 
 **Status:** FROZEN BASELINE  
 **Machine-readable source:** `.freehighlander/architecture.yaml`  
-**Contract version:** 1.10.0  
+**Contract version:** 1.12.0  
 **Freeze phase:** FH-10
 
 ## Purpose
 
-This document records the accepted architecture direction from ADR-0001 through ADR-0022. Version 1.9.0 accepted the reconciled V2 automation compatibility reference after Creator Marketplace #207/#209; version 1.10.0 adds a delegable dual-model quorum policy state while preserving all V3 foundation authority constraints and SHADOW_ONLY execution.
+This document records the accepted architecture direction from ADR-0001 through ADR-0024. Version 1.11.0 incorporates the accepted single-tenant enterprise identity boundary from ADR-0023. Version 1.12.0 applies the FH-20 V3 authority cutover from exact approved target `57761b7b0257c234ad41314343a22dfd53668364` while preserving fail-closed critical capability permissions.
 
 The machine-readable contract is normative for automated drift checks. Existing ADRs remain the decision rationale.
 
@@ -106,14 +106,19 @@ Version 1.9.0 accepts the final V2 compatibility reference at `1a8e215b78a3a5008
 
 Version 1.10.0 adds the Full Auto delegable policy effect `MODEL_QUORUM_REQUIRED`. It is distinct from non-delegable `HUMAN_REQUIRED`; unanimous independent model approval remains evidence rather than authority, and current merge execution remains `SHADOW_ONLY`.
 
+Version 1.11.0 incorporates ADR-0023's enterprise-ready single-tenant identity boundary without activating OIDC/session enforcement, approval delegation or multi-tenant persistence.
+
+Version 1.12.0 applies ADR-0024 / FH-20. V3 core authority is `ENABLED` for the exact approved target revision. V2 remains the accepted compatibility/reference plane. Code/Git, Release/Deploy, Infrastructure Mutation and Automatic Remediation remain default DENY and unselected; Full Auto remains independently OFF/SHADOW by default.
+
 ### Migration
 
-Until FH-20:
+After FH-20:
 
 ```text
-V2 reference             = ACCEPTED
+V2 reference               = ACCEPTED
 V2 compatibility authority = ENABLED
-V3 authority             = SHADOW_ONLY
+V3 authority               = ENABLED
+critical capabilities      = DEFAULT DENY / NONE SELECTED
 ```
 
 FH-01B2's Creator Marketplace #207 dependency is satisfied by the accepted #207 merge plus direct #209 post-merge hardening reference.
