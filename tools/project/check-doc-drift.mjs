@@ -17,10 +17,10 @@ const roadmap = await fs.readFile(path.join(root, 'docs', 'ROADMAP.md'), 'utf8')
 const prRoadmap = await fs.readFile(path.join(root, 'docs', 'planning', 'PR-ROADMAP.md'), 'utf8');
 const securityPolicy = await fs.readFile(path.join(root, 'SECURITY.md'), 'utf8');
 
-expect(state.phase?.id, 'PRE-CUTOVER', 'state phase');
+expect(state.phase?.id, 'POST-CUTOVER', 'state phase');
 expect(
   state.phase?.status,
-  'external_dependency_satisfied_cutover_not_applied',
+  'v3_authority_enabled_critical_permissions_default_deny',
   'state phase status',
 );
 expect(state.active_work?.branch, 'main', 'state active branch');
@@ -28,8 +28,8 @@ if (state.active_work?.pull_request !== null) {
   failures.push('state active_work.pull_request must be null in canonical main state');
 }
 expect(state.fh01b?.promotion?.status, 'complete', 'FH-01B2 promotion state');
-expect(state.fh20?.cutover_allowed, false, 'FH-20 cutover state');
-expect(state.fh20?.v3_authority, 'SHADOW_ONLY', 'V3 authority state');
+expect(state.fh20?.cutover_allowed, true, 'FH-20 cutover state');
+expect(state.fh20?.v3_authority, 'ENABLED', 'V3 authority state');
 
 for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a', 'fh37a']) {
   expect(state[key]?.status, 'complete', `${key} state`);
@@ -47,7 +47,8 @@ for (const [documentName, content, required] of [
     readme,
     [
       'FH-30A..FH-37A authority-neutral SDLC preparation lane tamamlandı.',
-      'V3 authority = SHADOW_ONLY',
+      'V3 authority = ENABLED',
+      'FH-20 cutover = APPLIED',
       'FH-01B2 final reconciliation',
     ],
   ],
@@ -80,7 +81,8 @@ for (const [documentName, content, required] of [
     'PROJECT_STATE.md',
     projectState,
     [
-      'PRE-CUTOVER / CREATOR MARKETPLACE #207 DEPENDENCY SATISFIED',
+      'POST-CUTOVER / V3 AUTHORITY ENABLED / CRITICAL PERMISSIONS DEFAULT DENY',
+      'FH-20 cutover — complete',
       'FH-37A Engineering Lineage',
       'workspace dependency-boundary enforcement',
       '#109 / PR #110 — reproducible CI',
@@ -105,8 +107,8 @@ for (const [documentName, content, required] of [
     'docs/ROADMAP.md',
     roadmap,
     [
-      'FH-30A..FH-37A COMPLETE / B-lane BLOCKED',
-      'READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED',
+      'FH-30A..FH-37A COMPLETE / B-lane ELIGIBLE, NOT AUTO-ACTIVATED',
+      'COMPLETE / FH-20 CUTOVER APPLIED',
       'Pre-cutover hardening — COMPLETE THROUGH PROVIDER EGRESS PREPARATION',
       'metadata-only privacy EXPORT/DELETE manifest planning',
       'fail-closed provider-egress preparation',
@@ -117,6 +119,7 @@ for (const [documentName, content, required] of [
     prRoadmap,
     [
       'FH-01B2 final accepted-V2 reconciliation',
+      'FH-20 complete; exact target',
       'FH-30A..FH-37A complete and authority-neutral.',
       'repository hygiene',
       'privacy export/delete manifest planning and fail-closed provider-egress preparation are complete',

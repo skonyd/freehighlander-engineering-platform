@@ -5,7 +5,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 
 const REQUIRED_ADRS = Array.from(
-  { length: 22 },
+  { length: 24 },
   (_, index) => `ADR-${String(index + 1).padStart(4, '0')}`,
 );
 
@@ -67,7 +67,7 @@ export function assertArchitectureContract(contract) {
   ) {
     throw new Error('architecture contract_version must be semantic version');
   }
-  expect(contract.contract_version, '1.10.0', 'architecture contract version');
+  expect(contract.contract_version, '1.12.0', 'architecture contract version');
   expect(contract.status, 'FROZEN_BASELINE', 'architecture status');
   expect(contract.phase, 'FH-10', 'architecture phase');
 
@@ -222,8 +222,21 @@ export function assertArchitectureContract(contract) {
   expect(contract.migration?.v2_reference_post_merge_hardening_pr, 209, 'V2 hardening PR');
   expect(contract.migration?.v2_compatibility_authority, 'ENABLED', 'V2 compatibility authority');
   expect(contract.migration?.fh01b2_dependency_status, 'SATISFIED', 'FH-01B2 dependency status');
-  expect(contract.migration?.v3_authority, 'SHADOW_ONLY', 'V3 authority');
+  expect(contract.migration?.v3_authority, 'ENABLED', 'V3 authority');
   expect(contract.migration?.v3_authority_cutover_phase, 'FH-20', 'V3 authority cutover phase');
+  expect(contract.migration?.v3_authority_cutover_status, 'APPLIED', 'V3 authority cutover status');
+  expect(
+    contract.migration?.v3_authority_target_revision,
+    '57761b7b0257c234ad41314343a22dfd53668364',
+    'V3 authority target revision',
+  );
+  expect(contract.migration?.v3_authority_human_approval_issue, 420, 'V3 human approval issue');
+  expect(contract.migration?.critical_capabilities_default, 'DENY', 'critical capability default');
+  assertContainsExactly(
+    contract.migration?.critical_capabilities_selected,
+    [],
+    'selected critical capabilities',
+  );
 
   expectTrue(contract.ui?.web_is_client_only, 'web is client only');
   expectTrue(

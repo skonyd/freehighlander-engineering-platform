@@ -101,7 +101,7 @@ try {
   for (const invariant of [
     'v2_reference_status: ACCEPTED',
     'v2_compatibility_authority: ENABLED',
-    'v3_authority: SHADOW_ONLY',
+    'v3_authority: ENABLED',
     'v3_authority_cutover_phase: FH-20',
     'fh01b2_dependency_status: SATISFIED',
   ]) {
@@ -1902,7 +1902,7 @@ try {
   }
 
   for (const invariant of [
-    'contract_version: "1.10.0"',
+    'contract_version: "1.12.0"',
     '- ADR-0022',
     'delegable_model_quorum_gate: MODEL_QUORUM_REQUIRED',
     'human_required_is_non_delegable: true',

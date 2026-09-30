@@ -30,7 +30,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-17 Replay/simulation + crash recovery — issue #54 / PR #55
 - [x] FH-18 UI control plane — issue #56 / PR #57
 - [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
-- [ ] FH-20 V3 authority cutover — readiness gate issue #64 / PR #65 complete; exact-bound read-only approval packet/preview prepared in #414; external #207 blocker cleared; explicit human approval + current SYSTEM_POLICY ALLOW + actual cutover application still pending
+- [x] FH-20 V3 authority cutover — applied to exact target `57761b7b0257c234ad41314343a22dfd53668364`; human approval #420; canonical SYSTEM_POLICY PR #419; ADR-0024
 
 ## Modules — pre-cutover preparation lane
 - [x] FH-30A Planning — issue #69 / PR #70
@@ -42,7 +42,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-36A Incident — issue #84 / PR #85
 - [x] FH-37A Engineering Lineage / Knowledge Graph — issue #86 / PR #87
 
-Activation lane **FH-30B..FH-37B** remains blocked by FH-20 final authority cutover.
+Activation lane **FH-30B..FH-37B** is now eligible but not auto-activated; each slice remains operator-selection/policy gated.
 
 ## Pre-cutover hardening — independent of Creator Marketplace #207
 - [x] Executable data-policy/redaction/provider-egress enforcement — issue #89 / PR #90
@@ -77,13 +77,13 @@ Umbrella: #88.
 
 ## Optional FH-KUIKA productization module — pre-cutover complete through FH-KUIKA-09
 - [x] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0 — .1–.5 complete
-- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0 — .1–.4 complete/prepared; .5 EXECUTE activation blocked by FH-20
+- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0 — .1–.4 complete/prepared; .5 EXECUTE eligible post-FH-20 but remains capability/policy gated
 - [x] FH-KUIKA-03 Engineering Blueprint Catalog — P0 — .1–.6 complete pre-cutover
 - [x] FH-KUIKA-04 Visual Workflow Studio — P0 — .1–.6 pre-cutover complete; canonical publish/execute activation remains Core-governed
-- [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0 — .1–.5 pre-cutover complete; .6 activation blocked by FH-20
+- [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0 — .1–.5 preparation complete; .6 write-capable activation eligible but remains capability/policy gated
 - [x] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1 — .1–.5 complete pre-cutover
 - [x] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1 — .1–.6 complete pre-cutover
-- [ ] FH-KUIKA-08 Routines / Trigger Engine — P1 — .1–.4 and .5 failure/retry telemetry preparation complete; only authority-bearing activation remains blocked by FH-20
+- [ ] FH-KUIKA-08 Routines / Trigger Engine — P1 — .1–.4 and .5 failure/retry telemetry preparation complete; authority-bearing activation eligible but remains capability/policy gated
 - [x] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1 — .1–.5 complete pre-cutover; runtime application remains Core-governed
 - [x] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 — ADR-0023 + contract 1.11.0 + threat/data/migration boundary complete pre-cutover; live OIDC/session/RBAC enforcement and multi-tenant persistence deferred
 
@@ -91,6 +91,6 @@ Detailed decomposition and authority boundary: [FH-KUIKA module roadmap](docs/mo
 
 ## Current blocker
 
-Creator Marketplace #207 is satisfied. The remaining authority blocker is the explicit FH-20 cutover gate: exact human approval, SYSTEM_POLICY=ALLOW, current final-reference-bound parity, and explicit V3 promotion review.
+Creator Marketplace #207 is satisfied and FH-20 is applied. There is no remaining global FH-20 blocker; high-impact actions remain fail-closed behind explicit operator capability selection and normal SYSTEM_POLICY/human/currentness gates.
 
 This does **not** invalidate or roll back the completed authority-neutral A-lane/hardening work.

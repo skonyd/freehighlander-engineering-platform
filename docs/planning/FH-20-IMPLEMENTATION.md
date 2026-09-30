@@ -1,8 +1,8 @@
 # FH-20 — V3 authority cutover readiness
 
 **Issue:** #64  
-**Status:** READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED  
-**Authority effect:** NONE
+**Status:** COMPLETE / CUTOVER APPLIED  
+**Authority effect:** V3 CORE AUTHORITY ENABLED BY EXPLICIT CUTOVER
 
 ## Objective
 
@@ -36,17 +36,23 @@ The readiness gate was implemented through PR #65 and merged as `1193d572ff2c032
 
 Creator Marketplace #207 is no longer the blocker. Its accepted V2 reference was reconciled and promoted through the completed FH-01B path, with final accepted reference SHA `1a8e215b78a3a5008aae6aae36488b3273733b19`.
 
-Actual V3 authority cutover is still **not applied**. The remaining cutover gate is explicit and fail-closed:
+The final V3 authority cutover is **applied** for exact target
+`57761b7b0257c234ad41314343a22dfd53668364`.
 
-1. exact human approval for V3 authority promotion;
-2. system policy decision = `ALLOW`;
-3. explicit V3 promotion review bound to the accepted reference/current evidence.
+Satisfied cutover gates:
 
-Until those conditions are satisfied and recorded, V3 remains `SHADOW_ONLY` and FH-30B..FH-37B activation remains blocked.
+1. exact human approval: issue #420;
+2. canonical SYSTEM_POLICY decision = `ALLOW` from PR #419;
+3. explicit V3 promotion review approved by the exact operator decision;
+4. final accepted V2 reference/parity/smoke/promotion confirmation preserved.
+
+ADR-0024 and `docs/state/FH-20-CUTOVER-RECORD.md` are the canonical application record.
+V3 core authority is `ENABLED`. FH-30B..FH-37B are eligible but not automatically activated;
+critical capabilities remain default DENY and unselected.
 
 ## Exact-bound approval packet / preview
 
-The remaining gate can now be prepared and inspected through an authority-neutral exact packet rather than loose boolean assertions.
+The pre-application gate was prepared and inspected through an authority-neutral exact packet rather than loose boolean assertions.
 
 The packet binds the proposed promotion to the target V3 revision, accepted/parity V2 reference, run snapshot, evidence bundle, promotion review and human-gate policy, then embeds the canonical `HUMAN_REQUIRED` approval request. Packet/request hashes are recomputed before preview.
 
@@ -57,7 +63,7 @@ npm run cutover:preview -- packet --input FILE
 npm run cutover:preview -- preview --input FILE
 ```
 
-It does not create human decisions and has no cutover-apply operation. A `READY` preview still reports `authorityEnabled: false` and `cutoverApplied: false`.
+It does not create human decisions and has no cutover-apply operation. A `READY` preview still reports `authorityEnabled: false` and `cutoverApplied: false`; the actual cutover was applied separately through the reviewed ADR-0024 state transition.
 
 Detailed contract: [FH-20 Exact Cutover Approval Packet](FH-20-CUTOVER-APPROVAL-PACKET.md).
 

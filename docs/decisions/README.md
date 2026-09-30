@@ -19,6 +19,7 @@ Accepted decisions are stored here instead of relying on chat history.
 | [ADR-0021](ADR-0021-final-v2-reference-promotion.md) | ACCEPTED | final V2 reference reconciliation after Creator Marketplace #207/#209 |
 | [ADR-0022](ADR-0022-full-auto-delegable-model-quorum.md) | ACCEPTED | delegable dual-model quorum remains evidence, not human/system authority |
 | [ADR-0023](ADR-0023-enterprise-identity-single-tenant-boundary.md) | ACCEPTED | enterprise identity remains single-tenant and authority-neutral before activation |
+| [ADR-0024](ADR-0024-v3-authority-cutover-applied.md) | ACCEPTED / APPLIED | FH-20 V3 authority cutover on exact approved target |
 
 ## ADR rule
 

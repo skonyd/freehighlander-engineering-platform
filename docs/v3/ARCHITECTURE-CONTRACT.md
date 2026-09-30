@@ -1,7 +1,7 @@
 # V3 Architecture Contract
 
 **Status:** ACCEPTED DIRECTION — implementation contract evolves by ADR  
-**Contract version:** 1.11.0
+**Contract version:** 1.12.0
 
 ## Goal
 
@@ -155,6 +155,25 @@ Target capabilities:
 - historical regression
 - crash-safe continuation
 - consistent DB/artifact backup and validated restore
+
+## FH-20 authority cutover
+
+ADR-0024 applies V3 authority to exact target
+`57761b7b0257c234ad41314343a22dfd53668364`.
+
+Current boundary:
+
+- V3 core authority: `ENABLED`
+- V2 compatibility/reference: `ENABLED`
+- Code/Git: default `DENY`
+- Release/Deploy: default `DENY`
+- Infrastructure Mutation: default `DENY`
+- Automatic Remediation: default `DENY`
+- selected critical capabilities: none
+- Full Auto: independently OFF/SHADOW by default
+
+Post-cutover eligibility is not blanket execution permission. Every authority-bearing action still passes
+the relevant SYSTEM_POLICY, exact-currentness/evidence, sandbox/data/secret and human gates.
 
 ## Enterprise identity / collaboration boundary
 

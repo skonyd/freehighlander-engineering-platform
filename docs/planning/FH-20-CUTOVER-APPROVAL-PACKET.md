@@ -1,7 +1,7 @@
 # FH-20 — Exact Cutover Approval Packet
 
-**Status:** READ-ONLY PREVIEW / AUTHORITY NONE  
-**Purpose:** make the final human/policy cutover scope inspectable and replay-safe without applying V3 authority.
+**Status:** READ-ONLY PREVIEW CONTRACT / AUTHORITY NONE / CUTOVER NOW APPLIED SEPARATELY  
+**Purpose:** keep the human/policy cutover scope inspectable and replay-safe. This preview contract remains non-authoritative even though the real FH-20 cutover has now been applied separately.
 
 ## Boundary
 
@@ -97,6 +97,6 @@ The HUMAN and SYSTEM decisions are evaluated from the same published policy hash
 - packet and decision hashes are recomputed before use;
 - malformed/tampered evidence fails closed;
 - CLI is read-only and has no `approve`, `apply`, or `enable` command;
-- actual FH-20 cutover remains a separate explicit action outside this preview.
+- actual FH-20 cutover is a separate explicit action outside this preview; that action was applied through ADR-0024 for the exact approved target.
 
-V3 remains `SHADOW_ONLY` until the real cutover is explicitly approved, policy-authorized, current, reviewed and applied.
+For the historical pre-cutover flow, V3 remained `SHADOW_ONLY` until the real cutover was explicitly approved, policy-authorized, current, reviewed and applied. That transition is now recorded in ADR-0024 and `docs/state/FH-20-CUTOVER-RECORD.md`; this preview CLI itself still has no authority.

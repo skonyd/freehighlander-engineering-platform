@@ -14,10 +14,10 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 5 | Token/context/provider optimization | **COMPLETE foundation** |
 | 6 | V3 architecture freeze | **COMPLETE** |
 | 7 | V3 control plane | **COMPLETE through FH-19** |
-| 8 | V2/V3 parity + authority cutover | **READINESS COMPLETE / EXTERNAL BLOCKER CLEARED / CUTOVER NOT APPLIED** |
-| 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane BLOCKED** |
-| 10 | Authority-bearing full lifecycle | **BLOCKED until explicit FH-20 cutover** |
-| 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PRE-CUTOVER COMPLETE THROUGH FH-KUIKA-09; activation slices remain Core/FH-20 gated** |
+| 8 | V2/V3 parity + authority cutover | **COMPLETE / FH-20 CUTOVER APPLIED** |
+| 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane ELIGIBLE, NOT AUTO-ACTIVATED** |
+| 10 | Authority-bearing full lifecycle | **ELIGIBLE / EXPLICIT CAPABILITY + POLICY GATED** |
+| 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PREPARATION COMPLETE THROUGH FH-KUIKA-09; activation slices remain Core capability/policy gated** |
 | 12 | FH-KUIKA-10 enterprise collaboration submodule | **PRE-CUTOVER BOUNDARY COMPLETE — ADR-0023 / contract 1.11.0; live identity enforcement deferred** |
 
 Current authority state remains:
@@ -25,7 +25,8 @@ Current authority state remains:
 ```text
 V2 reference = ACCEPTED
 V2 compatibility authority = ENABLED
-V3 authority = SHADOW_ONLY
+V3 authority = ENABLED
+critical capabilities = DEFAULT DENY / NONE SELECTED
 ```
 
 ## Phase 0 — Creator Marketplace reference implementation
@@ -95,7 +96,7 @@ The frozen architecture contract is currently version **1.11.0**, including acce
 
 Provider adapters, logical roles, workflow DAG/state machine, debate/council, policy/human approval, artifact lineage, replay/recovery, management UI and V2/V3 shadow parity are implemented.
 
-Authority remains `SHADOW_ONLY`.
+Authority is now `ENABLED` by the explicit FH-20 / ADR-0024 cutover.
 
 ## Phase 8 — V2/V3 Shadow Parity + Cutover
 
@@ -109,12 +110,14 @@ Completed:
 - FH-01B2 exact delta reconciliation
 - post-port parity/smoke against the final accepted SHA
 
-Remaining:
-- explicit exact human approval for V3 cutover
-- SYSTEM_POLICY = ALLOW
-- explicit V3 authority-promotion review
+Cutover completion:
+- exact human approval: issue #420
+- SYSTEM_POLICY = ALLOW from the canonical V3 cutover policy
+- explicit V3 authority-promotion review: approved
+- exact approved target: `57761b7b0257c234ad41314343a22dfd53668364`
+- ADR-0024 / FH-20 state transition: applied
 
-The readiness evaluator and exact-bound approval preview cannot enable authority or apply the cutover by themselves.
+The readiness evaluator and exact-bound approval preview still cannot enable authority by themselves; the explicit reviewed cutover transition did so.
 
 ## Phase 9 — SDLC Modules
 
@@ -129,7 +132,7 @@ Authority-neutral preparation is complete:
 7. FH-36A Incident
 8. FH-37A Project Knowledge Graph / Engineering Lineage
 
-FH-30B..FH-37B activation remains blocked by FH-20 only.
+FH-30B..FH-37B activation is now eligible but not automatic; each authority-bearing slice remains capability/policy gated.
 
 ## Pre-cutover hardening — COMPLETE THROUGH PROVIDER EGRESS PREPARATION
 
@@ -197,7 +200,7 @@ The read-only/evidence contracts for this thread exist today; production mutatio
 
 Detailed plan: [FH-KUIKA module roadmap](modules/kuika-inspired-productization/ROADMAP.md).
 
-FH-KUIKA is an optional module that exposes existing control-plane capabilities through a coherent Studio UX. Authority-neutral preparation is complete through FH-KUIKA-09; only authority-bearing activation slices remain gated by FH-20. Core runtime correctness must not depend on the presence of this module:
+FH-KUIKA is an optional module that exposes existing control-plane capabilities through a coherent Studio UX. Preparation is complete through FH-KUIKA-09; authority-bearing activation slices are now eligible post-FH-20 but remain capability/policy gated. Core runtime correctness must not depend on the presence of this module:
 
 - FH-KUIKA-01 Studio shell + Explainable Operations Console
 - FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench
@@ -209,7 +212,7 @@ FH-KUIKA is an optional module that exposes existing control-plane capabilities 
 - FH-KUIKA-08 Routines / Trigger Engine
 - FH-KUIKA-09 Constraint-aware pre-call model/work router optimizer
 
-Authority-neutral schema, read-model, draft, validation, simulation and inspection work can proceed while V3 remains `SHADOW_ONLY`. Any mutation-capable activation must continue to respect FH-20, role authority, sandbox/data policy and system-policy/human gates.
+Read-model, draft, validation, simulation and inspection surfaces remain safe to use. Any mutation-capable activation must respect explicit operator capability selection, role authority, sandbox/data policy and system-policy/human gates.
 
 ## Phase 12 — Enterprise collaboration boundary
 

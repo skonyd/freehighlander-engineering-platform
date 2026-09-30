@@ -11,9 +11,9 @@ Bu repository **FreeHighlander'ın ana ürün repository'sidir** ve ürün kodu 
 - FH-00 ve FH-01A tamamlandı.
 - FH-01B1 provisional port ve FH-01B2 final reconciliation tamamlandı; V2 reference **ACCEPTED**.
 - FH-02..FH-19 implementation hattı tamamlandı.
-- FH-20 cutover-readiness gate tamamlandı; Creator Marketplace #207/FH-01B2 external blocker temizlendi. Final V3 cutover hâlâ explicit human approval + SYSTEM_POLICY=ALLOW + promotion review gerektiriyor.
+- FH-20 tamamlandı ve exact onaylı `57761b7b0257c234ad41314343a22dfd53668364` hedefi için V3 authority aktive edildi.
 - FH-30A..FH-37A authority-neutral SDLC preparation lane tamamlandı.
-- FH-30B..FH-37B authority-bearing activation lane FH-20 final cutover sonrasına bloklu.
+- FH-30B..FH-37B authority-bearing activation lane artık eligible; otomatik aktive edilmez ve capability/policy gate'lerine tabidir.
 - Pre-cutover hardening hattında data policy, sandbox, retention, SQLite backup/restore, cross-module digital thread, privacy-safe observability, adversarial fail-closed coverage, workspace dependency boundaries, reproducible CI, repository credential/dependency hygiene, tracked-secret leakage gate, 19/19 workspace için ölçülmüş native coverage regression gate ve opaque SecretHandle/EPHEMERAL injection kontratı ve npm lockfile provenance/integrity/install-script gate ve güvenli private vulnerability reporting policy ve deterministic clean-build output integrity gate ve monorepo accidental-publish safety gate ile internal workspace dependency-confusion gate ve workspace package entrypoint integrity gate ve source-to-dist build completeness gate tamamlandı.
 
 Current authority state:
@@ -21,10 +21,11 @@ Current authority state:
 ```text
 V2 reference = ACCEPTED
 V2 compatibility authority = ENABLED
-V3 authority = SHADOW_ONLY
-FH-20 external blocker = CLEARED
-FH-20 cutover = NOT YET APPLIED
-FH-30B..FH-37B = BLOCKED BY FH-20
+V3 authority = ENABLED
+FH-20 cutover = APPLIED
+approved target = 57761b7b0257c234ad41314343a22dfd53668364
+critical capabilities = DEFAULT DENY / NONE SELECTED
+FH-30B..FH-37B = ELIGIBLE / NOT AUTO-ACTIVATED
 ```
 
 Accepted external reference:
@@ -57,11 +58,11 @@ Completed/prepared:
 Remaining authority-bearing sequence:
 
 ```text
-FH-20 exact human approval + SYSTEM_POLICY ALLOW + promotion review
+FH-20 exact human approval + SYSTEM_POLICY ALLOW + promotion review = COMPLETE
         ↓
-FH-20 V3 authority cutover
+V3 authority = ENABLED
         ↓
-FH-30B..FH-37B activation
+FH-30B..FH-37B = ELIGIBLE; each activation remains separately policy/capability gated
 ```
 
 Creator Marketplace #207 and FH-01B2 are complete and are no longer blockers.
