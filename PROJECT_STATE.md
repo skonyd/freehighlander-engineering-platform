@@ -124,7 +124,7 @@ Authority-bearing module activation remains post-FH-20 only.
 
 ## Current independent work
 
-#147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA authority-neutral preparation is complete through FH-KUIKA-10, including the single-tenant enterprise identity boundary from ADR-0023. Live OIDC/session enforcement, active approval delegation, multi-tenant persistence and all authority-bearing activation remain deferred. No authority-bearing activation is permitted before FH-20.
+#147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA authority-neutral preparation is complete through FH-KUIKA-10, including the single-tenant enterprise identity boundary from ADR-0023. Live OIDC/session enforcement, active approval delegation, multi-tenant persistence and all authority-bearing activation remain deferred. No authority-bearing activation is permitted before FH-20. The operator authority selector is also prepared as an authority-neutral UI: Code/Git, Release/Deploy, Infrastructure and Automatic Remediation are independently selectable, default DENY, and remain inactive until V3 authority + exact human approval + SYSTEM_POLICY ALLOW.
 
 ## Next action
 

@@ -621,3 +621,16 @@ export function getWebFoundationInfo(): WebFoundationInfo {
     v3Authority: 'SHADOW_ONLY',
   };
 }
+
+export {
+  createOperatorAuthorityProfileV1,
+  evaluateOperatorAuthorityCapabilityV1,
+  operatorAuthorityProfileCanGrantAuthority,
+  type OperatorAuthorityActivationGate,
+  type OperatorAuthorityCapability,
+  type OperatorAuthorityCapabilityDecision,
+  type OperatorAuthorityProfileV1,
+  type OperatorAuthoritySelectionInput,
+} from './operator-authority-profile.js';
+
+export { OPERATOR_AUTHORITY_PERMISSIONS_HTML } from './operator-authority-permissions-ui.js';

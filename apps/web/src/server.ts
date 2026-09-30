@@ -76,6 +76,8 @@ import {
 import { buildFhKuikaConnectorInstallReviewV1 } from './kuika-connector-install-review.js';
 import { createFhKuikaConnectorCredentialConfigDraftV1 } from './kuika-connector-credential-config.js';
 import { DASHBOARD_HTML } from './ui.js';
+import { OPERATOR_AUTHORITY_PERMISSIONS_HTML } from './operator-authority-permissions-ui.js';
+import { createOperatorAuthorityProfileV1 } from './operator-authority-profile.js';
 import {
   createGithubExternalStatusProviderFromEnv,
   type ExternalStatusProvider,
@@ -167,6 +169,11 @@ async function handleRequest(
       return;
     }
 
+    if (url.pathname === '/settings/authority') {
+      html(response, method === 'HEAD' ? '' : OPERATOR_AUTHORITY_PERMISSIONS_HTML);
+      return;
+    }
+
     if (url.pathname === '/modules/fh-kuika' || url.pathname === '/modules/fh-kuika/') {
       html(response, method === 'HEAD' ? '' : FH_KUIKA_MODULE_HTML);
       return;
@@ -234,6 +241,46 @@ async function handleRequest(
 
     if (url.pathname === '/modules/fh-kuika/knowledge/explorer') {
       html(response, method === 'HEAD' ? '' : FH_KUIKA_KNOWLEDGE_EXPLORER_HTML);
+      return;
+    }
+
+    if (url.pathname === '/api/authority-permissions/preview') {
+      const toggleNames = [
+        'gitWrite',
+        'releaseDeploy',
+        'infrastructureMutation',
+        'automaticRemediation',
+      ] as const;
+      const invalidToggle = toggleNames.find((name) => {
+        const value = url.searchParams.get(name);
+        return value !== null && value !== 'true' && value !== 'false';
+      });
+      if (invalidToggle) {
+        json(response, 400, {
+          error: 'invalid_authority_permission_toggle',
+          field: invalidToggle,
+          allowed: ['true', 'false'],
+        });
+        return;
+      }
+
+      const profile = createOperatorAuthorityProfileV1({
+        gitWrite: url.searchParams.get('gitWrite') === 'true',
+        releaseDeploy: url.searchParams.get('releaseDeploy') === 'true',
+        infrastructureMutation: url.searchParams.get('infrastructureMutation') === 'true',
+        automaticRemediation: url.searchParams.get('automaticRemediation') === 'true',
+      });
+      json(response, 200, {
+        profile,
+        active: false,
+        authority: 'NONE',
+        activationRequirements: [
+          'V3 authority enabled',
+          'exact human approval verified',
+          'SYSTEM_POLICY = ALLOW',
+          'capability selected by human operator',
+        ],
+      });
       return;
     }
 

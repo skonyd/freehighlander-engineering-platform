@@ -93,6 +93,7 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
       <a class="card" href="/modules/fh-kuika/integrate"><h2>Integrate</h2><p>Connector Hub, model routing and routines.</p></a>
       <a class="card" href="/modules/fh-kuika/knowledge"><h2>Knowledge</h2><p>Engineering graph, evidence and deterministic search surfaces.</p></a>
       <a class="card" href="/modules/fh-kuika/operate"><h2>Operate</h2><p>Operations, approvals, errors, routing and audit views.</p></a>
+      <a class="card" href="/settings/authority"><h2>Authority permissions</h2><p>Select Code/Git, Release/Deploy, Infrastructure and Auto-remediation independently. Default DENY.</p></a>
       <div class="card"><h2>Module boundary</h2><p>Disable this module and Core runtime remains valid and usable.</p></div>
     </section>
 

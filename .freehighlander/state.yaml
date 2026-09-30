@@ -456,6 +456,17 @@ fh_kuika_10:
   multi_tenant_persistence: forbidden_pending_future_adr
   authority_effect: none
 
+operator_authority_permissions:
+  status: pre_cutover_selection_ui_prepared
+  authority_effect: none
+  default_policy: DENY
+  activation: control_plane_policy_gated
+  capabilities:
+    - GIT_WRITE
+    - RELEASE_DEPLOY
+    - INFRASTRUCTURE_MUTATION
+    - AUTOMATIC_REMEDIATION
+
 accepted_direction:
   architecture_contract: 1.11.0
   product_mode: local-first-single-user
