@@ -52,6 +52,13 @@ The application change set is restricted to:
 
 No `apps/**` or `packages/**` runtime source changes are permitted in the application PR.
 
+## Application
+
+- application pull request: #421
+- application merge SHA: `efb4f701b1bc3ad7ab3d4c40070a84a8d43d04d0`
+- protected verification: success
+- application runtime-source changes under `apps/**` or `packages/**`: none
+
 ## Result
 
 ```text
