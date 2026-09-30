@@ -184,6 +184,15 @@ export {
   type WorkspaceReattachRequest,
 } from './execution-runtime.js';
 
+export {
+  AuthorityCapabilityActivationService,
+  capabilityActivationServiceCanBypassPolicy,
+  capabilityActivationServiceCanImplicitlyActivate,
+  type CapabilityActivationEvidenceV1,
+  type CapabilityActivationResultV1,
+  type CapabilityActivationStatus,
+} from './authority-capability-activation.js';
+
 export interface ControlPlaneFoundationInfo {
   readonly name: 'freehighlander-control-plane';
   readonly phase: 'FH-01A';
