@@ -27,7 +27,11 @@ export interface OperatorAuthorityProfileV1 {
 export interface OperatorAuthorityActivationGate {
   readonly v3AuthorityEnabled: boolean;
   readonly exactHumanApprovalVerified: boolean;
-  readonly systemPolicyEffect: 'ALLOW' | 'MODEL_QUORUM_REQUIRED' | 'HUMAN_REQUIRED' | 'DENY';
+  readonly systemPolicyEffect:
+    | 'ALLOW'
+    | 'MODEL_QUORUM_REQUIRED'
+    | 'HUMAN_REQUIRED'
+    | 'DENY';
 }
 
 export interface OperatorAuthorityCapabilityDecision {
@@ -66,7 +70,9 @@ export function createOperatorAuthorityProfileV1(
     releaseDeploy,
     infrastructureMutation,
     automaticRemediation,
-    requestedCapabilities: orderedCapabilities.filter((capability) => selected.has(capability)),
+    requestedCapabilities: orderedCapabilities.filter((capability) =>
+      selected.has(capability),
+    ),
     authority: 'NONE',
     activation: 'CONTROL_PLANE_POLICY_GATED',
   };
