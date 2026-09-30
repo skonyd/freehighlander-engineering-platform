@@ -103,11 +103,7 @@ test('activation without approval or after state drift fails closed', () => {
   const approved = coordinator.approve('GIT_WRITE', requested.generation);
   assert.equal(approved.status, 'APPROVED');
 
-  const changed = activationService.setRequested(
-    'RELEASE_DEPLOY',
-    true,
-    requested.generation,
-  );
+  const changed = activationService.setRequested('RELEASE_DEPLOY', true, requested.generation);
   const staleApproval = coordinator.activateApproved('GIT_WRITE', changed.generation);
   assert.equal(staleApproval.status, 'BLOCKED');
   assert.match(staleApproval.reasons.join(' '), /exact human approval/);
