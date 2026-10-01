@@ -1,4 +1,16 @@
 export {
+  AUTHORITY_CAPABILITY_ACTIONS,
+  AUTHORITY_CAPABILITY_IDS,
+  AUTHORITY_CAPABILITY_REGISTRY_V1,
+  authorityCapabilityRegistryCanGrantAuthority,
+  authorityCapabilityRegistryDefaultsDeny,
+  getAuthorityCapabilityDefinitionV1,
+  type AuthorityCapabilityAction,
+  type AuthorityCapabilityDefinitionV1,
+  type AuthorityCapabilityId,
+} from './authority-capability-registry.js';
+
+export {
   approvalDelegationDraftCanActAsApproval,
   approvalDelegationDraftV1Schema,
   enterpriseAccessRoleV1Schema,

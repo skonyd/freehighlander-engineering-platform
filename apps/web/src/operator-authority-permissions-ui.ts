@@ -1,3 +1,22 @@
+import {
+  AUTHORITY_CAPABILITY_IDS,
+  AUTHORITY_CAPABILITY_REGISTRY_V1,
+} from '@freehighlander/contracts';
+
+const AUTHORITY_PERMISSION_CARDS = AUTHORITY_CAPABILITY_REGISTRY_V1.map(
+  (definition) => `
+    <article class="permission" data-capability="${definition.id}">
+      <div class="permission-head">
+        <input id="request-${definition.id}" type="checkbox" aria-label="Request ${escapeAuthorityHtml(definition.label)} authority" />
+        <div><h2>${escapeAuthorityHtml(definition.label)}</h2><div class="benefit">${escapeAuthorityHtml(definition.description)}</div><div class="risk">${escapeAuthorityHtml(definition.risk)}</div></div>
+        <span class="state deny" id="state-${definition.id}">DENY</span>
+      </div>
+      <div class="cap-actions"><button data-approve="${definition.id}">Approve & activate</button><button data-deactivate="${definition.id}" class="danger">Deactivate</button></div>
+    </article>`,
+).join('\n');
+
+const AUTHORITY_CAPABILITY_IDS_JSON = JSON.stringify(AUTHORITY_CAPABILITY_IDS);
+
 export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
 <html lang="en">
 <head>
@@ -58,43 +77,7 @@ export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
     <span id="connection">Connecting…</span>
   </div>
 
-  <section class="grid" aria-label="Authority permissions">
-    <article class="permission" data-capability="GIT_WRITE">
-      <div class="permission-head">
-        <input id="request-GIT_WRITE" type="checkbox" aria-label="Request Code / Git authority" />
-        <div><h2>Code / Git</h2><div class="benefit">Automatic branch, commit, PR and policy-permitted merge workflows.</div><div class="risk">Repository state can change without a separate manual Git action.</div></div>
-        <span class="state deny" id="state-GIT_WRITE">DENY</span>
-      </div>
-      <div class="cap-actions"><button data-approve="GIT_WRITE">Approve & activate</button><button data-deactivate="GIT_WRITE" class="danger">Deactivate</button></div>
-    </article>
-
-    <article class="permission" data-capability="RELEASE_DEPLOY">
-      <div class="permission-head">
-        <input id="request-RELEASE_DEPLOY" type="checkbox" aria-label="Request Release / Deploy authority" />
-        <div><h2>Release / Deploy</h2><div class="benefit">Release and deployment can proceed after required tests and gates pass.</div><div class="risk">A bad release can affect a live environment; policy gates still apply.</div></div>
-        <span class="state deny" id="state-RELEASE_DEPLOY">DENY</span>
-      </div>
-      <div class="cap-actions"><button data-approve="RELEASE_DEPLOY">Approve & activate</button><button data-deactivate="RELEASE_DEPLOY" class="danger">Deactivate</button></div>
-    </article>
-
-    <article class="permission" data-capability="INFRASTRUCTURE_MUTATION">
-      <div class="permission-head">
-        <input id="request-INFRASTRUCTURE_MUTATION" type="checkbox" aria-label="Request Infrastructure authority" />
-        <div><h2>Infrastructure</h2><div class="benefit">Kubernetes, cloud and infrastructure mutations can be automated.</div><div class="risk">Highest operational blast radius; enable only when needed.</div></div>
-        <span class="state deny" id="state-INFRASTRUCTURE_MUTATION">DENY</span>
-      </div>
-      <div class="cap-actions"><button data-approve="INFRASTRUCTURE_MUTATION">Approve & activate</button><button data-deactivate="INFRASTRUCTURE_MUTATION" class="danger">Deactivate</button></div>
-    </article>
-
-    <article class="permission" data-capability="AUTOMATIC_REMEDIATION">
-      <div class="permission-head">
-        <input id="request-AUTOMATIC_REMEDIATION" type="checkbox" aria-label="Request Automatic remediation authority" />
-        <div><h2>Automatic remediation</h2><div class="benefit">Eligible failures can be repaired without waiting for another human action.</div><div class="risk">An incorrect diagnosis can trigger an unwanted corrective action; safety policy remains mandatory.</div></div>
-        <span class="state deny" id="state-AUTOMATIC_REMEDIATION">DENY</span>
-      </div>
-      <div class="cap-actions"><button data-approve="AUTOMATIC_REMEDIATION">Approve & activate</button><button data-deactivate="AUTOMATIC_REMEDIATION" class="danger">Deactivate</button></div>
-    </article>
-  </section>
+  <section class="grid" aria-label="Authority permissions">\n${AUTHORITY_PERMISSION_CARDS}\n  </section>
 
   <div class="actions">
     <button id="apply" type="button">Apply requested selection</button>
@@ -106,7 +89,7 @@ export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
 </main>
 <script>
 const API='http://127.0.0.1:4311';
-const capabilities=['GIT_WRITE','RELEASE_DEPLOY','INFRASTRUCTURE_MUTATION','AUTOMATIC_REMEDIATION'];
+const capabilities=${AUTHORITY_CAPABILITY_IDS_JSON};
 let csrfToken='';
 let snapshot=null;
 let busy=false;
@@ -316,4 +299,13 @@ export function authorityPermissionsPageCanForgeApprovalEvidence(): false {
 
 export function authorityPermissionsPageRequiresControlPlane(): true {
   return true;
+}
+
+function escapeAuthorityHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }

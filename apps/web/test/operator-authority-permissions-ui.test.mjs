@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { AUTHORITY_CAPABILITY_REGISTRY_V1 } from '@freehighlander/contracts';
+
 import {
   OPERATOR_AUTHORITY_PERMISSIONS_HTML,
   authorityPermissionsPageCanForgeApprovalEvidence,
@@ -17,22 +19,20 @@ test('authority page is wired to the localhost control-plane and no browser-only
   assert.doesNotMatch(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /localStorage/);
 });
 
-test('authority page exposes independent explicit controls for all four critical capabilities', () => {
-  for (const capability of [
-    'GIT_WRITE',
-    'RELEASE_DEPLOY',
-    'INFRASTRUCTURE_MUTATION',
-    'AUTOMATIC_REMEDIATION',
-  ]) {
-    assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, new RegExp('request-' + capability));
+test('authority page renders every registry capability without GUI-specific branching', () => {
+  for (const definition of AUTHORITY_CAPABILITY_REGISTRY_V1) {
+    assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, new RegExp('request-' + definition.id));
     assert.match(
       OPERATOR_AUTHORITY_PERMISSIONS_HTML,
-      new RegExp('data-approve="' + capability + '"'),
+      new RegExp('data-approve="' + definition.id + '"'),
     );
     assert.match(
       OPERATOR_AUTHORITY_PERMISSIONS_HTML,
-      new RegExp('data-deactivate="' + capability + '"'),
+      new RegExp('data-deactivate="' + definition.id + '"'),
     );
+    assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, new RegExp(definition.label));
+    assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, new RegExp(definition.description));
+    assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, new RegExp(definition.risk));
   }
 });
 
