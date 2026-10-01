@@ -268,7 +268,8 @@ export function verifySecurityWaiverApprovalV1(
   if (!verifyHumanDecisionBinding(packet.request, decision)) {
     throw new Error('security waiver human decision binding is invalid');
   }
-  if (decision.decision !== 'APPROVE') throw new Error('security waiver human decision is not APPROVE');
+  if (decision.decision !== 'APPROVE')
+    throw new Error('security waiver human decision is not APPROVE');
   if (
     observed.repository !== packet.repository ||
     observed.revision !== packet.revision ||
@@ -322,9 +323,7 @@ export async function evaluateSecurityGateWithWaiversV1(
 
   const openHigh = assessment.findings.filter(
     (finding) =>
-      finding.state === 'OPEN' &&
-      finding.severity === 'HIGH' &&
-      !validWaivedIds.has(finding.id),
+      finding.state === 'OPEN' && finding.severity === 'HIGH' && !validWaivedIds.has(finding.id),
   ).length;
   const openCritical = assessment.findings.filter(
     (finding) =>
@@ -334,15 +333,11 @@ export async function evaluateSecurityGateWithWaiversV1(
   ).length;
   const waivedHigh = assessment.findings.filter(
     (finding) =>
-      finding.state === 'OPEN' &&
-      finding.severity === 'HIGH' &&
-      validWaivedIds.has(finding.id),
+      finding.state === 'OPEN' && finding.severity === 'HIGH' && validWaivedIds.has(finding.id),
   ).length;
   const waivedCritical = assessment.findings.filter(
     (finding) =>
-      finding.state === 'OPEN' &&
-      finding.severity === 'CRITICAL' &&
-      validWaivedIds.has(finding.id),
+      finding.state === 'OPEN' && finding.severity === 'CRITICAL' && validWaivedIds.has(finding.id),
   ).length;
 
   const reasons = baseline.reasons.filter(
@@ -426,7 +421,8 @@ function validateAssessmentInputs(
 ): void {
   const validation = validateSecurityPlan(plan);
   if (!validation.valid) throw new Error('invalid security plan: ' + validation.errors.join('; '));
-  if (!executor || typeof executor.execute !== 'function') throw new Error('security scanner executor is required');
+  if (!executor || typeof executor.execute !== 'function')
+    throw new Error('security scanner executor is required');
   requireIdentifier(executor.id, 'executor id');
   requireIdentifier(options.assessmentId, 'assessment id');
   if (options.observedRevision !== plan.revision) {
