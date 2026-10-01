@@ -1,4 +1,12 @@
 export {
+  FhKuikaConnectorInvocationRuntime,
+  connectorInvocationRuntimeCanGrantAuthority,
+  connectorInvocationRuntimeCanPersistRawSecrets,
+  connectorInvocationRuntimeCanTrustCachedPermissions,
+  type FhKuikaConnectorInvocationRuntimeOptions,
+} from './kuika-connector-invocation.js';
+
+export {
   FhKuikaCoreExecutionBridge,
   fhKuikaCoreExecutionBridgeCanBypassCapabilityGate,
   fhKuikaCoreExecutionBridgeCanGrantAuthority,
