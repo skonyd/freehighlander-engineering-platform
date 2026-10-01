@@ -1,4 +1,12 @@
 export {
+  createFhKuikaRoutineDispatchRequestV1,
+  fhKuikaRoutineDispatchRequestCanGrantAuthority,
+  fhKuikaRoutineTriggerMetadataCanGrantAuthority,
+  validateFhKuikaRoutineDispatchRequestV1,
+  type FhKuikaRoutineDispatchRequestV1,
+} from './kuika-routine-dispatch.js';
+
+export {
   createFhKuikaConnectorInvocationRequestV1,
   fhKuikaConnectorInvocationCanCarryRawSecrets,
   fhKuikaConnectorInvocationCanGrantAuthority,
