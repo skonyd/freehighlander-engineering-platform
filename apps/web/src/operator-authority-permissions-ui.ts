@@ -30,7 +30,6 @@ const B_LANE_MODULE_CARDS = B_LANE_MODULE_REGISTRY_V1.map(
 
 const B_LANE_MODULES_JSON = JSON.stringify(B_LANE_MODULE_REGISTRY_V1);
 
-
 export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
 <html lang="en">
 <head>
