@@ -1,5 +1,9 @@
-export type OperatorAuthorityCapability =
-  'GIT_WRITE' | 'RELEASE_DEPLOY' | 'INFRASTRUCTURE_MUTATION' | 'AUTOMATIC_REMEDIATION';
+import {
+  AUTHORITY_CAPABILITY_IDS,
+  type AuthorityCapabilityId,
+} from '@freehighlander/contracts';
+
+export type OperatorAuthorityCapability = AuthorityCapabilityId;
 
 export interface OperatorAuthoritySelectionInput {
   readonly gitWrite?: boolean;
@@ -34,12 +38,7 @@ export interface OperatorAuthorityCapabilityDecision {
   readonly reasons: readonly string[];
 }
 
-const orderedCapabilities: readonly OperatorAuthorityCapability[] = [
-  'GIT_WRITE',
-  'RELEASE_DEPLOY',
-  'INFRASTRUCTURE_MUTATION',
-  'AUTOMATIC_REMEDIATION',
-];
+const orderedCapabilities: readonly OperatorAuthorityCapability[] = AUTHORITY_CAPABILITY_IDS;
 
 export function createOperatorAuthorityProfileV1(
   input: OperatorAuthoritySelectionInput = {},
