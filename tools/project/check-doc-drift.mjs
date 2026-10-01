@@ -213,7 +213,11 @@ for (const [documentName, content, stalePhrases] of [
   [
     'docs/planning/PR-ROADMAP.md',
     prRoadmap,
-    ['Creator Marketplace #207 merge+smoke sonrası başlar.', 'FH-30B..FH-37B eligible activation', 'BLOCKED BY FH-20'],
+    [
+      'Creator Marketplace #207 merge+smoke sonrası başlar.',
+      'FH-30B..FH-37B eligible activation',
+      'BLOCKED BY FH-20',
+    ],
   ],
   ['README.md', readme, ['FH-30B..FH-37B = ELIGIBLE / NOT AUTO-ACTIVATED']],
 ]) {
