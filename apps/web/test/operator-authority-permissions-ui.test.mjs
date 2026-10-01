@@ -25,7 +25,10 @@ test('authority page exposes independent explicit controls for all four critical
     'AUTOMATIC_REMEDIATION',
   ]) {
     assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, new RegExp('request-' + capability));
-    assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, new RegExp('data-approve="' + capability + '"'));
+    assert.match(
+      OPERATOR_AUTHORITY_PERMISSIONS_HTML,
+      new RegExp('data-approve="' + capability + '"'),
+    );
     assert.match(
       OPERATOR_AUTHORITY_PERMISSIONS_HTML,
       new RegExp('data-deactivate="' + capability + '"'),
@@ -42,7 +45,10 @@ test('browser page cannot forge approval evidence and requires the control-plane
 });
 
 test('requested authority is visibly distinct from active authority', () => {
-  assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /Requested is not the same as active authority/);
+  assert.match(
+    OPERATOR_AUTHORITY_PERMISSIONS_HTML,
+    /Requested is not the same as active authority/,
+  );
   assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, />REQUESTED</);
   assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, />ACTIVE</);
   assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, />DENY</);
