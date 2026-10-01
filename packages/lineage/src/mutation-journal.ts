@@ -247,7 +247,8 @@ function validatePersistedRecord(
   if (value.previousHash !== previousHash) {
     throw new Error('lineage journal hash chain is broken');
   }
-  if (!Array.isArray(value.capabilities)) throw new Error('lineage journal capabilities must be an array');
+  if (!Array.isArray(value.capabilities))
+    throw new Error('lineage journal capabilities must be an array');
 
   const input: MutationLineageAppendInputV1 = {
     actionId: requireString(value.actionId, 'actionId'),
@@ -265,10 +266,7 @@ function validatePersistedRecord(
     ...(value.approvalDecisionHash === undefined
       ? {}
       : {
-          approvalDecisionHash: requireString(
-            value.approvalDecisionHash,
-            'approvalDecisionHash',
-          ),
+          approvalDecisionHash: requireString(value.approvalDecisionHash, 'approvalDecisionHash'),
         }),
     ...(value.authorityGeneration === undefined
       ? {}
