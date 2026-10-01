@@ -302,7 +302,6 @@ test('malformed activity inputs fail before any Git write', async (t) => {
   }
 });
 
-
 test('valid explicit bounds and additional malformed scalar branches are covered', async (t) => {
   const fx = await fixture(t);
   activateGitWrite(fx.stateStore);
@@ -399,7 +398,7 @@ test('commit failure after branch creation rolls back branch and index', async (
   assert.equal(await git(fx.handle.workspacePath, ['rev-parse', 'HEAD']), fx.revision);
   assert.equal(await git(fx.handle.workspacePath, ['branch', '--show-current']), '');
   assert.equal(await git(fx.handle.workspacePath, ['diff', '--cached', '--name-only']), '');
-  await assert.rejects(
-    () => git(fx.handle.workspacePath, ['show-ref', '--verify', 'refs/heads/fh/test-change']),
+  await assert.rejects(() =>
+    git(fx.handle.workspacePath, ['show-ref', '--verify', 'refs/heads/fh/test-change']),
   );
 });
