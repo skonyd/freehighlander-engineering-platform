@@ -105,7 +105,10 @@ test('active capability submits exact trusted routine workflow to scheduler', as
 test('retry rechecks current capability and observes revocation immediately', async () => {
   const { runtime, store } = setup(() => trusted(), ['AUTOMATIC_REMEDIATION']);
   const calls = [];
-  assert.equal((await runtime.submitAttempt(request(), PAYLOAD, scheduler(calls))).status, 'SUBMITTED');
+  assert.equal(
+    (await runtime.submitAttempt(request(), PAYLOAD, scheduler(calls))).status,
+    'SUBMITTED',
+  );
 
   const current = store.read();
   store.write(current.generation, {
@@ -194,12 +197,7 @@ test('constructor request and scheduler identities fail closed', async () => {
     /repository does not match/,
   );
   await assert.rejects(
-    () =>
-      runtime.submitAttempt(
-        request({ exactRevision: 'b'.repeat(40) }),
-        PAYLOAD,
-        scheduler([]),
-      ),
+    () => runtime.submitAttempt(request({ exactRevision: 'b'.repeat(40) }), PAYLOAD, scheduler([])),
     /revision is stale/,
   );
   await assert.rejects(
