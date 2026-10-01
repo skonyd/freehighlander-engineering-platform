@@ -92,8 +92,9 @@ export function compensateAuthorityAuditFailure(
     return result('KEEP_DEACTIVATED', input.capability, activationService.snapshot().generation);
   }
 
-  const previouslyRequested =
-    input.previousSnapshot.state.requestedCapabilities.includes(input.capability);
+  const previouslyRequested = input.previousSnapshot.state.requestedCapabilities.includes(
+    input.capability,
+  );
   const current = activationService.snapshot();
   const restored = activationService.setRequested(
     input.capability,
