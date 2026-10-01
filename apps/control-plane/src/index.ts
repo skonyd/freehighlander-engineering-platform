@@ -113,6 +113,13 @@ export {
 } from './runtime-stability.js';
 
 export {
+  createGatedLocalGitWriteExecutor,
+  localGitWriteExecutorCanBypassCapabilityGate,
+  localGitWriteExecutorUsesShell,
+  type LocalGitWriteExecutorOptions,
+} from './local-git-write-executor.js';
+
+export {
   LocalGitWorktreeBackend,
   createLocalCommandActivityExecutor,
   createLocalFilesystemActivityExecutor,
