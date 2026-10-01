@@ -137,7 +137,11 @@ test('request audit failure restores prior request intent without restoring acti
 });
 
 test('safety lifecycle throws rather than continuing when compensation CAS cannot be established', () => {
-  const coordinator = { discardApproval() { return false; } };
+  const coordinator = {
+    discardApproval() {
+      return false;
+    },
+  };
   const snapshot = {
     generation: 1,
     state: {
@@ -149,7 +153,9 @@ test('safety lifecycle throws rather than continuing when compensation CAS canno
   };
 
   const startupConflict = {
-    snapshot() { return snapshot; },
+    snapshot() {
+      return snapshot;
+    },
     deactivate() {
       return { status: 'CONFLICT', generation: 2 };
     },
@@ -160,7 +166,9 @@ test('safety lifecycle throws rather than continuing when compensation CAS canno
   );
 
   const activationConflict = {
-    snapshot() { return snapshot; },
+    snapshot() {
+      return snapshot;
+    },
     deactivate() {
       return { status: 'CONFLICT', generation: 2 };
     },
@@ -176,7 +184,9 @@ test('safety lifecycle throws rather than continuing when compensation CAS canno
   );
 
   const requestConflict = {
-    snapshot() { return snapshot; },
+    snapshot() {
+      return snapshot;
+    },
     setRequested() {
       return { status: 'CONFLICT', generation: 2 };
     },
@@ -192,4 +202,3 @@ test('safety lifecycle throws rather than continuing when compensation CAS canno
     /could not restore requested state/,
   );
 });
-
