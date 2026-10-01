@@ -1,7 +1,4 @@
-import {
-  AUTHORITY_CAPABILITY_IDS,
-  type AuthorityCapabilityId,
-} from '@freehighlander/contracts';
+import { AUTHORITY_CAPABILITY_IDS, type AuthorityCapabilityId } from '@freehighlander/contracts';
 
 import {
   AtomicJsonConfigStore,
