@@ -120,12 +120,9 @@ test('human-approved waiver is exact-bound and changes only security gate eviden
     securitySnapshotHash: result.snapshot.snapshotHash,
   });
 
-  const gate = await evaluateSecurityGateWithWaiversV1(
-    plan,
-    result.assessment,
-    result.snapshot,
-    [waiver],
-  );
+  const gate = await evaluateSecurityGateWithWaiversV1(plan, result.assessment, result.snapshot, [
+    waiver,
+  ]);
   assert.equal(gate.status, 'CLEAR');
   assert.equal(gate.openHighFindings, 0);
   assert.equal(gate.waivedHighFindings, 1);
@@ -253,23 +250,11 @@ test('forged snapshot and non-open waiver requests are rejected', async () => {
     /snapshot binding is stale/,
   );
   await assert.rejects(
-    () =>
-      createSecurityWaiverApprovalPacketV1(
-        plan,
-        clean.assessment,
-        clean.snapshot,
-        'finding-1',
-      ),
+    () => createSecurityWaiverApprovalPacketV1(plan, clean.assessment, clean.snapshot, 'finding-1'),
     /requires an OPEN finding/,
   );
   await assert.rejects(
-    () =>
-      createSecurityWaiverApprovalPacketV1(
-        plan,
-        clean.assessment,
-        clean.snapshot,
-        'missing',
-      ),
+    () => createSecurityWaiverApprovalPacketV1(plan, clean.assessment, clean.snapshot, 'missing'),
     /does not exist/,
   );
 });
@@ -315,7 +300,12 @@ test('revision policy and malformed scanner outcomes fail closed', async () => {
   for (const outcome of malformed) {
     const result = await runAuthoritativeSecurityAssessmentV1(
       plan,
-      { id: 'bad-scanner', async execute() { return outcome; } },
+      {
+        id: 'bad-scanner',
+        async execute() {
+          return outcome;
+        },
+      },
       options,
     );
     assert.equal(result.snapshot.status, 'INSUFFICIENT_EVIDENCE');
