@@ -1,17 +1,16 @@
 import {
+  AUTHORITY_CAPABILITY_IDS,
+  type AuthorityCapabilityId,
+} from '@freehighlander/contracts';
+
+import {
   AtomicJsonConfigStore,
   type AtomicConfigWriteStatus,
   type JsonValue,
 } from './atomic-json-config-store.js';
 
-export const AUTHORITY_CAPABILITIES = [
-  'GIT_WRITE',
-  'RELEASE_DEPLOY',
-  'INFRASTRUCTURE_MUTATION',
-  'AUTOMATIC_REMEDIATION',
-] as const;
-
-export type AuthorityCapability = (typeof AUTHORITY_CAPABILITIES)[number];
+export const AUTHORITY_CAPABILITIES = AUTHORITY_CAPABILITY_IDS;
+export type AuthorityCapability = AuthorityCapabilityId;
 
 export interface AuthorityCapabilityStateV1 {
   readonly schemaVersion: 1;
