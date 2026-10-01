@@ -9,11 +9,7 @@ import {
 } from './authority-capability-execution.js';
 
 export type InfrastructureMutationOperation =
-  | 'RESTART'
-  | 'SCALE'
-  | 'DEPLOY'
-  | 'ROLLBACK'
-  | 'CONFIGURE';
+  'RESTART' | 'SCALE' | 'DEPLOY' | 'ROLLBACK' | 'CONFIGURE';
 
 export interface TrustedOperationalIntentEvidenceV1 {
   readonly schemaVersion: 1;
@@ -102,13 +98,15 @@ function validateEvidence(
   evidence: TrustedOperationalIntentEvidenceV1,
   gate: AuthorityCapabilityExecutionGate,
 ): void {
-  if (evidence.schemaVersion !== 1) throw new Error('operational intent evidence schemaVersion must be 1');
+  if (evidence.schemaVersion !== 1)
+    throw new Error('operational intent evidence schemaVersion must be 1');
   requireIdentifier(evidence.intentId, 'intentId');
   requireIdentifier(evidence.serviceId, 'serviceId');
   requireBoundedText(evidence.environment, 'environment', 128);
   requireRevision(evidence.sourceRevision, 'sourceRevision');
   requireSha256(evidence.intentHash, 'intentHash');
-  if (!isOperation(evidence.operation)) throw new Error('unsupported infrastructure mutation operation');
+  if (!isOperation(evidence.operation))
+    throw new Error('unsupported infrastructure mutation operation');
   if (evidence.sourceRevision !== gate.options.expectedRevision) {
     throw new Error('operational intent revision must match execution gate revision');
   }
