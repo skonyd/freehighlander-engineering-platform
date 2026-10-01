@@ -5,10 +5,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { AuthorityCapabilityStateStore, AUTHORITY_CAPABILITIES } from '@freehighlander/persistence';
+import { JsonlFileEventSink } from '@freehighlander/telemetry';
 
 import {
   AuthorityCapabilityActivationService,
   AuthorityCapabilityApprovalCoordinator,
+  AuthorityCapabilityAuditRecorder,
 } from '../dist/index.js';
 
 const MAX_BODY_BYTES = 16 * 1024;
@@ -33,6 +35,14 @@ export function createAuthorityCapabilityHttpServer(options) {
     revision: options.revision,
     approverId: options.approverId,
   });
+  const auditRecorder = new AuthorityCapabilityAuditRecorder(
+    new JsonlFileEventSink(options.auditPath ?? options.statePath + '.events.jsonl'),
+    {
+      repository: options.repository,
+      exactRevision: options.revision,
+      principalId: options.approverId,
+    },
+  );
 
   return createServer((request, response) => {
     void handleAuthorityRequest({
@@ -42,6 +52,7 @@ export function createAuthorityCapabilityHttpServer(options) {
       csrfToken,
       activationService,
       coordinator,
+      auditRecorder,
     });
   });
 }
@@ -74,7 +85,15 @@ export async function startAuthorityCapabilityHttpServer(options) {
 }
 
 async function handleAuthorityRequest(context) {
-  const { request, response, allowedOrigin, csrfToken, activationService, coordinator } = context;
+  const {
+    request,
+    response,
+    allowedOrigin,
+    csrfToken,
+    activationService,
+    coordinator,
+    auditRecorder,
+  } = context;
   const method = request.method ?? 'GET';
   const url = new URL(request.url ?? '/', 'http://127.0.0.1');
   const origin = request.headers.origin ?? null;
@@ -158,8 +177,48 @@ async function handleAuthorityRequest(context) {
           ? coordinator.activateApproved(input.capability, input.expectedGeneration)
           : activationService.deactivate(input.capability, input.expectedGeneration);
 
+  try {
+    await auditMutationResult({
+      pathname: url.pathname,
+      input,
+      result,
+      coordinator,
+      auditRecorder,
+    });
+  } catch {
+    return sendJson(response, 500, { error: 'authority_audit_failed' }, allowedOrigin);
+  }
+
   const status = result.status === 'BLOCKED' || result.status === 'CONFLICT' ? 409 : 200;
   return sendJson(response, status, { result }, allowedOrigin);
+}
+
+async function auditMutationResult({ pathname, input, result, coordinator, auditRecorder }) {
+  const type =
+    pathname === '/v1/authority/request'
+      ? 'authority.requested'
+      : pathname === '/v1/authority/approve'
+        ? 'authority.approved'
+        : pathname === '/v1/authority/activate'
+          ? 'authority.activated'
+          : 'authority.deactivated';
+  const approval = coordinator.approval(input.capability);
+
+  await auditRecorder.record({
+    type,
+    capability: input.capability,
+    generation: result.generation,
+    outcome: result.status,
+    reasons: result.reasons ?? [],
+    ...(pathname === '/v1/authority/request' ? { requested: input.requested } : {}),
+    ...(approval === null
+      ? {}
+      : {
+          policyHash: approval.policyHash,
+          approvalRequestHash: approval.requestHash,
+          humanDecisionHash: approval.decisionHash,
+        }),
+  });
 }
 
 function parseMutationInput(pathname, value) {
@@ -244,6 +303,9 @@ async function runCli() {
     statePath:
       process.env.FREEHIGHLANDER_AUTHORITY_STATE ??
       path.join(root, '.freehighlander', 'runtime', 'authority-capabilities.json'),
+    auditPath:
+      process.env.FREEHIGHLANDER_AUTHORITY_AUDIT ??
+      path.join(root, '.freehighlander', 'runtime', 'authority-events.jsonl'),
     repository,
     revision,
     approverId: process.env.FREEHIGHLANDER_APPROVER_ID ?? 'local-operator',
