@@ -191,16 +191,12 @@ async function handleAuthorityRequest(context) {
     });
   } catch {
     try {
-      const safetyCompensation = compensateAuthorityAuditFailure(
-        activationService,
-        coordinator,
-        {
-          pathname: url.pathname,
-          capability: input.capability,
-          ...(url.pathname === '/v1/authority/request' ? { requested: input.requested } : {}),
-          previousSnapshot,
-        },
-      );
+      const safetyCompensation = compensateAuthorityAuditFailure(activationService, coordinator, {
+        pathname: url.pathname,
+        capability: input.capability,
+        ...(url.pathname === '/v1/authority/request' ? { requested: input.requested } : {}),
+        previousSnapshot,
+      });
       return sendJson(
         response,
         500,
