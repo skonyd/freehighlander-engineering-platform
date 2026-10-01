@@ -1,6 +1,7 @@
 import {
   AUTHORITY_CAPABILITY_IDS,
   AUTHORITY_CAPABILITY_REGISTRY_V1,
+  B_LANE_MODULE_REGISTRY_V1,
 } from '@freehighlander/contracts';
 
 const AUTHORITY_PERMISSION_CARDS = AUTHORITY_CAPABILITY_REGISTRY_V1.map(
@@ -16,6 +17,19 @@ const AUTHORITY_PERMISSION_CARDS = AUTHORITY_CAPABILITY_REGISTRY_V1.map(
 ).join('\n');
 
 const AUTHORITY_CAPABILITY_IDS_JSON = JSON.stringify(AUTHORITY_CAPABILITY_IDS);
+const B_LANE_MODULE_CARDS = B_LANE_MODULE_REGISTRY_V1.map(
+  (definition) => `
+    <article class="permission module" data-module="${definition.id}">
+      <div class="permission-head">
+        <div></div>
+        <div><h2>${escapeAuthorityHtml(definition.id + ' · ' + definition.label)}</h2><div class="muted">${escapeAuthorityHtml(definition.description)}</div><div class="risk">Required: ${escapeAuthorityHtml(definition.requiredCapabilities.join(', ') || 'none · evidence-only')}</div>${definition.conditionalCapabilities.length > 0 ? `<div class="muted">Conditional: ${escapeAuthorityHtml(definition.conditionalCapabilities.join(', '))}</div>` : ''}</div>
+        <span class="state deny" id="module-state-${definition.id}">READY / DENY</span>
+      </div>
+    </article>`,
+).join('\n');
+
+const B_LANE_MODULES_JSON = JSON.stringify(B_LANE_MODULE_REGISTRY_V1);
+
 
 export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
 <html lang="en">
@@ -79,6 +93,10 @@ export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
 
   <section class="grid" aria-label="Authority permissions">\n${AUTHORITY_PERMISSION_CARDS}\n  </section>
 
+  <h2 style="margin-top:24px">B-lane module status</h2>
+  <div class="muted">Implementation readiness is separate from runtime authority. OPERATIONAL does not mean ACTIVE.</div>
+  <section class="grid" aria-label="B-lane modules">\n${B_LANE_MODULE_CARDS}\n  </section>
+
   <div class="actions">
     <button id="apply" type="button">Apply requested selection</button>
     <button id="refresh" type="button">Refresh runtime state</button>
@@ -90,6 +108,7 @@ export const OPERATOR_AUTHORITY_PERMISSIONS_HTML = String.raw`<!doctype html>
 <script>
 const API='http://127.0.0.1:4311';
 const capabilities=${AUTHORITY_CAPABILITY_IDS_JSON};
+const bLaneModules=${B_LANE_MODULES_JSON};
 let csrfToken='';
 let snapshot=null;
 let busy=false;
@@ -168,6 +187,20 @@ function render(){
     const deactivate=document.querySelector('[data-deactivate="'+capability+'"]');
     approve.disabled=busy||!requested(capability)||active(capability);
     deactivate.disabled=busy||!active(capability);
+  }
+  for(const module of bLaneModules){
+    const state=byId('module-state-'+module.id);
+    const requiredActive=module.requiredCapabilities.every(capability=>active(capability));
+    if(module.requiredCapabilities.length===0){
+      state.textContent='OPERATIONAL · NO AUTHORITY';
+      state.className='state active';
+    }else if(requiredActive){
+      state.textContent='OPERATIONAL · CAPABILITY ACTIVE';
+      state.className='state active';
+    }else{
+      state.textContent='OPERATIONAL · READY / DENY';
+      state.className='state requested';
+    }
   }
   byId('preview').textContent=JSON.stringify(snapshot,null,2);
 }
