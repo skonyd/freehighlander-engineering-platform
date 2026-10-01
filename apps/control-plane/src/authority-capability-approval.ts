@@ -69,6 +69,10 @@ export class AuthorityCapabilityApprovalCoordinator {
     return this.#approvals.get(capability)?.summary ?? null;
   }
 
+  discardApproval(capability: AuthorityCapability): boolean {
+    return this.#approvals.delete(capability);
+  }
+
   approve(capability: AuthorityCapability, expectedGeneration: number): CapabilityApprovalResultV1 {
     const snapshot = this.activationService.snapshot();
     if (snapshot.generation !== expectedGeneration) {
