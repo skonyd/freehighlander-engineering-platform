@@ -177,12 +177,7 @@ test('request approve activate deactivate completes the real authority lifecycle
     const events = await readJsonlEvents(config.auditPath);
     assert.deepEqual(
       events.map((event) => event.type),
-      [
-        'authority.requested',
-        'authority.approved',
-        'authority.activated',
-        'authority.deactivated',
-      ],
+      ['authority.requested', 'authority.approved', 'authority.activated', 'authority.deactivated'],
     );
     assert.equal(events[0].payload.principalId, 'local-operator');
     assert.equal(events[0].payload.exactRevision, REVISION);
