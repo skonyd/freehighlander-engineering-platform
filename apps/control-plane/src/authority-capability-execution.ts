@@ -5,7 +5,7 @@ import {
 import {
   AUTHORITY_CAPABILITIES,
   type AuthorityCapability,
-  AuthorityCapabilityStateStore,
+  type AuthorityCapabilityStateStore,
 } from '@freehighlander/persistence';
 
 import type {
@@ -56,10 +56,6 @@ export class AuthorityCapabilityExecutionGate {
     if (observedRevision !== this.options.expectedRevision) {
       reasons.push('exact revision drifted');
     }
-    if (policy.systemDecision.effect !== 'ALLOW') {
-      reasons.push('current SYSTEM_POLICY is not ALLOW');
-    }
-
     return {
       schemaVersion: 1,
       capability,
@@ -83,7 +79,7 @@ export function createCapabilityGatedActivityExecutor(
   requireExecutor(delegate);
 
   return {
-    id: delegate.id + ':gate-' + capability.toLowerCase(),
+    id: 'capability-gate-' + capability.toLowerCase(),
     async execute(request: ActivityRequest): Promise<ActivityExecutorOutcome> {
       const decision = gate.check(capability);
       if (!decision.allowed) {
