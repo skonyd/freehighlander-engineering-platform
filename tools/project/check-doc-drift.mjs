@@ -97,7 +97,7 @@ for (const [documentName, content, required] of [
       'Privacy export/delete manifest planning — issue #140 / PR #141',
       'Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143',
       'FH-30B..FH-37B',
-      'V3 authority operationalization — issue #423',
+      'V3 authority operationalization — issue #423 / PRs #424–#435',
     ],
   ],
   [
