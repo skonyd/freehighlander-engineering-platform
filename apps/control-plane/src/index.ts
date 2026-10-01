@@ -185,6 +185,19 @@ export {
 } from './execution-runtime.js';
 
 export {
+  AuthorityCapabilityExecutionGate,
+  capabilityExecutionGateCanBypassActiveState,
+  capabilityExecutionGateCanBypassSystemPolicy,
+  createAutomaticRemediationGatedExecutor,
+  createCapabilityGatedActivityExecutor,
+  createGitWriteGatedExecutor,
+  createInfrastructureMutationGatedExecutor,
+  createReleaseDeployGatedExecutor,
+  type AuthorityCapabilityExecutionDecisionV1,
+  type AuthorityCapabilityExecutionGateOptions,
+} from './authority-capability-execution.js';
+
+export {
   AuthorityCapabilityApprovalCoordinator,
   capabilityApprovalCoordinatorAcceptsClientVerifiedFlag,
   type AuthorityCapabilityApprovalCoordinatorOptions,
