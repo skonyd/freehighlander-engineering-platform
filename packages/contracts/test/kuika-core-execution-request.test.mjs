@@ -17,7 +17,7 @@ test('FH-KUIKA execution request is exact-bound authority-neutral intent', () =>
     mutationClass: 'GIT_WRITE',
     repository: 'skonyd/freehighlander-engineering-platform',
     exactRevision: REVISION,
-    payload: '{"operation":"commit"}',
+    payloadDigest: 'b'.repeat(64),
   });
 
   assert.equal(request.requiredCapability, 'GIT_WRITE');
@@ -42,7 +42,7 @@ test('all four mutation classes derive exactly one matching Core capability', ()
       mutationClass,
       repository: 'owner/repo',
       exactRevision: REVISION,
-      payload: mutationClass,
+      payloadDigest: 'c'.repeat(64),
     });
     assert.equal(request.requiredCapability, mutationClass);
   }
@@ -55,7 +55,7 @@ test('request validation rejects forged authority ownership capability binding a
     mutationClass: 'RELEASE_DEPLOY',
     repository: 'owner/repo',
     exactRevision: REVISION,
-    payload: 'deploy',
+    payloadDigest: 'b'.repeat(64),
   });
 
   assert.throws(
@@ -85,7 +85,7 @@ test('request creation rejects malformed identity revision surface capability an
         mutationClass: 'GIT_WRITE',
         repository: 'owner/repo',
         exactRevision: REVISION,
-        payload: 'x',
+        payloadDigest: 'b'.repeat(64),
       }),
     /requestId/,
   );
@@ -97,7 +97,7 @@ test('request creation rejects malformed identity revision surface capability an
         mutationClass: 'GIT_WRITE',
         repository: 'owner/repo',
         exactRevision: REVISION,
-        payload: 'x',
+        payloadDigest: 'b'.repeat(64),
       }),
     /surface/,
   );
@@ -109,7 +109,7 @@ test('request creation rejects malformed identity revision surface capability an
         mutationClass: 'UNKNOWN',
         repository: 'owner/repo',
         exactRevision: REVISION,
-        payload: 'x',
+        payloadDigest: 'b'.repeat(64),
       }),
     /unknown authority capability/,
   );
@@ -121,7 +121,7 @@ test('request creation rejects malformed identity revision surface capability an
         mutationClass: 'GIT_WRITE',
         repository: 'bad',
         exactRevision: REVISION,
-        payload: 'x',
+        payloadDigest: 'b'.repeat(64),
       }),
     /owner\/name/,
   );
@@ -133,7 +133,7 @@ test('request creation rejects malformed identity revision surface capability an
         mutationClass: 'GIT_WRITE',
         repository: 'owner/repo',
         exactRevision: 'bad',
-        payload: 'x',
+        payloadDigest: 'b'.repeat(64),
       }),
     /40-character git SHA/,
   );
@@ -145,8 +145,8 @@ test('request creation rejects malformed identity revision surface capability an
         mutationClass: 'GIT_WRITE',
         repository: 'owner/repo',
         exactRevision: REVISION,
-        payload: 'x'.repeat(1_000_001),
+        payloadDigest: 'bad',
       }),
-    /maximum length/,
+    /payloadDigest/,
   );
 });
