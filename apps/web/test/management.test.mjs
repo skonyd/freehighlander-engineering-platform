@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   buildManagementSnapshot,
   createManagementIntent,
+  getWebFoundationInfo,
   parseManagementIntent,
   uiDisconnectCanChangeWorkflowExecution,
   webCanExecuteManagementIntent,
@@ -86,7 +87,7 @@ const source = {
   ],
 };
 
-test('management snapshot is deterministic, client-only and shadow-authority', () => {
+test('management snapshot reports enabled V3 while web remains authority-neutral', () => {
   const first = buildManagementSnapshot(source);
   const second = buildManagementSnapshot(source);
 
@@ -94,7 +95,7 @@ test('management snapshot is deterministic, client-only and shadow-authority', (
   assert.equal(first.mode, 'client-only-management');
   assert.equal(first.executionOwner, 'control-plane');
   assert.equal(first.mutationAuthority, 'none');
-  assert.equal(first.v3Authority, 'SHADOW_ONLY');
+  assert.equal(first.v3Authority, 'ENABLED');
   assert.equal(first.runs[0].humanApprovals[0].status, 'HUMAN_REQUIRED');
 });
 
@@ -131,4 +132,13 @@ test('unknown management actions and malformed intents fail closed', () => {
       }),
     /runId is required/,
   );
+});
+
+test('web foundation separates global V3 state from web mutation authority', () => {
+  const foundation = getWebFoundationInfo();
+
+  assert.equal(foundation.v3Authority, 'ENABLED');
+  assert.equal(foundation.executionOwnership, 'control-plane');
+  assert.equal(foundation.mutationAuthority, 'none');
+  assert.equal(foundation.mode, 'read-only-dashboard');
 });

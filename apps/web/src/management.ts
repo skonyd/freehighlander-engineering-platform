@@ -36,7 +36,7 @@ export interface ManagementSnapshot {
   readonly mode: 'client-only-management';
   readonly executionOwner: 'control-plane';
   readonly mutationAuthority: 'none';
-  readonly v3Authority: 'SHADOW_ONLY';
+  readonly v3Authority: 'ENABLED';
   readonly summary: DashboardSummary;
   readonly runs: readonly ManagementRunView[];
 }
@@ -74,7 +74,7 @@ export function buildManagementSnapshot(
     mode: 'client-only-management',
     executionOwner: 'control-plane',
     mutationAuthority: 'none',
-    v3Authority: 'SHADOW_ONLY',
+    v3Authority: 'ENABLED',
     summary: source.summary(),
     runs,
   };
