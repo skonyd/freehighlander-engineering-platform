@@ -57,11 +57,19 @@ test('requested authority is visibly distinct from active authority', () => {
 test('authority page reconciles B-lane implementation status separately from active authority', () => {
   assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /B-lane module status/);
   assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /OPERATIONAL does not mean ACTIVE/);
-  for (const id of ['FH-30B', 'FH-31B', 'FH-32B', 'FH-33B', 'FH-34B', 'FH-35B', 'FH-36B', 'FH-37B']) {
+  for (const id of [
+    'FH-30B',
+    'FH-31B',
+    'FH-32B',
+    'FH-33B',
+    'FH-34B',
+    'FH-35B',
+    'FH-36B',
+    'FH-37B',
+  ]) {
     assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, new RegExp('data-module="' + id + '"'));
   }
   assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /OPERATIONAL · NO AUTHORITY/);
   assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /OPERATIONAL · CAPABILITY ACTIVE/);
   assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /OPERATIONAL · READY \/ DENY/);
 });
-
