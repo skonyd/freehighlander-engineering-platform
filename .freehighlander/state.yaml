@@ -483,7 +483,7 @@ v3_authority_operationalization:
   safety_lifecycle_pr: 432
   capability_registry_pr: 433
   e2e_acceptance_pr: 434
-  final_reconciliation_pr: pending
+  final_reconciliation_pr: 435
   e2e_acceptance: passed
   web_mutation_authority: none
   execution_owner: control-plane
