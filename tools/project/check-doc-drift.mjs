@@ -30,6 +30,27 @@ if (state.active_work?.pull_request !== null) {
 expect(state.fh01b?.promotion?.status, 'complete', 'FH-01B2 promotion state');
 expect(state.fh20?.cutover_allowed, true, 'FH-20 cutover state');
 expect(state.fh20?.v3_authority, 'ENABLED', 'V3 authority state');
+expect(
+  state.v3_authority_operationalization?.status,
+  'complete_default_deny',
+  'V3 authority operationalization state',
+);
+expect(
+  state.operator_authority_permissions?.status,
+  'operational_default_deny',
+  'operator authority permission state',
+);
+expect(
+  state.operator_authority_permissions?.default_policy,
+  'DENY',
+  'operator authority default policy',
+);
+if ((state.operator_authority_permissions?.requested_capabilities ?? []).length !== 0) {
+  failures.push('operator authority requested_capabilities must remain empty in canonical main state');
+}
+if ((state.operator_authority_permissions?.active_capabilities ?? []).length !== 0) {
+  failures.push('operator authority active_capabilities must remain empty in canonical main state');
+}
 
 for (const key of ['fh30a', 'fh31a', 'fh32a', 'fh33a', 'fh34a', 'fh35a', 'fh36a', 'fh37a']) {
   expect(state[key]?.status, 'complete', `${key} state`);
@@ -50,6 +71,7 @@ for (const [documentName, content, required] of [
       'V3 authority = ENABLED',
       'FH-20 cutover = APPLIED',
       'FH-01B2 final reconciliation',
+      'V3 authority operationalization',
     ],
   ],
   [
@@ -75,6 +97,7 @@ for (const [documentName, content, required] of [
       'Privacy export/delete manifest planning — issue #140 / PR #141',
       'Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143',
       'FH-30B..FH-37B',
+      'V3 authority operationalization — issue #423',
     ],
   ],
   [
@@ -101,6 +124,7 @@ for (const [documentName, content, required] of [
       '#138 / PR #139 — source-to-dist build completeness',
       '#140 / PR #141 — metadata-only privacy EXPORT/DELETE manifest planning',
       '#142 / PR #143 — fail-closed provider-egress preparation',
+      'V3 authority operationalization — complete',
     ],
   ],
   [
@@ -112,6 +136,7 @@ for (const [documentName, content, required] of [
       'Pre-cutover hardening — COMPLETE THROUGH PROVIDER EGRESS PREPARATION',
       'metadata-only privacy EXPORT/DELETE manifest planning',
       'fail-closed provider-egress preparation',
+      'OPERATIONAL AUTHORITY SUBSTRATE COMPLETE / CAPABILITIES DEFAULT DENY',
     ],
   ],
   [
@@ -124,6 +149,7 @@ for (const [documentName, content, required] of [
       'repository hygiene',
       'privacy export/delete manifest planning and fail-closed provider-egress preparation are complete',
       'Creator Marketplace #207',
+      'V3 authority operationalization issue #423 is complete',
     ],
   ],
 ]) {
