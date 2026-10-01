@@ -143,14 +143,14 @@ for (const [documentName, content, required] of [
       '#142 / PR #143 — fail-closed provider-egress preparation',
       'V3 authority operationalization — complete',
       'Completed post-cutover SDLC B-lane',
-      'issue #436 is implemented through PRs #437–#447',
+      'Issue #436 is implemented through PRs #437–#447',
     ],
   ],
   [
     'docs/ROADMAP.md',
     roadmap,
     [
-      'FH-30A..FH-37A COMPLETE / B-lane ELIGIBLE, NOT AUTO-ACTIVATED',
+      'FH-30A..FH-37A COMPLETE / FH-30B..FH-37B IMPLEMENTED + OPERATIONAL / DEFAULT DENY',
       'COMPLETE / FH-20 CUTOVER APPLIED',
       'Pre-cutover hardening — COMPLETE THROUGH PROVIDER EGRESS PREPARATION',
       'metadata-only privacy EXPORT/DELETE manifest planning',
