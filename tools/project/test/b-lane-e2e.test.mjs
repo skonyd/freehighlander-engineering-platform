@@ -144,7 +144,10 @@ test('FH-30B..FH-37B authority-bearing execution is gated revocable and lineage-
       lineage.records.map((record) => record.kind),
       ['GIT_WRITE', 'RELEASE_MUTATION', 'INFRASTRUCTURE_MUTATION', 'INCIDENT_REMEDIATION'],
     );
-    assert.equal(lineage.records.every((record) => record.authority === 'NONE'), true);
+    assert.equal(
+      lineage.records.every((record) => record.authority === 'NONE'),
+      true,
+    );
 
     const driftedGate = new AuthorityCapabilityExecutionGate({
       stateStore,
