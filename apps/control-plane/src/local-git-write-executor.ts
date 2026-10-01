@@ -15,7 +15,6 @@ import {
 import type { LocalWorkspaceHandle } from './local-worktree-backend.js';
 
 const execFileAsync = promisify(execFile);
-const GIT_SHA_PATTERN = /^[a-f0-9]{40}$/;
 const BRANCH_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,127}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
 
@@ -110,10 +109,7 @@ export function createGatedLocalGitWriteExecutor(
           '-m',
           input.message,
         ]);
-        const headRevision = (await git(['rev-parse', 'HEAD'])).trim();
-        if (!GIT_SHA_PATTERN.test(headRevision)) {
-          throw new Error('git commit did not produce a full SHA');
-        }
+        const headRevision = (await git(['rev-parse', '--verify', 'HEAD^{commit}'])).trim();
 
         return {
           status: 'SUCCEEDED',
@@ -259,17 +255,20 @@ async function runGit(
 }
 
 async function gitNoThrow(cwd: string, args: readonly string[], timeoutMs: number): Promise<void> {
-  try {
-    await execFileAsync('git', [...args], {
-      cwd,
-      timeout: timeoutMs,
-      maxBuffer: 1024 * 1024,
-      env: { PATH: process.env.PATH },
-      windowsHide: true,
-    });
-  } catch {
-    // Cleanup is best-effort; the operation remains failed/closed.
-  }
+  await new Promise<void>((resolve) => {
+    execFile(
+      'git',
+      [...args],
+      {
+        cwd,
+        timeout: timeoutMs,
+        maxBuffer: 1024 * 1024,
+        env: { PATH: process.env.PATH },
+        windowsHide: true,
+      },
+      () => resolve(),
+    );
+  });
 }
 
 function failed(failureKind: string): ActivityExecutorOutcome {
