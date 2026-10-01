@@ -102,7 +102,9 @@ test('active RELEASE_DEPLOY delegates all bounded release operations', async () 
     const fx = fixture();
     activate(fx.store);
     const executor = createGatedReleaseMutationExecutor(fx.gate, fx.evidence, fx.adapter);
-    const result = await executor.execute(request(action({ operation, target: 'target-' + operation })));
+    const result = await executor.execute(
+      request(action({ operation, target: 'target-' + operation })),
+    );
 
     assert.equal(result.status, 'SUCCEEDED');
     const receipt = JSON.parse(result.output);
@@ -145,7 +147,10 @@ test('trusted evidence must be ready exact-bound and adapter must be valid', () 
     createGatedReleaseMutationExecutor(fx.gate, fx.evidence, { id: 'x', execute: null }),
   );
   assert.throws(() =>
-    createGatedReleaseMutationExecutor(fx.gate, fx.evidence, { id: '!', execute: async () => ({}) }),
+    createGatedReleaseMutationExecutor(fx.gate, fx.evidence, {
+      id: '!',
+      execute: async () => ({}),
+    }),
   );
 });
 
@@ -191,10 +196,7 @@ test('provider failure and malformed receipts fail closed', async () => {
       throw new Error('provider failed');
     },
   });
-  assert.equal(
-    (await throwing.execute(request(action()))).failureKind,
-    'RELEASE_MUTATION_FAILED',
-  );
+  assert.equal((await throwing.execute(request(action()))).failureKind, 'RELEASE_MUTATION_FAILED');
 
   for (const receipt of [
     null,
