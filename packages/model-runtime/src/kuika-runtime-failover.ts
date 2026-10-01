@@ -1,7 +1,4 @@
-import {
-  isAvailabilityFailure,
-  type ProviderFailureKind,
-} from './index.js';
+import type { ProviderFailureKind } from './index.js';
 import {
   recordActiveBindingFailure,
   type BindingFailureObservation,
@@ -33,19 +30,6 @@ export function applyFhKuikaRuntimeFailoverV1(
   observation: FhKuikaRuntimeFailureObservationV1,
 ): FhKuikaRuntimeFailoverDecisionV1 {
   const transition = recordActiveBindingFailure(state, plan, observation);
-
-  if (!isAvailabilityFailure(observation.failureKind)) {
-    if (transition.status !== 'FALLBACK_FORBIDDEN') {
-      throw new Error('non-availability failure must never advance the fallback chain');
-    }
-    return {
-      schemaVersion: 1,
-      failoverApplied: false,
-      semanticOutcomeConsidered: false,
-      transition,
-      authority: 'NONE',
-    };
-  }
 
   return {
     schemaVersion: 1,
