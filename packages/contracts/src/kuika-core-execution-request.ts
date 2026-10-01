@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import {
   AUTHORITY_CAPABILITY_IDS,
   type AuthorityCapabilityId,
@@ -26,16 +24,14 @@ export function createFhKuikaCoreExecutionRequestV1(input: {
   readonly mutationClass: AuthorityCapabilityId;
   readonly repository: string;
   readonly exactRevision: string;
-  readonly payload: string;
+  readonly payloadDigest: string;
 }): FhKuikaCoreExecutionRequestV1 {
   const requestId = requireIdentifier(input.requestId, 'requestId');
   const repository = requireRepository(input.repository);
   const exactRevision = requireRevision(input.exactRevision);
   requireCapability(input.mutationClass);
   if (!isSurface(input.surface)) throw new Error('unknown FH-KUIKA execution surface');
-  if (input.payload.length > 1_000_000) {
-    throw new Error('FH-KUIKA execution payload exceeds maximum length');
-  }
+  requireSha256(input.payloadDigest, 'payloadDigest');
 
   return Object.freeze({
     schemaVersion: 1,
@@ -45,7 +41,7 @@ export function createFhKuikaCoreExecutionRequestV1(input: {
     requiredCapability: input.mutationClass,
     repository,
     exactRevision,
-    payloadDigest: createHash('sha256').update(input.payload, 'utf8').digest('hex'),
+    payloadDigest: input.payloadDigest,
     authority: 'NONE',
     executionOwner: 'CONTROL_PLANE',
   });
