@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-10-01T16:35:00+03:00"
+updated_at: "2026-10-01T17:55:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -17,8 +17,8 @@ active_work:
   branch: main
   pull_request: null
   issue: null
-  objective: operate completed V3 authority and B-lane execution modules while preserving the accepted V2 compatibility reference and fail-closed capability boundaries
-  next_action: use B-lane mutation executors only after explicit operator capability selection, exact human approval, SYSTEM_POLICY, currentness and execution gates; otherwise remain DENY
+  objective: operate completed V3 authority, B-lane execution modules and FH-KUIKA Core-gated runtime activation while preserving fail-closed capability boundaries
+  next_action: use B-lane and FH-KUIKA mutation paths only after explicit operator capability selection, exact human approval, SYSTEM_POLICY, currentness and execution gates; otherwise remain DENY
 
 fh01a:
   issue: 15
@@ -508,6 +508,26 @@ fh_b_lane_completion:
   final_reconciliation_pr: 447
   e2e_acceptance: passed
   implementation_status: operational
+  activation_policy: explicit_operator_selection_only
+  default_policy: DENY
+  requested_capabilities: []
+  active_capabilities: []
+
+fh_kuika_post_cutover_activation:
+  issue: 448
+  status: complete_default_deny
+  execution_bridge_pr: 449
+  workbench_execute_pr: 450
+  connector_runtime_pr: 451
+  routine_runtime_pr: 452
+  runtime_failover_pr: 453
+  e2e_gui_reconciliation_pr: 454
+  final_reconciliation_pr: null
+  e2e_acceptance: passed
+  execution_owner: control-plane
+  fallback_policy: availability_only
+  semantic_result_shopping: forbidden
+  raw_secret_persistence: forbidden
   activation_policy: explicit_operator_selection_only
   default_policy: DENY
   requested_capabilities: []
