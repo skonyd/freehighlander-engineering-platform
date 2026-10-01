@@ -132,7 +132,7 @@ Authority-neutral preparation is complete:
 7. FH-36A Incident
 8. FH-37A Project Knowledge Graph / Engineering Lineage
 
-FH-30B..FH-37B activation is now eligible but not automatic; each authority-bearing slice remains capability/policy gated.
+FH-30B..FH-37B implementation is complete and operational; runtime authority is never automatic and each authority-bearing side effect remains capability/policy gated.
 
 ## Pre-cutover hardening — COMPLETE THROUGH PROVIDER EGRESS PREPARATION
 
