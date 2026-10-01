@@ -32,7 +32,10 @@ export interface FhKuikaTrustedConnectorRuntimeV1 {
 }
 
 export function createFhKuikaConnectorInvocationRequestV1(
-  input: Omit<FhKuikaConnectorInvocationRequestV1, 'schemaVersion' | 'authority' | 'executionOwner'>,
+  input: Omit<
+    FhKuikaConnectorInvocationRequestV1,
+    'schemaVersion' | 'authority' | 'executionOwner'
+  >,
 ): FhKuikaConnectorInvocationRequestV1 {
   return validateFhKuikaConnectorInvocationRequestV1({
     schemaVersion: 1,
@@ -84,7 +87,8 @@ function requireRepository(value: string): void {
 }
 
 function requireRevision(value: string): void {
-  if (!/^[a-f0-9]{40}$/.test(value)) throw new Error('exactRevision must be a 40-character git SHA');
+  if (!/^[a-f0-9]{40}$/.test(value))
+    throw new Error('exactRevision must be a 40-character git SHA');
 }
 
 function requireBoundedList(values: readonly string[], field: string): void {
