@@ -41,6 +41,27 @@ expect(
   'operator authority permission state',
 );
 expect(
+  state.fh_b_lane_completion?.status,
+  'complete_default_deny',
+  'B-lane completion state',
+);
+expect(
+  state.fh_b_lane_completion?.implementation_status,
+  'operational',
+  'B-lane implementation status',
+);
+expect(
+  state.fh_b_lane_completion?.default_policy,
+  'DENY',
+  'B-lane default policy',
+);
+if ((state.fh_b_lane_completion?.requested_capabilities ?? []).length !== 0) {
+  failures.push('B-lane requested_capabilities must remain empty in canonical main state');
+}
+if ((state.fh_b_lane_completion?.active_capabilities ?? []).length !== 0) {
+  failures.push('B-lane active_capabilities must remain empty in canonical main state');
+}
+expect(
   state.operator_authority_permissions?.default_policy,
   'DENY',
   'operator authority default policy',
@@ -74,6 +95,7 @@ for (const [documentName, content, required] of [
       'FH-20 cutover = APPLIED',
       'FH-01B2 final reconciliation',
       'V3 authority operationalization',
+      'FH-30B..FH-37B = IMPLEMENTED / OPERATIONAL / DEFAULT DENY',
     ],
   ],
   [
@@ -100,6 +122,7 @@ for (const [documentName, content, required] of [
       'Provider-egress policy/redaction/telemetry preparation — issue #142 / PR #143',
       'FH-30B..FH-37B',
       'V3 authority operationalization — issue #423 / PRs #424–#435',
+      'B-lane execution completion — issue #436 / PRs #437–#447',
     ],
   ],
   [
@@ -127,6 +150,8 @@ for (const [documentName, content, required] of [
       '#140 / PR #141 — metadata-only privacy EXPORT/DELETE manifest planning',
       '#142 / PR #143 — fail-closed provider-egress preparation',
       'V3 authority operationalization — complete',
+      'Completed post-cutover SDLC B-lane',
+      'issue #436 is implemented through PRs #437–#447',
     ],
   ],
   [
@@ -139,6 +164,7 @@ for (const [documentName, content, required] of [
       'metadata-only privacy EXPORT/DELETE manifest planning',
       'fail-closed provider-egress preparation',
       'OPERATIONAL AUTHORITY SUBSTRATE COMPLETE / CAPABILITIES DEFAULT DENY',
+      'FH-30B..FH-37B IMPLEMENTED + OPERATIONAL / DEFAULT DENY',
     ],
   ],
   [
@@ -152,6 +178,7 @@ for (const [documentName, content, required] of [
       'privacy export/delete manifest planning and fail-closed provider-egress preparation are complete',
       'Creator Marketplace #207',
       'V3 authority operationalization issue #423 is complete',
+      'FH-30B..FH-37B are implemented and operational through issue #436 / PRs #437–#447',
     ],
   ],
 ]) {
@@ -175,7 +202,15 @@ for (const [documentName, content, stalePhrases] of [
   [
     'docs/planning/PR-ROADMAP.md',
     prRoadmap,
-    ['Creator Marketplace #207 merge+smoke sonrası başlar.'],
+    [
+      'Creator Marketplace #207 merge+smoke sonrası başlar.',
+      'FH-30B..FH-37B eligible activation',
+    ],
+  ],
+  [
+    'README.md',
+    readme,
+    ['FH-30B..FH-37B = ELIGIBLE / NOT AUTO-ACTIVATED'],
   ],
 ]) {
   for (const phrase of stalePhrases) {
