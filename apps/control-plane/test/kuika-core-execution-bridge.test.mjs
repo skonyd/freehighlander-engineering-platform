@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -49,7 +50,7 @@ function executionRequest(mutationClass = 'GIT_WRITE') {
     mutationClass,
     repository: REPOSITORY,
     exactRevision: REVISION,
-    payload: PAYLOAD,
+    payloadDigest: createHash('sha256').update(PAYLOAD, 'utf8').digest('hex'),
   });
 }
 
