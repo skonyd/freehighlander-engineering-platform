@@ -16,7 +16,7 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 7 | V3 control plane | **COMPLETE through FH-19** |
 | 8 | V2/V3 parity + authority cutover | **COMPLETE / FH-20 CUTOVER APPLIED** |
 | 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane ELIGIBLE, NOT AUTO-ACTIVATED** |
-| 10 | Authority-bearing full lifecycle | **ELIGIBLE / EXPLICIT CAPABILITY + POLICY GATED** |
+| 10 | Authority-bearing full lifecycle | **OPERATIONAL AUTHORITY SUBSTRATE COMPLETE / CAPABILITIES DEFAULT DENY** |
 | 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PREPARATION COMPLETE THROUGH FH-KUIKA-09; activation slices remain Core capability/policy gated** |
 | 12 | FH-KUIKA-10 enterprise collaboration submodule | **PRE-CUTOVER BOUNDARY COMPLETE — ADR-0023 / contract 1.11.0; live identity enforcement deferred** |
 
@@ -166,7 +166,11 @@ The repository also includes:
 
 ## Phase 10 — Full lifecycle
 
-Authority-bearing lifecycle activation remains future work:
+The post-cutover authority substrate is complete under issue #423: durable capability state, exact human approval binding, localhost mutation API, live settings UI, execution enforcement, append-only audit, restart/revocation/audit-failure safety, shared capability registry and end-to-end acceptance are implemented.
+
+Actual critical authority remains explicit and capability-scoped: all four critical capabilities still start `DENY`, no capability is selected or active by default, and every side effect must pass the control-plane execution gate.
+
+The lifecycle target remains:
 
 ```text
 IDEA
@@ -193,7 +197,7 @@ INCIDENT
  └────────────→ REQUIREMENT / TEST / TASK
 ```
 
-The read-only/evidence contracts for this thread exist today; production mutation authority does not.
+Control-plane mutation authority now exists as a fail-closed substrate, but production side effects remain unavailable unless the operator explicitly requests and approves the relevant capability and all current policy/revision/execution gates pass.
 
 
 ## Phase 11 — Optional FH-KUIKA Productization Module
