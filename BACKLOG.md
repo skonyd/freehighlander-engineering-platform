@@ -79,17 +79,19 @@ Umbrella: #88.
 
 ## Optional FH-KUIKA productization module — pre-cutover complete through FH-KUIKA-09
 - [x] FH-KUIKA-01 Studio shell + Explainable Operations Console — P0 — .1–.5 complete
-- [ ] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0 — .1–.4 complete/prepared; .5 EXECUTE eligible post-FH-20 but remains capability/policy gated
+- [x] FH-KUIKA-02 ASK / PLAN / EXECUTE / REVIEW Workbench — P0 — .1–.5 complete; EXECUTE delegates through Core authority gates and remains default DENY
 - [x] FH-KUIKA-03 Engineering Blueprint Catalog — P0 — .1–.6 complete pre-cutover
 - [x] FH-KUIKA-04 Visual Workflow Studio — P0 — .1–.6 pre-cutover complete; canonical publish/execute activation remains Core-governed
-- [ ] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0 — .1–.5 preparation complete; .6 write-capable activation eligible but remains capability/policy gated
+- [x] FH-KUIKA-05 Connector Hub / MCP Tool Manager — P0 — .1–.6 complete; runtime invocation revalidates trusted permissions and Core capability at call time
 - [x] FH-KUIKA-06 Role Marketplace + Engineering Solution Packs — P1 — .1–.5 complete pre-cutover
 - [x] FH-KUIKA-07 Engineering Knowledge Vault / Lineage-RAG — P1 — .1–.6 complete pre-cutover
-- [ ] FH-KUIKA-08 Routines / Trigger Engine — P1 — .1–.4 and .5 failure/retry telemetry preparation complete; authority-bearing activation eligible but remains capability/policy gated
-- [x] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1 — .1–.5 complete pre-cutover; runtime application remains Core-governed
+- [x] FH-KUIKA-08 Routines / Trigger Engine — P1 — .1–.5 complete; scheduler dispatch/retry are control-plane owned and recheck current authority
+- [x] FH-KUIKA-09 Constraint-aware model/work router optimizer — P1 — .1–.5 complete; runtime failover is Core-governed and availability-only
 - [x] FH-KUIKA-10 Enterprise collaboration / identity boundary — P2 — ADR-0023 + contract 1.11.0 + threat/data/migration boundary complete pre-cutover; live OIDC/session/RBAC enforcement and multi-tenant persistence deferred
 
 Detailed decomposition and authority boundary: [FH-KUIKA module roadmap](docs/modules/kuika-inspired-productization/ROADMAP.md).
+
+- [x] FH-KUIKA post-cutover activation — issue #448 / PRs #449–#454 + final reconciliation; Workbench EXECUTE, connector runtime, routines and availability-only failover are Core-gated and operational while canonical capabilities remain default DENY.
 
 ## Current blocker
 
