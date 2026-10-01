@@ -40,21 +40,13 @@ expect(
   'operational_default_deny',
   'operator authority permission state',
 );
-expect(
-  state.fh_b_lane_completion?.status,
-  'complete_default_deny',
-  'B-lane completion state',
-);
+expect(state.fh_b_lane_completion?.status, 'complete_default_deny', 'B-lane completion state');
 expect(
   state.fh_b_lane_completion?.implementation_status,
   'operational',
   'B-lane implementation status',
 );
-expect(
-  state.fh_b_lane_completion?.default_policy,
-  'DENY',
-  'B-lane default policy',
-);
+expect(state.fh_b_lane_completion?.default_policy, 'DENY', 'B-lane default policy');
 if ((state.fh_b_lane_completion?.requested_capabilities ?? []).length !== 0) {
   failures.push('B-lane requested_capabilities must remain empty in canonical main state');
 }
@@ -202,16 +194,9 @@ for (const [documentName, content, stalePhrases] of [
   [
     'docs/planning/PR-ROADMAP.md',
     prRoadmap,
-    [
-      'Creator Marketplace #207 merge+smoke sonrası başlar.',
-      'FH-30B..FH-37B eligible activation',
-    ],
+    ['Creator Marketplace #207 merge+smoke sonrası başlar.', 'FH-30B..FH-37B eligible activation'],
   ],
-  [
-    'README.md',
-    readme,
-    ['FH-30B..FH-37B = ELIGIBLE / NOT AUTO-ACTIVATED'],
-  ],
+  ['README.md', readme, ['FH-30B..FH-37B = ELIGIBLE / NOT AUTO-ACTIVATED']],
 ]) {
   for (const phrase of stalePhrases) {
     if (content.includes(phrase)) failures.push(`${documentName} contains stale phrase: ${phrase}`);
