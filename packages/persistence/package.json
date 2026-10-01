@@ -14,5 +14,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json",
     "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@freehighlander/contracts": "0.0.0"
   }
 }
