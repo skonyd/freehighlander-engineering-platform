@@ -169,7 +169,7 @@ async function selectMode(mode){
 function renderSnapshot(snapshot){
   const context=snapshot.context||[];
   document.querySelector('#status').textContent=
-    'Preparation surface · authority '+(snapshot.preflight?.v3Authority||'UNKNOWN')+
+    'Core-gated preparation · authority '+(snapshot.preflight?.v3Authority||'UNKNOWN')+
     ' · source '+(snapshot.preflight?.sourceState||'UNKNOWN');
 
   document.querySelector('#context').innerHTML=context.length
@@ -192,7 +192,7 @@ function renderSnapshot(snapshot){
     '<div class="preflight-row"><span>Source state</span><strong>'+esc(preflight.sourceState)+'</strong></div>';
 
   document.querySelector('#action-status').innerHTML=preflight.canStartRequest
-    ? 'Preflight passed. Preparing an intent still performs no model or runtime call.'
+    ? 'Preflight passed. EXECUTE intent can be exact-bound for Core control-plane processing; preparation itself performs no runtime call.'
     : '<span class="warn">'+esc(preflight.blockedReason||'Request is blocked.')+'</span>';
 }
 
