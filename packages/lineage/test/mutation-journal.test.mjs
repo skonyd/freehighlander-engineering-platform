@@ -74,10 +74,7 @@ test('all B-lane action kinds can be recorded without granting authority', async
       authorityGeneration: 3,
     },
     {
-      ...base('INCIDENT_REMEDIATION', [
-        'AUTOMATIC_REMEDIATION',
-        'INFRASTRUCTURE_MUTATION',
-      ]),
+      ...base('INCIDENT_REMEDIATION', ['AUTOMATIC_REMEDIATION', 'INFRASTRUCTURE_MUTATION']),
       policyHash,
       authorityGeneration: 4,
     },
@@ -144,18 +141,10 @@ test('tampering or malformed persisted records fail closed', async () => {
 
 test('invalid path identities capabilities and timestamps are rejected', async () => {
   assert.throws(() => new MutationLineageJournalV1('relative.jsonl'), /absolute/);
-  await assert.rejects(() =>
-    journal().append({ ...base('TEST_RUN'), actionId: '!' }),
-  );
-  await assert.rejects(() =>
-    journal().append({ ...base('TEST_RUN'), revision: 'bad' }),
-  );
-  await assert.rejects(() =>
-    journal().append({ ...base('TEST_RUN'), occurredAt: 'bad' }),
-  );
-  await assert.rejects(() =>
-    journal().append({ ...base('TEST_RUN'), capabilities: ['UNKNOWN'] }),
-  );
+  await assert.rejects(() => journal().append({ ...base('TEST_RUN'), actionId: '!' }));
+  await assert.rejects(() => journal().append({ ...base('TEST_RUN'), revision: 'bad' }));
+  await assert.rejects(() => journal().append({ ...base('TEST_RUN'), occurredAt: 'bad' }));
+  await assert.rejects(() => journal().append({ ...base('TEST_RUN'), capabilities: ['UNKNOWN'] }));
   await assert.rejects(() =>
     journal().append({ ...base('TEST_RUN'), capabilities: ['GIT_WRITE', 'GIT_WRITE'] }),
   );
