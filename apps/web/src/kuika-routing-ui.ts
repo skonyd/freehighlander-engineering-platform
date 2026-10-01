@@ -100,8 +100,9 @@ export const FH_KUIKA_ROUTING_HTML = String.raw`<!doctype html>
       <div id="result" class="muted" style="margin-top:16px">Run a simulation.</div>
     </section>
     <div class="boundary">
-      Simulation is advisory and pre-call only. Semantic outputs, findings and verdicts are not
-      routing inputs. This page cannot execute a model call, mutate bindings or grant authority.
+      Simulation is advisory and pre-call only. Runtime failover is availability-only; semantic
+      outputs, findings and verdicts cannot advance the fallback chain. This page cannot execute a
+      model call, mutate bindings or grant authority.
     </div>
   </main>
 <script>

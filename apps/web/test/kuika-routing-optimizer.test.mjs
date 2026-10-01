@@ -174,7 +174,8 @@ test('routing simulator preserves availability and locality constraints', () => 
 
 test('routing UI is a simulator and exposes no binding mutation controls', () => {
   assert.match(FH_KUIKA_ROUTING_HTML, /Deterministic pre-call routing simulation/);
-  assert.match(FH_KUIKA_ROUTING_HTML, /Semantic outputs, findings and verdicts are not/);
+  assert.match(FH_KUIKA_ROUTING_HTML, /Runtime failover is availability-only/);
+  assert.match(FH_KUIKA_ROUTING_HTML, /cannot advance the fallback chain/);
   assert.doesNotMatch(FH_KUIKA_ROUTING_HTML, /id="apply"/);
   assert.doesNotMatch(FH_KUIKA_ROUTING_HTML, /id="save-binding"/);
 

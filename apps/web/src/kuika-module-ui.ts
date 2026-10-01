@@ -70,7 +70,7 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
     </div>
     <div>
       <a href="/">← Core Home</a>
-      <span class="badge">OPTIONAL · READ ONLY SHELL</span>
+      <span class="badge">OPTIONAL · CORE-GATED RUNTIME</span>
     </div>
   </header>
 
@@ -98,7 +98,7 @@ export const FH_KUIKA_MODULE_HTML = String.raw`<!doctype html>
     </section>
 
     <div class="footer-note">
-      This shell reads Core Home state only. It does not invoke a model, mutate runtime state or grant authority.
+      This shell remains authority-neutral. Authority-bearing Workbench, connector and routine runtime paths delegate to Core control-plane gates; this overview itself performs no mutation.
     </div>
   </main>
 

@@ -157,8 +157,8 @@ test('routine catalog exposes curated drafts and activation planning only', () =
 
 test('Routines UI is read-only and exposes no activation control', () => {
   assert.match(FH_KUIKA_ROUTINES_HTML, /FH-KUIKA · Integrate/);
-  assert.match(FH_KUIKA_ROUTINES_HTML, /Preparation only/);
-  assert.match(FH_KUIKA_ROUTINES_HTML, /cannot enable a routine/);
+  assert.match(FH_KUIKA_ROUTINES_HTML, /Runtime dispatch is Core-gated/);
+  assert.match(FH_KUIKA_ROUTINES_HTML, /Scheduler submission is control-plane owned/);
   assert.doesNotMatch(FH_KUIKA_ROUTINES_HTML, /id="enable"/);
   assert.doesNotMatch(FH_KUIKA_ROUTINES_HTML, /id="run-now"/);
 

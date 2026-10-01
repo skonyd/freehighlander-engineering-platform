@@ -56,7 +56,7 @@ export const FH_KUIKA_ROUTINES_HTML = String.raw`<!doctype html>
     <div>
       <div class="eyebrow">FH-KUIKA · Integrate</div>
       <h1>Routines</h1>
-      <div class="muted">Event and schedule trigger definitions. Preparation only.</div>
+      <div class="muted">Event and schedule trigger definitions. Runtime dispatch is Core-gated.</div>
     </div>
     <a href="/modules/fh-kuika/integrate">← Integrate</a>
   </header>
@@ -65,9 +65,8 @@ export const FH_KUIKA_ROUTINES_HTML = String.raw`<!doctype html>
       <div class="card muted">Loading routine templates…</div>
     </section>
     <div class="boundary">
-      Routine inspection is read-only. This page cannot enable a routine, accept a webhook,
-      execute a workflow, invoke a model or grant authority. Activation remains subject to
-      FH-20 and normal system-policy gates.
+      Routine inspection remains authority-neutral. Scheduler submission is control-plane owned;
+      every dispatch and retry rechecks the current Core capability before execution.
     </div>
   </main>
 <script>
@@ -90,7 +89,7 @@ async function load() {
           '<div>Trigger: <strong>' + esc(routine.trigger.kind) + '</strong></div>' +
           '<div>Workflow: <code>' + esc(routine.workflowRef) + '</code></div>' +
           '<div>Concurrency: ' + esc(routine.concurrency) + '</div>' +
-          '<div>Activation: not authorized</div>' +
+          '<div>Activation: Core-gated · default DENY</div>' +
         '</div>' +
       '</article>'
     ).join('');
