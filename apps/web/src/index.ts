@@ -468,6 +468,13 @@ export {
 export { FH_KUIKA_WORKBENCH_HTML } from './kuika-workbench-ui.js';
 
 export {
+  createFhKuikaWorkbenchExecutionEnvelopeV1,
+  workbenchExecutionEnvelopeCanExecuteDirectly,
+  workbenchExecutionEnvelopeCanGrantAuthority,
+  type FhKuikaWorkbenchExecutionEnvelopeV1,
+} from './kuika-workbench-execution.js';
+
+export {
   createFhKuikaWorkbenchIntentV1,
   workbenchIntentPreparationCanGrantAuthority,
   workbenchIntentPreparationCanInvokeModel,
