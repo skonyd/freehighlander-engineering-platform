@@ -77,13 +77,17 @@ export function createAuthorityEvent(
   if (input.type !== 'authority.requested' && input.payload.requested !== undefined) {
     throw new Error('requested is valid only for authority request telemetry');
   }
+  const bindingHashesRequired =
+    (input.type === 'authority.approved' && input.payload.outcome === 'APPROVED') ||
+    (input.type === 'authority.activated' &&
+      (input.payload.outcome === 'APPLIED' || input.payload.outcome === 'UNCHANGED'));
   if (
-    (input.type === 'authority.approved' || input.type === 'authority.activated') &&
+    bindingHashesRequired &&
     (input.payload.policyHash === undefined ||
       input.payload.approvalRequestHash === undefined ||
       input.payload.humanDecisionHash === undefined)
   ) {
-    throw new Error('authority approval and activation telemetry require approval binding hashes');
+    throw new Error('successful authority approval and activation require approval binding hashes');
   }
 
   return createEvent(input);
