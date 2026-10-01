@@ -1,4 +1,16 @@
 export {
+  FhKuikaRoutineDispatchRuntime,
+  routineDispatchRuntimeCanGrantAuthority,
+  routineDispatchRuntimeCanSkipCapabilityRecheckOnRetry,
+  routineTriggerMetadataCanAuthorizeExecution,
+  type FhKuikaRoutineDispatchResultV1,
+  type FhKuikaRoutineDispatchRuntimeOptions,
+  type FhKuikaRoutineSchedulerAdapter,
+  type FhKuikaRoutineSchedulerSubmissionV1,
+  type FhKuikaTrustedRoutineRuntimeV1,
+} from './kuika-routine-dispatch.js';
+
+export {
   FhKuikaConnectorInvocationRuntime,
   connectorInvocationRuntimeCanGrantAuthority,
   connectorInvocationRuntimeCanPersistRawSecrets,
