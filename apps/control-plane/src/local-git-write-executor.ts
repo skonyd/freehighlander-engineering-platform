@@ -3,7 +3,11 @@ import { realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import type { ActivityExecutor, ActivityExecutorOutcome, ActivityRequest } from './execution-runtime.js';
+import type {
+  ActivityExecutor,
+  ActivityExecutorOutcome,
+  ActivityRequest,
+} from './execution-runtime.js';
 import {
   createGitWriteGatedExecutor,
   type AuthorityCapabilityExecutionGate,
@@ -81,7 +85,11 @@ export function createGatedLocalGitWriteExecutor(
         const stagedPaths = staged.split('\n').filter(Boolean).sort();
         const allowed = new Set(input.paths);
         if (stagedPaths.some((entry) => !allowed.has(entry))) {
-          await gitNoThrow(handle.workspacePath, ['reset', '--mixed', 'HEAD', '--'], request.timeoutMs);
+          await gitNoThrow(
+            handle.workspacePath,
+            ['reset', '--mixed', 'HEAD', '--'],
+            request.timeoutMs,
+          );
           return failed('GIT_WRITE_SCOPE_VIOLATION');
         }
 
@@ -117,18 +125,18 @@ export function createGatedLocalGitWriteExecutor(
           }),
         };
       } catch {
-        await gitNoThrow(handle.workspacePath, ['reset', '--mixed', 'HEAD', '--'], request.timeoutMs);
+        await gitNoThrow(
+          handle.workspacePath,
+          ['reset', '--mixed', 'HEAD', '--'],
+          request.timeoutMs,
+        );
         if (branchCreated) {
           await gitNoThrow(
             handle.workspacePath,
             ['switch', '--detach', handle.descriptor.exactRevision],
             request.timeoutMs,
           );
-          await gitNoThrow(
-            handle.workspacePath,
-            ['branch', '-D', input.branch],
-            request.timeoutMs,
-          );
+          await gitNoThrow(handle.workspacePath, ['branch', '-D', input.branch], request.timeoutMs);
         }
         return failed('GIT_WRITE_FAILED');
       }
@@ -156,7 +164,8 @@ function parseInput(source: string, maxPaths: number): GitWriteActivityInputV1 {
   if (!isRecord(parsed)) throw new Error('git write input must be an object');
   const keys = Object.keys(parsed);
   const allowed = new Set(['schemaVersion', 'operation', 'branch', 'message', 'paths']);
-  if (keys.some((key) => !allowed.has(key))) throw new Error('git write input contains unknown fields');
+  if (keys.some((key) => !allowed.has(key)))
+    throw new Error('git write input contains unknown fields');
   if (parsed.schemaVersion !== 1) throw new Error('git write schemaVersion must be 1');
   if (parsed.operation !== 'COMMIT_CHANGESET') throw new Error('unsupported git write operation');
   if (typeof parsed.branch !== 'string') throw new Error('branch must be a string');
@@ -225,7 +234,8 @@ async function assertWorkspaceCurrent(
   const topLevel = (
     await runGit(handle.workspacePath, ['rev-parse', '--show-toplevel'], timeoutMs, maxOutputBytes)
   ).trim();
-  if (path.resolve(topLevel) !== handle.workspacePath) throw new Error('workspace Git root mismatch');
+  if (path.resolve(topLevel) !== handle.workspacePath)
+    throw new Error('workspace Git root mismatch');
   const head = (
     await runGit(handle.workspacePath, ['rev-parse', 'HEAD'], timeoutMs, maxOutputBytes)
   ).trim();
@@ -267,7 +277,12 @@ function failed(failureKind: string): ActivityExecutorOutcome {
 }
 
 function requireBoundedText(value: string, field: string, maxLength: number): string {
-  if (typeof value !== 'string' || !value.trim() || value.length > maxLength || value.includes('\0')) {
+  if (
+    typeof value !== 'string' ||
+    !value.trim() ||
+    value.length > maxLength ||
+    value.includes('\0')
+  ) {
     throw new Error(field + ' must be non-empty bounded text');
   }
   return value.trim();
