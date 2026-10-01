@@ -34,9 +34,7 @@ function base(type, action, overrides = {}) {
 }
 
 test('authority telemetry records bounded request and exact approval evidence', () => {
-  const request = createAuthorityEvent(
-    base('authority.requested', 'REQUEST', { requested: true }),
-  );
+  const request = createAuthorityEvent(base('authority.requested', 'REQUEST', { requested: true }));
   assert.equal(request.payload.requested, true);
   assert.equal(request.payload.capability, 'GIT_WRITE');
 
