@@ -120,6 +120,18 @@ export {
 } from './local-git-write-executor.js';
 
 export {
+  createGatedIncidentRemediationExecutor,
+  incidentRemediationCanBypassAutomaticRemediationGate,
+  infrastructureRemediationCanBypassInfrastructureGate,
+  remediationRequestCanChooseActionOrTargets,
+  type IncidentRemediationActionV1,
+  type IncidentRemediationAdapter,
+  type IncidentRemediationOperation,
+  type IncidentRemediationReceiptV1,
+  type TrustedIncidentRemediationEvidenceV1,
+} from './incident-remediation-executor.js';
+
+export {
   createGatedInfrastructureMutationExecutor,
   infrastructureMutationExecutorCanBypassCapabilityGate,
   infrastructureMutationRequestCanChooseTargets,
