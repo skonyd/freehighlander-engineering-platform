@@ -59,10 +59,7 @@ test('exact-current SET_STATUS transition applies and recomputes plan hash', asy
 test('stale generation or plan hash fails closed without mutation', async () => {
   const state = await createPlanningAuthoritativeStateV1(plan);
 
-  for (const patch of [
-    { expectedGeneration: 1 },
-    { expectedPlanHash: 'b'.repeat(64) },
-  ]) {
+  for (const patch of [{ expectedGeneration: 1 }, { expectedPlanHash: 'b'.repeat(64) }]) {
     const result = await applyPlanningTransitionV1(state, {
       schemaVersion: 1,
       expectedGeneration: state.generation,
@@ -186,7 +183,13 @@ test('execution intent fails closed for stale non-ready unknown or malformed req
     })
   ).state;
   assert.throws(
-    () => createPlanningExecutionIntentV1(ready, { ...base, expectedGeneration: 1, expectedPlanHash: ready.planHash, workItemId: 'missing' }),
+    () =>
+      createPlanningExecutionIntentV1(ready, {
+        ...base,
+        expectedGeneration: 1,
+        expectedPlanHash: ready.planHash,
+        workItemId: 'missing',
+      }),
     /unknown work item/,
   );
 });
