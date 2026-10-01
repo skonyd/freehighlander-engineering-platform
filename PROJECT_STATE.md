@@ -2,7 +2,7 @@
 
 **State status:** POST-CUTOVER / V3 AUTHORITY ENABLED / CRITICAL PERMISSIONS DEFAULT DENY  
 **Canonical pointer:** `.freehighlander/state.yaml`  
-**Architecture contract:** 1.11.0
+**Architecture contract:** 1.12.0
 
 ## Authority snapshot
 
@@ -14,6 +14,7 @@ FH-20 cutover = APPLIED
 approved V3 target = 57761b7b0257c234ad41314343a22dfd53668364
 critical capabilities = DEFAULT DENY / NONE SELECTED
 FH-30B..FH-37B activation = ELIGIBLE / NOT AUTO-ACTIVATED
+authority operationalization = COMPLETE / DEFAULT DENY
 ```
 
 Creator Marketplace #207 is no longer an external blocker.
@@ -121,6 +122,22 @@ Authority-bearing module activation is now eligible because FH-20 is complete, b
 auto-activated. Each B-lane capability must still pass its own operator selection, SYSTEM_POLICY,
 exact-currentness/evidence, sandbox/data/secret and human gates.
 
+## V3 authority operationalization — complete
+
+Issue #423 is implemented end to end through the post-cutover authority plane:
+
+- durable requested/active capability state with optimistic generation checks;
+- control-plane-only exact human approval and canonical SYSTEM_POLICY binding;
+- localhost mutation API with Origin/CSRF protection;
+- live operator settings UI that submits intent but cannot forge approval evidence;
+- side-effect execution gates for Git, release/deploy, infrastructure mutation and automatic remediation;
+- append-only authority audit events;
+- restart/revocation/audit-failure safety compensation;
+- canonical capability registry shared by contracts, persistence, governance and UI;
+- full HTTP → durable state → execution gate → audit → restart E2E acceptance.
+
+This operational substrate does **not** auto-enable authority. Canonical requested and active capability sets remain empty and the default remains `DENY`.
+
 ## Current independent work
 
 #147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA preparation is complete through FH-KUIKA-10, including the single-tenant enterprise identity boundary from ADR-0023. FH-20 is now applied, but live OIDC/session enforcement, active approval delegation and multi-tenant persistence remain separately deferred. The operator authority selector exposes Code/Git, Release/Deploy, Infrastructure and Automatic Remediation independently; all remain default DENY and currently unselected. Full Auto remains independently OFF/SHADOW by default.
@@ -130,7 +147,8 @@ exact-currentness/evidence, sandbox/data/secret and human gates.
 - preserve the accepted V2 reference at `1a8e215b78a3a5008aae6aae36488b3273733b19`;
 - operate V3 authority against the approved target `57761b7b0257c234ad41314343a22dfd53668364`;
 - keep all critical capability selections empty/default DENY until the operator explicitly enables them;
-- begin FH-30B..FH-37B and FH-KUIKA authority-bearing activation only as separately reviewed, policy-gated work;
+- treat the V3 authority operational substrate as complete while keeping all critical capabilities default DENY;
+- begin FH-30B..FH-37B and FH-KUIKA authority-bearing activation only as separately reviewed, operator-selected and policy-gated work;
 - keep Full Auto OFF/SHADOW unless separately activated;
 - use `npm run verify` for repository integrity.
 
