@@ -1,9 +1,9 @@
 import type { ProviderFailureKind } from './index.js';
+import type { BindingPlan } from './binding-registry.js';
 import {
   recordActiveBindingFailure,
   type BindingFailureObservation,
   type BindingFailoverTransition,
-  type BindingPlan,
   type RoleBindingFailoverStateV1,
 } from './quota-aware-failover.js';
 
