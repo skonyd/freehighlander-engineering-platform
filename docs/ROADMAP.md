@@ -17,6 +17,7 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 8 | V2/V3 parity + authority cutover | **COMPLETE / FH-20 CUTOVER APPLIED** |
 | 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / FH-30B..FH-37B IMPLEMENTED + OPERATIONAL / DEFAULT DENY** |
 | 10 | Authority-bearing full lifecycle | **OPERATIONAL AUTHORITY SUBSTRATE COMPLETE / CAPABILITIES DEFAULT DENY** |
+| 10.5 | FH-KUIKA post-cutover runtime activation | **COMPLETE / CORE-GATED / DEFAULT DENY** |
 | 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PREPARATION COMPLETE THROUGH FH-KUIKA-09; activation slices remain Core capability/policy gated** |
 | 12 | FH-KUIKA-10 enterprise collaboration submodule | **PRE-CUTOVER BOUNDARY COMPLETE — ADR-0023 / contract 1.11.0; live identity enforcement deferred** |
 
@@ -198,6 +199,8 @@ INCIDENT
 ```
 
 Control-plane mutation authority now exists as a fail-closed substrate, but production side effects remain unavailable unless the operator explicitly requests and approves the relevant capability and all current policy/revision/execution gates pass.
+
+FH-KUIKA Workbench EXECUTE, connector runtime invocation and routine dispatch now use that same Core authority substrate. Runtime model failover is availability-only and semantic result shopping remains forbidden.
 
 
 ## Phase 11 — Optional FH-KUIKA Productization Module

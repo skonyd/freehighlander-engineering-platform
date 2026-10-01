@@ -47,6 +47,21 @@ expect(
   'B-lane implementation status',
 );
 expect(state.fh_b_lane_completion?.default_policy, 'DENY', 'B-lane default policy');
+expect(
+  state.fh_kuika_post_cutover_activation?.status,
+  'complete_default_deny',
+  'FH-KUIKA post-cutover activation state',
+);
+expect(
+  state.fh_kuika_post_cutover_activation?.fallback_policy,
+  'availability_only',
+  'FH-KUIKA fallback policy',
+);
+expect(
+  state.fh_kuika_post_cutover_activation?.semantic_result_shopping,
+  'forbidden',
+  'FH-KUIKA semantic result shopping policy',
+);
 if ((state.fh_b_lane_completion?.requested_capabilities ?? []).length !== 0) {
   failures.push('B-lane requested_capabilities must remain empty in canonical main state');
 }
@@ -88,6 +103,7 @@ for (const [documentName, content, required] of [
       'FH-01B2 final reconciliation',
       'V3 authority operationalization',
       'FH-30B..FH-37B = IMPLEMENTED / OPERATIONAL / DEFAULT DENY',
+      'FH-KUIKA runtime activation = COMPLETE / CORE-GATED / DEFAULT DENY',
     ],
   ],
   [
@@ -115,6 +131,7 @@ for (const [documentName, content, required] of [
       'FH-30B..FH-37B',
       'V3 authority operationalization — issue #423 / PRs #424–#435',
       'B-lane execution completion — issue #436 / PRs #437–#447',
+      'FH-KUIKA post-cutover activation — issue #448 / PRs #449–#454',
     ],
   ],
   [
@@ -144,6 +161,7 @@ for (const [documentName, content, required] of [
       'V3 authority operationalization — complete',
       'Completed post-cutover SDLC B-lane',
       'Issue #436 is implemented through PRs #437–#447',
+      'FH-KUIKA post-cutover runtime activation — complete',
     ],
   ],
   [
@@ -171,6 +189,7 @@ for (const [documentName, content, required] of [
       'Creator Marketplace #207',
       'V3 authority operationalization issue #423 is complete',
       'FH-30B..FH-37B are implemented and operational through issue #436 / PRs #437–#447',
+      'FH-KUIKA post-cutover runtime activation issue #448 is complete',
     ],
   ],
 ]) {
@@ -194,7 +213,11 @@ for (const [documentName, content, stalePhrases] of [
   [
     'docs/planning/PR-ROADMAP.md',
     prRoadmap,
-    ['Creator Marketplace #207 merge+smoke sonrası başlar.', 'FH-30B..FH-37B eligible activation'],
+    [
+      'Creator Marketplace #207 merge+smoke sonrası başlar.',
+      'FH-30B..FH-37B eligible activation',
+      'BLOCKED BY FH-20',
+    ],
   ],
   ['README.md', readme, ['FH-30B..FH-37B = ELIGIBLE / NOT AUTO-ACTIVATED']],
 ]) {
