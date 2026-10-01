@@ -282,6 +282,7 @@ export const DASHBOARD_HTML = String.raw`<!doctype html>
       <div id="freshness" class="freshness" aria-live="polite"></div>
     </div>
     <div class="header-actions">
+      <a class="module-link" href="/settings/authority">Security · Authority</a>
       <a class="module-link" href="/modules/fh-kuika">Modules · FH-KUIKA</a>
       <div class="readonly">READ ONLY · ZERO-TOKEN HOME</div>
     </div>
