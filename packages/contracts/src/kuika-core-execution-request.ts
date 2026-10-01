@@ -54,7 +54,8 @@ export function createFhKuikaCoreExecutionRequestV1(input: {
 export function validateFhKuikaCoreExecutionRequestV1(
   request: FhKuikaCoreExecutionRequestV1,
 ): FhKuikaCoreExecutionRequestV1 {
-  if (request.schemaVersion !== 1) throw new Error('FH-KUIKA execution request schemaVersion must be 1');
+  if (request.schemaVersion !== 1)
+    throw new Error('FH-KUIKA execution request schemaVersion must be 1');
   requireIdentifier(request.requestId, 'requestId');
   if (!isSurface(request.surface)) throw new Error('unknown FH-KUIKA execution surface');
   requireCapability(request.mutationClass);
@@ -65,7 +66,8 @@ export function validateFhKuikaCoreExecutionRequestV1(
   requireRepository(request.repository);
   requireRevision(request.exactRevision);
   requireSha256(request.payloadDigest, 'payloadDigest');
-  if (request.authority !== 'NONE') throw new Error('FH-KUIKA execution request authority must be NONE');
+  if (request.authority !== 'NONE')
+    throw new Error('FH-KUIKA execution request authority must be NONE');
   if (request.executionOwner !== 'CONTROL_PLANE') {
     throw new Error('FH-KUIKA execution request owner must be CONTROL_PLANE');
   }
