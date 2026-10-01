@@ -135,12 +135,18 @@ test('active GIT_WRITE creates a bounded branch and commit from allowlisted path
   assert.match(output.headRevision, /^[a-f0-9]{40}$/);
   assert.notEqual(output.headRevision, fx.revision);
   assert.equal(await git(fx.handle.workspacePath, ['branch', '--show-current']), 'fh/test-change');
-  assert.equal(await git(fx.handle.workspacePath, ['show', '-s', '--format=%an']), 'FreeHighlander Operator');
+  assert.equal(
+    await git(fx.handle.workspacePath, ['show', '-s', '--format=%an']),
+    'FreeHighlander Operator',
+  );
   assert.equal(
     await git(fx.handle.workspacePath, ['show', '-s', '--format=%ae']),
     'operator@example.invalid',
   );
-  assert.equal(await git(fx.handle.workspacePath, ['show', '-s', '--format=%s']), 'Apply test change');
+  assert.equal(
+    await git(fx.handle.workspacePath, ['show', '-s', '--format=%s']),
+    'Apply test change',
+  );
 });
 
 test('immutable workspace and exact HEAD drift fail closed before Git mutation', async (t) => {
@@ -276,7 +282,10 @@ test('malformed activity inputs fail before any Git write', async (t) => {
     [{ ...commitInput(), message: 'x'.repeat(201) }, 'MALFORMED_ACTIVITY_INPUT'],
     [{ ...commitInput(), message: 'two\nlines' }, 'MALFORMED_ACTIVITY_INPUT'],
     [{ ...commitInput(), paths: [] }, 'MALFORMED_ACTIVITY_INPUT'],
-    [{ ...commitInput(), paths: Array.from({ length: 257 }, (_, i) => 'p' + i) }, 'MALFORMED_ACTIVITY_INPUT'],
+    [
+      { ...commitInput(), paths: Array.from({ length: 257 }, (_, i) => 'p' + i) },
+      'MALFORMED_ACTIVITY_INPUT',
+    ],
     [{ ...commitInput(), paths: ['tracked.txt', 'tracked.txt'] }, 'MALFORMED_ACTIVITY_INPUT'],
     [{ ...commitInput(), paths: [''] }, 'MALFORMED_ACTIVITY_INPUT'],
     [{ ...commitInput(), paths: ['/tmp/x'] }, 'MALFORMED_ACTIVITY_INPUT'],
