@@ -246,3 +246,18 @@ async function sha256Hex(value: string): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
+export {
+  applyPlanningTransitionV1,
+  createPlanningAuthoritativeStateV1,
+  createPlanningExecutionIntentV1,
+  planningExecutionIntentCanBypassCapabilityGate,
+  planningTransitionCanGrantAuthority,
+  type PlanningAuthoritativeStateV1,
+  type PlanningExecutionIntentKind,
+  type PlanningExecutionIntentRequestV1,
+  type PlanningExecutionIntentV1,
+  type PlanningTransitionKind,
+  type PlanningTransitionRequestV1,
+  type PlanningTransitionResultV1,
+} from './activation.js';
