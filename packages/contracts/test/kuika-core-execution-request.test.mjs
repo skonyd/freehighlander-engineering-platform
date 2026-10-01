@@ -186,4 +186,3 @@ test('request validation fails closed on schema surface capability repository an
     /40-character git SHA/,
   );
 });
-
