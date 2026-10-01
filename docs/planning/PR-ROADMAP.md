@@ -1,6 +1,6 @@
 # PR Roadmap
 
-**Status:** ACCEPTED DIRECTION / FH-20 CUTOVER APPLIED / POST-CUTOVER ACTIVATION ELIGIBLE
+**Status:** ACCEPTED DIRECTION / FH-20 CUTOVER APPLIED / V3 AUTHORITY SUBSTRATE OPERATIONAL / CAPABILITIES DEFAULT DENY
 
 FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 
@@ -11,6 +11,7 @@ FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 - FH-01B2 final reconciliation complete via PR #237.
 - FH-02..FH-19 complete.
 - FH-20 complete; exact target `57761b7b0257c234ad41314343a22dfd53668364` promoted by issue #420 + canonical SYSTEM_POLICY + ADR-0024.
+- V3 authority operationalization issue #423 is complete through durable state, server-side approval, localhost API, GUI wiring, execution enforcement, audit/safety lifecycle, capability registry and E2E acceptance; all critical capabilities remain default DENY.
 - FH-30A..FH-37A complete and authority-neutral.
 - FH-30B..FH-37B are post-cutover eligible but remain separately capability/policy gated.
 - FH-KUIKA preparation is complete through FH-KUIKA-09; executable activation points stay Core-governed and capability/policy gated.
@@ -108,6 +109,8 @@ Creator Marketplace #207/#209 COMPLETE
 FH-01B2 final reconciliation COMPLETE
         ↓
 FH-20 exact human/policy authority cutover COMPLETE
+        ↓
+V3 authority operational substrate COMPLETE / DEFAULT DENY
         ↓
 FH-30B..FH-37B eligible activation
         ↓
