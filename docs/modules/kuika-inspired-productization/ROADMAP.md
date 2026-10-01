@@ -1,10 +1,10 @@
 # FH-KUIKA — Kuika-inspired Productization Module
 
-**Status:** PROPOSED PRODUCTIZATION ROADMAP  
+**Status:** POST-CUTOVER RUNTIME ACTIVATION COMPLETE / DEFAULT DENY  
 **Module ID:** `FH-KUIKA`  
 **Scope:** Kuika-inspired productization ideas adapted to FreeHighlander engineering-control-plane semantics  
 **Module boundary:** optional productization/UX module; not part of core authority semantics  
-**Authority state assumed:** V3 remains `SHADOW_ONLY` until FH-20 explicit cutover  
+**Authority state:** V3 `ENABLED`; FH-KUIKA runtime delegation is Core-gated and critical capabilities remain default `DENY`  
 **Canonical UX companion:** [FH-KUIKA Product UX](UX.md)
 
 ## Purpose
@@ -71,6 +71,19 @@ Any new package not already allowed by the frozen architecture requires normal a
 ## Pre-cutover completion boundary
 
 Authority-neutral FH-KUIKA productization work is considered pre-cutover complete through FH-KUIKA-10. The remaining executable activation points stay owned by Core governance and must not be inferred from module readiness. FH-KUIKA-10's architecture decision is ADR-0023: single-tenant enterprise identity preparation only; live OIDC/session enforcement, active delegation and multi-tenant persistence remain deferred.
+
+## Post-cutover runtime activation — complete
+
+Issue #448 is complete through PRs #449–#454 plus final reconciliation.
+
+- Workbench EXECUTE produces an exact-bound Core execution request and cannot execute directly.
+- Connector invocation revalidates trusted connector state, role/scope/SecretHandle references and the active Core capability immediately before delegation.
+- Routine scheduler submission is control-plane owned; every dispatch and retry rechecks current authority.
+- Runtime provider failover is availability-only. Semantic failures never advance the fallback chain.
+- Cross-module E2E verifies default-DENY blocking, explicit test-only activation, revocation/currentness, connector disablement and retry-time authority recheck.
+- FH-KUIKA UI/drafts/metadata remain intent/data only and cannot manufacture authority evidence.
+
+Canonical main keeps requested and active critical capability sets empty.
 
 ## Product principles
 
@@ -275,7 +288,7 @@ Users should be able to inspect why an item was included in the context packet.
 - **FH-KUIKA-02.2** Workbench UI with mode selector, deterministic context chips and preflight. — COMPLETE
 - **FH-KUIKA-02.3** PLAN structured candidate work-item contract/preparation. — COMPLETE PRE-CUTOVER
 - **FH-KUIKA-02.4** REVIEW exact-revision + evidence-bound request preparation. — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-02.5** EXECUTE control-plane intent activation after required authority gates. — BLOCKED BY FH-20
+- **FH-KUIKA-02.5** EXECUTE control-plane intent activation after required authority gates. — COMPLETE POST-CUTOVER / CORE-GATED / DEFAULT DENY
 
 ## Acceptance criteria
 
@@ -483,7 +496,7 @@ Show before enablement:
 - **FH-KUIKA-05.3** connector install-review contract and permission diff. — COMPLETE
 - **FH-KUIKA-05.4** Connector Hub UI. — COMPLETE
 - **FH-KUIKA-05.5** credential-reference configuration using SecretHandle only. — COMPLETE PRE-CUTOVER
-- **FH-KUIKA-05.6** activation/runtime invocation after authority prerequisites. — BLOCKED BY FH-20
+- **FH-KUIKA-05.6** activation/runtime invocation after authority prerequisites. — COMPLETE POST-CUTOVER / INVOCATION-TIME REVALIDATION / DEFAULT DENY
 
 ## Acceptance criteria
 
@@ -653,7 +666,7 @@ Routines page shows:
 - **FH-KUIKA-08.2** routine definitions and deterministic scheduler integration. — PRE-CUTOVER DISPATCH PREPARATION COMPLETE; scheduler submission remains unauthorized
 - **FH-KUIKA-08.3** webhook/event adapters. — METADATA ADAPTERS COMPLETE PRE-CUTOVER; live listeners remain disabled
 - **FH-KUIKA-08.4** Routines UI. — COMPLETE
-- **FH-KUIKA-08.5** authority-aware activation and failure/retry telemetry. — FAILURE/RETRY TELEMETRY PREPARATION COMPLETE; activation remains BLOCKED BY FH-20
+- **FH-KUIKA-08.5** authority-aware activation and failure/retry telemetry. — COMPLETE POST-CUTOVER / RETRY RECHECKS CURRENT AUTHORITY / DEFAULT DENY
 
 ---
 
@@ -705,7 +718,7 @@ Reason: preferred binding unavailable; next eligible binding satisfies policy.
 - **FH-KUIKA-09.2** routing decision evidence contract. — COMPLETE
 - **FH-KUIKA-09.3** telemetry-derived cost/latency/availability features. — COMPLETE PRE-CUTOVER
 - **FH-KUIKA-09.4** simulation and what-if UI. — COMPLETE
-- **FH-KUIKA-09.5** availability-only failover integration contract/plan. — COMPLETE PRE-CUTOVER; runtime application remains Core-governed and unauthorized until the relevant authority gate
+- **FH-KUIKA-09.5** availability-only failover integration contract/plan. — COMPLETE POST-CUTOVER; runtime fallback applies only to availability failures and never semantic outcomes
 
 ---
 
