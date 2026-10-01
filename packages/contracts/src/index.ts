@@ -1,4 +1,12 @@
 export {
+  B_LANE_MODULE_REGISTRY_V1,
+  bLaneModuleRegistryCanGrantAuthority,
+  getBLaneModuleDefinitionV1,
+  type BLaneModuleDefinitionV1,
+  type BLaneModuleId,
+} from './b-lane-module-registry.js';
+
+export {
   AUTHORITY_CAPABILITY_ACTIONS,
   AUTHORITY_CAPABILITY_IDS,
   AUTHORITY_CAPABILITY_REGISTRY_V1,
