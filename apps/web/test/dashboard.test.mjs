@@ -1172,7 +1172,16 @@ test('HTTP dashboard is read-only and serves health/summary/run APIs', async () 
     assert.match(homeHtml, /document\.hidden \? 60000 : 15000/);
     assert.match(homeHtml, /\/api\/home/);
     assert.equal(home.headers.get('x-freehighlander-mode'), 'read-only');
+    assert.match(homeHtml, /href="\/settings\/authority"/);
     assert.match(homeHtml, /href="\/modules\/fh-kuika"/);
+
+    const authority = await fetch(`${base}/settings/authority`);
+    assert.equal(authority.status, 200);
+    const authorityHtml = await authority.text();
+    assert.match(authorityHtml, /Operator authority permissions/);
+    assert.match(authorityHtml, /http:\/\/127\.0\.0\.1:4311/);
+    assert.match(authorityHtml, /Apply requested selection/);
+    assert.equal(authority.headers.get('x-freehighlander-mode'), 'read-only');
 
     const kuika = await fetch(`${base}/modules/fh-kuika`);
     assert.equal(kuika.status, 200);
