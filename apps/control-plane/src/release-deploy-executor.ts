@@ -8,11 +8,7 @@ import {
   type AuthorityCapabilityExecutionGate,
 } from './authority-capability-execution.js';
 
-export type ReleaseMutationOperation =
-  | 'PUBLISH_TAG'
-  | 'PUBLISH_RELEASE'
-  | 'DEPLOY'
-  | 'ROLLBACK';
+export type ReleaseMutationOperation = 'PUBLISH_TAG' | 'PUBLISH_RELEASE' | 'DEPLOY' | 'ROLLBACK';
 
 export interface TrustedReleaseExecutionEvidenceV1 {
   readonly schemaVersion: 1;
@@ -157,10 +153,7 @@ function validateActionBinding(
   }
 }
 
-function validateReceipt(
-  receipt: ReleaseMutationReceiptV1,
-  action: ReleaseMutationActionV1,
-): void {
+function validateReceipt(receipt: ReleaseMutationReceiptV1, action: ReleaseMutationActionV1): void {
   if (!receipt || receipt.schemaVersion !== 1) throw new Error('invalid release mutation receipt');
   requireIdentifier(receipt.receiptId, 'receiptId');
   if (receipt.operation !== action.operation || receipt.target !== action.target) {
