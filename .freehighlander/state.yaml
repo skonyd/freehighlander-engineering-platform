@@ -1,7 +1,7 @@
 schema_version: 1
 project: freehighlander-engineering-platform
 repository: skonyd/freehighlander-engineering-platform
-updated_at: "2026-10-01T00:00:00+03:00"
+updated_at: "2026-10-01T11:40:00+03:00"
 
 mode:
   default_working_mode: triple
@@ -17,8 +17,8 @@ active_work:
   branch: main
   pull_request: null
   issue: null
-  objective: operate the applied V3 authority plane while preserving the accepted V2 compatibility reference and fail-closed capability boundaries
-  next_action: begin post-cutover activation only through explicit operator-selected capabilities and normal SYSTEM_POLICY/human gates; keep all critical permissions default DENY until selected
+  objective: operate the fully operationalized V3 authority plane while preserving the accepted V2 compatibility reference and fail-closed capability boundaries
+  next_action: activate critical capabilities only through explicit operator selection, exact human approval, SYSTEM_POLICY, currentness and execution gates; otherwise remain DENY
 
 fh01a:
   issue: 15
@@ -470,11 +470,34 @@ fh_kuika_10:
   multi_tenant_persistence: forbidden_pending_future_adr
   authority_effect: none
 
+v3_authority_operationalization:
+  issue: 423
+  status: complete_default_deny
+  state_persistence_pr: 424
+  activation_service_pr: 425
+  approval_binding_pr: 426
+  mutation_api_pr: 427
+  gui_pr: 429
+  execution_enforcement_pr: 430
+  audit_pr: 431
+  safety_lifecycle_pr: 432
+  capability_registry_pr: 433
+  e2e_acceptance_pr: 434
+  final_reconciliation_pr: pending
+  e2e_acceptance: passed
+  web_mutation_authority: none
+  execution_owner: control-plane
+  restart_active_state_policy: revoke
+  default_policy: DENY
+  requested_capabilities: []
+  active_capabilities: []
+
 operator_authority_permissions:
-  status: available_default_deny
+  status: operational_default_deny
   authority_effect: policy_gated_only
   default_policy: DENY
   activation: control_plane_policy_gated
+  e2e_acceptance: passed
   requested_capabilities: []
   active_capabilities: []
   capabilities:
