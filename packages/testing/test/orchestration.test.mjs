@@ -172,7 +172,12 @@ test('malformed executor outcomes fail closed into ERROR evidence', async () => 
   for (const outcome of outcomes) {
     const result = await runAuthoritativeTestPlanV1(
       plan,
-      { id: 'bad-runner', async execute() { return outcome; } },
+      {
+        id: 'bad-runner',
+        async execute() {
+          return outcome;
+        },
+      },
       options,
     );
     assert.equal(result.run.results[0].status, 'ERROR');
@@ -196,9 +201,7 @@ test('invalid plan runner identity and run identity are rejected', async () => {
   await assert.rejects(() =>
     runAuthoritativeTestPlanV1(plan, { id: 'runner', execute: null }, options),
   );
-  await assert.rejects(() =>
-    runAuthoritativeTestPlanV1(plan, { ...executor, id: '!' }, options),
-  );
+  await assert.rejects(() => runAuthoritativeTestPlanV1(plan, { ...executor, id: '!' }, options));
   await assert.rejects(() =>
     runAuthoritativeTestPlanV1(plan, executor, { ...options, runId: '!' }),
   );
