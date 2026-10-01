@@ -32,6 +32,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
 - [x] FH-20 V3 authority cutover — applied to exact target `57761b7b0257c234ad41314343a22dfd53668364`; human approval #420; canonical SYSTEM_POLICY PR #419; ADR-0024
 - [x] V3 authority operationalization — issue #423 / PRs #424–#435; durable state, approval binding, localhost API, GUI, execution enforcement, audit/safety lifecycle, capability registry, E2E acceptance and final reconciliation complete
+- [x] B-lane execution completion — issue #436 / PRs #437–#447; FH-30B..FH-37B operational executors/evidence flows, E2E, GUI status and final reconciliation complete; capabilities remain default DENY
 
 ## Modules — pre-cutover preparation lane
 - [x] FH-30A Planning — issue #69 / PR #70
@@ -43,7 +44,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-36A Incident — issue #84 / PR #85
 - [x] FH-37A Engineering Lineage / Knowledge Graph — issue #86 / PR #87
 
-Activation lane **FH-30B..FH-37B** is now eligible but not auto-activated; each slice remains operator-selection/policy gated.
+Activation lane **FH-30B..FH-37B** is implemented and operational through issue #436 / PRs #437–#447; runtime authority is still not auto-activated and every mutation remains operator-selection/policy gated.
 
 ## Pre-cutover hardening — independent of Creator Marketplace #207
 - [x] Executable data-policy/redaction/provider-egress enforcement — issue #89 / PR #90

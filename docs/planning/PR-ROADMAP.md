@@ -13,7 +13,7 @@ FH kimlikleri çalışma paketidir; GitHub PR numarası değildir.
 - FH-20 complete; exact target `57761b7b0257c234ad41314343a22dfd53668364` promoted by issue #420 + canonical SYSTEM_POLICY + ADR-0024.
 - V3 authority operationalization issue #423 is complete through durable state, server-side approval, localhost API, GUI wiring, execution enforcement, audit/safety lifecycle, capability registry and E2E acceptance; all critical capabilities remain default DENY.
 - FH-30A..FH-37A complete and authority-neutral.
-- FH-30B..FH-37B are post-cutover eligible but remain separately capability/policy gated.
+- FH-30B..FH-37B are implemented and operational through issue #436 / PRs #437–#447; execution remains separately capability/policy gated and default DENY.
 - FH-KUIKA preparation is complete through FH-KUIKA-09; executable activation points stay Core-governed and capability/policy gated.
 - Pre-cutover hardening through reproducible CI, repository hygiene, tracked-secret enforcement, 19/19 measured native coverage, opaque SecretHandle/EPHEMERAL injection, lockfile provenance, safe vulnerability reporting, deterministic build-output integrity accidental-publish safety, internal workspace dependency-confusion prevention and workspace package entrypoint integrity enforcement, source-to-dist build completeness enforcement, privacy export/delete manifest planning and fail-closed provider-egress preparation are complete.
 
@@ -80,7 +80,7 @@ Invariant: Home refresh cannot invoke ProviderAdapter/model inference and remain
 Each module has an authority-neutral **A** preparation lane and authority-bearing **B** activation lane.
 
 - **FH-30A..FH-37A** — complete
-- **FH-30B..FH-37B** — eligible post-cutover; no automatic activation; normal capability/policy gates apply
+- **FH-30B..FH-37B** — implementation complete / operational; no automatic activation; normal capability/policy gates apply
 
 Canonical split and authority boundaries: [FH-30-37-PRECUTOVER.md](FH-30-37-PRECUTOVER.md).
 
@@ -112,7 +112,7 @@ FH-20 exact human/policy authority cutover COMPLETE
         ↓
 V3 authority operational substrate COMPLETE / DEFAULT DENY
         ↓
-FH-30B..FH-37B eligible activation
+FH-30B..FH-37B operational implementation / DEFAULT DENY
         ↓
 operator capability selection + normal SYSTEM_POLICY/human gates
 ```

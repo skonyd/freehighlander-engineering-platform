@@ -13,7 +13,7 @@ V3 authority = ENABLED
 FH-20 cutover = APPLIED
 approved V3 target = 57761b7b0257c234ad41314343a22dfd53668364
 critical capabilities = DEFAULT DENY / NONE SELECTED
-FH-30B..FH-37B activation = ELIGIBLE / NOT AUTO-ACTIVATED
+FH-30B..FH-37B implementation = COMPLETE / OPERATIONAL / DEFAULT DENY
 authority operationalization = COMPLETE / DEFAULT DENY
 ```
 
@@ -71,6 +71,23 @@ FH-20 readiness evaluation did not itself grant authority; the explicit exact hu
 
 All A-lane outputs remain evidence/readiness/domain state only. They do not authorize merge, release, deployment, infrastructure mutation or automatic remediation.
 
+## Completed post-cutover SDLC B-lane
+
+Issue #436 is implemented through PRs #437–#447.
+
+| Work item | Implementation | Runtime authority |
+| --- | --- | --- |
+| FH-30B Planning | authoritative plan/work-item transitions and execution intents | none by itself |
+| FH-31B Development | real local Git mutation adapter | `GIT_WRITE` |
+| FH-32B Testing | authoritative test orchestration and digest-bound evidence | none by PASS itself |
+| FH-33B Security | scanner evidence + exact human-approved waiver application | no model/scanner self-approval |
+| FH-34B Release | release/deploy/rollback mutation adapter | `RELEASE_DEPLOY` |
+| FH-35B Operations | infrastructure/runbook mutation adapter | `INFRASTRUCTURE_MUTATION` |
+| FH-36B Incident | remediation adapter | `AUTOMATIC_REMEDIATION` plus conditional `INFRASTRUCTURE_MUTATION` |
+| FH-37B Engineering Lineage | durable mutation lineage journal | none by itself |
+
+Cross-module E2E acceptance passed in PR #445 and GUI/status reconciliation completed in PR #446. The implementation is operational, but canonical requested and active capability sets remain empty. No B-lane module auto-activates authority.
+
 ## Completed pre-cutover hardening
 
 - #89 / PR #90 — executable data-policy, redaction and provider-egress enforcement
@@ -119,7 +136,7 @@ Evidence and authority boundary:
 ### FH-30B..FH-37B
 
 Authority-bearing module activation is now eligible because FH-20 is complete, but nothing is
-auto-activated. Each B-lane capability must still pass its own operator selection, SYSTEM_POLICY,
+auto-activated. Completed B-lane mutation modules must still pass their own operator selection, SYSTEM_POLICY,
 exact-currentness/evidence, sandbox/data/secret and human gates.
 
 ## V3 authority operationalization — complete
@@ -148,7 +165,7 @@ This operational substrate does **not** auto-enable authority. Canonical request
 - operate V3 authority against the approved target `57761b7b0257c234ad41314343a22dfd53668364`;
 - keep all critical capability selections empty/default DENY until the operator explicitly enables them;
 - treat the V3 authority operational substrate as complete while keeping all critical capabilities default DENY;
-- begin FH-30B..FH-37B and FH-KUIKA authority-bearing activation only as separately reviewed, operator-selected and policy-gated work;
+- operate FH-30B..FH-37B through their completed executors only when separately operator-selected and policy-gated; keep canonical capability state DENY otherwise;
 - keep Full Auto OFF/SHADOW unless separately activated;
 - use `npm run verify` for repository integrity.
 

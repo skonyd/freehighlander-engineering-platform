@@ -15,7 +15,7 @@ Roadmap fazları tarihsel dependency sırasını gösterir; mevcut implementatio
 | 6 | V3 architecture freeze | **COMPLETE** |
 | 7 | V3 control plane | **COMPLETE through FH-19** |
 | 8 | V2/V3 parity + authority cutover | **COMPLETE / FH-20 CUTOVER APPLIED** |
-| 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / B-lane ELIGIBLE, NOT AUTO-ACTIVATED** |
+| 9 | SDLC modules | **FH-30A..FH-37A COMPLETE / FH-30B..FH-37B IMPLEMENTED + OPERATIONAL / DEFAULT DENY** |
 | 10 | Authority-bearing full lifecycle | **OPERATIONAL AUTHORITY SUBSTRATE COMPLETE / CAPABILITIES DEFAULT DENY** |
 | 11 | Optional Kuika-inspired productization module — FH-KUIKA | **PREPARATION COMPLETE THROUGH FH-KUIKA-09; activation slices remain Core capability/policy gated** |
 | 12 | FH-KUIKA-10 enterprise collaboration submodule | **PRE-CUTOVER BOUNDARY COMPLETE — ADR-0023 / contract 1.11.0; live identity enforcement deferred** |
@@ -132,7 +132,7 @@ Authority-neutral preparation is complete:
 7. FH-36A Incident
 8. FH-37A Project Knowledge Graph / Engineering Lineage
 
-FH-30B..FH-37B activation is now eligible but not automatic; each authority-bearing slice remains capability/policy gated.
+FH-30B..FH-37B implementation is complete and operational; runtime authority is never automatic and each authority-bearing side effect remains capability/policy gated.
 
 ## Pre-cutover hardening — COMPLETE THROUGH PROVIDER EGRESS PREPARATION
 
