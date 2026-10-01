@@ -1,10 +1,6 @@
 import type { AuthorityCapabilityId } from '@freehighlander/contracts';
 
-import {
-  buildPlanningSnapshot,
-  type EngineeringPlan,
-  validateEngineeringPlan,
-} from './index.js';
+import { buildPlanningSnapshot, type EngineeringPlan, validateEngineeringPlan } from './index.js';
 
 export type PlanningTransitionKind = 'SET_STATUS' | 'SUPERSEDE';
 export type PlanningExecutionIntentKind = 'IMPLEMENT' | 'RELEASE' | 'OPERATE' | 'REMEDIATE';
@@ -57,13 +53,14 @@ export interface PlanningExecutionIntentV1 {
   readonly executionAuthorized: false;
 }
 
-const CAPABILITY_BY_INTENT: Readonly<Record<PlanningExecutionIntentKind, AuthorityCapabilityId | null>> =
-  {
-    IMPLEMENT: 'GIT_WRITE',
-    RELEASE: 'RELEASE_DEPLOY',
-    OPERATE: 'INFRASTRUCTURE_MUTATION',
-    REMEDIATE: 'AUTOMATIC_REMEDIATION',
-  };
+const CAPABILITY_BY_INTENT: Readonly<
+  Record<PlanningExecutionIntentKind, AuthorityCapabilityId | null>
+> = {
+  IMPLEMENT: 'GIT_WRITE',
+  RELEASE: 'RELEASE_DEPLOY',
+  OPERATE: 'INFRASTRUCTURE_MUTATION',
+  REMEDIATE: 'AUTOMATIC_REMEDIATION',
+};
 
 export async function createPlanningAuthoritativeStateV1(
   plan: EngineeringPlan,
