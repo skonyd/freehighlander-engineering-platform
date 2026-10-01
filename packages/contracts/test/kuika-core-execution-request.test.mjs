@@ -150,3 +150,40 @@ test('request creation rejects malformed identity revision surface capability an
     /payloadDigest/,
   );
 });
+
+test('request validation fails closed on schema surface capability repository and revision tampering', () => {
+  const request = createFhKuikaCoreExecutionRequestV1({
+    requestId: 'kuika-exec-3',
+    surface: 'WORKBENCH',
+    mutationClass: 'GIT_WRITE',
+    repository: 'owner/repo',
+    exactRevision: REVISION,
+    payloadDigest: 'd'.repeat(64),
+  });
+
+  assert.throws(
+    () => validateFhKuikaCoreExecutionRequestV1({ ...request, schemaVersion: 2 }),
+    /schemaVersion must be 1/,
+  );
+  assert.throws(
+    () => validateFhKuikaCoreExecutionRequestV1({ ...request, surface: 'INVALID' }),
+    /execution surface/,
+  );
+  assert.throws(
+    () => validateFhKuikaCoreExecutionRequestV1({ ...request, mutationClass: 'UNKNOWN' }),
+    /unknown authority capability/,
+  );
+  assert.throws(
+    () => validateFhKuikaCoreExecutionRequestV1({ ...request, requiredCapability: 'UNKNOWN' }),
+    /unknown authority capability/,
+  );
+  assert.throws(
+    () => validateFhKuikaCoreExecutionRequestV1({ ...request, repository: 'bad' }),
+    /owner\/name/,
+  );
+  assert.throws(
+    () => validateFhKuikaCoreExecutionRequestV1({ ...request, exactRevision: 'bad' }),
+    /40-character git SHA/,
+  );
+});
+
