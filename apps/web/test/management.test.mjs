@@ -134,7 +134,6 @@ test('unknown management actions and malformed intents fail closed', () => {
   );
 });
 
-
 test('web foundation separates global V3 state from web mutation authority', () => {
   const foundation = getWebFoundationInfo();
 
