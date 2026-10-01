@@ -350,7 +350,8 @@ test('forged workspace path identities fail before mutation', async (t) => {
 
   const nonCanonicalHandle = {
     ...fx.handle,
-    workspacePath: path.join(fx.handle.workspacePath, '..', path.basename(fx.handle.workspacePath)),
+    workspacePath:
+      fx.handle.workspacePath + '/../' + path.basename(fx.handle.workspacePath),
   };
   const nonCanonical = createGatedLocalGitWriteExecutor(fx.gate, nonCanonicalHandle, {
     authorName: 'Operator',
