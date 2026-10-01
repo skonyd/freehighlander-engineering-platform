@@ -185,6 +185,16 @@ export {
 } from './execution-runtime.js';
 
 export {
+  authoritySafetyLifecycleCanReactivateOnAuditFailure,
+  compensateAuthorityAuditFailure,
+  reconcileAuthorityStateOnStartup,
+  type AuthorityAuditFailureCompensationInput,
+  type AuthorityAuditFailureCompensationResultV1,
+  type AuthorityStartupReconciliationResultV1,
+  type AuthorityStartupReconciliationStatus,
+} from './authority-capability-safety.js';
+
+export {
   AuthorityCapabilityAuditRecorder,
   authorityAuditRecorderCanGrantAuthority,
   type AuthorityCapabilityAuditRecordInput,
