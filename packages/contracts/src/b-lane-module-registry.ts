@@ -1,14 +1,7 @@
 import type { AuthorityCapabilityId } from './authority-capability-registry.js';
 
 export type BLaneModuleId =
-  | 'FH-30B'
-  | 'FH-31B'
-  | 'FH-32B'
-  | 'FH-33B'
-  | 'FH-34B'
-  | 'FH-35B'
-  | 'FH-36B'
-  | 'FH-37B';
+  'FH-30B' | 'FH-31B' | 'FH-32B' | 'FH-33B' | 'FH-34B' | 'FH-35B' | 'FH-36B' | 'FH-37B';
 
 export interface BLaneModuleDefinitionV1 {
   readonly id: BLaneModuleId;
