@@ -49,7 +49,7 @@ test('requested authority is visibly distinct from active authority', () => {
     OPERATOR_AUTHORITY_PERMISSIONS_HTML,
     /Requested is not the same as active authority/,
   );
-  assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /state\.textContent='REQUESTED'/);
-  assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /state\.textContent='ACTIVE'/);
-  assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /state\.textContent='DENY'/);
+  assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /textContent='REQUESTED'/);
+  assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /textContent='ACTIVE'/);
+  assert.match(OPERATOR_AUTHORITY_PERMISSIONS_HTML, /textContent='DENY'/);
 });
