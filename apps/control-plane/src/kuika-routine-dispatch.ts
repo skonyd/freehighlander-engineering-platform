@@ -139,7 +139,11 @@ function validateTrustedRoutine(routine: FhKuikaTrustedRoutineRuntimeV1, expecte
   if (!(AUTHORITY_CAPABILITY_IDS as readonly string[]).includes(routine.mutationCapability)) {
     throw new Error('trusted routine mutation capability is unknown');
   }
-  if (!Number.isInteger(routine.maxAttempts) || routine.maxAttempts < 0 || routine.maxAttempts > 10) {
+  if (
+    !Number.isInteger(routine.maxAttempts) ||
+    routine.maxAttempts < 0 ||
+    routine.maxAttempts > 10
+  ) {
     throw new Error('trusted routine maxAttempts must be between 0 and 10');
   }
 }
