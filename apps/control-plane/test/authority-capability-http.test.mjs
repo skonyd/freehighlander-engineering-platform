@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { readJsonlEvents } from '@freehighlander/telemetry';
+
 import {
   createAuthorityCapabilityHttpServer,
   startAuthorityCapabilityHttpServer,
@@ -17,6 +19,7 @@ function options() {
   const directory = mkdtempSync(join(tmpdir(), 'fh-authority-http-'));
   return {
     statePath: join(directory, 'authority.json'),
+    auditPath: join(directory, 'authority-events.jsonl'),
     repository: 'skonyd/freehighlander-engineering-platform',
     revision: REVISION,
     approverId: 'local-operator',
@@ -27,9 +30,10 @@ function options() {
 }
 
 async function withServer(run) {
-  const started = await startAuthorityCapabilityHttpServer(options());
+  const config = options();
+  const started = await startAuthorityCapabilityHttpServer(config);
   try {
-    await run(started.url);
+    await run(started.url, config);
   } finally {
     await started.close();
   }
@@ -130,7 +134,7 @@ test('CORS preflight and mutation security fail closed', async () => {
 });
 
 test('request approve activate deactivate completes the real authority lifecycle', async () => {
-  await withServer(async (url) => {
+  await withServer(async (url, config) => {
     const requested = await post(url, '/v1/authority/request', {
       capability: 'GIT_WRITE',
       requested: true,
@@ -169,6 +173,24 @@ test('request approve activate deactivate completes the real authority lifecycle
     });
     assert.equal(deactivated.status, 200);
     assert.deepEqual((await deactivated.json()).result.state.activeCapabilities, []);
+
+    const events = await readJsonlEvents(config.auditPath);
+    assert.deepEqual(
+      events.map((event) => event.type),
+      [
+        'authority.requested',
+        'authority.approved',
+        'authority.activated',
+        'authority.deactivated',
+      ],
+    );
+    assert.equal(events[0].payload.principalId, 'local-operator');
+    assert.equal(events[0].payload.exactRevision, REVISION);
+    assert.equal(events[0].payload.requested, true);
+    assert.match(events[1].payload.policyHash, /^[a-f0-9]{64}$/);
+    assert.match(events[2].payload.approvalRequestHash, /^[a-f0-9]{64}$/);
+    assert.deepEqual(events[3].payload.reasons, []);
+    assert.doesNotMatch(JSON.stringify(events), /access_token|authorization|bearer/i);
   });
 });
 
