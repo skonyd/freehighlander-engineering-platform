@@ -1,4 +1,12 @@
 export {
+  applyFhKuikaRuntimeFailoverV1,
+  fhKuikaRuntimeFailoverCanGrantAuthority,
+  fhKuikaRuntimeFailoverCanUseSemanticOutcome,
+  type FhKuikaRuntimeFailoverDecisionV1,
+  type FhKuikaRuntimeFailureObservationV1,
+} from './kuika-runtime-failover.js';
+
+export {
   createEmptyModelManagementStateV1,
   modelManagementStateCanContainSecretValues,
   modelManagementStateCanGrantAuthority,
