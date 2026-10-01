@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
+import { mkdirSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -281,3 +281,27 @@ test('unknown paths are 404 with CORS only for the trusted origin', async () => 
     assert.equal(untrusted.headers.get('access-control-allow-origin'), null);
   });
 });
+
+test('audit write failure compensates request state back to safe prior intent', async () => {
+  const config = options();
+  mkdirSync(config.auditPath);
+  const started = await startAuthorityCapabilityHttpServer(config);
+  try {
+    const response = await post(started.url, '/v1/authority/request', {
+      capability: 'GIT_WRITE',
+      requested: true,
+      expectedGeneration: 0,
+    });
+    assert.equal(response.status, 500);
+    const body = await response.json();
+    assert.equal(body.error, 'authority_audit_failed');
+    assert.equal(body.safetyCompensation.action, 'RESTORE_REQUEST');
+
+    const snapshot = await (await fetch(started.url + '/v1/authority')).json();
+    assert.deepEqual(snapshot.state.requestedCapabilities, []);
+    assert.deepEqual(snapshot.state.activeCapabilities, []);
+  } finally {
+    await started.close();
+  }
+});
+
