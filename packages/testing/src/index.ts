@@ -337,3 +337,15 @@ async function sha256Hex(value: string): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
+export {
+  authoritativeTestPassCanGrantAuthority,
+  authoritativeTestRunCanMutateProduction,
+  runAuthoritativeTestPlanV1,
+  type AuthoritativeTestRunOptionsV1,
+  type AuthoritativeTestRunResultV1,
+  type TestCaseEvidencePayloadV1,
+  type TestCaseExecutionOutcomeV1,
+  type TestCaseExecutionRequestV1,
+  type TestCaseExecutorV1,
+} from './orchestration.js';
