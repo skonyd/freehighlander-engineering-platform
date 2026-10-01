@@ -46,7 +46,9 @@ expect(
   'operator authority default policy',
 );
 if ((state.operator_authority_permissions?.requested_capabilities ?? []).length !== 0) {
-  failures.push('operator authority requested_capabilities must remain empty in canonical main state');
+  failures.push(
+    'operator authority requested_capabilities must remain empty in canonical main state',
+  );
 }
 if ((state.operator_authority_permissions?.active_capabilities ?? []).length !== 0) {
   failures.push('operator authority active_capabilities must remain empty in canonical main state');
