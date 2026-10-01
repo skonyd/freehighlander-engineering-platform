@@ -155,6 +155,19 @@ Issue #423 is implemented end to end through the post-cutover authority plane:
 
 This operational substrate does **not** auto-enable authority. Canonical requested and active capability sets remain empty and the default remains `DENY`.
 
+## FH-KUIKA post-cutover runtime activation — complete
+
+Issue #448 completes the authority-bearing FH-KUIKA runtime slices without creating a new authority source:
+
+- #449 shared exact-bound Core execution request bridge;
+- #450 Workbench EXECUTE → Core request;
+- #451 trusted connector invocation with call-time permission/current-capability revalidation;
+- #452 control-plane routine scheduler dispatch with retry-time authority recheck;
+- #453 availability-only runtime provider failover;
+- #454 cross-module E2E plus GUI/status reconciliation.
+
+Canonical critical capability state remains `DENY` with no requested or active capabilities.
+
 ## Current independent work
 
 #147 Full Auto Mode and #149 Token Economy Mode are complete. FH-KUIKA preparation is complete through FH-KUIKA-10, including the single-tenant enterprise identity boundary from ADR-0023. FH-20 is now applied, but live OIDC/session enforcement, active approval delegation and multi-tenant persistence remain separately deferred. The operator authority selector exposes Code/Git, Release/Deploy, Infrastructure and Automatic Remediation independently; all remain default DENY and currently unselected. Full Auto remains independently OFF/SHADOW by default.
