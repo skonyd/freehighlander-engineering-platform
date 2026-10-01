@@ -137,9 +137,7 @@ test('trusted operational intent evidence validates all execution bindings', () 
       createGatedInfrastructureMutationExecutor(base.gate, fx.evidence, base.adapter),
     );
   }
-  assert.throws(() =>
-    createGatedInfrastructureMutationExecutor(base.gate, base.evidence, null),
-  );
+  assert.throws(() => createGatedInfrastructureMutationExecutor(base.gate, base.evidence, null));
   assert.throws(() =>
     createGatedInfrastructureMutationExecutor(base.gate, base.evidence, {
       id: 'provider',
