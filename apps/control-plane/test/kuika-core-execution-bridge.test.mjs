@@ -115,7 +115,12 @@ test('bridge rejects stale repository revision and gate identity before binding'
     () =>
       bridge.bind(
         { ...executionRequest(), repository: 'other/repo' },
-        { id: 'trusted-delegate', async execute() { return { status: 'SUCCEEDED', output: '' }; } },
+        {
+          id: 'trusted-delegate',
+          async execute() {
+            return { status: 'SUCCEEDED', output: '' };
+          },
+        },
       ),
     /repository does not match/,
   );
