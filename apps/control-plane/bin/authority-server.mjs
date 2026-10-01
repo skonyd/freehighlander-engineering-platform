@@ -11,6 +11,8 @@ import {
   AuthorityCapabilityActivationService,
   AuthorityCapabilityApprovalCoordinator,
   AuthorityCapabilityAuditRecorder,
+  compensateAuthorityAuditFailure,
+  reconcileAuthorityStateOnStartup,
 } from '../dist/index.js';
 
 const MAX_BODY_BYTES = 16 * 1024;
@@ -30,6 +32,7 @@ export function createAuthorityCapabilityHttpServer(options) {
 
   const store = new AuthorityCapabilityStateStore(options.statePath);
   const activationService = new AuthorityCapabilityActivationService(store);
+  reconcileAuthorityStateOnStartup(activationService);
   const coordinator = new AuthorityCapabilityApprovalCoordinator(activationService, {
     repository: options.repository,
     revision: options.revision,
@@ -168,6 +171,7 @@ async function handleAuthorityRequest(context) {
     return sendJson(response, 400, { error: 'invalid_mutation_input', message }, allowedOrigin);
   }
 
+  const previousSnapshot = activationService.snapshot();
   const result =
     url.pathname === '/v1/authority/request'
       ? activationService.setRequested(input.capability, input.requested, input.expectedGeneration)
@@ -186,7 +190,31 @@ async function handleAuthorityRequest(context) {
       auditRecorder,
     });
   } catch {
-    return sendJson(response, 500, { error: 'authority_audit_failed' }, allowedOrigin);
+    try {
+      const safetyCompensation = compensateAuthorityAuditFailure(
+        activationService,
+        coordinator,
+        {
+          pathname: url.pathname,
+          capability: input.capability,
+          ...(url.pathname === '/v1/authority/request' ? { requested: input.requested } : {}),
+          previousSnapshot,
+        },
+      );
+      return sendJson(
+        response,
+        500,
+        { error: 'authority_audit_failed', safetyCompensation },
+        allowedOrigin,
+      );
+    } catch {
+      return sendJson(
+        response,
+        500,
+        { error: 'authority_audit_failed_and_compensation_failed' },
+        allowedOrigin,
+      );
+    }
   }
 
   const status = result.status === 'BLOCKED' || result.status === 'CONFLICT' ? 409 : 200;
