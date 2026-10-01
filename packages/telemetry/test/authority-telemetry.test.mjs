@@ -78,7 +78,10 @@ test('authority event type is exactly bound to action and request shape', () => 
     /requested is valid only/,
   );
   assert.throws(
-    () => createAuthorityEvent(base('authority.approved', 'APPROVE')),
+    () =>
+      createAuthorityEvent(
+        base('authority.approved', 'APPROVE', { outcome: 'APPROVED' }),
+      ),
     /require approval binding hashes/,
   );
 });
