@@ -31,6 +31,7 @@ Backlog, [PR Roadmap](docs/planning/PR-ROADMAP.md) ile birlikte okunmalıdır.
 - [x] FH-18 UI control plane — issue #56 / PR #57
 - [x] FH-19 V2/V3 shadow dual-run + parity — issue #58 / PR #59
 - [x] FH-20 V3 authority cutover — applied to exact target `57761b7b0257c234ad41314343a22dfd53668364`; human approval #420; canonical SYSTEM_POLICY PR #419; ADR-0024
+- [x] V3 authority operationalization — issue #423; durable state, approval binding, localhost API, GUI, execution enforcement, audit/safety lifecycle, capability registry and E2E acceptance complete; final reconciliation in this PR
 
 ## Modules — pre-cutover preparation lane
 - [x] FH-30A Planning — issue #69 / PR #70
