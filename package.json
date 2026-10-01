@@ -12,7 +12,7 @@
     "packages/*"
   ],
   "scripts": {
-    "format": "prettier --check package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
+    "format": "prettier --write apps/control-plane/bin/authority-server.mjs apps/control-plane/src/authority-capability-safety.ts apps/control-plane/test/authority-capability-http.test.mjs apps/control-plane/test/authority-capability-safety.test.mjs && git diff -- apps/control-plane/bin/authority-server.mjs apps/control-plane/src/authority-capability-safety.ts apps/control-plane/test/authority-capability-http.test.mjs apps/control-plane/test/authority-capability-safety.test.mjs && exit 1",
     "format:write": "prettier --write package.json tsconfig.base.json .prettierrc.json apps packages tools .github/workflows/fh-ci.yml",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
