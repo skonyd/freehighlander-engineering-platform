@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@freehighlander/persistence": "0.0.0",
-    "@freehighlander/governance": "0.0.0"
+    "@freehighlander/governance": "0.0.0",
+    "@freehighlander/telemetry": "0.0.0"
   }
 }

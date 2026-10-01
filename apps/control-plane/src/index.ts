@@ -185,6 +185,13 @@ export {
 } from './execution-runtime.js';
 
 export {
+  AuthorityCapabilityAuditRecorder,
+  authorityAuditRecorderCanGrantAuthority,
+  type AuthorityCapabilityAuditRecordInput,
+  type AuthorityCapabilityAuditRecorderOptions,
+} from './authority-capability-audit.js';
+
+export {
   AuthorityCapabilityExecutionGate,
   capabilityExecutionGateCanBypassActiveState,
   capabilityExecutionGateCanBypassSystemPolicy,

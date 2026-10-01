@@ -1,4 +1,13 @@
 export {
+  authorityTelemetryCanContainRawSecrets,
+  authorityTelemetryCanGrantAuthority,
+  createAuthorityEvent,
+  type AuthorityEventAction,
+  type AuthorityEventPayload,
+  type AuthorityEventType,
+} from './authority-telemetry.js';
+
+export {
   buildEconomyRuntimeSummaryTelemetry,
   economyTelemetryCanGrantAuthority,
   economyTelemetryCanInvokeModel,
@@ -76,7 +85,11 @@ export type EventType =
   | 'full_auto.merge.intent'
   | 'full_auto.merge.result'
   | 'runtime.error.reported'
-  | 'economy.runtime.summary';
+  | 'economy.runtime.summary'
+  | 'authority.requested'
+  | 'authority.approved'
+  | 'authority.activated'
+  | 'authority.deactivated';
 
 export type OrchestrationTraceEventType =
   'orchestration.span.completed' | 'orchestration.run.summary';
