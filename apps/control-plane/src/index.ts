@@ -120,6 +120,17 @@ export {
 } from './local-git-write-executor.js';
 
 export {
+  createGatedReleaseMutationExecutor,
+  releaseMutationExecutorCanBypassCapabilityGate,
+  releaseMutationExecutorCanTreatReadinessAsAuthority,
+  type ReleaseMutationActionV1,
+  type ReleaseMutationAdapter,
+  type ReleaseMutationOperation,
+  type ReleaseMutationReceiptV1,
+  type TrustedReleaseExecutionEvidenceV1,
+} from './release-deploy-executor.js';
+
+export {
   LocalGitWorktreeBackend,
   createLocalCommandActivityExecutor,
   createLocalFilesystemActivityExecutor,
