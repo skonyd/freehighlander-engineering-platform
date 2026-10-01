@@ -10,12 +10,7 @@ import {
 } from './authority-capability-execution.js';
 
 export type IncidentRemediationOperation =
-  | 'RESTART'
-  | 'SCALE'
-  | 'ROLLBACK'
-  | 'CONFIGURE'
-  | 'ISOLATE'
-  | 'NOTIFY';
+  'RESTART' | 'SCALE' | 'ROLLBACK' | 'CONFIGURE' | 'ISOLATE' | 'NOTIFY';
 
 export interface TrustedIncidentRemediationEvidenceV1 {
   readonly schemaVersion: 1;
@@ -30,8 +25,7 @@ export interface TrustedIncidentRemediationEvidenceV1 {
   readonly requiresInfrastructureMutation: boolean;
 }
 
-export interface IncidentRemediationActionV1
-  extends TrustedIncidentRemediationEvidenceV1 {}
+export interface IncidentRemediationActionV1 extends TrustedIncidentRemediationEvidenceV1 {}
 
 export interface IncidentRemediationReceiptV1 {
   readonly schemaVersion: 1;
@@ -111,16 +105,10 @@ function validateEvidence(
   if (evidence.sourceRevision !== gate.options.expectedRevision) {
     throw new Error('remediation revision must match execution gate revision');
   }
-  if (
-    evidence.operation !== 'NOTIFY' &&
-    evidence.requiresInfrastructureMutation !== true
-  ) {
+  if (evidence.operation !== 'NOTIFY' && evidence.requiresInfrastructureMutation !== true) {
     throw new Error('side-effecting remediation must require infrastructure mutation');
   }
-  if (
-    evidence.operation === 'NOTIFY' &&
-    evidence.requiresInfrastructureMutation !== false
-  ) {
+  if (evidence.operation === 'NOTIFY' && evidence.requiresInfrastructureMutation !== false) {
     throw new Error('notification remediation must not require infrastructure mutation');
   }
   if (evidence.targetResourceIds.length < 1 || evidence.targetResourceIds.length > 128) {
