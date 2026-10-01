@@ -120,6 +120,17 @@ export {
 } from './local-git-write-executor.js';
 
 export {
+  createGatedInfrastructureMutationExecutor,
+  infrastructureMutationExecutorCanBypassCapabilityGate,
+  infrastructureMutationRequestCanChooseTargets,
+  type InfrastructureMutationActionV1,
+  type InfrastructureMutationAdapter,
+  type InfrastructureMutationOperation,
+  type InfrastructureMutationReceiptV1,
+  type TrustedOperationalIntentEvidenceV1,
+} from './infrastructure-mutation-executor.js';
+
+export {
   createGatedReleaseMutationExecutor,
   releaseMutationExecutorCanBypassCapabilityGate,
   releaseMutationExecutorCanTreatReadinessAsAuthority,
