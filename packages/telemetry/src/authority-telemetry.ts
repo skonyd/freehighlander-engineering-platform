@@ -1,24 +1,14 @@
-import {
-  createEvent,
-  type EngineeringEvent,
-  type EngineeringEventInput,
-} from './index.js';
+import { createEvent, type EngineeringEvent, type EngineeringEventInput } from './index.js';
 
 export type AuthorityEventType =
-  | 'authority.requested'
-  | 'authority.approved'
-  | 'authority.activated'
-  | 'authority.deactivated';
+  'authority.requested' | 'authority.approved' | 'authority.activated' | 'authority.deactivated';
 
 export type AuthorityEventAction = 'REQUEST' | 'APPROVE' | 'ACTIVATE' | 'DEACTIVATE';
 
 export interface AuthorityEventPayload extends Record<string, unknown> {
   readonly action: AuthorityEventAction;
   readonly capability:
-    | 'GIT_WRITE'
-    | 'RELEASE_DEPLOY'
-    | 'INFRASTRUCTURE_MUTATION'
-    | 'AUTOMATIC_REMEDIATION';
+    'GIT_WRITE' | 'RELEASE_DEPLOY' | 'INFRASTRUCTURE_MUTATION' | 'AUTOMATIC_REMEDIATION';
   readonly principalKind: 'HUMAN' | 'SYSTEM';
   readonly principalId: string;
   readonly exactRevision: string;
