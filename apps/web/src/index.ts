@@ -633,4 +633,8 @@ export {
   type OperatorAuthoritySelectionInput,
 } from './operator-authority-profile.js';
 
-export { OPERATOR_AUTHORITY_PERMISSIONS_HTML } from './operator-authority-permissions-ui.js';
+export {
+  OPERATOR_AUTHORITY_PERMISSIONS_HTML,
+  authorityPermissionsPageCanForgeApprovalEvidence,
+  authorityPermissionsPageRequiresControlPlane,
+} from './operator-authority-permissions-ui.js';
