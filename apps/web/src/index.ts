@@ -608,7 +608,7 @@ export interface WebFoundationInfo {
   readonly managementMode: 'client-only-management';
   readonly executionOwnership: 'control-plane';
   readonly mutationAuthority: 'none';
-  readonly v3Authority: 'SHADOW_ONLY';
+  readonly v3Authority: 'ENABLED';
 }
 
 export function getWebFoundationInfo(): WebFoundationInfo {
@@ -618,7 +618,7 @@ export function getWebFoundationInfo(): WebFoundationInfo {
     managementMode: 'client-only-management',
     executionOwnership: 'control-plane',
     mutationAuthority: 'none',
-    v3Authority: 'SHADOW_ONLY',
+    v3Authority: 'ENABLED',
   };
 }
 
