@@ -396,3 +396,15 @@ async function sha256Hex(value: string): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
+export {
+  MutationLineageJournalV1,
+  mutationLineageJournalCanGrantAuthority,
+  mutationLineageRecordCanAuthorizeSideEffect,
+  mutationLineageSemanticSearchCanEstablishAuthority,
+  type MutationLineageActionKind,
+  type MutationLineageAppendInputV1,
+  type MutationLineageJournalReadV1,
+  type MutationLineagePrincipalKind,
+  type MutationLineageRecordV1,
+} from './mutation-journal.js';
