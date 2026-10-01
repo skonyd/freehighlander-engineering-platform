@@ -4,21 +4,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import {
-  AUTHORITY_CAPABILITY_REGISTRY_V1,
-} from '../../../packages/contracts/dist/index.js';
-import {
-  AuthorityCapabilityStateStore,
-} from '../../../packages/persistence/dist/index.js';
-import {
-  AuthorityCapabilityExecutionGate,
-} from '../../../apps/control-plane/dist/index.js';
-import {
-  startAuthorityCapabilityHttpServer,
-} from '../../../apps/control-plane/bin/authority-server.mjs';
-import {
-  startDashboardServer,
-} from '../../../apps/web/dist/index.js';
+import { AUTHORITY_CAPABILITY_REGISTRY_V1 } from '../../../packages/contracts/dist/index.js';
+import { AuthorityCapabilityStateStore } from '../../../packages/persistence/dist/index.js';
+import { AuthorityCapabilityExecutionGate } from '../../../apps/control-plane/dist/index.js';
+import { startAuthorityCapabilityHttpServer } from '../../../apps/control-plane/bin/authority-server.mjs';
+import { startDashboardServer } from '../../../apps/web/dist/index.js';
 
 const REVISION = 'a'.repeat(40);
 const CSRF = 'c'.repeat(64);
@@ -92,37 +82,29 @@ test('V3 authority plane completes the real default-DENY lifecycle end to end', 
     assert.equal(blockedActivation.response.status, 409);
     assert.equal(blockedActivation.payload.result.status, 'BLOCKED');
 
-    const forgedTrust = await postAuthority(
-      authority.url,
-      dashboard.url,
-      '/v1/authority/request',
-      {
-        capability: 'GIT_WRITE',
-        requested: true,
-        expectedGeneration: 0,
-        exactHumanApprovalVerified: true,
-      },
-    );
+    const forgedTrust = await postAuthority(authority.url, dashboard.url, '/v1/authority/request', {
+      capability: 'GIT_WRITE',
+      requested: true,
+      expectedGeneration: 0,
+      exactHumanApprovalVerified: true,
+    });
     assert.equal(forgedTrust.response.status, 400);
     assert.equal(forgedTrust.payload.error, 'invalid_mutation_input');
 
-    const requested = await postAuthority(
-      authority.url,
-      dashboard.url,
-      '/v1/authority/request',
-      { capability: 'GIT_WRITE', requested: true, expectedGeneration: 0 },
-    );
+    const requested = await postAuthority(authority.url, dashboard.url, '/v1/authority/request', {
+      capability: 'GIT_WRITE',
+      requested: true,
+      expectedGeneration: 0,
+    });
     assert.equal(requested.response.status, 200);
     assert.equal(requested.payload.result.status, 'APPLIED');
     assert.deepEqual(requested.payload.result.state.requestedCapabilities, ['GIT_WRITE']);
     assert.deepEqual(requested.payload.result.state.activeCapabilities, []);
 
-    const approved = await postAuthority(
-      authority.url,
-      dashboard.url,
-      '/v1/authority/approve',
-      { capability: 'GIT_WRITE', expectedGeneration: 1 },
-    );
+    const approved = await postAuthority(authority.url, dashboard.url, '/v1/authority/approve', {
+      capability: 'GIT_WRITE',
+      expectedGeneration: 1,
+    });
     assert.equal(approved.response.status, 200);
     assert.equal(approved.payload.result.status, 'APPROVED');
     assert.equal(approved.payload.result.approval.revision, REVISION);
@@ -130,12 +112,10 @@ test('V3 authority plane completes the real default-DENY lifecycle end to end', 
     assert.match(approved.payload.result.approval.requestHash, /^[a-f0-9]{64}$/);
     assert.match(approved.payload.result.approval.decisionHash, /^[a-f0-9]{64}$/);
 
-    const activated = await postAuthority(
-      authority.url,
-      dashboard.url,
-      '/v1/authority/activate',
-      { capability: 'GIT_WRITE', expectedGeneration: 1 },
-    );
+    const activated = await postAuthority(authority.url, dashboard.url, '/v1/authority/activate', {
+      capability: 'GIT_WRITE',
+      expectedGeneration: 1,
+    });
     assert.equal(activated.response.status, 200);
     assert.equal(activated.payload.result.status, 'APPLIED');
     assert.deepEqual(activated.payload.result.state.activeCapabilities, ['GIT_WRITE']);
@@ -169,12 +149,10 @@ test('V3 authority plane completes the real default-DENY lifecycle end to end', 
     assert.deepEqual(deactivated.payload.result.state.activeCapabilities, []);
     assert.equal(gate.check('GIT_WRITE').allowed, false);
 
-    const reapproved = await postAuthority(
-      authority.url,
-      dashboard.url,
-      '/v1/authority/approve',
-      { capability: 'GIT_WRITE', expectedGeneration: 3 },
-    );
+    const reapproved = await postAuthority(authority.url, dashboard.url, '/v1/authority/approve', {
+      capability: 'GIT_WRITE',
+      expectedGeneration: 3,
+    });
     assert.equal(reapproved.response.status, 200);
     const reactivated = await postAuthority(
       authority.url,
