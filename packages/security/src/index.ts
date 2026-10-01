@@ -309,3 +309,22 @@ async function sha256Hex(value: string): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
+export {
+  createSecurityWaiverApprovalPacketV1,
+  evaluateSecurityGateWithWaiversV1,
+  runAuthoritativeSecurityAssessmentV1,
+  securityModelCanSelfApproveWaiver,
+  securityScannerCanSelfApproveWaiver,
+  securityWaiverCanAuthorizeReleaseDirectly,
+  verifySecurityWaiverApprovalV1,
+  type ApprovedSecurityWaiverV1,
+  type AuthoritativeSecurityAssessmentOptionsV1,
+  type AuthoritativeSecurityAssessmentResultV1,
+  type SecurityGateWithWaiversV1,
+  type SecurityScannerExecutionOutcomeV1,
+  type SecurityScannerExecutionRequestV1,
+  type SecurityScannerExecutorV1,
+  type SecurityScannerFindingV1,
+  type SecurityWaiverApprovalPacketV1,
+} from './activation.js';
