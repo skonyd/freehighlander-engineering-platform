@@ -1,4 +1,14 @@
 export {
+  createFhKuikaConnectorInvocationRequestV1,
+  fhKuikaConnectorInvocationCanCarryRawSecrets,
+  fhKuikaConnectorInvocationCanGrantAuthority,
+  validateFhKuikaConnectorInvocationRequestV1,
+  type FhKuikaConnectorInvocationRequestV1,
+  type FhKuikaTrustedConnectorCapabilityV1,
+  type FhKuikaTrustedConnectorRuntimeV1,
+} from './kuika-connector-invocation.js';
+
+export {
   createFhKuikaCoreExecutionRequestV1,
   fhKuikaExecutionRequestCanCarryApprovalEvidence,
   fhKuikaExecutionRequestCanGrantAuthority,
