@@ -1,4 +1,12 @@
 export {
+  FhKuikaCoreExecutionBridge,
+  fhKuikaCoreExecutionBridgeCanBypassCapabilityGate,
+  fhKuikaCoreExecutionBridgeCanGrantAuthority,
+  fhKuikaCoreExecutionBridgeTrustsClientApprovalEvidence,
+  type FhKuikaCoreExecutionBridgeOptions,
+} from './kuika-core-execution-bridge.js';
+
+export {
   materializeSelectedProjectWorkspaces,
   projectSchedulerCanStartWithoutIsolatedWorkspace,
   projectWorkspaceActivationCanGrantAuthority,
