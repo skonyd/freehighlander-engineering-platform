@@ -135,3 +135,61 @@ test('request audit failure restores prior request intent without restoring acti
   assert.deepEqual(restored.state.activeCapabilities, []);
   assert.equal(authoritySafetyLifecycleCanReactivateOnAuditFailure(), false);
 });
+
+test('safety lifecycle throws rather than continuing when compensation CAS cannot be established', () => {
+  const coordinator = { discardApproval() { return false; } };
+  const snapshot = {
+    generation: 1,
+    state: {
+      schemaVersion: 1,
+      requestedCapabilities: ['GIT_WRITE'],
+      activeCapabilities: ['GIT_WRITE'],
+    },
+    snapshotHash: 'b'.repeat(64),
+  };
+
+  const startupConflict = {
+    snapshot() { return snapshot; },
+    deactivate() {
+      return { status: 'CONFLICT', generation: 2 };
+    },
+  };
+  assert.throws(
+    () => reconcileAuthorityStateOnStartup(startupConflict),
+    /startup authority deactivation failed closed/,
+  );
+
+  const activationConflict = {
+    snapshot() { return snapshot; },
+    deactivate() {
+      return { status: 'CONFLICT', generation: 2 };
+    },
+  };
+  assert.throws(
+    () =>
+      compensateAuthorityAuditFailure(activationConflict, coordinator, {
+        pathname: '/v1/authority/activate',
+        capability: 'GIT_WRITE',
+        previousSnapshot: snapshot,
+      }),
+    /could not deactivate capability/,
+  );
+
+  const requestConflict = {
+    snapshot() { return snapshot; },
+    setRequested() {
+      return { status: 'CONFLICT', generation: 2 };
+    },
+  };
+  assert.throws(
+    () =>
+      compensateAuthorityAuditFailure(requestConflict, coordinator, {
+        pathname: '/v1/authority/request',
+        capability: 'GIT_WRITE',
+        requested: false,
+        previousSnapshot: snapshot,
+      }),
+    /could not restore requested state/,
+  );
+});
+
