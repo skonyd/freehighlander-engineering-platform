@@ -108,10 +108,7 @@ test('infrastructure remediation requires both automatic and infrastructure capa
   for (const [active, expected] of [
     [['AUTOMATIC_REMEDIATION'], 'CAPABILITY_GATE_DENIED'],
     [['INFRASTRUCTURE_MUTATION'], 'CAPABILITY_GATE_DENIED'],
-    [
-      ['AUTOMATIC_REMEDIATION', 'INFRASTRUCTURE_MUTATION'],
-      'SUCCEEDED',
-    ],
+    [['AUTOMATIC_REMEDIATION', 'INFRASTRUCTURE_MUTATION'], 'SUCCEEDED'],
   ]) {
     const fx = fixture();
     setCapabilities(fx.store, active, active);
