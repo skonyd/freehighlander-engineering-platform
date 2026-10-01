@@ -65,7 +65,12 @@ export function publishAuthorityCapabilityPolicyV1(): PublishedPolicy {
 export function evaluateAuthorityCapabilityPolicyV1(
   capability: AuthorityCapabilityPolicyCapability,
 ): AuthorityCapabilityPolicyEvaluationV1 {
-  const definition = getAuthorityCapabilityDefinitionV1(capability);
+  let definition;
+  try {
+    definition = getAuthorityCapabilityDefinitionV1(capability);
+  } catch {
+    throw new Error('unknown authority capability policy capability');
+  }
   const policy = publishAuthorityCapabilityPolicyV1();
   const base = {
     action: definition.action,
