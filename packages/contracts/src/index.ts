@@ -1,4 +1,13 @@
 export {
+  createFhKuikaCoreExecutionRequestV1,
+  fhKuikaExecutionRequestCanCarryApprovalEvidence,
+  fhKuikaExecutionRequestCanGrantAuthority,
+  validateFhKuikaCoreExecutionRequestV1,
+  type FhKuikaCoreExecutionRequestV1,
+  type FhKuikaExecutionSurface,
+} from './kuika-core-execution-request.js';
+
+export {
   B_LANE_MODULE_REGISTRY_V1,
   bLaneModuleRegistryCanGrantAuthority,
   getBLaneModuleDefinitionV1,
