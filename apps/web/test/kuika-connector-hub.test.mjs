@@ -55,7 +55,7 @@ test('Connector Hub exposes reviewed pinned and external-untrusted boundaries', 
 test('Connector Hub UI exposes review only and no activation action', () => {
   assert.match(FH_KUIKA_CONNECTOR_HUB_HTML, /Connector Hub/);
   assert.match(FH_KUIKA_CONNECTOR_HUB_HTML, /Install \/ permission review/);
-  assert.match(FH_KUIKA_CONNECTOR_HUB_HTML, /Activation is not available from this surface/);
+  assert.match(FH_KUIKA_CONNECTOR_HUB_HTML, /Runtime invocation revalidates trusted permissions/);
   assert.doesNotMatch(FH_KUIKA_CONNECTOR_HUB_HTML, /id="activate"/);
   assert.doesNotMatch(FH_KUIKA_CONNECTOR_HUB_HTML, /id="install"/);
 });
