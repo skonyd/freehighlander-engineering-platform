@@ -1,20 +1,21 @@
 import {
+  AUTHORITY_CAPABILITY_ACTIONS as CONTRACT_AUTHORITY_CAPABILITY_ACTIONS,
+  AUTHORITY_CAPABILITY_REGISTRY_V1,
+  getAuthorityCapabilityDefinitionV1,
+  type AuthorityCapabilityAction,
+  type AuthorityCapabilityId,
+} from '@freehighlander/contracts';
+
+import {
   evaluatePolicy,
   publishPolicy,
   type PolicyDecision,
   type PublishedPolicy,
 } from './policy-engine.js';
 
-export const AUTHORITY_CAPABILITY_ACTIONS = {
-  GIT_WRITE: 'authority:git-write',
-  RELEASE_DEPLOY: 'authority:release-deploy',
-  INFRASTRUCTURE_MUTATION: 'authority:infrastructure-mutation',
-  AUTOMATIC_REMEDIATION: 'authority:automatic-remediation',
-} as const;
-
-export type AuthorityCapabilityPolicyCapability = keyof typeof AUTHORITY_CAPABILITY_ACTIONS;
-export type AuthorityCapabilityPolicyAction =
-  (typeof AUTHORITY_CAPABILITY_ACTIONS)[AuthorityCapabilityPolicyCapability];
+export const AUTHORITY_CAPABILITY_ACTIONS = CONTRACT_AUTHORITY_CAPABILITY_ACTIONS;
+export type AuthorityCapabilityPolicyCapability = AuthorityCapabilityId;
+export type AuthorityCapabilityPolicyAction = AuthorityCapabilityAction;
 
 export interface AuthorityCapabilityPolicyEvaluationV1 {
   readonly schemaVersion: 1;
@@ -26,7 +27,7 @@ export interface AuthorityCapabilityPolicyEvaluationV1 {
   readonly modelDecision: PolicyDecision;
 }
 
-const ACTIONS = Object.values(AUTHORITY_CAPABILITY_ACTIONS);
+const ACTIONS = AUTHORITY_CAPABILITY_REGISTRY_V1.map((definition) => definition.action);
 
 export function publishAuthorityCapabilityPolicyV1(): PublishedPolicy {
   return publishPolicy({
@@ -64,14 +65,12 @@ export function publishAuthorityCapabilityPolicyV1(): PublishedPolicy {
 export function evaluateAuthorityCapabilityPolicyV1(
   capability: AuthorityCapabilityPolicyCapability,
 ): AuthorityCapabilityPolicyEvaluationV1 {
-  const action = AUTHORITY_CAPABILITY_ACTIONS[capability];
-  if (!action) throw new Error('unknown authority capability policy capability');
-
+  const definition = getAuthorityCapabilityDefinitionV1(capability);
   const policy = publishAuthorityCapabilityPolicyV1();
   const base = {
-    action,
-    riskTier: 'CRITICAL' as const,
-    dataClassification: 'INTERNAL' as const,
+    action: definition.action,
+    riskTier: definition.riskTier,
+    dataClassification: definition.dataClassification,
   };
   const humanDecision = evaluatePolicy(policy, { ...base, principalKind: 'HUMAN' });
   const systemDecision = evaluatePolicy(policy, { ...base, principalKind: 'SYSTEM' });
@@ -96,7 +95,7 @@ export function evaluateAuthorityCapabilityPolicyV1(
   return {
     schemaVersion: 1,
     capability,
-    action,
+    action: definition.action,
     policy,
     humanDecision,
     systemDecision,
