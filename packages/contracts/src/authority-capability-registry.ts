@@ -53,8 +53,7 @@ export const AUTHORITY_CAPABILITY_REGISTRY_V1 = Object.freeze([
   }),
 ] as const);
 
-export type AuthorityCapabilityDefinitionV1 =
-  (typeof AUTHORITY_CAPABILITY_REGISTRY_V1)[number];
+export type AuthorityCapabilityDefinitionV1 = (typeof AUTHORITY_CAPABILITY_REGISTRY_V1)[number];
 export type AuthorityCapabilityId = AuthorityCapabilityDefinitionV1['id'];
 export type AuthorityCapabilityAction = AuthorityCapabilityDefinitionV1['action'];
 
