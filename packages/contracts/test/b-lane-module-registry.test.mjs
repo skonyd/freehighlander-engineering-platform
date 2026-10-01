@@ -41,3 +41,8 @@ test('evidence-only B-lane modules expose no mutation authority', () => {
     assert.deepEqual(definition.requiredCapabilities, []);
   }
 });
+
+test('unknown B-lane module lookup fails closed', () => {
+  assert.throws(() => getBLaneModuleDefinitionV1('FH-99B'), /unknown B-lane module/);
+});
+
