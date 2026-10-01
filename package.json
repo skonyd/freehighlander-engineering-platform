@@ -33,7 +33,7 @@
     "check:docs": "node tools/project/check-doc-drift.mjs",
     "check:ci": "node tools/project/check-ci-supply-chain.mjs",
     "check:secrets": "node tools/project/check-secrets.mjs",
-    "check:coverage": "nl -ba apps/control-plane/dist/local-git-write-executor.js | sed -n '60,220p'; exit 1",
+    "check:coverage": "node tools/project/check-coverage.mjs",
     "check:lockfile": "node tools/project/check-lockfile.mjs",
     "check:build-integrity": "node tools/project/check-build-integrity.mjs",
     "check:publish-safety": "node tools/project/check-publish-safety.mjs",
