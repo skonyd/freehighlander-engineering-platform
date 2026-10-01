@@ -210,17 +210,17 @@ export async function runAuthoritativeSecurityAssessmentV1(
   };
 }
 
-export function createSecurityWaiverApprovalPacketV1(
+export async function createSecurityWaiverApprovalPacketV1(
   plan: SecurityAssessmentPlan,
   assessment: SecurityAssessment,
   snapshot: SecuritySnapshot,
   findingId: string,
-): SecurityWaiverApprovalPacketV1 {
+): Promise<SecurityWaiverApprovalPacketV1> {
   const validation = validateSecurityAssessment(plan, assessment);
   if (!validation.valid) {
     throw new Error('invalid security assessment: ' + validation.errors.join('; '));
   }
-  assertSnapshotBinding(plan, assessment, snapshot);
+  await assertSnapshotBinding(plan, assessment, snapshot);
 
   const finding = assessment.findings.find((item) => item.id === findingId);
   if (!finding) throw new Error('security waiver finding does not exist');
@@ -300,13 +300,13 @@ export function verifySecurityWaiverApprovalV1(
   };
 }
 
-export function evaluateSecurityGateWithWaiversV1(
+export async function evaluateSecurityGateWithWaiversV1(
   plan: SecurityAssessmentPlan,
   assessment: SecurityAssessment,
   snapshot: SecuritySnapshot,
   waivers: readonly ApprovedSecurityWaiverV1[],
-): SecurityGateWithWaiversV1 {
-  assertSnapshotBinding(plan, assessment, snapshot);
+): Promise<SecurityGateWithWaiversV1> {
+  await assertSnapshotBinding(plan, assessment, snapshot);
   const baseline = evaluateSecurityReadiness(plan, assessment);
   const validWaivedIds = new Set(
     waivers
@@ -463,17 +463,19 @@ function validateScannerOutcome(outcome: SecurityScannerExecutionOutcomeV1): voi
   }
 }
 
-function assertSnapshotBinding(
+async function assertSnapshotBinding(
   plan: SecurityAssessmentPlan,
   assessment: SecurityAssessment,
   snapshot: SecuritySnapshot,
-): void {
+): Promise<void> {
+  const expected = await buildSecuritySnapshot(plan, assessment);
   if (
     snapshot.planId !== plan.id ||
     snapshot.assessmentId !== assessment.id ||
     snapshot.repository !== plan.repository ||
     snapshot.revision !== plan.revision ||
-    snapshot.policyHash !== plan.policyHash
+    snapshot.policyHash !== plan.policyHash ||
+    snapshot.snapshotHash !== expected.snapshotHash
   ) {
     throw new Error('security snapshot binding is stale');
   }
