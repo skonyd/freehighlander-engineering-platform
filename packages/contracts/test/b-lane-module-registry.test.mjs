@@ -10,16 +10,7 @@ import {
 test('B-lane registry covers FH-30B through FH-37B exactly once', () => {
   assert.deepEqual(
     B_LANE_MODULE_REGISTRY_V1.map((item) => item.id),
-    [
-      'FH-30B',
-      'FH-31B',
-      'FH-32B',
-      'FH-33B',
-      'FH-34B',
-      'FH-35B',
-      'FH-36B',
-      'FH-37B',
-    ],
+    ['FH-30B', 'FH-31B', 'FH-32B', 'FH-33B', 'FH-34B', 'FH-35B', 'FH-36B', 'FH-37B'],
   );
   assert.equal(new Set(B_LANE_MODULE_REGISTRY_V1.map((item) => item.id)).size, 8);
   assert.equal(
@@ -54,4 +45,3 @@ test('evidence-only B-lane modules expose no mutation authority', () => {
 test('unknown B-lane module lookup fails closed', () => {
   assert.throws(() => getBLaneModuleDefinitionV1('FH-99B'), /unknown B-lane module/);
 });
-
