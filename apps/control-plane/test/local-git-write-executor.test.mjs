@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -300,4 +300,106 @@ test('malformed activity inputs fail before any Git write', async (t) => {
       : await run(input);
     assert.equal(result.failureKind, expected);
   }
+});
+
+
+test('valid explicit bounds and additional malformed scalar branches are covered', async (t) => {
+  const fx = await fixture(t);
+  activateGitWrite(fx.stateStore);
+
+  assert.doesNotThrow(() =>
+    createGatedLocalGitWriteExecutor(fx.gate, fx.handle, {
+      authorName: 'Operator',
+      authorEmail: 'operator@example.invalid',
+      maxPaths: 1,
+      maxOutputBytes: 2048,
+    }),
+  );
+  assert.throws(
+    () =>
+      createGatedLocalGitWriteExecutor(fx.gate, fx.handle, {
+        authorName: 'Operator\0Name',
+        authorEmail: 'operator@example.invalid',
+      }),
+    /authorName/,
+  );
+  assert.throws(
+    () =>
+      createGatedLocalGitWriteExecutor(fx.gate, fx.handle, {
+        authorName: 'Operator',
+        authorEmail: 7,
+      }),
+    /authorEmail/,
+  );
+
+  for (const input of [
+    null,
+    { ...commitInput(), branch: '-bad' },
+    { ...commitInput(), message: 'two\rlines' },
+    { ...commitInput(), message: 'bad\0message' },
+    { ...commitInput(), paths: null },
+    { ...commitInput(), paths: ['C:\\temp\\x'] },
+  ]) {
+    const result = await executor(fx).execute(request(fx.handle, input));
+    assert.equal(result.failureKind, 'MALFORMED_ACTIVITY_INPUT');
+  }
+});
+
+test('forged workspace path identities fail before mutation', async (t) => {
+  const fx = await fixture(t);
+  activateGitWrite(fx.stateStore);
+
+  const nonCanonicalHandle = {
+    ...fx.handle,
+    workspacePath: path.join(fx.handle.workspacePath, '..', path.basename(fx.handle.workspacePath)),
+  };
+  const nonCanonical = createGatedLocalGitWriteExecutor(fx.gate, nonCanonicalHandle, {
+    authorName: 'Operator',
+    authorEmail: 'operator@example.invalid',
+  });
+  assert.equal(
+    (await nonCanonical.execute(request(nonCanonicalHandle, commitInput()))).failureKind,
+    'GIT_WRITE_WORKSPACE_INVALID',
+  );
+
+  const symlinkPath = path.join(fx.root, 'workspace-link');
+  await symlink(fx.handle.workspacePath, symlinkPath, 'dir');
+  const symlinkHandle = { ...fx.handle, workspacePath: symlinkPath };
+  const symlinkExecutor = createGatedLocalGitWriteExecutor(fx.gate, symlinkHandle, {
+    authorName: 'Operator',
+    authorEmail: 'operator@example.invalid',
+  });
+  assert.equal(
+    (await symlinkExecutor.execute(request(symlinkHandle, commitInput()))).failureKind,
+    'GIT_WRITE_WORKSPACE_INVALID',
+  );
+
+  const nestedPath = path.join(fx.handle.workspacePath, 'nested-root-check');
+  await mkdir(nestedPath);
+  const nestedHandle = { ...fx.handle, workspacePath: nestedPath };
+  const nestedExecutor = createGatedLocalGitWriteExecutor(fx.gate, nestedHandle, {
+    authorName: 'Operator',
+    authorEmail: 'operator@example.invalid',
+  });
+  assert.equal(
+    (await nestedExecutor.execute(request(nestedHandle, commitInput()))).failureKind,
+    'GIT_WRITE_WORKSPACE_INVALID',
+  );
+});
+
+test('commit failure after branch creation rolls back branch and index', async (t) => {
+  const fx = await fixture(t);
+  activateGitWrite(fx.stateStore);
+  await writeFile(path.join(fx.handle.workspacePath, 'tracked.txt'), 'two\n', 'utf8');
+  await git(fx.handle.workspacePath, ['config', 'commit.cleanup', 'definitely-invalid']);
+
+  const result = await executor(fx).execute(request(fx.handle, commitInput()));
+
+  assert.equal(result.failureKind, 'GIT_WRITE_FAILED');
+  assert.equal(await git(fx.handle.workspacePath, ['rev-parse', 'HEAD']), fx.revision);
+  assert.equal(await git(fx.handle.workspacePath, ['branch', '--show-current']), '');
+  assert.equal(await git(fx.handle.workspacePath, ['diff', '--cached', '--name-only']), '');
+  await assert.rejects(
+    () => git(fx.handle.workspacePath, ['show-ref', '--verify', 'refs/heads/fh/test-change']),
+  );
 });
