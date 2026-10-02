@@ -5,7 +5,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 
 const REQUIRED_ADRS = Array.from(
-  { length: 24 },
+  { length: 25 },
   (_, index) => `ADR-${String(index + 1).padStart(4, '0')}`,
 );
 
@@ -67,7 +67,7 @@ export function assertArchitectureContract(contract) {
   ) {
     throw new Error('architecture contract_version must be semantic version');
   }
-  expect(contract.contract_version, '1.12.0', 'architecture contract version');
+  expect(contract.contract_version, '1.13.0', 'architecture contract version');
   expect(contract.status, 'FROZEN_BASELINE', 'architecture status');
   expect(contract.phase, 'FH-10', 'architecture phase');
 
@@ -85,6 +85,51 @@ export function assertArchitectureContract(contract) {
   );
 
   assertContainsExactly(contract.accepted_adrs, REQUIRED_ADRS, 'accepted ADRs');
+  expect(contract.product?.mode, 'local-first-single-user', 'default product mode');
+  expect(contract.enterprise_identity?.default_runtime, 'DISABLED', 'enterprise identity default');
+  expect(
+    contract.enterprise_identity?.enabled_runtime,
+    'SINGLE_TENANT_OIDC',
+    'enterprise identity enabled runtime',
+  );
+  expect(
+    contract.enterprise_identity?.multi_tenant_persistence,
+    'DEFERRED',
+    'enterprise multi-tenant persistence',
+  );
+  expectTrue(contract.enterprise_identity?.exact_issuer_required, 'enterprise exact issuer');
+  expectTrue(contract.enterprise_identity?.exact_audience_required, 'enterprise exact audience');
+  expectTrue(
+    contract.enterprise_identity?.stable_subject_binding_required,
+    'enterprise stable subject binding',
+  );
+  expectFalse(contract.enterprise_identity?.raw_token_persistence, 'enterprise raw token persistence');
+  expectTrue(contract.enterprise_identity?.bounded_session_required, 'enterprise bounded session');
+  expectTrue(
+    contract.enterprise_identity?.use_time_membership_revalidation,
+    'enterprise membership currentness',
+  );
+  expectFalse(
+    contract.enterprise_identity?.rbac_grants_execution_authority,
+    'enterprise RBAC authority',
+  );
+  expectFalse(
+    contract.enterprise_identity?.membership_satisfies_human_approval,
+    'enterprise membership human approval',
+  );
+  expectTrue(
+    contract.enterprise_identity?.delegation_human_to_human_only,
+    'enterprise delegation principal boundary',
+  );
+  expectTrue(
+    contract.enterprise_identity?.delegation_use_time_revalidation,
+    'enterprise delegation currentness',
+  );
+  expectFalse(
+    contract.enterprise_identity?.delegation_can_change_exact_binding,
+    'enterprise delegation exact binding',
+  );
+
   assertContainsExactly(contract.bounded_contexts?.packages, REQUIRED_CONTEXTS, 'bounded contexts');
   assertIncludes(
     contract.bounded_contexts?.forbidden,
