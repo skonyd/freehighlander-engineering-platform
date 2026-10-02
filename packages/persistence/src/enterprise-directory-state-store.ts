@@ -161,7 +161,11 @@ export function validateEnterpriseDirectoryStateV1(value: unknown): JsonValue {
   }
 
   for (const membership of projectMemberships) {
-    requireOrganization(organization.organizationId, membership.organizationId, 'project membership');
+    requireOrganization(
+      organization.organizationId,
+      membership.organizationId,
+      'project membership',
+    );
     requireActor(actorsById, membership.actorId, 'project membership');
   }
 
