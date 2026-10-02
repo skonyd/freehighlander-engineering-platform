@@ -86,7 +86,11 @@ export function assertArchitectureContract(contract) {
 
   assertContainsExactly(contract.accepted_adrs, REQUIRED_ADRS, 'accepted ADRs');
   expect(contract.product?.mode, 'local-first-single-user', 'default product mode');
-  expect(contract.enterprise_identity?.default_runtime, 'DISABLED', 'enterprise identity default');
+  expect(
+    contract.enterprise_identity?.default_runtime,
+    'DISABLED',
+    'enterprise identity default',
+  );
   expect(
     contract.enterprise_identity?.enabled_runtime,
     'SINGLE_TENANT_OIDC',
@@ -97,14 +101,26 @@ export function assertArchitectureContract(contract) {
     'DEFERRED',
     'enterprise multi-tenant persistence',
   );
-  expectTrue(contract.enterprise_identity?.exact_issuer_required, 'enterprise exact issuer');
-  expectTrue(contract.enterprise_identity?.exact_audience_required, 'enterprise exact audience');
+  expectTrue(
+    contract.enterprise_identity?.exact_issuer_required,
+    'enterprise exact issuer',
+  );
+  expectTrue(
+    contract.enterprise_identity?.exact_audience_required,
+    'enterprise exact audience',
+  );
   expectTrue(
     contract.enterprise_identity?.stable_subject_binding_required,
     'enterprise stable subject binding',
   );
-  expectFalse(contract.enterprise_identity?.raw_token_persistence, 'enterprise raw token persistence');
-  expectTrue(contract.enterprise_identity?.bounded_session_required, 'enterprise bounded session');
+  expectFalse(
+    contract.enterprise_identity?.raw_token_persistence,
+    'enterprise raw token persistence',
+  );
+  expectTrue(
+    contract.enterprise_identity?.bounded_session_required,
+    'enterprise bounded session',
+  );
   expectTrue(
     contract.enterprise_identity?.use_time_membership_revalidation,
     'enterprise membership currentness',
