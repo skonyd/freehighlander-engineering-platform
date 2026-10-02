@@ -2,7 +2,7 @@
 
 **State status:** POST-CUTOVER / V3 AUTHORITY ENABLED / CRITICAL PERMISSIONS DEFAULT DENY  
 **Canonical pointer:** `.freehighlander/state.yaml`  
-**Architecture contract:** 1.12.0
+**Architecture contract:** 1.13.0
 
 ## Authority snapshot
 
