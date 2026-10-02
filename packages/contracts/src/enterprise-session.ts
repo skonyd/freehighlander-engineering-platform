@@ -143,7 +143,8 @@ export function evaluateEnterpriseSessionCurrentnessV1(
   if (Date.parse(session.createdAt) > Date.parse(session.lastValidatedAt)) {
     reasons.push('session validation chronology is invalid');
   }
-  if (Date.parse(session.lastValidatedAt) > nowMs) reasons.push('session validation is in the future');
+  if (Date.parse(session.lastValidatedAt) > nowMs)
+    reasons.push('session validation is in the future');
   if (Date.parse(session.expiresAt) <= nowMs) reasons.push('session is expired');
 
   reasons.sort();
@@ -214,9 +215,11 @@ export function evaluateApprovalDelegationEligibilityV1(
   }
   if (delegator.status !== 'ACTIVE') reasons.push('delegator is disabled');
   if (delegate.status !== 'ACTIVE') reasons.push('delegate is disabled');
-  if (delegation.delegatorActorId !== delegator.actorId) reasons.push('delegator identity mismatch');
+  if (delegation.delegatorActorId !== delegator.actorId)
+    reasons.push('delegator identity mismatch');
   if (delegation.delegateActorId !== delegate.actorId) reasons.push('delegate identity mismatch');
-  if (delegation.organizationId !== input.organizationId) reasons.push('delegation organization mismatch');
+  if (delegation.organizationId !== input.organizationId)
+    reasons.push('delegation organization mismatch');
   if (delegation.projectId !== input.projectId) reasons.push('delegation project mismatch');
   if (delegation.actionClass !== input.actionClass) reasons.push('delegation action mismatch');
   if (Date.parse(delegation.validFrom) >= Date.parse(delegation.validUntil)) {
