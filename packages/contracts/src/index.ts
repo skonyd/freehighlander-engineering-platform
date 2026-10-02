@@ -46,6 +46,34 @@ export {
 } from './authority-capability-registry.js';
 
 export {
+  approvalDelegationCanActAsApproval,
+  approvalDelegationCanChangeExactBinding,
+  approvalDelegationRuntimeStatusV1Schema,
+  approvalDelegationV1Schema,
+  enterpriseIdentityRuntimeModeV1Schema,
+  enterpriseSessionCanGrantAuthority,
+  enterpriseSessionStatusV1Schema,
+  enterpriseSessionV1Schema,
+  enterpriseVerifiedOidcPrincipalCanCarryRawToken,
+  enterpriseVerifiedOidcPrincipalV1Schema,
+  evaluateApprovalDelegationEligibilityV1,
+  evaluateEnterpriseOidcAuthenticationV1,
+  evaluateEnterpriseSessionCurrentnessV1,
+  type ApprovalDelegationEligibilityInputV1,
+  type ApprovalDelegationEligibilityV1,
+  type ApprovalDelegationRuntimeStatusV1,
+  type ApprovalDelegationV1,
+  type EnterpriseIdentityRuntimeModeV1,
+  type EnterpriseOidcAuthenticationDecisionV1,
+  type EnterpriseOidcAuthenticationInputV1,
+  type EnterpriseSessionCurrentnessInputV1,
+  type EnterpriseSessionCurrentnessV1,
+  type EnterpriseSessionStatusV1,
+  type EnterpriseSessionV1,
+  type EnterpriseVerifiedOidcPrincipalV1,
+} from './enterprise-session.js';
+
+export {
   approvalDelegationDraftCanActAsApproval,
   approvalDelegationDraftV1Schema,
   enterpriseAccessRoleV1Schema,
