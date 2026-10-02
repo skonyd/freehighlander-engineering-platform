@@ -1,4 +1,16 @@
 export {
+  EnterpriseDirectoryStateStore,
+  createDefaultEnterpriseDirectoryStateV1,
+  enterpriseDirectoryStoreCanGrantAuthority,
+  enterpriseDirectoryStoreCanPersistRawTokens,
+  enterpriseDirectoryStoreSupportsMultiTenantPersistence,
+  validateEnterpriseDirectoryStateV1,
+  type EnterpriseDirectorySnapshotV1,
+  type EnterpriseDirectoryStateV1,
+  type EnterpriseDirectoryWriteResultV1,
+} from './enterprise-directory-state-store.js';
+
+export {
   GitResumeStore,
   SpawnGitResumeCommandRunner,
   gitResumeStoreCanContainSecretValues,
