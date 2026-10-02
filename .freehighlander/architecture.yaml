@@ -1,5 +1,5 @@
 schema_version: 1
-contract_version: "1.12.0"
+contract_version: "1.13.0"
 status: FROZEN_BASELINE
 phase: FH-10
 
@@ -33,12 +33,29 @@ accepted_adrs:
   - ADR-0022
   - ADR-0023
   - ADR-0024
+  - ADR-0025
 
 product:
   mode: local-first-single-user
   implementation_language: TypeScript
   workflow_authoring_initial: repo-as-code
   query_state_store: SQLite
+
+enterprise_identity:
+  default_runtime: DISABLED
+  enabled_runtime: SINGLE_TENANT_OIDC
+  multi_tenant_persistence: DEFERRED
+  exact_issuer_required: true
+  exact_audience_required: true
+  stable_subject_binding_required: true
+  raw_token_persistence: false
+  bounded_session_required: true
+  use_time_membership_revalidation: true
+  rbac_grants_execution_authority: false
+  membership_satisfies_human_approval: false
+  delegation_human_to_human_only: true
+  delegation_use_time_revalidation: true
+  delegation_can_change_exact_binding: false
 
 planes:
   control:
