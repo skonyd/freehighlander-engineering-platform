@@ -194,9 +194,7 @@ test('validator rejects unknown actor and organization references', () => {
     () =>
       validateEnterpriseDirectoryStateV1({
         ...state,
-        projectMemberships: [
-          { ...state.projectMemberships[0], organizationId: 'other-org' },
-        ],
+        projectMemberships: [{ ...state.projectMemberships[0], organizationId: 'other-org' }],
       }),
     /project membership organization mismatch/,
   );
