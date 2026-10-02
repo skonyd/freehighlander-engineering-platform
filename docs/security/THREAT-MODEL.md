@@ -23,8 +23,8 @@
 5. control plane ↔ local model endpoints
 6. future UI ↔ API
 7. future plugin/tool adapters ↔ external systems
-8. future enterprise identity provider ↔ FreeHighlander identity adapter
-9. organization/team/project membership ↔ product access control
+8. enterprise identity provider ↔ FreeHighlander identity adapter
+9. organization/team/project membership ↔ product access control\n10. authenticated enterprise session ↔ protected control-plane operations\n11. active approval delegation ↔ exact human approval action
 
 ## Primary threats
 
@@ -127,7 +127,7 @@ Mitigation:
 - explicit project/action/time bounds and revocation
 - revalidation at use time
 - underlying exact revision/scope/evidence/policy binding remains mandatory
-- pre-cutover delegation records remain DRAFT and cannot act as approvals
+- delegation itself never acts as approval\n- active delegation only makes a current HUMAN actor eligible to approve within its exact project/action/time scope\n- the delegate approves as themselves and delegation provenance is audited
 
 ### Future tenant-boundary bypass
 If multi-tenant persistence is introduced later, a query/key/policy bug could expose another tenant's data.
@@ -147,13 +147,15 @@ Mitigation:
 - export/deletion/AUDIT deletion authority always false in planning
 - actual export/delete execution remains a separate future authority surface
 
+## Enterprise runtime activation boundary
+
+ADR-0025 authorizes optional single-tenant live identity/session enforcement and human-to-human approval delegation. Implementations must preserve the controls above, fail closed on session/membership/delegation currentness, and never persist raw OIDC tokens.
+
 ## Future work
 
 Threat model must be revisited before:
 - remote write tools
 - browser automation
 - production deployment
-- live multi-user auth/session enforcement
-- approval delegation activation
 - multi-tenant persistence
 - external plugin marketplace

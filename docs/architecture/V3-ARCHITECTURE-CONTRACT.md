@@ -2,12 +2,12 @@
 
 **Status:** FROZEN BASELINE  
 **Machine-readable source:** `.freehighlander/architecture.yaml`  
-**Contract version:** 1.12.0  
+**Contract version:** 1.13.0  
 **Freeze phase:** FH-10
 
 ## Purpose
 
-This document records the accepted architecture direction from ADR-0001 through ADR-0024. Version 1.11.0 incorporates the accepted single-tenant enterprise identity boundary from ADR-0023. Version 1.12.0 applies the FH-20 V3 authority cutover from exact approved target `57761b7b0257c234ad41314343a22dfd53668364` while preserving fail-closed critical capability permissions.
+This document records the accepted architecture direction from ADR-0001 through ADR-0025. Version 1.11.0 incorporates the accepted single-tenant enterprise identity boundary from ADR-0023. Version 1.12.0 applies the FH-20 V3 authority cutover from exact approved target `57761b7b0257c234ad41314343a22dfd53668364` while preserving fail-closed critical capability permissions. Version 1.13.0 accepts ADR-0025 and permits an optional, default-disabled single-tenant OIDC/RBAC/delegation runtime while explicitly deferring multi-tenant persistence.
 
 The machine-readable contract is normative for automated drift checks. Existing ADRs remain the decision rationale.
 
@@ -15,7 +15,8 @@ The machine-readable contract is normative for automated drift checks. Existing 
 
 ### Product and boundaries
 
-- local-first single-user initial product mode;
+- local-first single-user default product mode;
+- optional single-tenant enterprise identity runtime is default disabled;
 - TypeScript bounded-context monorepo;
 - no generic `packages/core` domain dumping ground;
 - control plane and execution plane remain logically separated;
@@ -109,6 +110,8 @@ Version 1.10.0 adds the Full Auto delegable policy effect `MODEL_QUORUM_REQUIRED
 Version 1.11.0 incorporates ADR-0023's enterprise-ready single-tenant identity boundary without activating OIDC/session enforcement, approval delegation or multi-tenant persistence.
 
 Version 1.12.0 applies ADR-0024 / FH-20. V3 core authority is `ENABLED` for the exact approved target revision. V2 remains the accepted compatibility/reference plane. Code/Git, Release/Deploy, Infrastructure Mutation and Automatic Remediation remain default DENY and unselected; Full Auto remains independently OFF/SHADOW by default.
+
+Version 1.13.0 accepts ADR-0025. Enterprise identity may be explicitly enabled in one local single-tenant persistence domain with exact OIDC issuer/audience/subject validation, bounded sessions, product RBAC and human-to-human approval delegation. RBAC/delegation never replace V3 authority gates, raw OIDC tokens are not persisted, and multi-tenant persistence remains deferred.
 
 ### Migration
 

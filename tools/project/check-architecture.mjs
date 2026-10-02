@@ -1902,7 +1902,7 @@ try {
   }
 
   for (const invariant of [
-    'contract_version: "1.12.0"',
+    'contract_version: "1.13.0"',
     '- ADR-0022',
     'delegable_model_quorum_gate: MODEL_QUORUM_REQUIRED',
     'human_required_is_non_delegable: true',
