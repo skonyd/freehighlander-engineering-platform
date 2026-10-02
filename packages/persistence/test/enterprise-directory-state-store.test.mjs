@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import {
@@ -286,7 +286,7 @@ test('persisted noncanonical ordering fails closed on read', () => {
   const persisted = written.snapshot;
   assert.ok(persisted);
   const rawPath = filePath;
-  const raw = JSON.parse(await import('node:fs').then(({ readFileSync }) => readFileSync(rawPath, 'utf8')));
+  const raw = JSON.parse(readFileSync(rawPath, 'utf8'));
   raw.payload.actors.reverse();
   writeFileSync(rawPath, JSON.stringify(raw, null, 2) + '\n');
 
