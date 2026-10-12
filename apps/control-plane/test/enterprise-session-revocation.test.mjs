@@ -116,14 +116,22 @@ test('different actor and unknown session cannot trigger a mutation', () => {
     service.revoke({ ...request, sessionId: 'session-does-not-exist' }).reason,
     'SESSION_NOT_FOUND',
   );
-  assert.equal(service.revoke({ ...request, sessionId: 'session-local' }).reason, 'SESSION_NOT_OIDC');
+  assert.equal(
+    service.revoke({ ...request, sessionId: 'session-local' }).reason,
+    'SESSION_NOT_OIDC',
+  );
   assert.equal(directory.read().generation, before);
   assert.equal(statusOf(directory, 'session-main'), 'ACTIVE');
 });
 
 test('malformed actor or session identifiers are denied before reading state', () => {
   let readCalls = 0;
-  const directory = { read() { readCalls++; throw new Error('must not read'); } };
+  const directory = {
+    read() {
+      readCalls++;
+      throw new Error('must not read');
+    },
+  };
   const service = new EnterpriseSessionRevocationService(directory);
   for (const [verifiedActorId, sessionId] of [
     ['?', 'session-main'],
@@ -160,7 +168,9 @@ test('concurrent directory writes cannot be reported as successful revocation', 
 
 test('corrupt durable state fails closed rather than reporting a revocation', () => {
   const service = new EnterpriseSessionRevocationService({
-    read: () => { throw new Error('directory integrity error'); },
+    read: () => {
+      throw new Error('directory integrity error');
+    },
   });
   assert.throws(() => service.revoke(request), /directory integrity error/);
 });
