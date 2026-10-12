@@ -38,12 +38,12 @@ export class EnterpriseSessionRevocationService {
   constructor(readonly directory: EnterpriseDirectoryStateStore) {}
 
   revoke(request: EnterpriseSessionRevocationRequestV1): EnterpriseSessionRevocationResultV1 {
-    if (
-      !BOUNDED_ID.test(request.verifiedActorId) ||
-      !BOUNDED_ID.test(request.sessionId)
-    ) {
-      return result('DENY', 'INVALID_IDENTITY');
-    }
+    const validActor =
+      typeof request.verifiedActorId === 'string' &&
+      BOUNDED_ID.test(request.verifiedActorId);
+    const validSession =
+      typeof request.sessionId === 'string' && BOUNDED_ID.test(request.sessionId);
+    if (!validActor || !validSession) return result('DENY', 'INVALID_IDENTITY');
 
     // A fresh durable read makes use-time revocation independent of cached
     // product RBAC or stale browser state. Invalid store data fails closed.
