@@ -1,4 +1,12 @@
 export {
+  PinnedOidcRs256Verifier,
+  pinnedOidcVerifierCanGrantAuthority,
+  pinnedOidcVerifierCanTrustTokenProvidedKeys,
+  type PinnedOidcRs256Key,
+  type PinnedOidcRs256VerifierOptions,
+} from './pinned-oidc-rs256-verifier.js';
+
+export {
   EnterpriseOidcSessionIssuer,
   enterpriseOidcSessionIssuerCanGrantAuthority,
   enterpriseOidcSessionIssuerCanVerifyTokensItself,
