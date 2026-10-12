@@ -163,6 +163,14 @@ test('stale session, local session or absent membership remain denied in enterpr
   assert.equal(gate.evaluate(request).decision, 'DENY');
 });
 
+test('local actor identity cannot inherit enterprise OIDC access', () => {
+  const { gate, store } = fixture();
+  replace(store, { actors: [{ ...actor, kind: 'LOCAL_USER' }] });
+  const result = gate.evaluate(request);
+  assert.equal(result.decision, 'DENY');
+  assert.ok(result.reasons.includes('enterprise actor must be an OIDC user'));
+});
+
 test('malformed directory snapshot cannot make an absent session actor eligible', () => {
   const injectedDirectory = {
     organization,
