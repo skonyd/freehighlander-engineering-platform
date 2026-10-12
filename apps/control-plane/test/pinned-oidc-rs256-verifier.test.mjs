@@ -94,7 +94,10 @@ function fixture(overrides = {}) {
 
 function write(directory, patch) {
   const snapshot = directory.read();
-  assert.equal(directory.write(snapshot.generation, { ...snapshot.state, ...patch }).status, 'WRITTEN');
+  assert.equal(
+    directory.write(snapshot.generation, { ...snapshot.state, ...patch }).status,
+    'WRITTEN',
+  );
 }
 
 test('valid pinned RS256 signature derives actor only from trusted directory', async () => {
@@ -163,11 +166,16 @@ test('invalid signature, wrong trusted key and unsigned tokens are denied', asyn
     'malformed',
     JSON.stringify({ fake: true }),
   ]) {
-    await assert.rejects(() => verifier.verifyIdToken(candidate), /OIDC ID token verification failed/);
+    await assert.rejects(
+      () => verifier.verifyIdToken(candidate),
+      /OIDC ID token verification failed/,
+    );
   }
 
   // Signed bytes and decoded fields cannot be interchanged without invalidating RS256.
-  const tamperedClaims = Buffer.from(JSON.stringify({ ...claims, sub: 'other-user' })).toString('base64url');
+  const tamperedClaims = Buffer.from(JSON.stringify({ ...claims, sub: 'other-user' })).toString(
+    'base64url',
+  );
   await assert.rejects(
     () => verifier.verifyIdToken(parts[0] + '.' + tamperedClaims + '.' + parts[2]),
     /OIDC ID token verification failed/,
@@ -191,7 +199,10 @@ test('token structure and JOSE header must be exact', async () => {
   assert.equal((await verifier.verifyIdToken(cases[4])).actorId, actor.actorId);
 
   await assert.rejects(
-    () => verifier.verifyIdToken(Buffer.from('null').toString('base64url') + '.' + jwt().split('.').slice(1).join('.')),
+    () =>
+      verifier.verifyIdToken(
+        Buffer.from('null').toString('base64url') + '.' + jwt().split('.').slice(1).join('.'),
+      ),
     /OIDC ID token/,
   );
 });
@@ -218,7 +229,10 @@ test('signed but mis-scoped claims fail closed', async () => {
     { iat: Number.MAX_SAFE_INTEGER + 1 },
   ];
   for (const change of changes) {
-    await assert.rejects(() => verifier.verifyIdToken(jwt(headers, { ...claims, ...change })), /OIDC ID token/);
+    await assert.rejects(
+      () => verifier.verifyIdToken(jwt(headers, { ...claims, ...change })),
+      /OIDC ID token/,
+    );
   }
 });
 
@@ -255,7 +269,15 @@ test('untrusted issuer, nonce, key and clock configurations cannot construct ver
     [{ keys: [] }, /signing keys/],
     [{ keys: null }, /signing keys/],
     [{ keys: [{ kid: 'not valid', publicKey }] }, /key ids/],
-    [{ keys: [{ kid: KID, publicKey }, { kid: KID, publicKey }] }, /key ids/],
+    [
+      {
+        keys: [
+          { kid: KID, publicKey },
+          { kid: KID, publicKey },
+        ],
+      },
+      /key ids/,
+    ],
     [{ keys: [{ kid: KID, publicKey: ecKey.publicKey }] }, /RSA public keys/],
     [{ keys: [{ kid: KID, publicKey: privateKey }] }, /RSA public keys/],
     [{ keys: [{ kid: KID, publicKey: null }] }, /RSA public keys/],
@@ -266,10 +288,11 @@ test('untrusted issuer, nonce, key and clock configurations cannot construct ver
   }
   const smallKey = generateKeyPairSync('rsa', { modulusLength: 1024 });
   assert.throws(
-    () => new PinnedOidcRs256Verifier({
-      ...options,
-      keys: [{ kid: 'weak', publicKey: smallKey.publicKey }],
-    }),
+    () =>
+      new PinnedOidcRs256Verifier({
+        ...options,
+        keys: [{ kid: 'weak', publicKey: smallKey.publicKey }],
+      }),
     /RSA public keys/,
   );
 });
