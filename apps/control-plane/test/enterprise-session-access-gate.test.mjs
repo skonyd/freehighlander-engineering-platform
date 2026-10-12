@@ -89,7 +89,7 @@ function replace(store, updates) {
   assert.equal(result.status, 'WRITTEN');
 }
 
-test('local-first mode remains available without enterprise identity or execution authority', () => {
+test('local-first mode never grants execution authority', () => {
   const { store } = fixture();
   const gate = new EnterpriseSessionAccessGate(store, 'DISABLED');
   const result = gate.evaluate({ ...request, verifiedSessionId: null });
@@ -102,7 +102,7 @@ test('local-first mode remains available without enterprise identity or executio
   assert.equal(enterpriseSessionGateCanVerifyOidcToken(), false);
 });
 
-test('enterprise access is eligible only for current OIDC session and matching project role', () => {
+test('enterprise gate requires current OIDC session and exact project role', () => {
   const { gate } = fixture();
   const eligible = gate.evaluate(request);
   assert.equal(eligible.decision, 'ELIGIBLE');
@@ -129,10 +129,7 @@ test('role mismatch and other-project membership never grant execution requests'
       .evaluate(request)
       .reasons.includes('membership role is not eligible for requested capability'),
   );
-  assert.equal(
-    gate.evaluate({ ...request, capability: 'VIEW_PROJECT' }).decision,
-    'ELIGIBLE',
-  );
+  assert.equal(gate.evaluate({ ...request, capability: 'VIEW_PROJECT' }).decision, 'ELIGIBLE');
 
   replace(store, { projectMemberships: [{ ...membership, projectId: 'project-other' }] });
   assert.equal(gate.evaluate(request).decision, 'DENY');
@@ -149,7 +146,9 @@ test('revocation, disabled actors and deleted OIDC bindings deny without cached 
   assert.ok(gate.evaluate(request).reasons.includes('session actor is disabled'));
 
   replace(store, { actors: [actor], oidcBindings: [] });
-  assert.ok(gate.evaluate(request).reasons.includes('enterprise actor has no current OIDC binding'));
+  assert.ok(
+    gate.evaluate(request).reasons.includes('enterprise actor has no current OIDC binding'),
+  );
 });
 
 test('stale session, local session or absent membership remain denied in enterprise mode', () => {
@@ -166,13 +165,8 @@ test('stale session, local session or absent membership remain denied in enterpr
 
 test('invalid input is never silently accepted', () => {
   const { gate } = fixture();
-  assert.throws(
-    () => gate.evaluate({ ...request, projectId: '../other' }),
-    /bounded identifier/,
-  );
+  assert.throws(() => gate.evaluate({ ...request, projectId: '../other' }), /bounded identifier/);
   assert.throws(() => gate.evaluate({ ...request, capability: 'UNSAFE' }));
   assert.throws(() => gate.evaluate({ ...request, now: 'invalid' }), /valid timestamp/);
-  assert.throws(
-    () => new EnterpriseSessionAccessGate(gate.directory, 'UNSAFE'),
-  );
+  assert.throws(() => new EnterpriseSessionAccessGate(gate.directory, 'UNSAFE'));
 });
