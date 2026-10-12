@@ -39,8 +39,7 @@ export class EnterpriseSessionRevocationService {
 
   revoke(request: EnterpriseSessionRevocationRequestV1): EnterpriseSessionRevocationResultV1 {
     const validActor =
-      typeof request.verifiedActorId === 'string' &&
-      BOUNDED_ID.test(request.verifiedActorId);
+      typeof request.verifiedActorId === 'string' && BOUNDED_ID.test(request.verifiedActorId);
     const validSession =
       typeof request.sessionId === 'string' && BOUNDED_ID.test(request.sessionId);
     if (!validActor || !validSession) return result('DENY', 'INVALID_IDENTITY');
