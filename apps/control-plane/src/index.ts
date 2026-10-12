@@ -1,4 +1,12 @@
 export {
+  EnterpriseSessionAccessGate,
+  enterpriseSessionGateCanGrantExecutionAuthority,
+  enterpriseSessionGateCanVerifyOidcToken,
+  type EnterpriseSessionAccessDecisionV1,
+  type EnterpriseSessionAccessRequestV1,
+} from './enterprise-session-access-gate.js';
+
+export {
   FhKuikaRoutineDispatchRuntime,
   routineDispatchRuntimeCanGrantAuthority,
   routineDispatchRuntimeCanSkipCapabilityRecheckOnRetry,
