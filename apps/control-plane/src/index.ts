@@ -1,4 +1,13 @@
 export {
+  EnterpriseOidcSessionIssuer,
+  enterpriseOidcSessionIssuerCanGrantAuthority,
+  enterpriseOidcSessionIssuerCanVerifyTokensItself,
+  type EnterpriseOidcSessionIssueResultV1,
+  type EnterpriseOidcSessionIssuerOptions,
+  type TrustedEnterpriseOidcVerifier,
+} from './enterprise-oidc-session-issuer.js';
+
+export {
   EnterpriseSessionAccessGate,
   enterpriseSessionGateCanGrantExecutionAuthority,
   enterpriseSessionGateCanVerifyOidcToken,
