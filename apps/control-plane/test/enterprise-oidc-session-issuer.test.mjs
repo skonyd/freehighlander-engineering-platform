@@ -248,11 +248,8 @@ test('unexpected trusted clock and configuration fail closed', async () => {
     () => new EnterpriseOidcSessionIssuer({ ...issuer.options, verifier: null }),
     /trusted OIDC verifier/,
   );
-  assert.throws(
-    () =>
-      new EnterpriseOidcSessionIssuer({ ...issuer.options, expectedIssuer: 'http://example.test' }),
-    /must use HTTPS/,
-  );
+  const insecureOptions = { ...issuer.options, expectedIssuer: 'http://example.test' };
+  assert.throws(() => new EnterpriseOidcSessionIssuer(insecureOptions), /must use HTTPS/);
   assert.throws(
     () => new EnterpriseOidcSessionIssuer({ ...issuer.options, expectedAudience: '   ' }),
     /expectedAudience/,
