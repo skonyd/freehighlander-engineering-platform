@@ -163,6 +163,17 @@ test('stale session, local session or absent membership remain denied in enterpr
   assert.equal(gate.evaluate(request).decision, 'DENY');
 });
 
+test('malformed directory snapshot cannot make an absent session actor eligible', () => {
+  const injectedDirectory = {
+    organization,
+    read: () => ({ state: { sessions: [session], actors: [] } }),
+  };
+  const gate = new EnterpriseSessionAccessGate(injectedDirectory, 'SINGLE_TENANT_OIDC');
+  const result = gate.evaluate(request);
+  assert.equal(result.decision, 'DENY');
+  assert.ok(result.reasons.includes('session actor is missing from enterprise directory'));
+});
+
 test('invalid input is never silently accepted', () => {
   const { gate } = fixture();
   assert.throws(() => gate.evaluate({ ...request, projectId: '../other' }), /bounded identifier/);
