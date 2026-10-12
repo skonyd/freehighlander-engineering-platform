@@ -97,7 +97,9 @@ export class EnterpriseOidcSessionIssuer {
         candidate.subject === principal.subject &&
         candidate.actorId === principal.actorId,
     );
-    const actor = snapshot.state.actors.find((candidate) => candidate.actorId === principal.actorId);
+    const actor = snapshot.state.actors.find(
+      (candidate) => candidate.actorId === principal.actorId,
+    );
     if (!binding || !actor) return denied('OIDC_IDENTITY_NOT_BOUND');
 
     const decision = evaluateEnterpriseOidcAuthenticationV1({
