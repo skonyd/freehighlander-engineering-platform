@@ -1,4 +1,11 @@
 export {
+  EnterpriseSessionRevocationService,
+  enterpriseSessionRevocationCanGrantAuthority,
+  type EnterpriseSessionRevocationRequestV1,
+  type EnterpriseSessionRevocationResultV1,
+} from './enterprise-session-revocation.js';
+
+export {
   FhKuikaRoutineDispatchRuntime,
   routineDispatchRuntimeCanGrantAuthority,
   routineDispatchRuntimeCanSkipCapabilityRecheckOnRetry,
