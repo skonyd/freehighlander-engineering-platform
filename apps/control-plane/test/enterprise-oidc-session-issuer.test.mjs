@@ -87,10 +87,7 @@ function fixture(overrides = {}) {
 
 function overwrite(store, changes) {
   const current = store.read();
-  assert.equal(
-    store.write(current.generation, { ...current.state, ...changes }).status,
-    'WRITTEN',
-  );
+  assert.equal(store.write(current.generation, { ...current.state, ...changes }).status, 'WRITTEN');
 }
 
 test('trusted verifier issues durable session without persisting raw tokens', async () => {
