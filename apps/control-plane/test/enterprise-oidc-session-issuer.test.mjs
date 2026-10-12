@@ -87,10 +87,13 @@ function fixture(overrides = {}) {
 
 function overwrite(store, changes) {
   const current = store.read();
-  assert.equal(store.write(current.generation, { ...current.state, ...changes }).status, 'WRITTEN');
+  assert.equal(
+    store.write(current.generation, { ...current.state, ...changes }).status,
+    'WRITTEN',
+  );
 }
 
-test('trusted verification creates bounded durable OIDC session without persisting raw tokens', async () => {
+test('trusted verifier issues a bounded durable session with no raw token persistence', async () => {
   const { issuer, store, statePath } = fixture();
   const result = await issuer.issue(RAW_TOKEN);
   assert.equal(result.status, 'ISSUED');
@@ -113,9 +116,11 @@ test('trusted verification creates bounded durable OIDC session without persisti
 
 test('session cannot outlive upstream OIDC principal', async () => {
   const { issuer } = fixture({
-    verifier: { async verifyIdToken() {
-      return { ...principal, expiresAt: '2026-10-12T10:03:00+03:00' };
-    } },
+    verifier: {
+      async verifyIdToken() {
+        return { ...principal, expiresAt: '2026-10-12T10:03:00+03:00' };
+      },
+    },
   });
   const result = await issuer.issue(RAW_TOKEN);
   assert.equal(result.status, 'ISSUED');
@@ -125,10 +130,12 @@ test('session cannot outlive upstream OIDC principal', async () => {
 test('invalid token input never reaches the verifier', async () => {
   let calls = 0;
   const { issuer, store } = fixture({
-    verifier: { async verifyIdToken() {
-      calls++;
-      return principal;
-    } },
+    verifier: {
+      async verifyIdToken() {
+        calls++;
+        return principal;
+      },
+    },
   });
   for (const token of ['', null, 'a'.repeat(20000)]) {
     const result = await issuer.issue(token);
@@ -141,11 +148,23 @@ test('invalid token input never reaches the verifier', async () => {
   assert.deepEqual(store.read().state.sessions, []);
 });
 
-test('verifier errors and malformed verification metadata fail without exposing token', async () => {
+test('verifier errors and malformed metadata never expose token', async () => {
   const cases = [
-    { async verifyIdToken() { throw new Error('raw token: ' + RAW_TOKEN); } },
-    { async verifyIdToken() { return { ...principal, signatureVerified: false }; } },
-    { async verifyIdToken() { return { ...principal, accessToken: RAW_TOKEN }; } },
+    {
+      async verifyIdToken() {
+        throw new Error('raw token: ' + RAW_TOKEN);
+      },
+    },
+    {
+      async verifyIdToken() {
+        return { ...principal, signatureVerified: false };
+      },
+    },
+    {
+      async verifyIdToken() {
+        return { ...principal, accessToken: RAW_TOKEN };
+      },
+    },
   ];
   for (const verifier of cases) {
     const { issuer, store } = fixture({ verifier });
@@ -230,7 +249,8 @@ test('unexpected trusted clock and configuration fail closed', async () => {
     /trusted OIDC verifier/,
   );
   assert.throws(
-    () => new EnterpriseOidcSessionIssuer({ ...issuer.options, expectedIssuer: 'http://example.test' }),
+    () =>
+      new EnterpriseOidcSessionIssuer({ ...issuer.options, expectedIssuer: 'http://example.test' }),
     /must use HTTPS/,
   );
   assert.throws(
