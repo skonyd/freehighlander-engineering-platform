@@ -1,0 +1,111 @@
+name: Manual verified merged-branch cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Preview or delete verified merged branches
+        type: choice
+        required: true
+        default: DRY_RUN
+        options:
+          - DRY_RUN
+          - PRUNE
+      expected_count:
+        description: Exact number from the latest DRY_RUN (used only for PRUNE)
+        type: string
+        required: true
+        default: '37'
+      confirmation:
+        description: For PRUNE, enter DELETE_<count>_VERIFIED_BRANCHES
+        type: string
+        required: false
+
+# Deliberately opt-in: no push, pull_request, schedule or automatic execution.
+permissions:
+  contents: write
+
+jobs:
+  prune:
+    name: Preview or prune only verified inactive refs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      MODE: ${{ inputs.mode }}
+      EXPECTED_COUNT: ${{ inputs.expected_count }}
+      CONFIRMATION: ${{ inputs.confirmation }}
+    steps:
+      - name: Verify branch identity, PR state and explicit deletion intent
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          default_branch="$(gh api "repos/$REPO" --jq '.default_branch')"
+          default_sha="$(gh api "repos/$REPO/branches/$default_branch" --jq '.commit.sha')"
+          branches="$(gh api --paginate "repos/$REPO/branches?per_page=100" | jq -sc 'add')"
+          open_prs="$(gh api --paginate "repos/$REPO/pulls?state=open&per_page=100" | jq -sc 'add')"
+
+          candidates=()
+          while IFS=$'\t' read -r name sha is_protected; do
+            [[ "$name" == "$default_branch" || "$is_protected" == true ]] && continue
+            if ! jq -e --arg name "$name" \
+              '[.[] | select(.head.ref == $name or .base.ref == $name)] | length == 0' \
+              <<< "$open_prs" >/dev/null; then
+              continue
+            fi
+
+            if [[ "$sha" == "$default_sha" ]]; then
+              # Exactly identical to main, so no unique commit can be lost.
+              candidates+=("$name"$'\t'"$sha")
+              continue
+            fi
+
+            # A closed-but-unmerged PR is deliberately NOT cleanup evidence.
+            prs="$(gh api --paginate "repos/$REPO/commits/$sha/pulls?per_page=100" | jq -sc 'add')"
+            if jq -e --arg name "$name" --arg sha "$sha" --arg base "$default_branch" \
+              '[.[] | select(.head.ref == $name and .head.sha == $sha and .base.ref == $base and .merged_at != null)] | length > 0' \
+              <<< "$prs" >/dev/null; then
+              candidates+=("$name"$'\t'"$sha")
+            fi
+          done < <(jq -r '.[] | [.name, .commit.sha, (.protected | tostring)] | @tsv' <<< "$branches")
+
+          echo "Default branch: $default_branch ($default_sha)"
+          echo "Eligible inactive branches: ${#candidates[@]}"
+          printf '%s\n' "${candidates[@]}"
+          {
+            echo '### Verified branch cleanup'
+            echo "- Default branch: \`$default_branch\`"
+            echo "- Mode: \`$MODE\`"
+            echo "- Eligible refs: \`${#candidates[@]}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          [[ "$MODE" == PRUNE ]] || {
+            echo 'DRY_RUN: no refs deleted.'
+            exit 0
+          }
+          [[ "$EXPECTED_COUNT" =~ ^[0-9]+$ ]] || { echo 'Invalid expected_count'; exit 1; }
+          [[ ${#candidates[@]} -eq $EXPECTED_COUNT ]] || { echo 'Count changed: refusing deletion'; exit 1; }
+          [[ "$CONFIRMATION" == "DELETE_${EXPECTED_COUNT}_VERIFIED_BRANCHES" ]] || {
+            echo 'Exact human confirmation is required: refusing deletion'
+            exit 1
+          }
+
+          deleted=0
+          for entry in "${candidates[@]}"; do
+            IFS=$'\t' read -r name sha <<< "$entry"
+            fresh_default="$(gh api "repos/$REPO/branches/$default_branch" --jq '.commit.sha')"
+            [[ "$fresh_default" == "$default_sha" ]] || { echo 'Default moved: stopping'; exit 1; }
+            fresh_ref="$(gh api "repos/$REPO/git/ref/heads/$name" --jq '.object.sha')"
+            [[ "$fresh_ref" == "$sha" ]] || { echo "Branch changed: $name"; exit 1; }
+            fresh_open="$(gh api --paginate "repos/$REPO/pulls?state=open&per_page=100" | jq -sc 'add')"
+            jq -e --arg name "$name" \
+              '[.[] | select(.head.ref == $name or .base.ref == $name)] | length == 0' \
+              <<< "$fresh_open" >/dev/null || { echo "Branch now used by a PR: $name"; exit 1; }
+            gh api --method DELETE "repos/$REPO/git/refs/heads/$name"
+            echo "Deleted: $name"
+            deleted=$((deleted + 1))
+          done
+          echo "Removed $deleted inactive branch refs."
+          echo "- Deleted: \`$deleted\`" >> "$GITHUB_STEP_SUMMARY"
