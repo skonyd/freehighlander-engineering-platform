@@ -140,7 +140,9 @@ export class PinnedOidcRs256Verifier implements TrustedEnterpriseOidcVerifier {
     }
     const parts = token.split('.');
     if (parts.length !== 3) return fail();
-    const [encodedHeader, encodedClaims, encodedSignature] = parts;
+    const encodedHeader = parts[0]!;
+    const encodedClaims = parts[1]!;
+    const encodedSignature = parts[2]!;
     const header = parsedObject(encodedHeader);
     if (
       header.alg !== 'RS256' ||
@@ -198,7 +200,7 @@ export class PinnedOidcRs256Verifier implements TrustedEnterpriseOidcVerifier {
         entry.subject === claims.sub,
     );
     if (matching.length !== 1) return fail();
-    const actor = snapshot.state.actors.find((item) => item.actorId === matching[0].actorId);
+    const actor = snapshot.state.actors.find((item) => item.actorId === matching[0]!.actorId);
     if (!actor || actor.kind !== 'OIDC_USER' || actor.status !== 'ACTIVE') return fail();
 
     return {
