@@ -93,7 +93,7 @@ function overwrite(store, changes) {
   );
 }
 
-test('trusted verifier issues a bounded durable session with no raw token persistence', async () => {
+test('trusted verifier issues durable session without persisting raw tokens', async () => {
   const { issuer, store, statePath } = fixture();
   const result = await issuer.issue(RAW_TOKEN);
   assert.equal(result.status, 'ISSUED');
