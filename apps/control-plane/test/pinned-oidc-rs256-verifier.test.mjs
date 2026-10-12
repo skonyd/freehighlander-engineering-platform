@@ -281,6 +281,10 @@ test('untrusted issuer, nonce, key and clock configurations cannot construct ver
     [{ keys: [{ kid: KID, publicKey: ecKey.publicKey }] }, /RSA public keys/],
     [{ keys: [{ kid: KID, publicKey: privateKey }] }, /RSA public keys/],
     [{ keys: [{ kid: KID, publicKey: null }] }, /RSA public keys/],
+    [
+      { keys: [{ kid: KID, publicKey: { type: 'public', asymmetricKeyType: 'rsa' } }] },
+      /RSA public keys/,
+    ],
     [{ keys: [null] }, /key ids/],
   ];
   for (const [changes, message] of bad) {
